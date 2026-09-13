@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrazySlayt — TFT Set 18 Coaching</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0a1220;
+    --bg-panel:#101c33;
+    --bg-panel-2:#152847;
+    --moss:#2f6fd6;
+    --moss-light:#6fa3f2;
+    --wisp:#e8b84a;
+    --wisp-soft:#f5d585;
+    --violet:#7c8ee0;
+    --parchment:#dbe6fb;
+    --ink:#eaf0fc;
+    --ink-dim:#aebadb;
+    --ink-faint:#7c88a6;
+    --line:rgba(220,232,255,0.10);
+    --radius:14px;
+    --c1:#6fa3f2;
+    --c2:#4f8ae0;
+    --c3:#e8b84a;
+    --c4:#c9793f;
+    --c5:#a15fc9;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(47,111,214,0.20), transparent 55%),
+      radial-gradient(ellipse at 90% 10%, rgba(141,116,201,0.10), transparent 45%),
+      var(--bg-deep);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    line-height:1.5;
+    min-height:100vh;
+  }
+  h1,h2,h3,h4{
+    font-family:'Fraunces', serif;
+    margin:0 0 0.4em 0;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  p{margin:0 0 1em 0;}
+  a{color:inherit;}
+  ::selection{background:var(--wisp); color:#0a1220;}
+
+  /* ---------- layout ---------- */
+  .app{
+    display:flex;
+    min-height:100vh;
+  }
+  .sidebar{
+    width:250px;
+    flex-shrink:0;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.35)),
+      var(--bg-panel);
+    border-right:1px solid var(--line);
+    padding:28px 18px;
+    position:sticky;
+    top:0;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    gap:26px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:0 6px;
+  }
+  .brand-mark{
+    width:38px;height:38px;flex-shrink:0;
+    border-radius:10px;
+    background:linear-gradient(145deg, var(--moss), var(--bg-panel-2));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 0 1px var(--line), 0 4px 14px rgba(0,0,0,0.35);
+  }
+  .brand-name{font-family:'Fraunces',serif; font-size:1.18rem; font-weight:600; line-height:1.1;}
+  .brand-sub{font-size:0.72rem; color:var(--ink-faint); letter-spacing:0.02em;}
+
+  .nav{display:flex; flex-direction:column; gap:4px; margin-top:4px;}
+  .nav-btn{
+    display:flex; align-items:center; gap:12px;
+    padding:10px 12px;
+    border-radius:10px;
+    border:none;
+    background:transparent;
+    color:var(--ink-dim);
+    font-family:'Work Sans', sans-serif;
+    font-size:0.92rem;
+    text-align:left;
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  .nav-btn svg{width:18px; height:18px; flex-shrink:0; opacity:0.85;}
+  .nav-btn:hover{background:rgba(239,232,211,0.06); color:var(--ink);}
+  .nav-btn.active{
+    background:linear-gradient(90deg, rgba(47,111,214,0.24), rgba(47,111,214,0.05));
+    color:var(--ink);
+    box-shadow:inset 2px 0 0 var(--moss-light);
+  }
+  .sidebar-footer{
+    margin-top:auto;
+    font-size:0.72rem;
+    color:var(--ink-faint);
+    padding:10px 6px 0;
+    border-top:1px solid var(--line);
+  }
+
+  .main{
+    flex:1;
+    min-width:0;
+    padding:44px 52px 80px;
+    max-width:1180px;
+  }
+  section{display:none;}
+  section.active{display:block; animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .section-head{margin-bottom:34px; max-width:680px;}
+  .section-head h1{font-size:2.1rem;}
+  .section-head .kicker{
+    color:var(--moss-light);
+    font-size:0.85rem;
+    font-weight:600;
+    margin-bottom:8px;
+  }
+  .section-head p{color:var(--ink-dim); font-size:1rem;}
+
+  .card{
+    background:linear-gradient(155deg, var(--bg-panel-2), var(--bg-panel));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px 24px;
+  }
+
+  /* ---------- Comps ---------- */
+  .comp-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:18px;}
+  .comp-card{position:relative; overflow:hidden;}
+  .comp-card::before{
+    content:"";
+    position:absolute; inset:0;
+    background:var(--accent, var(--moss));
+    opacity:0.08;
+    pointer-events:none;
+  }
+  .comp-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px;}
+  .comp-title{font-family:'Fraunces',serif; font-size:1.15rem; font-weight:600;}
+  .comp-tag{
+    font-size:0.68rem; font-weight:600; letter-spacing:0.02em;
+    padding:4px 9px; border-radius:20px;
+    background:rgba(239,232,211,0.08);
+    color:var(--ink-dim);
+    white-space:nowrap;
+  }
+  .comp-chips{display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 12px;}
+  .chip{
+    font-size:0.74rem;
+    padding:4px 10px;
+    border-radius:20px;
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    background:rgba(0,0,0,0.15);
+  }
+  .comp-desc{font-size:0.88rem; color:var(--ink-dim); margin-bottom:10px;}
+  .comp-meta{display:flex; gap:16px; font-size:0.78rem; color:var(--ink-faint); border-top:1px solid var(--line); padding-top:10px; margin-top:4px;}
+
+  /* ---------- Tierlist rows ---------- */
+  .tier-row{display:flex; gap:16px; margin-bottom:16px; align-items:stretch;}
+  .tier-label{
+    width:56px; flex-shrink:0;
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-weight:700; font-size:1.5rem;
+    color:#081020;
+  }
+  .tier-body{
+    flex:1; min-width:0;
+    display:flex; flex-wrap:wrap; gap:12px;
+    background:linear-gradient(155deg, var(--bg-panel-2), var(--bg-panel));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px;
+  }
+  .trend{
+    display:inline-flex; align-items:center; gap:3px;
+    font-size:0.68rem; font-weight:600; padding:2px 8px; border-radius:20px;
+  }
+  .trend.rising{background:rgba(111,163,242,0.18); color:#8fc0ff;}
+  .trend.falling{background:rgba(201,121,63,0.18); color:#e0a06a;}
+  .trend.new{background:rgba(232,184,74,0.18); color:var(--wisp-soft);}
+  .trend.stable{background:rgba(220,232,255,0.08); color:var(--ink-faint);}
+  .comp-card{width:280px; flex:0 0 auto;}
+
+  .item-groups, .augment-groups{display:flex; flex-direction:column; gap:26px;}
+  .group-title{font-size:0.95rem; font-weight:600; margin-bottom:10px; display:flex; align-items:center; gap:8px;}
+  .group-swatch{width:10px; height:10px; border-radius:3px; display:inline-block;}
+  .item-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:12px;}
+  .item-card{
+    background:var(--bg-panel-2); border:1px solid var(--line); border-radius:12px;
+    padding:12px 14px; display:flex; gap:10px; align-items:flex-start;
+  }
+  .item-badge{
+    width:36px; height:36px; border-radius:9px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-weight:600; font-size:0.85rem; color:#081020;
+  }
+  .item-name{font-size:0.88rem; font-weight:600; margin-bottom:3px;}
+  .item-desc{font-size:0.78rem; color:var(--ink-dim);}
+  .item-tag{font-size:0.65rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.03em;}
+
+  /* ---------- Coaching ---------- */
+  .pkg-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:18px; margin-bottom:44px;}
+  .pkg{display:flex; flex-direction:column;}
+  .pkg.featured{border-color:var(--wisp); box-shadow:0 0 0 1px var(--wisp), 0 12px 30px rgba(226,184,74,0.08);}
+  .pkg-name{font-size:1.05rem; margin-bottom:2px;}
+  .pkg-price{font-family:'Fraunces',serif; font-size:1.9rem; color:var(--wisp-soft); margin-bottom:14px;}
+  .pkg-price span{font-size:0.85rem; color:var(--ink-faint); font-family:'Work Sans',sans-serif;}
+  .pkg ul{list-style:none; margin:0 0 20px; padding:0; display:flex; flex-direction:column; gap:9px; flex:1;}
+  .pkg li{font-size:0.86rem; color:var(--ink-dim); display:flex; gap:8px; align-items:flex-start;}
+  .pkg li::before{content:"◦"; color:var(--moss-light); flex-shrink:0;}
+  .btn{
+    display:inline-block;
+    padding:10px 18px;
+    border-radius:9px;
+    background:var(--moss);
+    color:#081020;
+    font-weight:600;
+    font-size:0.88rem;
+    text-decoration:none;
+    border:none;
+    cursor:pointer;
+    text-align:center;
+    transition:filter .15s ease;
+  }
+  .btn:hover{filter:brightness(1.12);}
+  .btn-ghost{background:transparent; border:1px solid var(--moss-light); color:var(--ink);}
+
+  .process{display:flex; flex-direction:column; gap:0; margin-top:8px;}
+  .step{display:flex; gap:18px; padding:16px 0; border-bottom:1px solid var(--line);}
+  .step:last-child{border-bottom:none;}
+  .step-num{
+    font-family:'Fraunces',serif; font-weight:600; font-size:1rem;
+    width:34px; height:34px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(47,111,214,0.20); color:var(--moss-light);
+    flex-shrink:0;
+  }
+  .step-body h4{margin-bottom:3px; font-size:0.98rem;}
+  .step-body p{margin:0; font-size:0.86rem; color:var(--ink-dim);}
+
+  /* ---------- About ---------- */
+  .about-wrap{display:flex; gap:34px; align-items:flex-start; flex-wrap:wrap;}
+  .about-portrait{
+    width:160px; height:160px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--moss-light), var(--bg-panel-2) 70%);
+    flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-size:2.6rem; color:var(--parchment);
+    box-shadow:0 0 0 5px rgba(47,111,214,0.16);
+  }
+  .about-text{flex:1; min-width:280px;}
+  .stat-row{display:flex; gap:26px; margin:18px 0 6px; flex-wrap:wrap;}
+  .stat{min-width:100px;}
+  .stat b{display:block; font-family:'Fraunces',serif; font-size:1.5rem; color:var(--wisp-soft);}
+  .stat span{font-size:0.78rem; color:var(--ink-faint);}
+  .placeholder{color:var(--ink-faint); font-style:italic;}
+
+  /* ---------- Bibliothek ---------- */
+  .lib-tabs{display:flex; gap:8px; margin-bottom:20px;}
+  .lib-tab-btn{
+    padding:8px 16px; border-radius:9px; border:1px solid var(--line);
+    background:rgba(0,0,0,0.15); color:var(--ink-dim); cursor:pointer; font-size:0.86rem;
+  }
+  .lib-tab-btn.active{background:var(--moss); color:#081020; border-color:var(--moss); font-weight:600;}
+  .lib-pane{display:none;}
+  .lib-pane.active{display:block;}
+
+  .filter-bar{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:20px;}
+  .filter-btn{
+    padding:6px 13px; border-radius:20px; border:1px solid var(--line);
+    background:rgba(0,0,0,0.15); color:var(--ink-dim); cursor:pointer; font-size:0.78rem;
+  }
+  .filter-btn.active{background:rgba(226,184,74,0.18); border-color:var(--wisp); color:var(--wisp-soft);}
+  .search-input{
+    margin-left:auto;
+    background:rgba(0,0,0,0.2); border:1px solid var(--line); border-radius:20px;
+    padding:7px 14px; color:var(--ink); font-size:0.82rem; width:200px;
+  }
+  .search-input::placeholder{color:var(--ink-faint);}
+
+  .champ-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:12px;}
+  .champ-card{
+    background:var(--bg-panel-2); border:1px solid var(--line); border-radius:12px;
+    padding:12px; display:flex; gap:10px; align-items:flex-start;
+  }
+  .champ-avatar{
+    width:42px; height:42px; border-radius:9px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-weight:600; color:#081020; font-size:1.05rem;
+    overflow:hidden; position:relative;
+  }
+  .champ-avatar img{
+    width:100%; height:100%; object-fit:cover; display:block;
+  }
+  .champ-avatar .fallback{
+    width:100%; height:100%; display:none; align-items:center; justify-content:center;
+  }
+  .img-source-note{font-size:0.72rem; color:var(--ink-faint); margin:-6px 0 16px;}
+  .champ-name{font-size:0.9rem; font-weight:600; margin-bottom:3px;}
+  .champ-cost{font-size:0.68rem; color:var(--ink-faint); margin-bottom:5px;}
+  .champ-traits{display:flex; flex-wrap:wrap; gap:4px;}
+  .mini-chip{font-size:0.65rem; padding:2px 7px; border-radius:20px; background:rgba(239,232,211,0.07); color:var(--ink-faint); border:1px solid var(--line);}
+
+  .trait-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:14px;}
+  .trait-card{background:var(--bg-panel-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px;}
+  .trait-head{display:flex; align-items:center; gap:10px; margin-bottom:6px;}
+  .trait-icon{width:30px; height:30px; border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center;}
+  .trait-name{font-family:'Fraunces',serif; font-weight:600; font-size:1.02rem;}
+  .trait-bp{font-size:0.72rem; color:var(--ink-faint); margin-bottom:8px;}
+  .trait-desc{font-size:0.83rem; color:var(--ink-dim); margin-bottom:8px;}
+  .trait-champs{font-size:0.74rem; color:var(--moss-light);}
+
+  .lib-count{font-size:0.78rem; color:var(--ink-faint); margin-bottom:14px;}
+
+  /* ---------- Bewerbung ---------- */
+  form.apply{display:flex; flex-direction:column; gap:16px; max-width:560px;}
+  .field label{display:block; font-size:0.82rem; color:var(--ink-dim); margin-bottom:6px;}
+  .field input, .field select, .field textarea{
+    width:100%;
+    background:rgba(0,0,0,0.2);
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:10px 12px;
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    font-size:0.9rem;
+  }
+  .field textarea{resize:vertical; min-height:90px;}
+  .field-row{display:flex; gap:14px;}
+  .field-row .field{flex:1;}
+  .apply-note{font-size:0.78rem; color:var(--ink-faint); margin-top:6px;}
+  #apply-confirm{display:none; margin-top:14px; padding:12px 14px; border-radius:10px; background:rgba(47,111,214,0.16); border:1px solid var(--moss); font-size:0.86rem; color:var(--ink);}
+
+  @media (max-width: 860px){
+    .app{flex-direction:column;}
+    .sidebar{width:100%; height:auto; position:relative; flex-direction:row; align-items:center; overflow-x:auto; padding:14px 16px;}
+    .brand{padding:0; margin-right:10px;}
+    .nav{flex-direction:row; margin-top:0;}
+    .sidebar-footer{display:none;}
+    .main{padding:28px 20px 60px;}
+    .field-row{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="26" height="26" viewBox="0 0 40 40" fill="none">
+          <ellipse cx="20" cy="21" rx="12" ry="15" fill="#eaf0fc"/>
+          <path d="M20 6C13 6 8 12 8 21c0 8 5 13 12 13s12-5 12-13C32 12 27 6 20 6Z" fill="#0f1c33"/>
+          <ellipse cx="20" cy="23" rx="7" ry="10" fill="#eaf0fc"/>
+          <circle cx="16.5" cy="15" r="1.6" fill="#0a1220"/>
+          <circle cx="23.5" cy="15" r="1.6" fill="#0a1220"/>
+          <path d="M18.5 18.5l1.5 2 1.5-2" stroke="#e8b84a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M9 24c-2 1-3 3-2 5 2 1 4 0 5-2" stroke="#0f1c33" stroke-width="2" stroke-linecap="round"/>
+          <path d="M31 24c2 1 3 3 2 5-2 1-4 0-5-2" stroke="#0f1c33" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">CrazySlayt</div>
+        <div class="brand-sub">TFT Set 18 · Enchanted&nbsp;Wilds</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-btn active" data-target="sec-comps">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5m0 14h16M8 15l3-4 3 3 4-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Tierlist
+      </button>
+      <button class="nav-btn" data-target="sec-coaching">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c1-3.5 4-5.5 7-5.5s6 2 7 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Coaching
+      </button>
+      <button class="nav-btn" data-target="sec-about">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3c-3 3-6 6-6 10a6 6 0 0 0 12 0c0-4-3-7-6-10Z" stroke="currentColor" stroke-width="1.6"/></svg>
+        About me
+      </button>
+      <button class="nav-btn" data-target="sec-library">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13Z" stroke="currentColor" stroke-width="1.6"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5v-13Z" stroke="currentColor" stroke-width="1.6"/></svg>
+        Bibliothek
+      </button>
+      <button class="nav-btn" data-target="sec-apply">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 4h14v16l-7-4-7 4V4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Bewerbung fürs Coaching
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      Set 18 · Enchanted Wilds<br>Patch 18.1 · Stand Sep 2026
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main class="main">
+
+    <!-- ---------- TIERLIST ---------- -->
+    <section id="sec-comps" class="active">
+      <div class="section-head">
+        <div class="kicker">Patch 18.1 · Enchanted Wilds</div>
+        <h1>Tierlist</h1>
+        <p>Comps, Items und Augments für den aktuellen Patch — als Ausgangspunkt zum Anpassen. Trage hier laufend deine eigenen, getesteten Ranglisten ein.</p>
+      </div>
+
+      <div class="tab-group">
+        <div class="lib-tabs">
+          <button class="lib-tab-btn active" data-lib="tl-comps">Comps</button>
+          <button class="lib-tab-btn" data-lib="tl-items">Items</button>
+          <button class="lib-tab-btn" data-lib="tl-augments">Augments</button>
+        </div>
+
+        <div id="tl-comps" class="lib-pane active">
+          <div id="tier-rows"></div>
+        </div>
+
+        <div id="tl-items" class="lib-pane">
+          <div class="img-source-note">Platzhalter-Auswahl gängiger Kern-Items zum Anpassen an den aktuellen Patch.</div>
+          <div id="item-groups"></div>
+        </div>
+
+        <div id="tl-augments" class="lib-pane">
+          <div class="img-source-note">Platzhalter-Auswahl zum Anpassen an den aktuellen Patch — Augment-Pools ändern sich pro Set/Patch.</div>
+          <div id="augment-groups"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- COACHING ---------- -->
+    <section id="sec-coaching">
+      <div class="section-head">
+        <div class="kicker">Leistungen</div>
+        <h1>Coaching-Angebote</h1>
+        <p>Individuelles TFT-Coaching für Enchanted Wilds — von der VOD-Review bis zum Season-Bootcamp. Preise sind Platzhalter und lassen sich frei anpassen.</p>
+      </div>
+
+      <div class="pkg-grid">
+        <div class="card pkg">
+          <div class="pkg-name">VOD-Review</div>
+          <div class="pkg-price">15€ <span>/ Runde</span></div>
+          <ul>
+            <li>Eine Ranked-Partie im Detail besprochen</li>
+            <li>Wisp-Entscheidungen &amp; Econ-Timing</li>
+            <li>Schriftliches Feedback + kurzer Call</li>
+            <li>Ergebnis innerhalb 48h</li>
+          </ul>
+          <a href="#sec-apply" class="btn btn-ghost" onclick="showSection('sec-apply')">Anfragen</a>
+        </div>
+
+        <div class="card pkg featured">
+          <div class="pkg-name">1:1 Live-Coaching</div>
+          <div class="pkg-price">35€ <span>/ Stunde</span></div>
+          <ul>
+            <li>Live mitspielen &amp; Entscheidungen laut denken</li>
+            <li>Trait-Priorisierung &amp; Positionierung</li>
+            <li>Individueller Übungsplan</li>
+            <li>Discord-Support zwischen Sessions</li>
+          </ul>
+          <a href="#sec-apply" class="btn" onclick="showSection('sec-apply')">Anfragen</a>
+        </div>
+
+        <div class="card pkg">
+          <div class="pkg-name">Season-Bootcamp</div>
+          <div class="pkg-price">120€ <span>/ Monat</span></div>
+          <ul>
+            <li>4× 1:1 Sessions pro Monat</li>
+            <li>Wöchentliche VOD-Reviews</li>
+            <li>Rang-Ziel &amp; Fortschritts-Tracking</li>
+            <li>Priorisierter Discord-Zugang</li>
+          </ul>
+          <a href="#sec-apply" class="btn btn-ghost" onclick="showSection('sec-apply')">Anfragen</a>
+        </div>
+      </div>
+
+      <h2>So läuft's ab</h2>
+      <div class="card process">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Bewerbung ausfüllen</h4>
+            <p>Rang, Ziel und ein bisschen Kontext im Formular unter „Bewerbung fürs Coaching“.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Kurzes Kennenlernen</h4>
+            <p>Ein 15-minütiger Call oder Discord-Chat, um Ziele und Zeitplan abzustimmen.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Erste Session</h4>
+            <p>Analyse des aktuellen Spielstands — Stärken, Lücken, Wisp- und Econ-Verständnis.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Laufende Betreuung</h4>
+            <p>Regelmäßige Sessions, VOD-Reviews und messbare Fortschritte Richtung Rang-Ziel.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- ABOUT ---------- -->
+    <section id="sec-about">
+      <div class="section-head">
+        <div class="kicker">Über mich</div>
+        <h1>About me</h1>
+      </div>
+      <div class="card about-wrap">
+        <div class="about-portrait">🐧</div>
+        <div class="about-text">
+          <p class="placeholder">[Hier kommt dein Foto, Emote oder Little-Legend-Icon hin]</p>
+          <p><strong>[Dein Name]</strong> — TFT-Spieler:in seit Set [Zahl], aktuell <strong>[aktueller Rang]</strong>. Ich coache seit [Zeitraum] und habe einen Fokus auf [z. B. Reroll-Comps / Fast-8 / Wisp-Ökonomie].</p>
+          <p class="placeholder">Ersetze diesen Absatz durch deine echte Geschichte: Wie hast du angefangen, welche Erfolge hast du erreicht, welchen Spielstil bringst du deinen Schüler:innen bei?</p>
+          <div class="stat-row">
+            <div class="stat"><b>[Rang]</b><span>Aktueller Rang</span></div>
+            <div class="stat"><b>[X]</b><span>Gecoachte Spieler:innen</span></div>
+            <div class="stat"><b>Set [X]</b><span>Dabei seit</span></div>
+            <div class="stat"><b>[X]★</b><span>Bewertung</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- BIBLIOTHEK ---------- -->
+    <section id="sec-library">
+      <div class="section-head">
+        <div class="kicker">Set 18 · Enchanted Wilds — vollständig</div>
+        <h1>Bibliothek</h1>
+        <p>Alle 65 Champions und alle 35 Traits aus Enchanted Wilds (Patch 18.1), durchsuch- und filterbar.</p>
+      </div>
+
+      <div class="tab-group">
+      <div class="lib-tabs">
+        <button class="lib-tab-btn active" data-lib="lib-champs">Champions (65)</button>
+        <button class="lib-tab-btn" data-lib="lib-traits">Traits (35)</button>
+      </div>
+
+      <div id="lib-champs" class="lib-pane active">
+        <div class="filter-bar" id="champ-filters">
+          <button class="filter-btn active" data-cost="all">Alle</button>
+          <button class="filter-btn" data-cost="1">1 Gold</button>
+          <button class="filter-btn" data-cost="2">2 Gold</button>
+          <button class="filter-btn" data-cost="3">3 Gold</button>
+          <button class="filter-btn" data-cost="4">4 Gold</button>
+          <button class="filter-btn" data-cost="5">5 Gold</button>
+          <input type="text" class="search-input" id="champ-search" placeholder="Champion suchen…">
+        </div>
+        <div class="lib-count" id="champ-count"></div>
+        <div class="img-source-note">Bilder: CommunityDragon-CDN (klassisches LoL-Portrait). Für reine TFT-Kreaturen (Riftbeasts) und ein paar ganz neue Champions gibt's dort noch keine gesicherte Bild-ID — die zeigen den Farb-Badge.</div>
+        <div class="champ-grid" id="champ-grid"></div>
+      </div>
+
+      <div id="lib-traits" class="lib-pane">
+        <div class="filter-bar" id="trait-filters">
+          <button class="filter-btn active" data-cat="all">Alle</button>
+          <button class="filter-btn" data-cat="origin">Ursprünge (23)</button>
+          <button class="filter-btn" data-cat="class">Klassen (12)</button>
+          <input type="text" class="search-input" id="trait-search" placeholder="Trait suchen…">
+        </div>
+        <div class="lib-count" id="trait-count"></div>
+        <div class="trait-grid" id="trait-grid"></div>
+      </div>
+      </div>
+    </section>
+
+    <!-- ---------- BEWERBUNG ---------- -->
+    <section id="sec-apply">
+      <div class="section-head">
+        <div class="kicker">Werde gecoacht</div>
+        <h1>Bewerbung fürs Coaching</h1>
+        <p>Erzähl mir kurz von deinem aktuellen Stand und deinen Zielen — ich melde mich anschließend mit einem Vorschlag für die erste Session.</p>
+      </div>
+
+      <form class="apply card" id="apply-form">
+        <div class="field-row">
+          <div class="field">
+            <label for="f-name">Name / Ingame-Name</label>
+            <input type="text" id="f-name" required>
+          </div>
+          <div class="field">
+            <label for="f-discord">Discord-Tag</label>
+            <input type="text" id="f-discord" placeholder="name#0000">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="f-rank">Aktueller Rang</label>
+            <select id="f-rank">
+              <option>Eisen</option><option>Bronze</option><option>Silber</option>
+              <option>Gold</option><option>Platin</option><option>Smaragd</option>
+              <option>Diamant</option><option>Meister+</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-goal">Rang-Ziel</label>
+            <select id="f-goal">
+              <option>Bronze</option><option>Silber</option><option>Gold</option>
+              <option>Platin</option><option>Smaragd</option><option>Diamant</option>
+              <option>Meister+</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-package">Interessiert an</label>
+          <select id="f-package">
+            <option>VOD-Review</option>
+            <option>1:1 Live-Coaching</option>
+            <option>Season-Bootcamp</option>
+            <option>Noch unsicher</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="f-avail">Verfügbare Zeiten</label>
+          <input type="text" id="f-avail" placeholder="z. B. abends unter der Woche, Wochenende flexibel">
+        </div>
+
+        <div class="field">
+          <label for="f-msg">Was möchtest du verbessern?</label>
+          <textarea id="f-msg" placeholder="z. B. Wisp-Timing, Positionierung, Econ-Entscheidungen, bestimmte Comps…"></textarea>
+        </div>
+
+        <button type="submit" class="btn">Bewerbung senden</button>
+        <div class="apply-note">Formular ist aktuell eine Vorlage ohne Versand-Anbindung — später z. B. per E-Mail, Discord-Bot oder Google Form verknüpfbar.</div>
+        <div id="apply-confirm">Danke! Deine Bewerbung wurde erfasst — sobald ein Versand-Ziel eingerichtet ist, kommt sie automatisch an.</div>
+      </form>
+    </section>
+
+  </main>
+</div>
+
+<script>
+/* ============ NAVIGATION ============ */
+function showSection(id){
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.target === id));
+  window.scrollTo({top:0, behavior:'instant'});
+}
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> showSection(btn.dataset.target));
+});
+
+document.getElementById('apply-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  document.getElementById('apply-confirm').style.display = 'block';
+});
+
+/* ============ DATA: SET 18 — ENCHANTED WILDS ============ */
+const costColor = {1:'#8fa8a0', 2:'#7ea36f', 3:'#e2b84a', 4:'#c9793f', 5:'#a15fc9'};
+
+const champions = [
+  // 1-cost
+  {n:'Akali', c:1, id:84, t:['Inferno','Adaptor','Ravager']},
+  {n:'Camille', c:1, id:164, t:['Coven','Ravager']},
+  {n:'Cinderling', c:1, id:null, t:['Riftbeast','Hunter']},
+  {n:'Karma', c:1, id:43, t:['Blossom','Spellweaver']},
+  {n:'Kobuko', c:1, id:null, t:['Sprykin','Brawler']},
+  {n:'Leona', c:1, id:89, t:['Solar','Defender']},
+  {n:'Ornn', c:1, id:516, t:['Elderwood','Defender']},
+  {n:'Pebbles', c:1, id:null, t:['Riftbeast','Invoker']},
+  {n:'Rakan', c:1, id:497, t:['Fae','Juggernaut','Vanguard']},
+  {n:"Rek'Sai", c:1, id:421, t:['Blackthorn','Brawler']},
+  {n:'Varus', c:1, id:110, t:['Inferno','Rapidfire']},
+  {n:'Veigar', c:1, id:45, t:['Blackthorn','Sprykin','Spellweaver']},
+  {n:'Xayah', c:1, id:498, t:['Elderwood','Fae','Rapidfire']},
+  {n:'Yorick', c:1, id:83, t:['Blossom','Juggernaut','Summoner']},
+  // 2-cost
+  {n:'Alistar', c:2, id:12, t:['Elderwood','Brawler']},
+  {n:'Caitlyn', c:2, id:51, t:['Coven','Hunter']},
+  {n:'Elise', c:2, id:60, t:['Coven','Vanguard']},
+  {n:'Gromp', c:2, id:null, t:['Riftbeast','Adaptor']},
+  {n:'Kayle', c:2, id:10, t:['Solar','Rapidfire']},
+  {n:'LeBlanc', c:2, id:7, t:['Elderwood','Spellweaver']},
+  {n:'Murkwolf', c:2, id:null, t:['Riftbeast','Ravager']},
+  {n:'Scuttlecrab', c:2, id:null, t:['Riftbeast','Juggernaut']},
+  {n:'Sejuani', c:2, id:113, t:['Solar','Juggernaut']},
+  {n:'Shen', c:2, id:98, t:['Inferno','Defender']},
+  {n:'Teemo', c:2, id:17, t:['Sprykin','Invoker']},
+  {n:'Warwick', c:2, id:19, t:['Blackthorn','Ravager']},
+  {n:'Yunara', c:2, id:null, t:['Blossom','Executioner']},
+  // 3-cost
+  {n:'Azir', c:3, id:268, t:['Blackthorn','Executioner','Summoner']},
+  {n:'Cassiopeia', c:3, id:69, t:['Coven','Spellweaver']},
+  {n:'Diana', c:3, id:131, t:['Lunar','Ravager','Vanguard']},
+  {n:'Fiddlesticks', c:3, id:9, t:['Flora Fatalis','Defender','Spellweaver']},
+  {n:'Hecarim', c:3, id:120, t:['Elderwood','Vanguard']},
+  {n:"Kha'Zix", c:3, id:121, t:['Rival']},
+  {n:"Kog'Maw", c:3, id:96, t:['Caustic','Invoker','Adaptor']},
+  {n:'Krug', c:3, id:null, t:['Riftbeast','Brawler']},
+  {n:'Mama Beak', c:3, id:null, t:['Riftbeast','Summoner','Rapidfire']},
+  {n:'Master Yi', c:3, id:11, t:['Blossom','Adaptor']},
+  {n:'Rammus', c:3, id:33, t:['Sprykin','Defender']},
+  {n:'Rengar', c:3, id:107, t:['Rival']},
+  {n:'Tristana', c:3, id:18, t:['Fae','Sprykin','Hunter']},
+  {n:'Vi', c:3, id:254, t:['Primal','Juggernaut']},
+  // 4-cost
+  {n:'Ahri', c:4, id:103, t:['Blossom','Spellweaver']},
+  {n:'Amumu', c:4, id:32, t:['Inferno','Juggernaut']},
+  {n:'Aphelios', c:4, id:523, t:['Lunar','Rapidfire']},
+  {n:'Brambleback', c:4, id:null, t:['Riftbeast','Ravager']},
+  {n:'Ezreal', c:4, id:81, t:['Elderwood','Executioner']},
+  {n:'Lillia', c:4, id:876, t:['Fae','Defender']},
+  {n:'Malphite', c:4, id:54, t:['Blackthorn','Monolith']},
+  {n:'Morgana', c:4, id:25, t:['Coven','Invoker']},
+  {n:'Nidalee', c:4, id:76, t:['Primal','Adaptor']},
+  {n:'Sentinel', c:4, id:null, t:['Riftbeast','Vanguard','Invoker']},
+  {n:'Sett', c:4, id:875, t:['Blossom','Brawler']},
+  {n:'Sivir', c:4, id:15, t:['Primal','Hunter']},
+  {n:'Soraka', c:4, id:16, t:['Flora Fatalis','Executioner']},
+  {n:'Zyra', c:4, id:143, t:['Thornmaiden','Summoner']},
+  // 5-cost
+  {n:'Alune', c:5, id:null, t:['Attuned','Lunar','Spellweaver']},
+  {n:'Ashe', c:5, id:22, t:['Blossom','Hunter']},
+  {n:'Draven', c:5, id:119, t:['Bounty Seeker']},
+  {n:'Elder Dragon', c:5, id:null, t:['Apex Predator','Riftbeast']},
+  {n:'Gnar', c:5, id:150, t:['Elderwood','Sprykin','Brawler']},
+  {n:'Ivern', c:5, id:427, t:['Greenfather']},
+  {n:'Kennen', c:5, id:85, t:['Inferno','Executioner']},
+  {n:'Lux', c:5, id:99, t:['Avatar','(gewählter Ursprung ×2)']},
+  {n:'Maokai', c:5, id:57, t:['Old Growth','Juggernaut']},
+  {n:'Taric', c:5, id:44, t:['Emerald Aspect','Vanguard']},
+];
+const CDRAGON_ICON = id => `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${id}.png`;
+
+const traits = [
+  {n:'Apex Predator', cat:'origin', bp:'Einzigartig', champs:'Elder Dragon', d:'Belegt zwei Team-Plätze und zählt zusätzlich als +2 Riftbeast.'},
+  {n:'Attuned', cat:'origin', bp:'Einzigartig', champs:'Alune', d:'Wechselt nach jedem Zauber die Mondphase — abwechselnd Team-Widerstandsfähigkeit oder Schadensverstärkung.'},
+  {n:'Avatar', cat:'origin', bp:'Einzigartig', champs:'Lux', d:'Lux trägt einen von neun Ursprüngen und zählt für diesen doppelt.'},
+  {n:'Blackthorn', cat:'origin', bp:'2 / 4 / 6', champs:"Rek'Sai, Veigar, Warwick, Azir, Malphite, Lux (Avatar)", d:'Ein besonderes Feld verwandelt eine:n Verbündete:n in den Kraftmotor des Traits — Opfer gegen Stärke.'},
+  {n:'Blossom', cat:'origin', bp:'3 / 5 / 7 / 9 / 11', champs:'Karma, Yorick, Yunara, Master Yi, Ahri, Sett, Ashe, Lux', d:'Stärkt Wisps zunehmend (Upgrade, mehr Shops, Gold, 2 Wisps/Runde) und die eigenen Champions gleichzeitig.'},
+  {n:'Bounty Seeker', cat:'origin', bp:'Einzigartig', champs:'Draven', d:'Draven wählt Kopfgelder (z. B. Angriffe, Schaden, Kills) und erhält bei Erfüllung wachsende Belohnungen.'},
+  {n:'Caustic', cat:'origin', bp:'Einzigartig', champs:"Kog'Maw", d:'Schaden schwächt Rüstung (Sunder) und Magieresistenz (Shred) der Ziele.'},
+  {n:'Coven', cat:'origin', bp:'3 / 4 / 5 / 7', champs:'Camille, Caitlyn, Elise, Cassiopeia, Morgana, Lux', d:'Sammelt Essenz durch gegnerische Tode und verlorene Kämpfe — ab 40 Essenz gegen starke Belohnungen eintauschbar.'},
+  {n:'Elderwood', cat:'origin', bp:'3 / 5 / 7 / 9 / 11', champs:'Ornn, Xayah, Alistar, LeBlanc, Hecarim, Ezreal, Gnar, Lux', d:'Platziert wachsende Pflanzen auf dem Feld — Stonebark-Bäume, Lifebloom, später sogar 2- und 3-Stern-Pflanzen.'},
+  {n:'Emerald Aspect', cat:'origin', bp:'Einzigartig', champs:'Taric', d:'Verbindet Taric mit einer/einem Verbündeten — beide Positionen erhalten bei niedrigem Leben ein Schild.'},
+  {n:'Fae', cat:'origin', bp:'2 / 4', champs:'Rakan, Xayah, Tristana, Lillia, Lux', d:'Schaden, Heilung und Schilde ziehen Feen an, die Fae-Champions stärken und heilen — bei genug Feen: Gold-Feen.'},
+  {n:'Flora Fatalis', cat:'origin', bp:'1 / 2', champs:'Fiddlesticks, Soraka', d:'Vernichtungen geben Mana; die zweite Stufe heilt zusätzlich die/den schwächste:n Verbündete:n.'},
+  {n:'Greenfather', cat:'origin', bp:'Einzigartig', champs:'Ivern', d:'Ivern sammelt Samen und lässt daraus verzauberte Terrain-Felder wachsen, die das ganze Board stärken.'},
+  {n:'Inferno', cat:'origin', bp:'2 / 3 / 5 / 7', champs:'Akali, Varus, Shen, Amumu, Kennen, Lux', d:'Fügt Brand und Wunden zu; ab Stufe 3 entzündet sich nach dem Kampf ein Shop-Slot für teurere Champions.'},
+  {n:'Lunar', cat:'origin', bp:'2 / 3 / 4 / 5', champs:'Diana, Aphelios, Alune, Lux', d:'Lunar-Champions und angrenzende Verbündete erhalten Angriffstempo und Fähigkeitsstärke.'},
+  {n:'Monolith', cat:'origin', bp:'Einzigartig', champs:'Malphite', d:'Malphite erhält Rüstung und Magieresistenz für jede:n Gegner:in, die/der ihn anvisiert.'},
+  {n:'Old Growth', cat:'origin', bp:'Einzigartig', champs:'Maokai', d:'Maokai gewinnt dauerhaft maximales Leben, wenn Feinde in seiner Nähe sterben.'},
+  {n:'Primal', cat:'origin', bp:'2 / 4', champs:'Vi, Nidalee, Sivir, Lux', d:'Erlaubt die Wahl aus Primal-Segnungen, die das gesamte Spiel verändern können.'},
+  {n:'Riftbeast', cat:'origin', bp:'3 / 5 / 7 / 10', champs:'Cinderling, Pebbles, Murkwolf, Gromp, Scuttlecrab, Mama Beak, Krug, Brambleback, Sentinel, Elder Dragon', d:'Ab 3: Alpha-Mark für ein Riftbeast. Ab 10: +2 maximale Team-Größe.'},
+  {n:'Rival', cat:'origin', bp:'1 / 2', champs:"Kha'Zix, Rengar", d:'Beide Rivalen entwickeln eigene Belohnungen durch Vernichtungen — spielt man beide, verbinden sich ihre Fähigkeiten.'},
+  {n:'Solar', cat:'origin', bp:'3 + 3★-Meilensteine', champs:'Leona, Kayle, Sejuani, Lux', d:'Gewährt Schilde und zusätzlichen Magieschaden, mit Bonus für jede einzigartige 3-Stern-Einheit.'},
+  {n:'Sprykin', cat:'origin', bp:'3 / 5 / 7', champs:'Kobuko, Veigar, Teemo, Tristana, Rammus, Gnar', d:'Erschafft den „Big Furry Friend“ — ein gewählter Reiter erhält massiv Leben und Angriffstempo.'},
+  {n:'Thornmaiden', cat:'origin', bp:'Einzigartig', champs:'Zyra', d:"Zyras Pflanzen verleihen dem Team zusätzliche Widerstandsfähigkeit."},
+
+  {n:'Adaptor', cat:'class', bp:'2 / 3 / 4', champs:'Akali, Gromp, Kog\'Maw, Master Yi, Nidalee', d:'Fähigkeiten ändern sich je nach dominantem Wert (AD/AP) und verstärken diesen zusätzlich.'},
+  {n:'Brawler', cat:'class', bp:'2 / 4 / 6', champs:'Kobuko, Rek\'Sai, Alistar, Krug, Sett, Gnar', d:'Verleiht zusätzliches Leben — je mehr Brawler, desto größer der Bonus.'},
+  {n:'Defender', cat:'class', bp:'2 / 4 / 6', champs:'Leona, Ornn, Shen, Rammus, Fiddlesticks, Lillia', d:'Gewährt Rüstung und Magieresistenz für das ganze Team.'},
+  {n:'Executioner', cat:'class', bp:'2 / 3 / 4', champs:'Yunara, Azir, Ezreal, Soraka, Kennen', d:'Gewährt Präzision und kritische Trefferchance mit wachsender Offensivkraft.'},
+  {n:'Hunter', cat:'class', bp:'2 / 3 / 4 / 5', champs:'Cinderling, Caitlyn, Tristana, Sivir, Ashe', d:'Verleiht Angriffsschaden und belohnt Hunter, die dasselbe Ziel fokussieren.'},
+  {n:'Invoker', cat:'class', bp:'2 / 3 / 4 / 5', champs:'Pebbles, Teemo, Kog\'Maw, Morgana, Sentinel', d:'Verbessert die Mana-Regeneration des Teams, besonders stark für Invoker selbst.'},
+  {n:'Juggernaut', cat:'class', bp:'2 / 4 / 6', champs:'Rakan, Yorick, Scuttlecrab, Sejuani, Vi, Amumu, Maokai', d:'Gewährt Team-Widerstandsfähigkeit, mit deutlich mehr Bonus für Juggernauts.'},
+  {n:'Rapidfire', cat:'class', bp:'2 / 3 / 4 / 5', champs:'Varus, Xayah, Kayle, Mama Beak, Aphelios', d:'Baut Angriffstempo durch wiederholte Angriffe auf.'},
+  {n:'Ravager', cat:'class', bp:'2 / 4 / 6', champs:'Akali, Camille, Murkwolf, Warwick, Diana, Brambleback', d:'Gewährt Lebensraub (Omnivamp) und zusätzlichen Schaden, stärker im späten Kampfverlauf.'},
+  {n:'Spellweaver', cat:'class', bp:'2 / 4 / 6', champs:'Karma, Veigar, LeBlanc, Cassiopeia, Fiddlesticks, Ahri, Alune', d:'Gewährt Fähigkeitsstärke, die mit jedem Zauber weiter anwächst.'},
+  {n:'Summoner', cat:'class', bp:'2 / 3', champs:'Yorick, Azir, Mama Beak, Zyra', d:'Verstärkt die beschworenen Einheiten bzw. Beschwörungs-Mechaniken dieser Champions.'},
+  {n:'Vanguard', cat:'class', bp:'2 / 4 / 6', champs:'Rakan, Elise, Diana, Hecarim, Sentinel, Taric', d:'Erzeugt zu Kampfbeginn ein starkes Schild für das gesamte Team.'},
+];
+
+/* ============ RENDER: CHAMPIONS ============ */
+function initials(name){
+  return name.split(/[\s']/).filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+}
+function renderChamps(costFilter, query){
+  const grid = document.getElementById('champ-grid');
+  grid.innerHTML = '';
+  const q = (query||'').toLowerCase().trim();
+  const list = champions.filter(ch =>
+    (costFilter==='all' || String(ch.c)===costFilter) &&
+    (q==='' || ch.n.toLowerCase().includes(q) || ch.t.some(t=>t.toLowerCase().includes(q)))
+  );
+  document.getElementById('champ-count').textContent = list.length + ' von 65 Champions';
+  list.forEach(ch=>{
+    const div = document.createElement('div');
+    div.className = 'champ-card';
+    const fallback = `<div class="fallback">${initials(ch.n)}</div>`;
+    const avatarInner = ch.id
+      ? `<img src="${CDRAGON_ICON(ch.id)}" alt="${ch.n}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">${fallback}`
+      : `<div class="fallback" style="display:flex">${initials(ch.n)}</div>`;
+    div.innerHTML = `
+      <div class="champ-avatar" style="background:linear-gradient(150deg, ${costColor[ch.c]}, ${costColor[ch.c]}99)">${avatarInner}</div>
+      <div>
+        <div class="champ-name">${ch.n}</div>
+        <div class="champ-cost">${ch.c} Gold</div>
+        <div class="champ-traits">${ch.t.map(t=>`<span class="mini-chip">${t}</span>`).join('')}</div>
+      </div>`;
+    grid.appendChild(div);
+  });
+}
+document.querySelectorAll('#champ-filters .filter-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#champ-filters .filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderChamps(btn.dataset.cost, document.getElementById('champ-search').value);
+  });
+});
+document.getElementById('champ-search').addEventListener('input', (e)=>{
+  const active = document.querySelector('#champ-filters .filter-btn.active').dataset.cost;
+  renderChamps(active, e.target.value);
+});
+
+/* ============ RENDER: TRAITS ============ */
+function traitIcon(cat){
+  return cat==='origin'
+    ? `<svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M12 3c-3 3-6 6-6 10a6 6 0 0 0 12 0c0-4-3-7-6-10Z" stroke="#081020" stroke-width="1.6"/></svg>`
+    : `<svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" stroke="#081020" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+}
+function renderTraits(cat, query){
+  const grid = document.getElementById('trait-grid');
+  grid.innerHTML = '';
+  const q = (query||'').toLowerCase().trim();
+  const list = traits.filter(t =>
+    (cat==='all' || t.cat===cat) &&
+    (q==='' || t.n.toLowerCase().includes(q) || t.champs.toLowerCase().includes(q))
+  );
+  document.getElementById('trait-count').textContent = list.length + ' von 35 Traits';
+  list.forEach(t=>{
+    const div = document.createElement('div');
+    div.className = 'trait-card';
+    const color = t.cat==='origin' ? 'var(--moss-light)' : 'var(--wisp)';
+    div.innerHTML = `
+      <div class="trait-head">
+        <div class="trait-icon" style="background:${color}">${traitIcon(t.cat)}</div>
+        <div class="trait-name">${t.n}</div>
+      </div>
+      <div class="trait-bp">${t.cat==='origin' ? 'Ursprung' : 'Klasse'} · Schwellen: ${t.bp}</div>
+      <div class="trait-desc">${t.d}</div>
+      <div class="trait-champs">${t.champs}</div>`;
+    grid.appendChild(div);
+  });
+}
+document.querySelectorAll('#trait-filters .filter-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#trait-filters .filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTraits(btn.dataset.cat, document.getElementById('trait-search').value);
+  });
+});
+document.getElementById('trait-search').addEventListener('input', (e)=>{
+  const active = document.querySelector('#trait-filters .filter-btn.active').dataset.cat;
+  renderTraits(active, e.target.value);
+});
+
+/* lib/tierlist sub-tabs — scoped per .tab-group so sections don't interfere */
+document.querySelectorAll('.tab-group').forEach(group=>{
+  group.querySelectorAll('.lib-tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      group.querySelectorAll('.lib-tab-btn').forEach(b=>b.classList.remove('active'));
+      group.querySelectorAll('.lib-pane').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.lib).classList.add('active');
+    });
+  });
+});
+
+renderChamps('all','');
+renderTraits('all','');
+
+/* ============ RENDER: COMPS ============ */
+const comps = [
+  {
+    name:'Blossom-Motor', tag:'Wisp-Economy', accent:'#e8b84a', tier:'S', trend:'rising',
+    traits:['Blossom 7','Spellweaver','Executioner'],
+    core:['Ahri','Karma','Yunara','Sett','Ashe'],
+    desc:'Nutzt Blossom als Wirtschafts- und Kampf-Engine zugleich: Ab 7 Blossom bringt jeder Wisp-Kauf Gold, ab 9 kannst du zwei Wisps pro Runde kaufen. Ahri liefert den großen Zauber-Payoff, Ashe die verlässliche Fernkampf-Skalierung.',
+    style:'Slow Roll / Flexibel', difficulty:'Mittel'
+  },
+  {
+    name:'Riftbeast Alpha', tag:'Scaling', accent:'#2f6fd6', tier:'A', trend:'rising',
+    traits:['Riftbeast 10','Brawler','Ravager'],
+    core:['Krug','Brambleback','Scuttlecrab','Mama Beak','Elder Dragon'],
+    desc:'Bringt die Dschungelmonster von Summoner\'s Rift aufs Feld. Der Alpha-Mark macht ein Riftbeast zum Kern des Boards, ab 10 erhältst du +2 maximale Team-Größe für ein extra breites Late-Game.',
+    style:'Fast 9', difficulty:'Mittel-Hoch'
+  },
+  {
+    name:'Elderwood-Garten', tag:'Board-Control', accent:'#6fa3f2', tier:'B', trend:'stable',
+    traits:['Elderwood 7+','Spellweaver','Vanguard'],
+    core:['LeBlanc','Alistar','Hecarim','Ezreal','Gnar'],
+    desc:'Setzt auf platzierbare Pflanzen als zusätzliche Board-Präsenz. Stonebark-Bäume und der Deepwood Protector blocken gegnerische Carrys, während LeBlanc als Reroll-Carry den Schaden liefert.',
+    style:'Reroll 2★→3★', difficulty:'Mittel'
+  },
+  {
+    name:'Coven-Risiko', tag:'High Risk / High Reward', accent:'#8d74c9', tier:'C', trend:'falling',
+    traits:['Coven 5-7','Spellweaver','Ravager'],
+    core:['Camille','Cassiopeia','Elise','Morgana','Lux'],
+    desc:'Sammelt Essenz durch Vernichtungen und verlorene Kämpfe. Der Trick: knapp verlieren, dabei möglichst viele Gegner mitnehmen. Ab 40 Essenz warten starke Cashout-Belohnungen.',
+    style:'Aggressiv / Econ-Risiko', difficulty:'Hoch'
+  },
+  {
+    name:'Inferno-Rush', tag:'Reroll-Carry', accent:'#c9793f', tier:'A', trend:'new',
+    traits:['Inferno 5-7','Rapidfire','Adaptor'],
+    core:['Varus','Akali','Shen','Amumu','Kennen'],
+    desc:'Brand und Wunden setzen Gegner unter Dauerdruck, während sich ab Inferno 3 Shop-Slots entzünden und teurere Champions freigeben. Varus als früher Carry, Kennen als späterer Abschluss.',
+    style:'Reroll früh, Slow Roll spät', difficulty:'Einsteigerfreundlich'
+  },
+  {
+    name:'Solar / Lunar Eclipse', tag:'Late-Game Nische', accent:'#a15fc9', tier:'B', trend:'falling',
+    traits:['3 Solar + 3 Lunar','Vanguard'],
+    core:['Leona','Kayle','Sejuani','Diana','Aphelios','Alune'],
+    desc:'Aktiviert die versteckte Eclipse-Interaktion: Mit 3 Solar und 3 Lunar wird nach 10 Sekunden Kampf das schwächste gegnerische Ziel exekutiert — und das alle 3,5 Sekunden erneut. Stark in langen Kämpfen.',
+    style:'Level 9 Endboard', difficulty:'Hoch'
+  }
+];
+
+const tierColor = {S:'#e8b84a', A:'#7c8ee0', B:'#6fa3f2', C:'#5a7ba8'};
+const trendLabel = {rising:'↑ Steigend', falling:'↓ Fallend', new:'✦ Neu', stable:'– Stabil'};
+
+const tierRowsEl = document.getElementById('tier-rows');
+['S','A','B','C'].forEach(tier=>{
+  const rowComps = comps.filter(c=>c.tier===tier);
+  if(!rowComps.length) return;
+  const row = document.createElement('div');
+  row.className = 'tier-row';
+  const cardsHtml = rowComps.map(c=>`
+    <div class="card comp-card" style="--accent:${c.accent}">
+      <div class="comp-top">
+        <div class="comp-title">${c.name}</div>
+        <span class="trend ${c.trend}">${trendLabel[c.trend]}</span>
+      </div>
+      <div class="comp-chips">${c.traits.map(t=>`<span class="chip">${t}</span>`).join('')}</div>
+      <div class="comp-desc">${c.desc}</div>
+      <div class="comp-chips">${c.core.map(u=>`<span class="chip">${u}</span>`).join('')}</div>
+      <div class="comp-meta"><span>Spielstil: ${c.style}</span><span>Schwierigkeit: ${c.difficulty}</span></div>
+    </div>`).join('');
+  row.innerHTML = `
+    <div class="tier-label" style="background:${tierColor[tier]}">${tier}</div>
+    <div class="tier-body">${cardsHtml}</div>`;
+  tierRowsEl.appendChild(row);
+});
+
+/* ============ RENDER: ITEMS ============ */
+const itemGroups = [
+  {
+    name:'Damage / Carry', color:'#e8b84a',
+    items:[
+      {n:"Rabadon's Deathcap", d:'Massiver Fähigkeitsstärke-Bonus — Kern für jeden AP-Carry.', tag:'Core'},
+      {n:'Infinity Edge', d:'Garantierte kritische Treffer mit erhöhtem Schaden.', tag:'Core'},
+      {n:"Guinsoo's Rageblade", d:'Stapelt Angriffstempo unbegrenzt — stark auf Dauerfeuer-Einheiten.', tag:'Core'},
+      {n:'Last Whisper', d:'Rüstungsdurchdringung bei kritischen Treffern.', tag:'Situativ'},
+    ]
+  },
+  {
+    name:'Tank / Frontline', color:'#6fa3f2',
+    items:[
+      {n:"Warmog's Armor", d:'Großer Bonus auf maximales Leben.', tag:'Core'},
+      {n:'Sunfire Cape', d:'Flächenschaden über Zeit um den Träger.', tag:'Core'},
+      {n:'Gargoyle Stoneplate', d:'Rüstung und Magieresistenz skalieren mit gegnerischen Zielen.', tag:'Situativ'},
+      {n:'Redemption', d:'Heilt Verbündete beim Tod des Trägers.', tag:'Situativ'},
+    ]
+  },
+  {
+    name:'Utility / Mana',  color:'#a15fc9',
+    items:[
+      {n:'Zeke\'s Herald', d:'Angriffstempo für angrenzende Verbündete.', tag:'Team'},
+      {n:"Locket of the Iron Solari", d:'Team-Schild zu Kampfbeginn.', tag:'Team'},
+      {n:'Blue Buff', d:'Mana-Regeneration nach jedem Angriff.', tag:'Core'},
+    ]
+  }
+];
+const itemGroupsEl = document.getElementById('item-groups');
+itemGroups.forEach(g=>{
+  const div = document.createElement('div');
+  const itemsHtml = g.items.map(it=>`
+    <div class="item-card">
+      <div class="item-badge" style="background:${g.color}">${it.n.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+      <div>
+        <div class="item-name">${it.n}</div>
+        <div class="item-tag">${it.tag}</div>
+        <div class="item-desc">${it.d}</div>
+      </div>
+    </div>`).join('');
+  div.innerHTML = `<div class="group-title"><span class="group-swatch" style="background:${g.color}"></span>${g.name}</div><div class="item-grid">${itemsHtml}</div>`;
+  itemGroupsEl.appendChild(div);
+});
+
+/* ============ RENDER: AUGMENTS ============ */
+const augmentGroups = [
+  {
+    name:'Prismatic', color:'#e8b84a',
+    items:[
+      {n:'Built Different', d:'Bonus-Stats für jede Einheit ohne aktive Trait-Synergie im Team.', tag:'Prismatic'},
+      {n:'Stand United', d:'Team-weiter Schild und Widerstandsfähigkeit, stärker mit mehr Verbündeten.', tag:'Prismatic'},
+      {n:'Wisp Whisperer', d:'Deutlich verstärkte Wisp-Belohnungen für den Rest der Partie.', tag:'Prismatic'},
+    ]
+  },
+  {
+    name:'Gold', color:'#c9793f',
+    items:[
+      {n:'Tri Force', d:'Verleiht drei zufälligen Verbündeten je ein Komponenten-Item.', tag:'Gold'},
+      {n:'Cybernetic Uplink', d:'Zusätzliches Gold-Einkommen über mehrere Runden.', tag:'Gold'},
+      {n:'Trait Focus', d:'Verstärkt einen gewählten aktiven Trait spürbar.', tag:'Gold'},
+    ]
+  },
+  {
+    name:'Silber', color:'#7c88a6',
+    items:[
+      {n:'First Aid Kit', d:'Sofortige Heilung und etwas zusätzliches Leben.', tag:'Silber'},
+      {n:'Item Grab Bag', d:'Zufällige Komponenten-Items zum frühen Absichern.', tag:'Silber'},
+      {n:'Pandora\'s Bench', d:'Zusätzlicher Bankplatz für mehr Flexibilität.', tag:'Silber'},
+    ]
+  }
+];
+const augmentGroupsEl = document.getElementById('augment-groups');
+augmentGroups.forEach(g=>{
+  const div = document.createElement('div');
+  const itemsHtml = g.items.map(it=>`
+    <div class="item-card">
+      <div class="item-badge" style="background:${g.color}">${it.n.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+      <div>
+        <div class="item-name">${it.n}</div>
+        <div class="item-tag">${it.tag}</div>
+        <div class="item-desc">${it.d}</div>
+      </div>
+    </div>`).join('');
+  div.innerHTML = `<div class="group-title"><span class="group-swatch" style="background:${g.color}"></span>${g.name}</div><div class="item-grid">${itemsHtml}</div>`;
+  augmentGroupsEl.appendChild(div);
+});
+
+const compGrid = document.getElementById('comp-grid');
+comps.forEach(c=>{
+  const div = document.createElement('div');
+  div.className = 'card comp-card';
+  div.style.setProperty('--accent', c.accent);
+  div.innerHTML = `
+    <div class="comp-top">
+      <div class="comp-title">${c.name}</div>
+      <div class="comp-tag">${c.tag}</div>
+    </div>
+    <div class="comp-chips">${c.traits.map(t=>`<span class="chip">${t}</span>`).join('')}</div>
+    <div class="comp-desc">${c.desc}</div>
+    <div class="comp-chips">${c.core.map(u=>`<span class="chip">${u}</span>`).join('')}</div>
+    <div class="comp-meta"><span>Spielstil: ${c.style}</span><span>Schwierigkeit: ${c.difficulty}</span></div>
+  `;
+  compGrid.appendChild(div);
+});
+</script>
+</body>
+</html>
