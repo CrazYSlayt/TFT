@@ -45,10 +45,10 @@ const packages = [
 
 // Stimmen gecoachter Spieler: q = Zitat, r = Fortschritt (z. B. 'Platin → Diamant'). Ohne Zitat erscheint ein Platzhalter.
 const testimonials = [
+  {n:'FreezeBomb', r:'Platin → Smaragd · 2 Sessions', q:'Eigenes Wissen mit den erklärten Konzepten vergleichen und im VOD-Review die eigenen Entscheidungen daran hinterfragen zu können – und Grundkonzepte zu lernen, die man vorher vielleicht gar nicht auf dem Schirm hatte.'},
+  {n:'Doki', r:'Meister → Großmeister · Set 18', q:'Habe das erste Mal Grandmaster erreicht. Augments und Opener waren am hilfreichsten.'},
   {n:'Fist of Shadow', r:'', q:''},
-  {n:'Doki', r:'', q:''},
   {n:'AgentZero', r:'', q:''},
-  {n:'Freeze', r:'', q:''},
   {n:'Moskau', r:'', q:''},
 ];
 
@@ -195,7 +195,7 @@ function renderTiers(target, list){
       <div class="tl-detail" hidden></div>
     </div>`;
   }).join('');
-  $(target).innerHTML = html || ornnSays('Hmph. Keine Comp passt. Lockere die Filter, dann schmieden wir weiter.');
+  $(target).innerHTML = html || viSays('Keine Comp passt zu deinen Filtern. Lockere sie ein bisschen, dann finden wir was!');
 }
 
 /* --- Detail-Panel --- */
@@ -320,7 +320,7 @@ function renderAugTL(){
     const list = (tl[t]||[]).map(id=>augById[id]).filter(a=>a && (!q || a.en.toLowerCase().includes(q) || a.de.toLowerCase().includes(q)));
     return list.length ? tierRow(t, list.map(augCard).join('')) : '';
   }).join('');
-  $('#augTiers').innerHTML = html || ornnSays('Kein Augment gefunden. Versuch es mit einem anderen Wort.');
+  $('#augTiers').innerHTML = html || viSays('Kein Augment gefunden. Versuch es mit einem anderen Wort!');
 }
 [['#augLvFilters','alv',v=>{augLv=v;}],['#augStageFilters','ast',v=>{augStage=v;}]].forEach(([sel,key,set])=>{
   $(sel).addEventListener('click', e=>{
@@ -353,8 +353,11 @@ function setTab(tab){
 }
 
 /* ================= RANKS: Spielerverteilung ================= */
-// Quelle: EsportsTales „TFT Rank Distribution“ (Set 18, September 2026). Region/Erhebung dort nicht angegeben.
-const RANK_SRC = {name:'EsportsTales', url:'https://www.esportstales.com/teamfight-tactics/seasonal-rank-system-and-player-distribution', when:'Set 18, Stand September 2026'};
+// Quelle: EsportsTales „TFT Rank Distribution“. Region/Erhebung dort nicht angegeben.
+// Aktuelle Zahlen kommen aus data/ranks.js (vom Update-Skript erzeugt); die Werte unten sind der Rückfall (Set 18, September 2026).
+const RK = window.TFT_RANKS && window.TFT_RANKS.div && window.TFT_RANKS.apex ? window.TFT_RANKS : null;
+const RANK_SRC = RK ? {name:RK.source, url:RK.url, when:`Set ${RK.set}, Stand ${RK.month}`}
+  : {name:'EsportsTales', url:'https://www.esportstales.com/teamfight-tactics/seasonal-rank-system-and-player-distribution', when:'Set 18, Stand September 2026'};
 const RANK_TIERS = [
   {k:'iron', n:'Eisen', f:'Iron', div:[0.006,0.27,1.1,1.4], d:'Der Einstieg ins Ranked. Hier zählen die Grundlagen: Leben schonen, Econ verstehen, eine Comp sicher spielen.'},
   {k:'bronze', n:'Bronze', f:'Bronze', div:[2.7,4.3,5.9,6.5], d:'Bronze trennt Neulinge von regelmäßigen Spielern. Wer Zinsen sauber mitnimmt, steigt hier schnell auf.'},
@@ -367,6 +370,7 @@ const RANK_TIERS = [
   {k:'grandmaster', n:'Großmeister', f:'GrandMaster', pct:0.05, d:'Großmeister gehören zu den besten Spielern ihrer Region. Die LP-Grenze hängt vom Server ab.'},
   {k:'challenger', n:'Challenger', f:'Challenger', pct:0.023, d:'Die Spitze jeder Region – mit begrenzten Plätzen. Höher geht es nicht.'},
 ];
+if(RK) RANK_TIERS.forEach(t=>{ if(t.div){ if(Array.isArray(RK.div[t.k]) && RK.div[t.k].length===4) t.div = RK.div[t.k]; } else if(typeof RK.apex[t.k]==='number') t.pct = RK.apex[t.k]; });
 const DIVS = ['IV','III','II','I'];
 const rankImg = t => `${DD}tft-regalia/TFT_Regalia_${t.f}.png`;
 // Einträge aufsteigend (Eisen IV … Challenger) mit kumulierten Werten
@@ -390,6 +394,7 @@ function renderRankTable(){
   html += RANK_ENTRIES.filter(e=>!e.d).map(e=>rankCell(e, row%2?' alt':'')).join('') + `<div class="rk-cell rk-empty${row%2?' alt':''}"></div>`;
   $('#rkTable').innerHTML = html;
   $('#rkSrcLink').href = RANK_SRC.url;
+  $('#rkWhen').textContent = RANK_SRC.when;
 }
 
 // Achsen-Maximum auf „schöne“ Schritte runden
@@ -611,7 +616,7 @@ function renderPool(){
     names = names.sort(bSort==='name' ? (a,b)=>a.localeCompare(b) : (a,b)=>(costOf(a)||9)-(costOf(b)||9) || a.localeCompare(b));
     html = names.length ? `<div class="bp-grid">${names.map(bUnitBtn).join('')}</div>` : '';
   }
-  $('#bPoolUnits').innerHTML = html || ornnSays('Hmph. Keine Unit gefunden.');
+  $('#bPoolUnits').innerHTML = html || viSays('Keine Unit gefunden. Andere Schreibweise?');
   const items = ITEMS.filter(i=>(bItemCat==='other' ? ['emblem','component'].includes(i.cat) : i.cat===bItemCat) && (!q || i.en.toLowerCase().includes(q) || i.de.toLowerCase().includes(q)))
     .sort((a,b)=>bItemCat==='other' ? a.cat.localeCompare(b.cat) || a.en.localeCompare(b.en) : a.en.localeCompare(b.en));
   $('#bPoolItems').innerHTML = items.length ? `<div class="bp-grid">${items.map(it=>`<button class="bp-i${bSel&&bSel.type==='item'&&bSel.id===it.id?' sel':''}" type="button" draggable="true" data-bitem="${it.id}" title="${esc(it.en)} · ${esc(it.de)}"><img src="${it.img}" alt="" draggable="false"></button>`).join('')}</div>` : '<p class="b-empty">Kein Item gefunden.</p>';
@@ -1010,9 +1015,10 @@ document.addEventListener('click', e=>{
 });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') toggleSetMenu(false); });
 /* ================= MASKOTTCHEN: Gedankenblase ================= */
-// Ornn-Hinweis für leere Ergebnisse und Dinge, die (noch) nicht laufen
+// Vi ist das Maskottchen der Seite (Tipps, leere Suchergebnisse) – Ornn meldet sich nur, wenn etwas im Bau ist oder nicht läuft
 function ornnSays(text){ return `<div class="ornn-empty"><span class="m-ornn" role="img" aria-label="Ornn"></span><p class="ornn-say"><b class="say-name">Ornn</b>${esc(text)}</p></div>`; }
-let tlTab = 'comps';
+function viSays(text){ return `<div class="ornn-empty vi-empty"><span class="m-chibi" role="img" aria-label="Vi"></span><p class="ornn-say"><b class="say-name">Vi</b>${esc(text)}</p></div>`; }
+let tlTab = 'comps', libTab = 'champions';
 const pickOne = arr => arr[Math.floor(Math.random()*arr.length)];
 const BUDDY_LINES = {
   tierlist(){
@@ -1035,6 +1041,23 @@ const BUDDY_LINES = {
       'Grüner Pfeil = steigt, roter Pfeil = fällt. Ganz einfach!',
     ].filter(Boolean);
   },
+  bibliothek(){
+    if(libTab==='items') return ['In der Rezept-Tabelle siehst du alle Kombinationen auf einen Blick.', 'Klick auf ein Item – dann siehst du Werte und Rezept.', 'Welche Items gerade stark sind? Das steht in der Item-Tierlist!', 'Lichtversionen sind die aufgeladenen Varianten der normalen Items. Mehr Wumms!'];
+    if(libTab==='traits') return [`Set ${TFT_DATA.set} hat ${traits.length} Traits. Ursprünge und Klassen kannst du oben filtern.`, 'Die Zahlen sind die Stufen: So viele Units brauchst du für den nächsten Bonus.', 'Such nach einer Unit, und ich zeig dir alle ihre Traits.', 'Klick auf eine Unit im Trait – dann siehst du ihre Details.', 'Zwei Traits gleichzeitig aktiv? So entstehen die besten Boards!'];
+    return [`Set ${TFT_DATA.set} hat ${champions.length} Champions. Wer ist dein Main?`, 'Filter nach Kosten oder such direkt nach einem Trait!', 'Klick auf einen Champion – dann siehst du alle Details.', 'Fünf-Kosten-Units sind stark, aber teuer. Erst Leben sichern, dann Luxus!'];
+  },
+  ranks(){
+    const top = RANK_ENTRIES.reduce((a,e)=>e.p>a.p?e:a, RANK_ENTRIES[0]);
+    return [
+      `Nur ${fmtPct(rankBy.challenger.pct)} aller Spieler sind Challenger. Klingt nach einem Ziel, oder?`,
+      `Die meisten Spieler stehen gerade in ${top.t.n}${top.d?' '+top.d:''}.`,
+      `Smaragd oder höher? Das ist schon die Top ${fmtPct(rankBy.emerald.topTier)}!`,
+      'Klick auf einen Rang – dann zeig ich dir, wie die Spieler dort verteilt sind.',
+      'Jeder Rang ist machbar. Eine Partie nach der anderen!',
+      'Du willst höher? Schau mal beim Coaching vorbei!',
+    ];
+  },
+  coaching(){ return ['Das Kennenlernen ist kostenlos – trau dich!', 'Nimm vorher ein paar Spiele auf, sonst gibt es nichts zum Anschauen!', 'Claudio und Romano sind beide Challenger. Ich bin nur fürs Zuschlagen zuständig.', 'VOD-Review heißt: pausieren, zurückspulen, verstehen. Ganz ohne Stress.', 'Mit dem 3er-Paket sparst du 10 €. Ich würde zuschlagen!', 'Deutsch oder Englisch? Geht beides!']; },
   // Ornn: alles, was noch im Bau ist oder nicht läuft
   news(){ return ['Hmph. Die Neuigkeiten liegen noch auf dem Amboss.', 'Gut Ding will Weile haben. Gute Patch-Notes auch.', 'Ich schmiede hier gerade. Komm später wieder.', 'Erst wenn das Eisen heiß ist, wird geschrieben. Bis dahin: Tierlist.']; },
   tools(){ return ['Werkzeug? Das schmiede ich selbst. Gib mir Zeit.', 'Ein Team-Planer braucht mehr als einen Hammerschlag.', 'Wer drängelt, bekommt schiefe Klingen. Hmph.', 'Bis dahin tut es die Rezept-Tabelle in der Bibliothek.']; },
@@ -1084,6 +1107,7 @@ function setLib(tab){
   Object.keys(LIB_LABEL).forEach(t=>{ $('#lib-'+t).hidden = t!==tab; });
   $('#libTabs').querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.lib===tab));
   $('#libCrumb').textContent = LIB_LABEL[tab];
+  if(libTab!==tab){ libTab = tab; buddyNext('bibliothek', true); }
 }
 
 /* ================= RENDER: CHAMPIONS ================= */
@@ -1215,7 +1239,7 @@ function renderItems(){
     const g = list.filter(it=>it.cat===k).sort((a,b)=>a.en.localeCompare(b.en));
     if(!g.length) return '';
     return `<div class="group-title"><h3 style="margin:0">${label}</h3><span class="count" style="margin:0">${g.length}</span></div><div class="item-grid">${g.map(itemCardHTML).join('')}</div>`;
-  }).join('') || ornnSays('Kein Item gefunden. Das muss ich wohl erst schmieden.');
+  }).join('') || viSays('Kein Item gefunden. Probier einen anderen Namen oder Filter!');
 }
 function renderRecipes(){
   const comps = COMPONENTS.map(id=>itemById[id]).filter(Boolean);
@@ -1309,7 +1333,7 @@ function runSearch(){
   const q = $('#searchInput').value.toLowerCase().trim();
   sResults = (q ? searchIndex.filter(s=>s.label.toLowerCase().includes(q) || (s.alt && s.alt.toLowerCase().includes(q))) : searchIndex.filter(s=>s.type.startsWith('Comp'))).slice(0,12);
   sFocus = 0;
-  $('#searchRes').innerHTML = sResults.length ? sResults.map((s,i)=>`<div class="sr ${i===0?'focus':''}" data-i="${i}">${s.html}<span>${esc(s.label)}</span><small>${esc(s.type)}</small></div>`).join('') : '<div class="sr-empty">'+ornnSays('Nichts gefunden. Nicht mal ein Funke.')+'</div>';
+  $('#searchRes').innerHTML = sResults.length ? sResults.map((s,i)=>`<div class="sr ${i===0?'focus':''}" data-i="${i}">${s.html}<span>${esc(s.label)}</span><small>${esc(s.type)}</small></div>`).join('') : '<div class="sr-empty">'+viSays('Nichts gefunden. Versuch es mit einem Champion, Item oder Trait!')+'</div>';
 }
 $('#openSearch').onclick = openSearch;
 $('#searchInput').addEventListener('input', runSearch);
@@ -1391,7 +1415,7 @@ function route(){
   // alte Adressen weiter unterstützen
   if(['champions','items','traits'].includes(page)){ sub = page; page = 'bibliothek'; }
   if(page==='augments'){ sub = 'augments'; page = 'tierlist'; }
-  const valid = ['home','tierlist','bibliothek','ranks','builder','admin','news','tools','coaching','guides','about','apply'];
+  const valid = ['home','tierlist','bibliothek','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz'];
   if(!valid.includes(page)) page='notfound';
   const pageId = page==='bibliothek' ? 'library' : page;
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+pageId));

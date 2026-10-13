@@ -7,9 +7,7 @@
 <meta name="description" content="TFT Freaks — TFT Tierlist, Comps, Items, Augments, Champions und Coaching für Set 18 Enchanted Wilds.">
 <title>TFT Freaks — TFT Tierlist, Comps & Coaching</title>
 <link rel="icon" type="image/png" href="assets/img/tft-logo.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,400;1,600;1,700;1,800;1,900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/fonts.css">
 <link rel="stylesheet" href="assets/css/site.css">
 </head>
 <body>
@@ -45,7 +43,7 @@
         </div>
         <div class="hero-visual">
           <div class="ring r1"></div><div class="ring r2"></div>
-          <div class="mascot m-full" role="img" aria-label="TFT Freaks Maskottchen"></div><div class="mascot-glow"></div>
+          <div class="mascot m-chibi" role="img" aria-label="Vi – Maskottchen von TFT Freaks"></div><div class="mascot-glow"></div>
           <div class="chip-float a"><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt="" width="40" height="40" style="width:40px;height:40px;object-fit:contain"><div>Founder CrazYSlayt<b>Challenger seit Set 15</b></div></div>
           <div class="chip-float b"><div>S-Tier Comps<b id="sCount">—</b></div></div>
         </div>
@@ -116,7 +114,7 @@
     <div class="page-head has-buddy">
       <div class="buddy" data-buddy="tierlist">
         <div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>
-        <button class="buddy-img m-chibi" type="button" aria-label="TFT Freaks Maskottchen – nächster Tipp" title="Klick für den nächsten Tipp"></button>
+        <button class="buddy-img m-chibi" type="button" aria-label="Vi – nächster Tipp" title="Klick für den nächsten Tipp"></button>
       </div>
       <div class="crumb">Home / Tierlist</div>
       <h1>TFT Tierlist <em class="serif">Set <span data-setno>18</span></em></h1>
@@ -174,7 +172,11 @@
 <!-- ================= BIBLIOTHEK ================= -->
 <div class="page" id="page-library">
   <div class="wrap">
-    <div class="page-head">
+    <div class="page-head has-buddy">
+      <div class="buddy" data-buddy="bibliothek">
+        <div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>
+        <button class="buddy-img m-chibi" type="button" aria-label="Vi – nächster Tipp" title="Klick für den nächsten Tipp"></button>
+      </div>
       <div class="crumb">Home / Bibliothek / <span id="libCrumb">Champions</span></div>
       <h1>Bibliothek <em class="serif">Set <span data-setno>18</span></em></h1>
       <p>Alle offiziellen Champions, Items und Traits aus Enchanted Wilds an einem Ort. Klick auf einen Eintrag für Details.</p>
@@ -255,7 +257,11 @@
         <p>Alle 10 Ränge von Eisen bis Challenger – mit Divisionen und dem Anteil der Spieler.</p>
       </div>
       <div class="rk-table" id="rkTable"></div>
-      <div class="rk-foot"><span>● Geschätzte Verteilung · Set 18, Stand September 2026. Klick auf einen Rang für Details.</span><a id="rkSrcLink" href="#" target="_blank" rel="noopener">Über die Zahlen ↗</a></div>
+      <div class="rk-foot"><span>● Geschätzte Verteilung · <span id="rkWhen">Set 18, Stand September 2026</span>. Klick auf einen Rang für Details.</span><a id="rkSrcLink" href="#" target="_blank" rel="noopener">Über die Zahlen ↗</a></div>
+      <div class="buddy buddy-inline" data-buddy="ranks">
+        <button class="buddy-img m-chibi" type="button" aria-label="Vi – nächster Tipp" title="Klick für den nächsten Tipp"></button>
+        <div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>
+      </div>
     </div>
     <div id="rk-detail" hidden></div>
   </div>
@@ -412,7 +418,11 @@
 <!-- ================= COACHING ================= -->
 <div class="page" id="page-coaching">
   <div class="wrap">
-    <div class="page-head">
+    <div class="page-head has-buddy">
+      <div class="buddy" data-buddy="coaching">
+        <div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>
+        <button class="buddy-img m-chibi" type="button" aria-label="Vi – nächster Tipp" title="Klick für den nächsten Tipp"></button>
+      </div>
       <div class="crumb">Home / Coaching</div>
       <h1>TFT-Coaching <em class="serif">von Challengern</em></h1>
       <p>Eine Stunde, ein Ziel: Fundamentals auffrischen und deine eigenen Partien im VOD-Review durchgehen. Auf Deutsch oder Englisch, für jeden Rang – und das Kennenlernen ist kostenlos.</p>
@@ -488,7 +498,7 @@
     </div>
 
     <!-- Stimmen -->
-    <div class="section-head co-sec"><h2>Das sagen unsere Spieler</h2><p>Stimmen von Spielern, die wir bereits gecoacht haben.</p></div>
+    <div class="section-head co-sec"><h2>Stimmen unserer Students</h2><p>Feedback aus dem Coaching – von Spielern, die wir bereits begleitet haben.</p></div>
     <div class="co-quotes" id="coachQuotes"></div>
 
     <!-- FAQ -->
@@ -712,6 +722,70 @@
   </div>
 </div>
 
+<!-- ================= IMPRESSUM ================= -->
+<div class="page" id="page-impressum">
+  <div class="wrap">
+    <div class="page-head"><div class="crumb">Home / Impressum</div><h1>Impressum</h1></div>
+    <div class="card lg">
+      <h2>Angaben gemäß § 5 DDG</h2>
+      <p>Claudio Vecchione<br>Am Markt 15<br>65795 Hattersheim<br>Deutschland</p>
+      <h2>Kontakt</h2>
+      <p>E-Mail: <span class="lg-todo">wird in Kürze ergänzt</span></p>
+      <h2>Umsatzsteuer</h2>
+      <p>Gemäß § 19 UStG wird keine Umsatzsteuer berechnet (Kleinunternehmerregelung).</p>
+      <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+      <p>Claudio Vecchione, Anschrift wie oben</p>
+      <h2>Verbraucherstreitbeilegung</h2>
+      <p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+      <h2>Haftung für Inhalte und Links</h2>
+      <p>Die Inhalte dieser Seite – insbesondere Tierlists, Comps und Statistiken – werden mit Sorgfalt erstellt, geben aber unsere Einschätzung wieder und können sich mit jedem Patch ändern. Für die Inhalte verlinkter externer Seiten sind ausschließlich deren Betreiber verantwortlich. Bei Bekanntwerden von Rechtsverletzungen entfernen wir entsprechende Links umgehend.</p>
+      <h2>Riot Games</h2>
+      <p>TFT Freaks isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
+      <p class="lg-sub">TFT Freaks ist eine Fan-Seite und steht in keiner Verbindung zu Riot Games. Teamfight Tactics, Spielgrafiken und Spieldaten sind Eigentum von Riot Games, Inc.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DATENSCHUTZ ================= -->
+<div class="page" id="page-datenschutz">
+  <div class="wrap">
+    <div class="page-head"><div class="crumb">Home / Datenschutz</div><h1>Datenschutzerklärung</h1><p>Kurz gesagt: Wir nutzen keine Tracking- oder Analyse-Tools, keine Werbung und keine Cookies. Hier steht im Detail, welche Daten trotzdem anfallen.</p></div>
+    <div class="card lg">
+      <h2>1. Verantwortlicher</h2>
+      <p>Claudio Vecchione, Am Markt 15, 65795 Hattersheim, Deutschland<br>E-Mail: <span class="lg-todo">wird in Kürze ergänzt</span></p>
+
+      <h2>2. Hosting und Server-Logfiles</h2>
+      <p>Diese Website wird bei Vercel Inc. (USA) gehostet. Beim Aufruf jeder Seite verarbeitet der Server automatisch technisch notwendige Daten: IP-Adresse, Datum und Uhrzeit, aufgerufene Adresse, übertragene Datenmenge, Browser und Betriebssystem sowie die zuvor besuchte Seite. Das ist nötig, um die Seite auszuliefern und sicher zu betreiben (Art. 6 Abs. 1 lit. f DSGVO). Für Übermittlungen in die USA stützt sich Vercel auf geeignete Garantien nach Art. 44 ff. DSGVO (EU-US Data Privacy Framework bzw. EU-Standardvertragsklauseln). Mehr dazu in der <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener">Datenschutzerklärung von Vercel</a>.</p>
+
+      <h2>3. Schriften</h2>
+      <p>Die Schriften dieser Seite liegen auf unserem eigenen Server. Beim Aufruf wird keine Verbindung zu Google oder anderen Schriftanbietern hergestellt.</p>
+
+      <h2>4. Spielgrafiken von externen Servern</h2>
+      <p>Bilder von Champions, Items, Augments, Traits und Rängen werden direkt von den Servern von Riot Games (ddragon.leagueoflegends.com, Riot Games, Inc., USA) und des Community-Projekts CommunityDragon (raw.communitydragon.org) geladen. Dabei wird deine IP-Adresse an diese Server übertragen – technisch lässt sich ein Bild anders nicht abrufen. Rechtsgrundlage ist unser berechtigtes Interesse an einer vollständigen und aktuellen Darstellung der Spieldaten (Art. 6 Abs. 1 lit. f DSGVO).</p>
+
+      <h2>5. Speicherung im Browser</h2>
+      <p>Einige Funktionen speichern Einstellungen im lokalen Speicher deines Browsers (localStorage): das gewählte Set, dein Board im Team Builder und Entwürfe in der Redaktion. Diese Daten bleiben auf deinem Gerät und werden nicht an uns übertragen. Die Speicherung ist für die von dir genutzte Funktion erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG). Du kannst sie jederzeit über die Einstellungen deines Browsers löschen.</p>
+
+      <h2>6. Bewerbungsformular</h2>
+      <p>Das Bewerbungsformular ist derzeit noch nicht angeschlossen: Eingegebene Daten werden weder übertragen noch gespeichert. Sobald sich das ändert, ergänzen wir hier, wie die Daten verarbeitet werden.</p>
+
+      <h2>7. Coaching über Discord und PayPal</h2>
+      <p>Wenn du ein Coaching buchst, verarbeiten wir die Daten, die dafür nötig sind: deinen Namen bzw. Nickname, deinen Discord-Namen, deine Riot-ID, Termine sowie Zahlungsdaten (Art. 6 Abs. 1 lit. b DSGVO). Das Coaching findet auf Discord statt (Discord Inc., USA – <a href="https://discord.com/privacy" target="_blank" rel="noopener">Datenschutzerklärung</a>). Bezahlt wird über PayPal (PayPal (Europe) S.à r.l. et Cie, S.C.A., 22–24 Boulevard Royal, L-2449 Luxemburg – <a href="https://www.paypal.com/de/legalhub/privacy-full" target="_blank" rel="noopener">Datenschutzerklärung</a>). Zahlungsbelege bewahren wir im Rahmen der gesetzlichen Aufbewahrungsfristen auf.</p>
+
+      <h2>8. Stimmen aus dem Coaching</h2>
+      <p>Feedback von Students veröffentlichen wir nur mit deren Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Die Einwilligung kann jederzeit widerrufen werden – dann entfernen wir den Eintrag.</p>
+
+      <h2>9. Externe Links</h2>
+      <p>Links zu anderen Seiten (z. B. MetaTFT, TFTAcademy, EsportsTales) sind normale Verweise. Daten werden erst übertragen, wenn du sie anklickst; ab dann gilt die Datenschutzerklärung der jeweiligen Seite.</p>
+
+      <h2>10. Deine Rechte</h2>
+      <p>Du hast das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch gegen Verarbeitungen auf Grundlage berechtigter Interessen (Art. 21). Eine erteilte Einwilligung kannst du jederzeit widerrufen (Art. 7 Abs. 3). Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde beschweren, zum Beispiel beim <a href="https://datenschutz.hessen.de" target="_blank" rel="noopener">Hessischen Beauftragten für Datenschutz und Informationsfreiheit</a>.</p>
+
+      <p class="lg-sub">Stand: Oktober 2026</p>
+    </div>
+  </div>
+</div>
+
 </main>
 
 <!-- ================= FOOTER ================= -->
@@ -730,7 +804,7 @@
       <div><h5>Bibliothek</h5><a href="#/bibliothek/champions">Champions</a><a href="#/bibliothek/items">Items</a><a href="#/bibliothek/traits">Traits</a></div>
       <div><h5>TFT Freaks</h5><a href="#/coaching">Coaching</a><a href="#/about">Meet the Team</a><a href="#/apply">Bewerbung</a><a href="#/admin">Redaktion</a></div>
     </div>
-    <div class="legal">© 2026 TFT Freaks · Teamfight Tactics ist eine Marke von Riot Games, Inc. Diese Fan-Seite steht in keiner Verbindung zu Riot Games und wird nicht von Riot Games unterstützt. Spielgrafiken © Riot Games.</div>
+    <div class="legal">© 2026 TFT Freaks · Teamfight Tactics ist eine Marke von Riot Games, Inc. Diese Fan-Seite steht in keiner Verbindung zu Riot Games und wird nicht von Riot Games unterstützt. Spielgrafiken © Riot Games. · <a href="#/impressum">Impressum</a> · <a href="#/datenschutz">Datenschutz</a></div>
   </div>
 </footer>
 
@@ -740,6 +814,7 @@
 
 <!-- Offizielle Spieldaten: Übersicht aller Sets (erzeugt mit "Daten aktualisieren.cmd" / tools\update-data.ps1) -->
 <script src="data/sets.js"></script>
+<script src="data/ranks.js"></script>
 <script>
 // Set wählen (Builder-Link > gespeicherte Auswahl > Live-Set) und dessen Daten + veröffentlichte Tierlist laden
 (function(){

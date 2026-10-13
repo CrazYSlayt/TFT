@@ -6,6 +6,7 @@
     • PBE-Server   -> data\tft-data-<Set>.js   nur wenn dort ein NEUERES Set als live läuft (z. B. Set 19)
   Ältere Sets werden nie gelöscht – sie bleiben als Archiv auf der Seite wählbar.
   Am Ende wird data\sets.js (Übersicht aller Sets für den Set-Umschalter) neu geschrieben.
+  Außerdem: Rangverteilung (Ranks-Seite) von EsportsTales -> data\ranks.js
   Die Tierlist (Comps, Item-/Augment-Bewertungen) wird NICHT verändert – die pflegst du selbst.
 
   Aufruf (oder einfach "Daten aktualisieren.cmd" doppelklicken):
@@ -15,9 +16,11 @@
     -Set 18            bestimmtes Live-Set statt des neuesten
     -Version 16.20     bestimmte CommunityDragon-Version statt der neuesten
     -ItemPrefix DA     Präfix der Set-Items, falls die automatische Erkennung danebenliegt
+    -OnlyRanks         nur die Rangverteilung aktualisieren (dauert ein paar Sekunden)
 #>
 param(
   [switch]$NoPbe,
+  [switch]$OnlyRanks,
   [int]$Set = 0,
   [string]$Version = '',
   [string]$ItemPrefix = ''
@@ -201,7 +204,7 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
   Write-Host ("  {0} Items ({1})" -f $items.Count, (($cat.GetEnumerator() | ForEach-Object { "$($_.Name) $($_.Value)" }) -join ', '))
   foreach ($k in 'Komponenten','Kombiniert') { if ($cat[$k] -eq 0) { Warn "Keine $k gefunden – evtl. -ItemPrefix angeben." } }
   $ph = @($augs | Where-Object { $_['icon'] -like '*missing-t*' })
-  if ($ph.Count) { Warn "$($ph.Count) Augments haben in Riots Daten nur ein Platzhalter-Icon – die Seite nutzt dafür eigene Icons (AUG_IMG in index.html), falls vorhanden." }
+  if ($ph.Count) { Warn "$($ph.Count) Augments haben in Riots Daten nur ein Platzhalter-Icon – die Seite nutzt dafür eigene Icons (augmentIcons in data\custom-$SetNo.js), falls vorhanden." }
 
   $out = Join-Path $dataDir "tft-data-$SetNo.js"
   $sb = New-Object Text.StringBuilder
@@ -217,6 +220,50 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
   [IO.File]::WriteAllText($out, $sb.ToString(), $utf8)
   Write-Host ("  geschrieben: {0} ({1:N0} KB)" -f $out, ((Get-Item $out).Length / 1KB)) -ForegroundColor Green
 }
+
+# ======================= Rangverteilung (EsportsTales) =======================
+function UpdateRanks {
+  Step 'Rangverteilung von EsportsTales laden …'
+  $url = 'https://www.esportstales.com/teamfight-tactics/seasonal-rank-system-and-player-distribution'
+  $out = Join-Path $dataDir 'ranks.js'
+  try {
+    $html = (Invoke-WebRequest $url -UseBasicParsing -UserAgent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) TFTFreaks-Update' -TimeoutSec 60).Content
+    # Der neueste Stand steht oben: erste "Set NN - Name"-Überschrift, danach die erste Monatsüberschrift und deren Tabelle
+    $ms = [regex]::Match($html, '(?i)<h[1-4][^>]*>\s*Set\s+(\d+(?:\.\d+)?)\s*-\s*([^<]+?)\s*</h[1-4]>')
+    if (-not $ms.Success) { throw 'Set-Überschrift nicht gefunden' }
+    $months = 'January','February','March','April','May','June','July','August','September','October','November','December'
+    $mm = [regex]::Match($html.Substring($ms.Index), '(?i)<h[1-4][^>]*>\s*(' + ($months -join '|') + ')\s+(\d{4})\s*</h[1-4]>')
+    if (-not $mm.Success) { throw 'Monatsüberschrift nicht gefunden' }
+    $t0 = $html.IndexOf('<table', $ms.Index + $mm.Index); $t1 = $html.IndexOf('</table>', $t0)
+    if ($t0 -lt 0 -or $t1 -lt 0) { throw 'Tabelle nicht gefunden' }
+    $tb = $html.Substring($t0, $t1 - $t0)
+    $vals = @{}
+    foreach ($m in [regex]::Matches($tb, '(?is)<td[^>]*>\s*([A-Za-z]+(?:\s+(?:IV|III|II|I))?)\s*</td>\s*<td[^>]*>\s*([\d.,]+)\s*%\s*</td>')) {
+      $vals[($m.Groups[1].Value.ToLower() -replace '\s+', ' ')] = [double]::Parse(($m.Groups[2].Value -replace ',', '.'), [Globalization.CultureInfo]::InvariantCulture)
+    }
+    $div = NewObj; $apex = NewObj; $sum = 0.0; $missing = @()
+    foreach ($t in 'iron','bronze','silver','gold','platinum','emerald','diamond') {
+      $arr = @(); foreach ($d in 'iv','iii','ii','i') { $k = "$t $d"; if ($vals.ContainsKey($k)) { $arr += $vals[$k]; $sum += $vals[$k] } else { $missing += $k } }
+      $div[$t] = [double[]]$arr
+    }
+    foreach ($t in 'master','grandmaster','challenger') { if ($vals.ContainsKey($t)) { $apex[$t] = $vals[$t]; $sum += $vals[$t] } else { $missing += $t } }
+    if ($missing.Count) { throw "Werte fehlen: $($missing -join ', ')" }
+    if ($sum -lt 90 -or $sum -gt 110) { throw ("Summe {0:N1} % unplausibel" -f $sum) }
+    $deMonth = @{ January='Januar'; February='Februar'; March='März'; April='April'; May='Mai'; June='Juni'; July='Juli'; August='August'; September='September'; October='Oktober'; November='November'; December='Dezember' }
+    $mEn = (Get-Culture).TextInfo.ToTitleCase($mm.Groups[1].Value.ToLower())
+    $month = $deMonth[$mEn] + ' ' + $mm.Groups[2].Value
+    $o = NewObj
+    $o['source'] = 'EsportsTales'; $o['url'] = $url
+    $o['set'] = $ms.Groups[1].Value; $o['setName'] = [Net.WebUtility]::HtmlDecode($ms.Groups[2].Value)
+    $o['month'] = $month; $o['checked'] = $today; $o['div'] = $div; $o['apex'] = $apex
+    $old = $(if (Test-Path $out) { [IO.File]::ReadAllText($out, $utf8) } else { '' })
+    $same = $old -match ('"month":"' + [regex]::Escape($month) + '"') -and $old -match ('"set":"' + [regex]::Escape($o['set']) + '"')
+    [IO.File]::WriteAllText($out, "// TFT Freaks – Rangverteilung für die Ranks-Seite (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_RANKS = $(J $o);`n", $utf8)
+    if ($same) { Write-Host "  Keine neuen Zahlen – EsportsTales steht weiter bei Set $($o['set']), $month." }
+    else { Write-Host "  Neuer Stand: Set $($o['set']), $month" -ForegroundColor Green }
+  } catch { Warn "Rangverteilung nicht aktualisiert ($($_.Exception.Message)) – die bisherigen Zahlen bleiben." }
+}
+if ($OnlyRanks) { UpdateRanks; Write-Host 'Fertig.' -ForegroundColor Green; return }
 
 # ======================= 1. Live-Server =======================
 if (-not $Version) {
@@ -269,4 +316,7 @@ $list = @($list | Sort-Object { $_['set'] } -Descending)
 $manifest = "// TFT Freaks – verfügbare Sets (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_SETS = [`n" + (($list | ForEach-Object { J $_ }) -join ",`n") + "`n];`n"
 [IO.File]::WriteAllText((Join-Path $dataDir 'sets.js'), $manifest, $utf8)
 foreach ($s in $list) { Write-Host ("  Set {0,-3} {1,-7} {2,-12} {3}" -f $s['set'], $s['status'], $s['version'], $s['generated']) }
+
+# ======================= 4. Rangverteilung =======================
+UpdateRanks
 Write-Host 'Fertig.' -ForegroundColor Green
