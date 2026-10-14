@@ -2,6 +2,8 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+<!-- Online gelten alle Dateipfade ab der Startseite (auch unter /tierlist/items); lokal per Doppelklick bleiben sie relativ -->
+<script>if (location.protocol !== 'file:') document.write('<base href="/">');</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0b1324">
 <meta name="description" content="TFT Freaks — TFT Tierlist, Comps, Items, Augments, Champions und Coaching für Set 18 Enchanted Wilds.">
@@ -18,7 +20,7 @@
 <div class="set-banner" id="setBanner" hidden></div>
 <header class="topbar">
   <button class="tb-icon-btn" id="burger" aria-label="Menü öffnen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-  <a href="#/" class="tb-logo" aria-label="TFT Freaks Startseite"><span class="tft-logo" aria-hidden="true"></span><div><span>TFT</span> <b>Freaks</b></div></a>
+  <a href="/" class="tb-logo" aria-label="TFT Freaks Startseite"><span class="tft-logo" aria-hidden="true"></span><div><span>TFT</span> <b>Freaks</b></div></a>
   <div class="set-sw" id="setSw"></div>
   <nav class="tb-nav" id="tbNav" aria-label="Hauptnavigation"></nav>
   <button class="tb-icon-btn tb-search" id="openSearch" aria-label="Suchen (Taste /)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
@@ -37,9 +39,9 @@
           <div class="eyebrow"><span class="m-face" role="img" aria-label="TFT Freaks Maskottchen"></span>Patch 18.4b · Enchanted Wilds</div>
           <h1>Climb in TFT. <em class="serif">Mit Plan.</em></h1>
           <p class="lead">Tierlist, Comps, Items und Augments für das aktuelle Set.<br>Dazu Coaching, das deine nächste Lobby besser macht.</p>
-          <a href="#/tierlist" class="hero-cta"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Zur Comp-Tierlist<small>Patch 18.4b &nbsp;⟶</small></a>
+          <a href="/tierlist" class="hero-cta"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Zur Comp-Tierlist<small>Patch 18.4b &nbsp;⟶</small></a>
           <p class="hero-note">Wöchentlich aktualisiert · TFT Freaks</p>
-          <div class="hero-links"><a href="#/bibliothek/champions">Alle 65 Champions ↗</a><a href="#/coaching">Coaching ansehen ↗</a></div>
+          <div class="hero-links"><a href="/bibliothek/champions">Alle 65 Champions ↗</a><a href="/coaching">Coaching ansehen ↗</a></div>
         </div>
         <div class="hero-visual">
           <div class="ring r1"></div><div class="ring r2"></div>
@@ -63,7 +65,7 @@
         <p>Wir sind TFT-Spieler aus Deutschland. Wir bringen dir Tierlists, Daten und Coaching – übersichtlich und ehrlich: Jede Zahl hat ihre Quelle, und wenn sich der Patch ändert, ziehen wir nach. Vi hält dabei die Lobby in Schach.</p>
       </div>
       <div class="team-grid">
-        <a class="tcard" href="#/about/crazyslayt">
+        <a class="tcard" href="/about/crazyslayt">
           <div class="tcard-img team-claudio" role="img" aria-label="Claudio „CrazYSlayt“"><span class="tcard-badge">TFT-Experte &amp; Founder</span></div>
           <div class="tcard-body">
             <h3>Claudio <em>„CrazYSlayt“</em></h3>
@@ -78,7 +80,7 @@
             <div class="tcard-facts"><div><small>Rolle</small><b>Partner</b></div><div><small>Aus</small><b>Hamburg</b></div></div>
           </div>
         </article>
-        <a class="tcard" href="#/about/humbadobo">
+        <a class="tcard" href="/about/humbadobo">
           <div class="tcard-img team-romano" role="img" aria-label="Romano „humbadobo“"><span class="tcard-badge">Coach</span></div>
           <div class="tcard-body">
             <h3>Romano <em>„humbadobo“</em></h3>
@@ -100,11 +102,11 @@
           <div class="tcard-body">
             <h3>Du?</h3>
             <p>Du liebst TFT und willst Guides schreiben oder Content machen? Bei TFT Freaks ist noch ein Platz frei.</p>
-            <a href="#/apply" class="btn btn-primary tcard-btn">Mitmachen</a>
+            <a href="/apply" class="btn btn-primary tcard-btn">Mitmachen</a>
           </div>
         </article>
       </div>
-      <div class="team-actions"><a href="#/about" class="btn btn-primary">Meet the Team</a><a href="#/apply" class="btn btn-ghost">Kontakt</a></div>
+      <div class="team-actions"><a href="/about" class="btn btn-primary">Meet the Team</a><a href="/apply" class="btn btn-ghost">Kontakt</a></div>
     </div>
   </section></div>
 
@@ -182,9 +184,9 @@
       <p>Alle offiziellen Champions, Items und Traits aus Enchanted Wilds an einem Ort. Klick auf einen Eintrag für Details.</p>
     </div>
     <div class="tabs" id="libTabs">
-      <a class="tab active" href="#/bibliothek/champions" data-lib="champions">Champions</a>
-      <a class="tab" href="#/bibliothek/items" data-lib="items">Items</a>
-      <a class="tab" href="#/bibliothek/traits" data-lib="traits">Traits</a>
+      <a class="tab active" href="/bibliothek/champions" data-lib="champions">Champions</a>
+      <a class="tab" href="/bibliothek/items" data-lib="items">Items</a>
+      <a class="tab" href="/bibliothek/traits" data-lib="traits">Traits</a>
     </div>
 
     <!-- Champions -->
@@ -210,7 +212,7 @@
           <button class="chip-btn active" data-view="list">Item-Liste</button>
           <button class="chip-btn" data-view="recipes">Rezept-Tabelle</button>
         </div>
-        <a href="#/tierlist/items" class="link-arrow" style="margin-left:auto">Zur Item-Tierlist →</a>
+        <a href="/tierlist/items" class="link-arrow" style="margin-left:auto">Zur Item-Tierlist →</a>
       </div>
       <div id="it-list">
         <div class="toolbar" id="itemFilters" style="margin-top:0">
@@ -270,16 +272,16 @@
 <!-- ================= TEAM BUILDER ================= -->
 <div class="page" id="page-builder">
   <div class="wrap">
-    <div class="page-head">
-      <div class="crumb">Home / Team Builder</div>
-      <h1>Team Builder <em class="serif">Set <span data-setno>18</span></em></h1>
-      <p>Zieh Units aufs Brett, verteil Items und sieh sofort, welche Traits aktiv sind. Auf dem Handy: erst antippen, dann aufs Feld tippen.</p>
+    <div class="page-head" data-tool-art="simulator" data-art-buddy="sim">
+      <div class="crumb" id="bCrumb"><a href="/">Home</a> / Team Builder</div>
+      <h1 id="bTitle">Team Builder <em class="serif">Set <span data-setno>18</span></em></h1>
+      <p id="bIntro">Zieh Units aufs Brett, verteil Items und sieh sofort, welche Traits aktiv sind. Auf dem Handy: erst antippen, dann aufs Feld tippen.</p>
     </div>
     <div class="b-ctx" id="bCtx" hidden></div>
     <div class="b-bar">
       <button class="b-set" type="button" data-open-setmenu title="Set wechseln">Set <span data-setno>18</span> ▾</button>
       <div class="b-tools">
-        <label class="b-sw"><input type="checkbox" id="bEnemy"><span>Gegner</span><i aria-hidden="true"></i></label>
+        <label class="b-sw b-only"><input type="checkbox" id="bEnemy"><span>Gegner</span><i aria-hidden="true"></i></label>
         <label class="b-sw"><input type="checkbox" id="bNames"><span>Namen</span><i aria-hidden="true"></i></label>
         <button class="b-tbtn" id="bUndo" type="button" title="Rückgängig (Strg+Z)">Rückgängig</button>
         <button class="b-tbtn" id="bRedo" type="button" title="Wiederholen (Strg+Y)">Wiederholen</button>
@@ -292,6 +294,7 @@
         <button class="b-ibtn" id="bImport" type="button" title="Team-Code oder Link importieren" aria-label="Importieren"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M4 12h11M11 8l4 4-4 4"/></svg></button>
       </div>
     </div>
+    <div class="sim b-simonly" id="simPanel"></div>
     <div class="b-rows" id="bRows">
     <div class="b-layout b-enemy" id="bRowE" hidden>
       <aside class="b-panel b-left">
@@ -319,7 +322,7 @@
       </div>
       <div class="b-right">
         <div class="b-panel b-mini"><h4>Augments</h4><div class="b-augs" id="bAugs"></div></div>
-        <div class="b-panel b-mini"><h4>Alt Builds</h4><div class="b-alt" id="bAlt"></div></div>
+        <div class="b-panel b-mini b-only"><h4>Alt Builds</h4><div class="b-alt" id="bAlt"></div></div>
         <div class="b-panel b-mini b-grow"><h4>Komponenten</h4><div class="b-comps" id="bComps"></div></div>
       </div>
     </div>
@@ -348,7 +351,7 @@
       <button class="btn btn-ghost" id="admExport" type="button">Exportieren</button>
       <label class="btn btn-ghost" style="cursor:pointer">Importieren<input type="file" id="admImport" accept=".js,.json" hidden></label>
       <button class="btn btn-ghost" id="admReset" type="button">Entwurf verwerfen</button>
-      <a class="btn btn-ghost" href="#/tierlist">Vorschau</a>
+      <a class="btn btn-ghost" href="/tierlist">Vorschau</a>
       <span class="adm-status" id="admStatus"></span>
     </div>
     <div class="adm-wrap">
@@ -374,7 +377,7 @@
       <span class="pill gold">Platzhalter</span>
       <h3>Dieser Bereich ist in Arbeit</h3>
       <p>Geplant: Patch-Notes kompakt auf Deutsch, Gewinner und Verlierer des Patches und Updates zu Coaching-Angeboten.</p>
-      <a href="#/tierlist" class="link-arrow">Solange zur aktuellen Tierlist →</a>
+      <a href="/tierlist" class="link-arrow">Solange zur aktuellen Tierlist →</a>
     </div>
   </div>
 </div>
@@ -382,20 +385,86 @@
 <!-- ================= TOOLS (Platzhalter) ================= -->
 <div class="page" id="page-tools">
   <div class="wrap">
-    <div class="page-head has-buddy ornn-head">
-      <div class="buddy ornn" data-buddy="tools">
-        <div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>
-        <button class="buddy-img m-ornn" type="button" aria-label="Ornn – nächster Spruch" title="Klick für den nächsten Spruch"></button>
+    <!-- Übersicht -->
+    <div class="tool-view" data-tool="">
+      <div class="page-head has-buddy heimer-head">
+        <div class="buddy heimer" data-buddy="tools">
+          <div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>
+          <button class="buddy-img m-heimer" type="button" aria-label="Heimerdinger – nächster Tipp" title="Klick für den nächsten Tipp"></button>
+        </div>
+        <div class="crumb">Home / Tools</div>
+        <h1>TFT <em class="serif">Tools</em></h1>
+        <p>Rechner und Werkzeuge für deine Partien – mit den offiziellen Daten von Set <span data-setno>18</span>.</p>
       </div>
-      <div class="crumb">Home / Tools</div>
-      <h1>Tools <em class="serif">Bald verfügbar</em></h1>
-      <p>Hilfsmittel für deine Partien. Dieser Bereich wird später erweitert oder bekommt eine eigene Seite.</p>
+      <!-- Kacheln: Maskottchen-Bild je Tool unter assets/tools/<name>.webp (transparent, ca. 420 × 420 px).
+           Fehlt das Bild, erscheint automatisch das Symbol als Platzhalter. -->
+      <div class="tc-grid">
+        <div class="tc-item">
+          <a class="tc" href="/tools/rolldown">
+            <div class="tc-text"><span class="tc-tag">Rechner</span><h3>Rolldown-Rechner</h3><p>Rollen oder leveln? Rechne aus, ob du deine Units triffst.</p></div>
+            <div class="tc-art" aria-hidden="true"><img src="assets/tools/rolldown.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.4" fill="currentColor"/><circle cx="16" cy="8" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="8" cy="16" r="1.4" fill="currentColor"/><circle cx="16" cy="16" r="1.4" fill="currentColor"/></svg></span></div>
+          </a>
+          <div class="tc-cap"><span>TFT Rolldown-Rechner</span><span class="tc-st">Neu</span></div>
+        </div>
+        <div class="tc-item">
+          <a class="tc" href="/tools/drops">
+            <div class="tc-text"><span class="tc-tag">Rechner</span><h3>Item-Drop-Rechner</h3><p>Was droppt als Nächstes? Der Sack verrät es.</p></div>
+            <div class="tc-art" aria-hidden="true"><img src="assets/tools/drops.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 8h10l2 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><circle cx="12" cy="14" r="2"/></svg></span></div>
+          </a>
+          <div class="tc-cap"><span>TFT Item-Drop-Rechner</span><span class="tc-st">Neu</span></div>
+        </div>
+        <div class="tc-item">
+          <a class="tc" href="/tools/tierlist">
+            <div class="tc-text"><span class="tc-tag">Ersteller</span><h3>Tierlist-Maker</h3><p>Deine eigene Tierlist. Sortieren, teilen, diskutieren.</p></div>
+            <div class="tc-art" aria-hidden="true"><img src="assets/tools/tierlist.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="5" height="4" rx="1"/><rect x="3" y="10" width="5" height="4" rx="1"/><rect x="3" y="16" width="5" height="4" rx="1"/><path d="M11 6h10M11 12h7M11 18h4"/></svg></span></div>
+          </a>
+          <div class="tc-cap"><span>TFT Tierlist-Maker</span><span class="tc-st">Neu</span></div>
+        </div>
+        <div class="tc-item">
+          <a class="tc" href="/tools/simulator">
+            <div class="tc-text"><span class="tc-tag">Simulator</span><h3>Kampf-Simulator</h3><p>Zwei Teams, ein Kampf. Wer läuft wohin – und wer gewinnt?</p></div>
+            <div class="tc-art" aria-hidden="true"><img src="assets/tools/simulator.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4l9 9M4 4h4M4 4v4"/><path d="M20 4l-9 9M20 4h-4M20 4v4"/><path d="M9 15l-4 4M15 15l4 4M7.5 13.5l3 3M16.5 13.5l-3 3"/></svg></span></div>
+          </a>
+          <div class="tc-cap"><span>TFT Kampf-Simulator</span><span class="tc-st wip">In Arbeit</span></div>
+        </div>
+        <div class="tc-item tc-soon">
+          <div class="tc">
+            <div class="tc-text"><span class="tc-tag">Rechner</span><h3>Econ- &amp; XP-Rechner</h3><p>Zinsen, XP und dein Gold-Plan für die nächsten Runden.</p></div>
+            <div class="tc-art" aria-hidden="true"><img src="assets/tools/econ.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v10M9.5 9.5c0-1.2 1.1-2 2.5-2s2.5.8 2.5 2-1.1 1.8-2.5 2.2-2.5 1-2.5 2.3 1.1 2 2.5 2 2.5-.8 2.5-2"/></svg></span></div>
+          </div>
+          <div class="tc-cap"><span>TFT Econ- &amp; XP-Rechner</span><span class="tc-st soon">Bald</span></div>
+        </div>
+      </div>
     </div>
-    <div class="soon card">
-      <span class="pill gold">Platzhalter</span>
-      <h3>Dieser Bereich ist in Arbeit</h3>
-      <p>Geplant: Team-Planer mit Hex-Brett, Rolldown-Rechner (Shop-Wahrscheinlichkeiten) und Item-Builder.</p>
-      <a href="#/bibliothek/items" class="link-arrow">Solange zur Rezept-Tabelle →</a>
+
+    <!-- Rolldown-Rechner -->
+    <div class="tool-view" data-tool="rolldown" hidden>
+      <div class="page-head" data-tool-art="rolldown" data-art-buddy="rolldown">
+        <div class="crumb"><a href="/tools">Tools</a> / Rolldown-Rechner</div>
+        <h1>Rolldown-<em class="serif">Rechner</em></h1>
+        <p>Wie wahrscheinlich findest du deine Units, wenn du jetzt rollst? Wähl Champion, Level und Gold – gerechnet wird mit den Shop-Chancen und Pool-Größen von Set <span data-setno>18</span>.</p>
+      </div>
+      <div id="rdApp"></div>
+    </div>
+
+    <!-- Tierlist-Maker -->
+    <div class="tool-view" data-tool="tierlist" hidden>
+      <div class="page-head" data-tool-art="tierlist" data-art-buddy="tlmaker">
+        <div class="crumb"><a href="/tools">Tools</a> / Tierlist-Maker</div>
+        <h1>Tierlist-<em class="serif">Maker</em></h1>
+        <p>Deine eigene Tierlist für Set <span data-setno>18</span>: Champions, Traits, Augments und Items per Drag &amp; Drop einsortieren – und mit einem Link teilen.</p>
+      </div>
+      <div id="tmApp"></div>
+    </div>
+
+    <!-- Item-Drop-Rechner -->
+    <div class="tool-view" data-tool="drops" hidden>
+      <div class="page-head" data-tool-art="drops" data-art-buddy="drops">
+        <div class="crumb"><a href="/tools">Tools</a> / Item-Drop-Rechner</div>
+        <h1>Item-Drop-<em class="serif">Rechner</em></h1>
+        <p>Komponenten aus den Creep-Runden kommen aus einem Sack: Was gedroppt ist, fehlt darin – vor jeder neuen Creep-Stage kommt von jeder Komponente eine dazu. Trag deine Drops ein und sieh, was als Nächstes kommen kann.</p>
+      </div>
+      <div id="drApp"></div>
     </div>
   </div>
 </div>
@@ -410,7 +479,7 @@
       <div class="crumb">Home / 404</div>
       <h1>Seite nicht gefunden <em class="serif">404</em></h1>
       <p>Diese Adresse gibt es nicht – oder sie liegt noch auf Ornns Amboss.</p>
-      <div class="hero-actions"><a href="#/" class="btn btn-primary">Zur Startseite</a><a href="#/tierlist" class="btn btn-ghost">Zur Tierlist</a></div>
+      <div class="hero-actions"><a href="/" class="btn btn-primary">Zur Startseite</a><a href="/tierlist" class="btn btn-ghost">Zur Tierlist</a></div>
     </div>
   </div>
 </div>
@@ -427,13 +496,13 @@
       <h1>TFT-Coaching <em class="serif">von Challengern</em></h1>
       <p>Eine Stunde, ein Ziel: Fundamentals auffrischen und deine eigenen Partien im VOD-Review durchgehen. Auf Deutsch oder Englisch, für jeden Rang – und das Kennenlernen ist kostenlos.</p>
       <div class="co-chips"><span>1 Stunde pro Session</span><span>Deutsch &amp; Englisch</span><span>Auf Discord</span><span>Für alle Ränge</span><span class="hl">Kennenlernen kostenlos</span></div>
-      <a href="#/apply" class="btn btn-primary co-cta">Kostenloses Kennenlernen anfragen <span aria-hidden="true">→</span></a>
+      <a href="/apply" class="btn btn-primary co-cta">Kostenloses Kennenlernen anfragen <span aria-hidden="true">→</span></a>
     </div>
 
     <!-- Coaches -->
     <div class="section-head co-sec"><h2>Deine Coaches</h2><p>Wir coachen alle nach demselben Konzept – Inhalte und Ablauf stimmen wir untereinander ab. Welcher Coach zu dir passt, klärt Claudio mit dir im Kennenlernen.</p></div>
     <div class="co-grid">
-      <a class="co-card" href="#/about/crazyslayt">
+      <a class="co-card" href="/about/crazyslayt">
         <div class="co-pic team-claudio" role="img" aria-label="Claudio „CrazYSlayt“"></div>
         <div class="co-body">
           <span class="co-role">Founder · führt die Kennenlern-Gespräche</span>
@@ -443,7 +512,7 @@
           <span class="mt-go">Profil ansehen <span aria-hidden="true">→</span></span>
         </div>
       </a>
-      <a class="co-card" href="#/about/humbadobo">
+      <a class="co-card" href="/about/humbadobo">
         <div class="co-pic team-romano" role="img" aria-label="Romano „humbadobo“"></div>
         <div class="co-body">
           <span class="co-role">Coach</span>
@@ -541,7 +610,7 @@
     <div class="mt-view" data-about="">
       <div class="page-head"><div class="crumb">Home / Meet the Team</div><h1>Meet the <em class="serif">Team</em></h1><p>Wer hinter TFT Freaks steckt. Klick auf eine Kachel, um das ganze Profil zu sehen.</p></div>
       <div class="mt-list">
-        <a class="mt-card" href="#/about/crazyslayt">
+        <a class="mt-card" href="/about/crazyslayt">
           <div class="mt-pic team-claudio" role="img" aria-label="Claudio „CrazYSlayt“"></div>
           <div class="mt-body">
             <span class="mt-role">TFT-Experte &amp; Founder · Coach</span>
@@ -551,7 +620,7 @@
           </div>
           <span class="mt-go">Profil ansehen <span aria-hidden="true">→</span></span>
         </a>
-        <a class="mt-card" href="#/about/humbadobo">
+        <a class="mt-card" href="/about/humbadobo">
           <div class="mt-pic team-romano" role="img" aria-label="Romano „humbadobo“"></div>
           <div class="mt-body">
             <span class="mt-role">Coach</span>
@@ -575,7 +644,7 @@
 
     <!-- Profil: CrazYSlayt -->
     <div class="mt-view" data-about="crazyslayt" hidden>
-    <div class="page-head"><div class="crumb"><a href="#/about">Meet the Team</a> / CrazYSlayt</div><h1>Claudio <em class="serif">„CrazYSlayt“</em></h1></div>
+    <div class="page-head"><div class="crumb"><a href="/about">Meet the Team</a> / CrazYSlayt</div><h1>Claudio <em class="serif">„CrazYSlayt“</em></h1></div>
     <div class="card about">
       <div>
         <div class="about-pic team-claudio" role="img" aria-label="Claudio „CrazYSlayt“" style="background-size:cover;background-position:center 20%"></div>
@@ -629,12 +698,12 @@
       </div>
     </div>
     <p class="note">Rang-Historie und Spielstil-Tags aus dem Profil-Tracker, Stand Oktober 2026.</p>
-    <a class="btn btn-ghost mt-back" href="#/about">← Zurück zum Team</a>
+    <a class="btn btn-ghost mt-back" href="/about">← Zurück zum Team</a>
     </div>
 
     <!-- Profil: humbadobo -->
     <div class="mt-view" data-about="humbadobo" hidden>
-    <div class="page-head"><div class="crumb"><a href="#/about">Meet the Team</a> / humbadobo</div><h1>Romano <em class="serif">„humbadobo“</em></h1></div>
+    <div class="page-head"><div class="crumb"><a href="/about">Meet the Team</a> / humbadobo</div><h1>Romano <em class="serif">„humbadobo“</em></h1></div>
     <div class="card about">
       <div>
         <div class="about-pic team-romano" role="img" aria-label="Romano „humbadobo“" style="background-size:cover;background-position:center 20%"></div>
@@ -694,7 +763,7 @@
       </div>
     </div>
     <p class="note">Rang-Historie, Saisonwerte und Spielstil-Tags aus MetaTFT, Stand Oktober 2026.</p>
-    <a class="btn btn-ghost mt-back" href="#/about">← Zurück zum Team</a>
+    <a class="btn btn-ghost mt-back" href="/about">← Zurück zum Team</a>
     </div>
   </div>
 </div>
@@ -720,6 +789,11 @@
       <div class="ok" id="applyOk">Danke! Deine Angaben wurden erfasst. Sobald der Versand eingerichtet ist, kommen sie direkt bei mir an.</div>
     </form>
   </div>
+</div>
+
+<!-- ================= PATCHES ================= -->
+<div class="page" id="page-patches">
+  <div class="wrap" id="patchesApp"></div>
 </div>
 
 <!-- ================= IMPRESSUM ================= -->
@@ -761,7 +835,7 @@
       <p>Die Schriften dieser Seite liegen auf unserem eigenen Server. Beim Aufruf wird keine Verbindung zu Google oder anderen Schriftanbietern hergestellt.</p>
 
       <h2>4. Spielgrafiken von externen Servern</h2>
-      <p>Bilder von Champions, Items, Augments, Traits und Rängen werden direkt von den Servern von Riot Games (ddragon.leagueoflegends.com, Riot Games, Inc., USA) und des Community-Projekts CommunityDragon (raw.communitydragon.org) geladen. Dabei wird deine IP-Adresse an diese Server übertragen – technisch lässt sich ein Bild anders nicht abrufen. Rechtsgrundlage ist unser berechtigtes Interesse an einer vollständigen und aktuellen Darstellung der Spieldaten (Art. 6 Abs. 1 lit. f DSGVO).</p>
+      <p>Bilder von Champions, Items, Augments, Traits und Rängen sowie die Titelbilder der Patches werden direkt von den Servern von Riot Games (ddragon.leagueoflegends.com und cmsassets.rgpub.io, Riot Games, Inc., USA) und des Community-Projekts CommunityDragon (raw.communitydragon.org) geladen. Dabei wird deine IP-Adresse an diese Server übertragen – technisch lässt sich ein Bild anders nicht abrufen. Rechtsgrundlage ist unser berechtigtes Interesse an einer vollständigen und aktuellen Darstellung der Spieldaten (Art. 6 Abs. 1 lit. f DSGVO).</p>
 
       <h2>5. Speicherung im Browser</h2>
       <p>Einige Funktionen speichern Einstellungen im lokalen Speicher deines Browsers (localStorage): das gewählte Set, dein Board im Team Builder und Entwürfe in der Redaktion. Diese Daten bleiben auf deinem Gerät und werden nicht an uns übertragen. Die Speicherung ist für die von dir genutzte Funktion erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG). Du kannst sie jederzeit über die Einstellungen deines Browsers löschen.</p>
@@ -793,18 +867,18 @@
   <div class="wrap">
     <div class="foot-cta">
       <h3>Bereit für den nächsten Rang? <em class="serif">Lass uns starten.</em></h3>
-      <a href="#/apply" class="btn btn-primary">Coaching anfragen →</a>
+      <a href="/apply" class="btn btn-primary">Coaching anfragen →</a>
     </div>
     <div class="foot">
       <div>
-        <a href="#/" class="logo" style="padding:0" aria-label="TFT Freaks Startseite"><span class="tft-logo" aria-hidden="true"></span><span>TFT <b>Freaks</b></span></a>
+        <a href="/" class="logo" style="padding:0" aria-label="TFT Freaks Startseite"><span class="tft-logo" aria-hidden="true"></span><span>TFT <b>Freaks</b></span></a>
         <p style="margin-top:10px">Weniger Tabs. Mehr Top 4.</p>
       </div>
-      <div><h5>Tierlist</h5><a href="#/tierlist">Comps</a><a href="#/tierlist/items">Items</a><a href="#/tierlist/augments">Augments</a></div>
-      <div><h5>Bibliothek</h5><a href="#/bibliothek/champions">Champions</a><a href="#/bibliothek/items">Items</a><a href="#/bibliothek/traits">Traits</a></div>
-      <div><h5>TFT Freaks</h5><a href="#/coaching">Coaching</a><a href="#/about">Meet the Team</a><a href="#/apply">Bewerbung</a><a href="#/admin">Redaktion</a></div>
+      <div><h5>Tierlist</h5><a href="/tierlist">Comps</a><a href="/tierlist/items">Items</a><a href="/tierlist/augments">Augments</a></div>
+      <div><h5>Bibliothek</h5><a href="/bibliothek/champions">Champions</a><a href="/bibliothek/items">Items</a><a href="/bibliothek/traits">Traits</a></div>
+      <div><h5>TFT Freaks</h5><a href="/coaching">Coaching</a><a href="/about">Meet the Team</a><a href="/apply">Bewerbung</a><a href="/admin">Redaktion</a></div>
     </div>
-    <div class="legal">© 2026 TFT Freaks · Teamfight Tactics ist eine Marke von Riot Games, Inc. Diese Fan-Seite steht in keiner Verbindung zu Riot Games und wird nicht von Riot Games unterstützt. Spielgrafiken © Riot Games. · <a href="#/impressum">Impressum</a> · <a href="#/datenschutz">Datenschutz</a></div>
+    <div class="legal">© 2026 TFT Freaks · Teamfight Tactics ist eine Marke von Riot Games, Inc. Diese Fan-Seite steht in keiner Verbindung zu Riot Games und wird nicht von Riot Games unterstützt. Spielgrafiken © Riot Games. · <a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a></div>
   </div>
 </footer>
 
@@ -815,10 +889,12 @@
 <!-- Offizielle Spieldaten: Übersicht aller Sets (erzeugt mit "Daten aktualisieren.cmd" / tools\update-data.ps1) -->
 <script src="data/sets.js"></script>
 <script src="data/ranks.js"></script>
+<script src="data/patches.js"></script>
+<script src="data/patch-kommentare.js"></script>
 <script>
 // Set wählen (Builder-Link > gespeicherte Auswahl > Live-Set) und dessen Daten + veröffentlichte Tierlist laden
 (function(){
-  var sets = window.TFT_SETS || [], want = 0, m = location.hash.match(/^#\/builder\/(\d+)\//);
+  var sets = window.TFT_SETS || [], want = 0, m = location.pathname.match(/^\/(?:builder|tools\/tierlist|tools\/simulator)\/(\d+)\//) || location.hash.match(/^#\/(?:builder|tools\/tierlist|tools\/simulator)\/(\d+)\//);
   if (m) want = +m[1];
   if (!want) { try { want = +localStorage.getItem('tftfreaks_set') || 0; } catch (e) {} }
   var pick = sets.filter(function (s) { return s.set === want; })[0] || sets.filter(function (s) { return s.status === 'live'; })[0] || sets[0];
@@ -830,6 +906,7 @@
   }
 })();
 </script>
+<script src="assets/js/sim.js"></script>
 <script src="assets/js/app.js"></script>
 </body>
 </html>

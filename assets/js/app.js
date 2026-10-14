@@ -1,4 +1,19 @@
 /* TFT Freaks – Seitenlogik (früher direkt in index.html). Braucht vorher: data/sets.js + Set-Daten (siehe Lader in index.html) */
+/* ================= ADRESSEN ================= */
+// Online echte Pfade (/tierlist/items), lokal per Doppelklick (file://) wie bisher #/tierlist/items
+const FILE_MODE = location.protocol === 'file:';
+const curPath = () => (FILE_MODE ? location.hash.replace(/^#/, '') : location.pathname) || '/';
+function setUrl(path){ history.replaceState(null, '', FILE_MODE ? '#' + path : path); }
+function go(path){
+  if(FILE_MODE){ location.hash = '#' + path; return; }
+  if(path === location.pathname) return;   // wie früher bei gleichem #: nichts tun
+  history.pushState(null, '', path);
+  route();
+}
+const siteUrl = path => FILE_MODE ? location.href.split('#')[0] + '#' + path : location.origin + path;
+// alte Links mit #/… (vor der Umstellung geteilt) auf echte Pfade umleiten
+if(!FILE_MODE && location.hash.startsWith('#/')) history.replaceState(null, '', location.hash.slice(1));
+
 /* ================= DATA ================= */
 const CDRAGON = id => `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${id}.png`;
 
@@ -46,10 +61,10 @@ const packages = [
 // Stimmen gecoachter Spieler: q = Zitat, r = Fortschritt (z. B. 'Platin → Diamant'). Ohne Zitat erscheint ein Platzhalter.
 const testimonials = [
   {n:'FreezeBomb', r:'Platin → Smaragd · 2 Sessions', q:'Eigenes Wissen mit den erklärten Konzepten vergleichen und im VOD-Review die eigenen Entscheidungen daran hinterfragen zu können – und Grundkonzepte zu lernen, die man vorher vielleicht gar nicht auf dem Schirm hatte.'},
-  {n:'Doki', r:'Meister → Großmeister · Set 18', q:'Habe das erste Mal Grandmaster erreicht. Augments und Opener waren am hilfreichsten.'},
-  {n:'Fist of Shadow', r:'', q:''},
-  {n:'AgentZero', r:'', q:''},
-  {n:'Moskau', r:'', q:''},
+  {n:'Doki', r:'Meister → Großmeister · 3 Sessions', q:'Habe das erste Mal Grandmaster erreicht. Augments und Opener waren am hilfreichsten.'},
+  {n:'AgentZero', r:'Gold I → Platin I · 2 Sessions', q:'Am meisten hat mir gebracht, wie ich mein Early Game besser spielen kann und wann ich welche Augmente auswählen sollte. Auch dass ich mehr scouten muss, war hilfreich.'},
+  {n:'бессмертный', r:'Diamant II → Meister · 2 Sessions', q:'Ich treffe jetzt nicht mehr so voreilige Entscheidungen, spiele generell safer und fühle mich mehr comfortable.'},
+  {n:'Fist of Shadow', r:'Smaragd → Meister', q:''},
 ];
 
 const guides = [
@@ -263,7 +278,7 @@ function filterComps(){
 function openComp(slug){
   const c = compBySlug[slug]; if(!c) return;
   const main = c.main ? c : (mainComps.find(x=>x.carry===c.carry) || c);
-  location.hash = '#/tierlist';
+  go('/tierlist');
   setTimeout(()=>{
     $('#compSearch').value=''; compStyle='all';
     $('#compFilters').querySelectorAll('.chip-btn').forEach(x=>x.classList.toggle('active', x.dataset.style==='all'));
@@ -386,7 +401,7 @@ const rankBy = Object.fromEntries(RANK_TIERS.map(t=>[t.k,t]));
 
 function rankCell(e, extra=''){
   const label = e.t.n + (e.d ? ' ' + e.d : '');
-  return `<a class="rk-cell${extra}" href="#/ranks/${e.t.k}" title="${esc(label)}: ${fmtPct(e.p)} der Spieler"><span class="rk-emb"><img src="${rankImg(e.t)}" alt="" loading="lazy">${e.d?`<b class="rk-div">${e.d}</b>`:''}</span><span><strong>${esc(label)}</strong><small>${fmtPct(e.p)} · Top ${fmtPct(e.top)}</small></span></a>`;
+  return `<a class="rk-cell${extra}" href="/ranks/${e.t.k}" title="${esc(label)}: ${fmtPct(e.p)} der Spieler"><span class="rk-emb"><img src="${rankImg(e.t)}" alt="" loading="lazy">${e.d?`<b class="rk-div">${e.d}</b>`:''}</span><span><strong>${esc(label)}</strong><small>${fmtPct(e.p)} · Top ${fmtPct(e.top)}</small></span></a>`;
 }
 function renderRankTable(){
   let html = '', row = 0;
@@ -408,7 +423,7 @@ function barChart(items, onKey){
 }
 let rkView = 'all';
 function renderRankDetail(key){
-  const t = rankBy[key]; if(!t){ location.hash = '#/ranks'; return; }
+  const t = rankBy[key]; if(!t){ go('/ranks'); return; }
   const idx = RANK_TIERS.indexOf(t), prev = RANK_TIERS[idx-1], next = RANK_TIERS[idx+1];
   // Meister, Großmeister und Challenger als gemeinsame Gruppe (wie Divisionen) behandeln
   const apex = !t.div;
@@ -416,12 +431,12 @@ function renderRankDetail(key){
   const view = rkView;
   const groupLabel = apex ? 'Meister – Challenger' : ` IV–I`;
   const items = view==='all'
-    ? RANK_TIERS.map(x=>({k:x.k, v:x.total, label:x.n, img:rankImg(x), href:'#/ranks/'+x.k}))
-    : es.map(e=>{ const l = e.t.n + (e.d ? ' ' + e.d : ''); return {k: apex ? e.t.k : e.d, v:e.p, label:l, short:l, img:rankImg(e.t), href: apex ? '#/ranks/'+e.t.k : null}; });
+    ? RANK_TIERS.map(x=>({k:x.k, v:x.total, label:x.n, img:rankImg(x), href:'/ranks/'+x.k}))
+    : es.map(e=>{ const l = e.t.n + (e.d ? ' ' + e.d : ''); return {k: apex ? e.t.k : e.d, v:e.p, label:l, short:l, img:rankImg(e.t), href: apex ? '/ranks/'+e.t.k : null}; });
   const where = (prev ? `Über ${prev.n}. ` : 'Der Einstieg ins Ranked. ') + (next ? `Nächster Rang: ${next.n}.` : 'Höher geht es nicht.');
   const exact = RANK_ENTRIES.slice().reverse().map(e=>`<tr${e.t===t?' class="on"':''}><td>${esc(e.t.n+(e.d?' '+e.d:''))}</td><td>${fmtPct(e.p)}</td><td>Top ${fmtPct(e.top)}</td></tr>`).join('');
   $('#rk-detail').innerHTML = `
-    <div class="rk-back"><a href="#/ranks">← Alle TFT-Ränge</a> / <span>${esc(t.n)}</span></div>
+    <div class="rk-back"><a href="/ranks">← Alle TFT-Ränge</a> / <span>${esc(t.n)}</span></div>
     <div class="rk-card">
       <div class="rk-head">
         <img src="${rankImg(t)}" alt="TFT Rang ${esc(t.n)}">
@@ -457,8 +472,8 @@ function setRank(sub){
 }
 document.addEventListener('click', e=>{
   const v = e.target.closest('[data-rkview]');
-  if(v){ rkView = v.dataset.rkview; renderRankDetail(location.hash.split('/')[2]); return; }
-  const b = e.target.closest('.rk-bar[data-href]'); if(b) location.hash = b.dataset.href;
+  if(v){ rkView = v.dataset.rkview; renderRankDetail(curPath().split('/')[2]); return; }
+  const b = e.target.closest('.rk-bar[data-href]'); if(b) go(b.dataset.href);
 });
 renderRankTable();
 
@@ -476,6 +491,22 @@ let bHist = [], bRedo = [], bLast = null, bRestoring = false;
 const sideBoard = s => s==='e' ? eBoard : bBoard;
 const sideAugs = s => s==='e' ? eAugs : bAugs;
 try { bEnemy = localStorage.getItem(BUILDER_ENEMY_KEY)==='1'; } catch(e){}
+// Dieselbe Oberfläche dient auch dem Kampf-Simulator (/tools/simulator) – mit eigenem Speicherstand und immer mit Gegner
+const SIM_KEY = 'tftfreaks_sim_v1_' + TFT_DATA.set;
+let bMode = 'builder';
+const bKey = () => bMode==='sim' ? SIM_KEY : BUILDER_KEY;
+const bBase = () => bMode==='sim' ? '/tools/simulator' : '/builder';
+function bSetMode(mode){
+  if(mode===bMode) return;
+  bMode = mode; bLoaded = false; bCtx = null; bSel = null;
+  if(mode==='builder'){ try { bEnemy = localStorage.getItem(BUILDER_ENEMY_KEY)==='1'; } catch(e){ bEnemy = false; } }
+  const sim = mode==='sim';
+  $('#page-builder').classList.toggle('sim-mode', sim);
+  $('#bCrumb').innerHTML = sim ? '<a href="/tools">Tools</a> / Kampf-Simulator' : '<a href="/">Home</a> / Team Builder';
+  $('#bTitle').innerHTML = sim ? `Kampf-<em class="serif">Simulator</em> <span class="pill gold wip-pill" title="Der Simulator wird noch verbessert – Ergebnisse sind Näherungen">In Arbeit</span>` :`Team Builder <em class="serif">Set <span data-setno>${TFT_DATA.set}</span></em>`;
+  $('#bIntro').textContent = sim ? 'Stell dein Team und den Gegner auf – mit Items, Sternen und Augments – und starte den Kampf. Du siehst, wohin jede Unit läuft, wen sie angreift, wann sie ihre Fähigkeit wirkt und wohin sie springt. Der Simulator ist noch in Arbeit: Die Ergebnisse sind Näherungen.'
+    : 'Zieh Units aufs Brett, verteil Items und sieh sofort, welche Traits aktiv sind. Auf dem Handy: erst antippen, dann aufs Feld tippen.';
+}
 
 // Kompakter Code für Links: Brett ~ Augments ~ Alt Builds ~ Gegner-Brett ~ Gegner-Augments (Base36)
 const encBoard = board => Object.entries(board).map(([h,b])=>[(+h).toString(36), B_UNITS.indexOf(b.u).toString(36), b.s||1,
@@ -548,20 +579,23 @@ function bComponents(board){
 // Brett zeichnen – das Gegner-Brett ist um 180° gedreht (seine Frontlinie zeigt auf deine)
 function boardRows(board, side){
   const flip = side==='e';
+  // Schwarzdorn aktiv: Opferfeld markieren (Feld aus data/custom-<Set>.js)
+  const bt = TFT_CUSTOM_SET.blackthorn, btHex = bt && compTraits(bTeamOf(board)).some(t=>t.n==='Blackthorn') ? bt.hex : -1;
   let rows = '';
   for(let k=0;k<4;k++){
     const r = flip ? 3-k : k;
     let cells = '';
     for(let j=0;j<7;j++){
       const h = r*7 + (flip ? 6-j : j), b = board[h], key = `${side}:${h}`;
-      const sel = bSel && bSel.type==='hex' && bSel.side===side && +bSel.id===h ? ' sel' : '';
-      if(!b){ cells += `<div class="hex${sel}" data-hex="${h}" data-side="${side}"><div class="hex-bg"></div></div>`; continue; }
+      const sel = (bSel && bSel.type==='hex' && bSel.side===side && +bSel.id===h ? ' sel' : '') + (h===btHex ? ' bthex' : '');
+      const btTag = h===btHex ? `<span class="bt-tag" title="Schwarzdorn-Opferfeld: Die Unit hier wird vor dem Kampf geopfert und stärkt dein Team">Opfer</span>` : '';
+      if(!b){ cells += `<div class="hex${sel}" data-hex="${h}" data-side="${side}"><div class="hex-bg"></div>${btTag}</div>`; continue; }
       const ch = champBy[b.u], plant = PLANTS[b.u];
       const its = b.i.map((id,n)=>{ const it=findItem(id); return it?`<img src="${it.img}" alt="${esc(it.en)}" title="${esc(it.en)} – Klick entfernt" data-unequip="${key}:${n}" draggable="true">`:''; }).join('');
       cells += `<div class="hex filled c${ch?ch.c:1}${plant?' plant':''}${sel}" data-hex="${h}" data-side="${side}" draggable="true" title="${esc(b.u)}"><div class="hex-bg"></div><div class="hex-img" style="background-image:${champBg(b.u)}"></div>`
         + `<button class="hex-stars b-star${b.s===1?' one':''}" data-star="${key}" type="button" title="Sterne ändern (${b.s}★)">${'★'.repeat(b.s)}</button>`
         + `<button class="b-x" data-remove="${key}" type="button" aria-label="${esc(b.u)} entfernen">✕</button>`
-        + (its?`<div class="hex-items">${its}</div>`:'') + `<span class="hex-name">${esc(b.u)}</span></div>`;
+        + (its?`<div class="hex-items">${its}</div>`:'') + `<span class="hex-name">${esc(b.u)}</span>${btTag}</div>`;
     }
     rows += `<div class="board-row${k%2?' odd':''}">${cells}</div>`;
   }
@@ -585,6 +619,7 @@ function renderSide(side){
   $('#bComps'+S).innerHTML = comps.length ? comps.map(([id,n])=>{ const it = itemById[id]; return it ? `<span class="b-comp" title="${esc(it.en)}"><img src="${it.img}" alt="${esc(it.en)}"><b>×${n}</b></span>` : ''; }).join('') : '<p class="b-empty">Items ausrüsten, dann siehst du hier die Komponenten.</p>';
 }
 function renderBuilder(){
+  if(bMode==='sim') bEnemy = true;
   bTrack();
   if(!bEnemy && bActive==='e') bActive = 'm';
   $('#bRowE').hidden = !bEnemy;
@@ -594,7 +629,8 @@ function renderBuilder(){
   renderSide('m'); if(bEnemy) renderSide('e');
   $('#bAlt').innerHTML = bAlt.map((u,i)=>`<div class="b-altslot${u?' filled':''}" data-alt="${i}" title="${u?esc(u)+' – Klick entfernt':'Unit hierher ziehen'}">${u?hexHTML(u):'<div class="hx b-emptyhx"><div class="hx-in"></div></div>'}</div>`).join('');
   $('#bUndo').disabled = !bHist.length; $('#bRedo').disabled = !bRedo.length;
-  try { localStorage.setItem(BUILDER_KEY, bEncode()); localStorage.setItem(BUILDER_ENEMY_KEY, bEnemy ? '1' : '0'); } catch(e){}
+  try { localStorage.setItem(bKey(), bEncode()); if(bMode==='builder') localStorage.setItem(BUILDER_ENEMY_KEY, bEnemy ? '1' : '0'); } catch(e){}
+  if(bMode==='sim') simOnEdit();
 }
 function bUnitBtn(n){
   const ch = champBy[n];
@@ -628,31 +664,44 @@ function renderBuilderCtx(){
   box.hidden = !c;
   box.innerHTML = c ? `<span>Du bearbeitest die Aufstellung von <b>${esc(c.name)}</b>.</span><button class="btn btn-primary b-btn" id="bApply" type="button">In Comp übernehmen</button><button class="btn btn-ghost b-btn" id="bCancel" type="button">Abbrechen</button>` : '';
 }
-function builderRoute(sub, code2){
-  // Links: #/builder/<Set>/<Code> – gehört der Link zu einem anderen Set, wird dorthin gewechselt
-  if(sub && /^\d+$/.test(sub)){ if(+sub !== TFT_DATA.set){ try { localStorage.setItem('tftfreaks_set', sub); } catch(e){} location.reload(); return; } sub = code2 || ''; if(!sub) history.replaceState(null, '', '#/builder'); }
-  if(sub){ bApplyState(bDecode(sub)); bCtx = null; bResetHistory(); history.replaceState(null, '', '#/builder'); }
-  else if(!bLoaded){ const keep = bEnemy; try { bApplyState(bDecode(localStorage.getItem(BUILDER_KEY) || (TFT_DATA.set===18 ? localStorage.getItem('tftfreaks_builder_v1') : '') || '')); } catch(e){ bApplyState(bDecode('')); } bEnemy = keep || bEnemy; bResetHistory(); }
+function builderRoute(sub, code2, mode){
+  bSetMode(mode || 'builder');
+  // Links: /builder/<Set>/<Code> bzw. /tools/simulator/<Set>/<Code> – gehört der Link zu einem anderen Set, wird dorthin gewechselt
+  if(sub && /^\d+$/.test(sub)){ if(+sub !== TFT_DATA.set){ try { localStorage.setItem('tftfreaks_set', sub); } catch(e){} location.reload(); return; } sub = code2 || ''; if(!sub) setUrl(bBase()); }
+  if(sub){ bApplyState(bDecode(sub)); bCtx = null; bResetHistory(); setUrl(bBase()); }
+  else if(!bLoaded){
+    const keep = bEnemy;
+    let saved = ''; try { saved = localStorage.getItem(bKey()) || (bMode==='builder' && TFT_DATA.set===18 ? localStorage.getItem('tftfreaks_builder_v1') : '') || ''; } catch(e){}
+    // Simulator zum ersten Mal: mit dem Stand aus dem Team Builder starten
+    if(!saved && bMode==='sim'){ try { saved = localStorage.getItem(BUILDER_KEY) || ''; } catch(e){} }
+    try { bApplyState(bDecode(saved)); } catch(e){ bApplyState(bDecode('')); }
+    bEnemy = keep || bEnemy; bResetHistory();
+  }
   bLoaded = true; bSel = null;
   renderBuilderCtx(); renderPool(); renderBuilder(); bHint('');
+  if(bMode==='sim') simMount(); else simPause();
 }
 function openInBuilder(c, ctx){
   if(!c) return;
+  bSetMode('builder');
   bBoard = {};
   (c.board||[]).forEach(b=>{ if(b.h==null || b.h<0 || b.h>27) return; bBoard[b.h] = {u:b.u, s:b.s||1, i:(b.i||[]).map(id=>(findItem(id)||{}).id).filter(Boolean).slice(0,3)}; });
   bAugs = (c.augs||[]).filter(id=>augById[id]).slice(0,3);
   bAlt = [(c.alt||[])[0] ? c.alt[0].u : null, (c.alt||[])[1] ? c.alt[1].u : null];
   bActive = 'm'; bCtx = ctx || null; bLoaded = true; bResetHistory();
-  if(location.hash==='#/builder') builderRoute(); else location.hash = '#/builder';
+  if(curPath()==='/builder') builderRoute(); else go('/builder');
 }
 // Aktionen
 function bPlace(side, h, name){ sideBoard(side)[h] = {u:name, s:1, i:[]}; }
 function bAdd(name){
   const board = sideBoard(bActive);
-  const order = [21,22,23,24,25,26,27,14,15,16,17,18,19,20,7,8,9,10,11,12,13,0,1,2,3,4,5,6]; // hintere Reihe zuerst
+  // Reihe 0 zeigt zum Gegner: Nahkampf (Reichweite bis 2) und Pflanzen von vorne auffüllen, Fernkampf von hinten – jeweils von der Mitte nach außen
+  const front = !CH_DATA[name] || isMelee(name);
+  const order = (front ? [0,1,2,3] : [3,2,1,0]).flatMap(r=>[3,2,4,1,5,0,6].map(c=>r*7 + c));
   const h = order.find(x=>!board[x]);
   if(h===undefined){ bHint('Das Brett ist voll.'); return; }
-  bPlace(bActive, h, name); renderBuilder(); bHint(`${name} platziert${bEnemy ? (bActive==='e' ? ' (Gegner)' : ' (dein Board)') : ''}.`);
+  bPlace(bActive, h, name); renderBuilder();
+  bHint(`${name} steht ${front ? 'vorne (Nahkampf)' : 'hinten (Fernkampf)'}${bEnemy ? (bActive==='e' ? ' – Gegner' : ' – dein Board') : ''}.`);
 }
 function bMove(sa, a, sb, b){
   if(sa===sb && a===b) return;
@@ -708,18 +757,20 @@ document.addEventListener('click', e=>{
   if(id==='bUndo'){ bUndo(); return; }
   if(id==='bRedo'){ bRedoStep(); return; }
   if(id==='bClear'){ bBoard = {}; bAugs = []; bAlt = [null,null]; eBoard = {}; eAugs = []; bSel = null; renderBuilder(); bHint('Brett geleert.'); return; }
-  if(id==='bShare'){ bCopy(location.href.split('#')[0] + '#/builder/' + TFT_DATA.set + '/' + bEncode(), 'Link kopiert!'); return; }
+  if(id==='bShare'){ bCopy(siteUrl(bBase() + '/' + TFT_DATA.set + '/' + bEncode()), 'Link kopiert!'); return; }
   if(id==='bCopyCode'){ bCopy(bEncode() || '(leer)', 'Team-Code kopiert!'); return; }
   if(id==='bImport'){
     const v = prompt('Team-Code oder Link einfügen:'); if(!v) return;
-    let code = v.includes('#/builder/') ? v.split('#/builder/')[1] : v.trim();
+    // akzeptiert neue Links (…/builder/18/Code, …/tools/simulator/18/Code), alte Links (…#/builder/18/Code) und reine Codes
+    const lm = v.trim().match(/\/(?:builder|tools\/simulator)\/(.+)$/);
+    let code = lm ? lm[1] : v.trim();
     const sm = code.match(/^(\d+)\/(.*)$/);
-    if(sm){ if(+sm[1] !== TFT_DATA.set){ if(confirm(`Dieser Link gehört zu Set ${sm[1]}. Jetzt zu Set ${sm[1]} wechseln?`)){ try { localStorage.setItem('tftfreaks_set', sm[1]); } catch(e){} history.replaceState(null, '', '#/builder/' + code); location.reload(); } return; } code = sm[2]; }
+    if(sm){ if(+sm[1] !== TFT_DATA.set){ if(confirm(`Dieser Link gehört zu Set ${sm[1]}. Jetzt zu Set ${sm[1]} wechseln?`)){ try { localStorage.setItem('tftfreaks_set', sm[1]); } catch(e){} setUrl(bBase() + '/' + code); location.reload(); } return; } code = sm[2]; }
     const st = bDecode(code); if(!Object.keys(st.board).length && !st.augs.length && !Object.keys(st.eboard).length){ bHint('Code nicht erkannt.'); return; }
     bApplyState(st); bSel = null; renderBuilder(); bHint('Team importiert.'); return;
   }
   if(id==='bApply'){ bApplyToComp(); return; }
-  if(id==='bCancel'){ bCtx = null; location.hash = '#/admin'; return; }
+  if(id==='bCancel'){ bCtx = null; go('/admin'); return; }
 });
 document.addEventListener('contextmenu', e=>{
   const hex = e.target.closest && e.target.closest('.bboard .hex.filled'); if(!hex || !hex.closest('#page-builder')) return;
@@ -883,7 +934,7 @@ function bApplyToComp(){
   c.augs = [...bAugs];
   c.alt = bAlt.filter(Boolean).map(u=>(c.alt||[]).find(a=>a.u===u) || {u});
   if(!c.board.some(b=>b.u===c.carry)){ const best = c.board.filter(b=>!PLANTS[b.u]).sort((a,b)=>(b.i||[]).length-(a.i||[]).length)[0]; c.carry = best ? best.u : ''; }
-  admSel = c.slug; bCtx = null; admSave('Aufstellung übernommen'); location.hash = '#/admin';
+  admSel = c.slug; bCtx = null; admSave('Aufstellung übernommen'); go('/admin');
 }
 // Felder
 document.addEventListener('input', e=>{
@@ -998,7 +1049,8 @@ function renderSetSwitcher(){
 }
 function pickSet(n){
   try { localStorage.setItem('tftfreaks_set', String(n)); } catch(e){}
-  if(location.hash.startsWith('#/builder/')) history.replaceState(null, '', '#/builder');
+  if(curPath().startsWith('/builder/')) setUrl('/builder');
+  if(curPath().startsWith('/tools/simulator/')) setUrl('/tools/simulator');
   location.reload();
 }
 function toggleSetMenu(open){
@@ -1060,7 +1112,36 @@ const BUDDY_LINES = {
   coaching(){ return ['Das Kennenlernen ist kostenlos – trau dich!', 'Nimm vorher ein paar Spiele auf, sonst gibt es nichts zum Anschauen!', 'Claudio und Romano sind beide Challenger. Ich bin nur fürs Zuschlagen zuständig.', 'VOD-Review heißt: pausieren, zurückspulen, verstehen. Ganz ohne Stress.', 'Mit dem 3er-Paket sparst du 10 €. Ich würde zuschlagen!', 'Deutsch oder Englisch? Geht beides!']; },
   // Ornn: alles, was noch im Bau ist oder nicht läuft
   news(){ return ['Hmph. Die Neuigkeiten liegen noch auf dem Amboss.', 'Gut Ding will Weile haben. Gute Patch-Notes auch.', 'Ich schmiede hier gerade. Komm später wieder.', 'Erst wenn das Eisen heiß ist, wird geschrieben. Bis dahin: Tierlist.']; },
-  tools(){ return ['Werkzeug? Das schmiede ich selbst. Gib mir Zeit.', 'Ein Team-Planer braucht mehr als einen Hammerschlag.', 'Wer drängelt, bekommt schiefe Klingen. Hmph.', 'Bis dahin tut es die Rezept-Tabelle in der Bibliothek.']; },
+  tools(){
+    const sh = TFT_CUSTOM_SET.shop, o = sh && sh.odds && sh.odds[7];
+    // Heimerdinger: das Tools-Maskottchen
+    return ['Willkommen in meiner Werkstatt! Such dir ein Werkzeug aus – alles frisch kalibriert.',
+      'Rollen oder leveln? Mein Rolldown-Rechner kennt die Antwort. Wissenschaft!',
+      o ? `Auf Level 8 ist jeder Shop-Slot zu ${o[3]} % eine 4-Kosten-Unit. Faszinierend, nicht wahr?` : null,
+      'Der Item-Drop-Rechner zählt mit, was noch im Sack liegt. Reine Mathematik!',
+      'Mit dem Tierlist-Maker baust du deine eigene Tierlist – und schickst sie als Link an deine Freunde.',
+      'Der Kampf-Simulator steht noch auf meiner Werkbank. Ein paar Schrauben fehlen noch!',
+      'Ein Experiment ist kein Experiment ohne Wiederholung: Im Simulator rechnest du einen Kampf 100-mal.',
+      'Econ- und XP-Rechner? Die Baupläne liegen schon auf meinem Tisch.'].filter(Boolean);
+  },
+  // Heimerdinger in den einzelnen Tools (erscheint nur, wenn assets/tools/<tool>.webp existiert)
+  tlmaker(){ return ['S-Tier oder C-Tier? Hmm … eine Frage für die Wissenschaft – und für deine Meinung!',
+    'Zieh Champions, Traits, Items oder Augments in die Reihen. Oder tipp erst an, dann auf die Zeile.',
+    'Klick auf ein Label, um die Reihe umzubenennen. Farbe und Reihenfolge änderst du direkt daneben.',
+    'Bis zu 12 Reihen! Genug Platz für jede noch so verrückte Hypothese.',
+    'Fertig? Mit „Teilen“ bekommst du einen Link. Perfekt für hitzige Diskussionen mit Freunden!']; },
+  rolldown(){ return ['Rollen oder leveln? Lass uns das berechnen, bevor du dein Gold verbrennst!',
+    'Je mehr Kopien schon weg sind, desto schlechter deine Chancen. Trag sie ein – Präzision ist alles!',
+    'Der Vergleich zeigt dir, ob ein Level vor dem Rollen mehr bringt. Faszinierend!',
+    'Zwei Gold pro Roll, fünf Slots pro Shop. Den Rest erledigt die Mathematik.']; },
+  drops(){ return ['Komponenten kommen aus einem Sack. Ich zähle mit, was noch drin ist!',
+    'Klick die Komponenten an, sobald sie droppen. Je genauer du bist, desto besser meine Vorhersage.',
+    'Vor jeder Creep-Stage kommt von jeder Komponente eine dazu. Ein wunderbar logisches System!',
+    'Prismatic-Orbs gibt es erst ab 3-7. Geduld ist auch eine Wissenschaft!']; },
+  sim(){ return ['Willkommen in meinem Labor! Stell zwei Teams auf und starte das Experiment.',
+    'Klick eine Unit an – dann siehst du ihr Ziel, ihren Laufweg und was sie als Nächstes vorhat.',
+    'Ein Kampf ist Zufall, hundert Kämpfe sind Statistik. Probier „Siegchance“!',
+    'Der Simulator steht noch auf meiner Werkbank. Die Ergebnisse sind Näherungen!']; },
   guides(){ return ['Diese Guides glühen noch in der Esse.', 'Ein Guide ist wie eine Klinge: erst schmieden, dann schärfen.', 'Lesen, üben, wiederholen. So wird man Meister.']; },
   notfound(){ return ['Hier ist nichts. Nicht mal Erz.', 'Diesen Pfad habe ich nie geschmiedet. Zurück zur Tierlist!', 'Hmph. Falsch abgebogen, Wanderer.']; },
 };
@@ -1083,22 +1164,35 @@ function buddyReact(c){
   st.hold = Date.now() + 15000;
   buddySay('tierlist', `${c.name}? ${DIFF_LINE[c.diff]||''} Gib ${c.carry} die Items!`);
 }
-document.querySelectorAll('[data-buddy]').forEach(el=>{
+function buddyWire(el){
   const key = el.dataset.buddy;
   buddyNext(key, true);
   el.querySelector('.buddy-img').addEventListener('click', ()=>{ (buddyState[key]||{}).hold = 0; buddyNext(key); });
   el.addEventListener('mouseenter', ()=>{ el.dataset.hover = '1'; });
   el.addEventListener('mouseleave', ()=>{ delete el.dataset.hover; });
+}
+document.querySelectorAll('[data-buddy]').forEach(buddyWire);
+// Tool-Seiten: Heimerdinger in der Version des Tools (dasselbe Bild wie auf der Kachel) – nur, wenn es das Bild gibt
+document.querySelectorAll('[data-tool-art]').forEach(head=>{
+  const src = `assets/tools/${head.dataset.toolArt}.webp`, im = new Image();
+  im.onload = ()=>{
+    const sim = head.dataset.toolArt==='simulator';
+    head.classList.add('art-on');
+    head.insertAdjacentHTML('afterbegin', `<div class="buddy heimer${sim ? ' b-simonly' : ''}" data-buddy="${head.dataset.artBuddy}"><div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>`
+      + `<button class="buddy-img" type="button" style="background:url('${src}') center bottom/contain no-repeat" aria-label="Heimerdinger – nächster Tipp" title="Klick für den nächsten Tipp"></button></div>`);
+    buddyWire(head.firstElementChild);
+  };
+  im.src = src;
 });
 setInterval(()=>{
   const page = document.querySelector('.page.active'); if(!page || document.hidden) return;
-  const el = page.querySelector('[data-buddy]'); if(!el || el.dataset.hover) return;
+  const el = [...page.querySelectorAll('[data-buddy]')].find(b=>b.offsetParent); if(!el || el.dataset.hover) return;
   const st = buddyState[el.dataset.buddy]; if(st && st.hold > Date.now()) return;
   buddyNext(el.dataset.buddy);
 }, 9000);
 $('#tlTabs').addEventListener('click', e=>{
   const b=e.target.closest('.tab'); if(!b) return;
-  location.hash = b.dataset.tab==='comps' ? '#/tierlist' : '#/tierlist/'+b.dataset.tab;
+  go(b.dataset.tab==='comps' ? '/tierlist' : '/tierlist/'+b.dataset.tab);
 });
 
 /* bibliothek tabs */
@@ -1116,7 +1210,7 @@ function renderChamps(){
   const q = $('#champSearch').value.toLowerCase().trim();
   const list = champions.filter(c=>(costF==='all'||String(c.c)===costF) && (!q || c.n.toLowerCase().includes(q) || c.t.some(t=>t.toLowerCase().includes(q))));
   $('#champCount').textContent = `${list.length} von ${champions.length} Champions`;
-  $('#champGrid').innerHTML = list.map(c=>`<button class="champ" data-champ="${esc(c.n)}">${avatar(c.n,56)}<div><h4>${esc(c.n)}</h4><div class="cost"><span class="coin"></span>${c.c} Gold</div><div class="trait-mini">${c.t.map(t=>`<span style="display:inline-flex;align-items:center;gap:4px"><img src="${traitImg(t)}" alt="" width="12" height="12" style="width:12px;height:12px;filter:brightness(1.6)" onerror="this.remove()">${esc(t)}</span>`).join('')}</div></div></button>`).join('');
+  $('#champGrid').innerHTML = list.map(c=>`<button class="champ" data-champ="${esc(c.n)}">${avatar(c.n,56)}<div><h4>${esc(c.n)}</h4><div class="cost"><span class="coin"></span>${c.c} Gold${champRange(c.n) ? `<span class="ch-rng sm ${isMelee(c.n) ? 'melee' : 'ranged'}" title="${rangeLabel(c.n)}">${isMelee(c.n) ? 'Nahkampf' : 'Fernkampf'}</span>` : ''}</div><div class="trait-mini">${c.t.map(t=>`<span style="display:inline-flex;align-items:center;gap:4px"><img src="${traitImg(t)}" alt="" width="12" height="12" style="width:12px;height:12px;filter:brightness(1.6)" onerror="this.remove()">${esc(t)}</span>`).join('')}</div></div></button>`).join('');
 }
 $('#costFilters').addEventListener('click', e=>{
   const b=e.target.closest('.chip-btn'); if(!b) return;
@@ -1125,15 +1219,66 @@ $('#costFilters').addEventListener('click', e=>{
 });
 $('#champSearch').addEventListener('input', renderChamps);
 
+/* Champion-Details: Werte, Reichweite, Fähigkeit */
+// Reichweite in Feldern: bis 2 = Nahkampf (gehört nach vorne), ab 3 = Fernkampf (nach hinten)
+const champRange = n => (CH_DATA[n] && CH_DATA[n].st && CH_DATA[n].st.range) || 0;
+const isMelee = n => { const r = champRange(n); return r > 0 && r <= 2; };
+const rangeLabel = n => { const r = champRange(n); return r ? `${r <= 2 ? 'Nahkampf' : 'Fernkampf'} · ${r} ${r===1 ? 'Feld' : 'Felder'}` : ''; };
+const SCALE_LBL = {AP:'AP', AD:'AD', Health:'Leben', Armor:'Rüstung', MR:'MR', AS:'Angriffstempo', Mana:'Mana', Crit:'Krit'};
+// Fähigkeitstext mit Werten pro Stern (1★ / 2★ / 3★). Werte aus den Riot-Daten oder von Hand in data/custom-<Set>.js (abilities)
+function abilityHTML(n){
+  const ab = (CH_DATA[n] || {}).ab; if(!ab || !ab.d) return '';
+  const vals = Object.assign({}, ab.v || {}, (TFT_CUSTOM_SET.abilities || {})[n] || {}), vl = {};
+  Object.keys(vals).forEach(k=>{ vl[k.toLowerCase()] = vals[k]; });
+  let s = ab.d.replace(/%i:scale([A-Za-z]+)%/g, (m,k)=>`\u0002${k}\u0003`)
+    .replace(/@([A-Za-z0-9_]+)(\*100)?@/g, (m,k,mul)=>{
+      const v = vl[k.toLowerCase()]; if(v === undefined) return '\u0006';
+      const arr = (Array.isArray(v) ? v : [v]).map(x=>x * (mul ? 100 : 1));
+      return '\u0004' + (arr.every(x=>x===arr[0]) ? [arr[0]] : arr).map(fmtNum).join(' / ') + (mul ? ' %' : '') + '\u0005';
+    });
+  return fmtDesc(s, {})
+    .replace(/\u0002([A-Za-z]+)\u0003/g, (m,k)=>`<span class="ab-sc">${esc(SCALE_LBL[k] || k)}</span>`)
+    .replace(/\u0004([^\u0005]*)\u0005/g, '<b class="ab-val">$1</b>')
+    .replace(/\u0006/g, '<span class="ab-q" title="Diesen Wert liefert Riot in den offiziellen Set-Daten nicht mit">?</span>');
+}
+const traitMore = n => { const h = traitTiersHTML(n); return h ? `<details class="tt-more"><summary>Stufen &amp; Werte</summary>${h}</details>` : ''; };
+function champStatsHTML(n){
+  const st = (CH_DATA[n] || {}).st; if(!st) return '';
+  const stars = (v, m) => [v, v*m, v*m*m].map(x=>fmtNum(Math.round(x))).join(' / ');
+  const cells = [['Leben', stars(st.hp, 1.8)], ['Angriffsschaden', stars(st.ad, 1.5)], ['Angriffstempo', fmtNum(st.as)], ['Mana', `${st.mana0} / ${st.mana}`],
+    ['Rüstung', st.ar], ['Magieresistenz', st.mr], ['Krit-Chance', Math.round((st.crit||0)*100) + ' %'], ['Reichweite', rangeLabel(n)]];
+  return `<div class="ch-stats">${cells.map(([l,v])=>`<div><small>${l}</small><b>${v}</b></div>`).join('')}</div>`;
+}
+// Offizielle Trait-Beschreibung mit den Werten jeder Stufe
+function traitTiersHTML(name){
+  const raw = TFT_DATA.traits.find(x=>x.n===name); if(!raw || !raw.desc) return '';
+  const fx = raw.fx && raw.fx.length ? raw.fx : [{min:raw.bp[0], v:{}}];
+  let d = raw.desc, rows = [];
+  const exp = d.match(/<expandRow>([\s\S]*?)<\/expandRow>/i);
+  if(exp){ d = d.replace(exp[0], ''); rows = fx.map(()=>exp[1]); }
+  else { rows = [...d.matchAll(/<row>([\s\S]*?)<\/row>/gi)].map(m=>m[1]); d = d.replace(/<row>[\s\S]*?<\/row>/gi, ''); }
+  const sub = (txt, e) => fmtDesc(txt.replace(/@MinUnits@/gi, e.min), e.v);
+  const intro = sub(d, fx[0]);
+  const list = rows.map((r,i)=>fx[i] ? `<li><span class="tt-bp">${fx[i].min}</span><span>${sub(r, fx[i]).replace(/^\(\d+\)\s*/, '')}</span></li>` : '').join('');
+  return `${intro ? `<p class="tt-intro">${intro}</p>` : ''}${list ? `<ul class="tt-rows">${list}</ul>` : ''}`;
+}
+
 function openChamp(name){
   const c = champBy[name]; if(!c) return;
-  const tr = c.t.map(tn=>{const t=traits.find(x=>x.n===tn); return t?`<div class="trait" style="margin-top:10px"><div class="trait-top">${traitHex(t.n, t.bp.length===1?'unique':'base', 28)}<h4>${esc(t.n)}</h4><div class="bp">${t.bp.map(b=>`<span>${b}</span>`).join('')}</div></div><p style="margin:0">${esc(t.d)}</p></div>`:'';}).join('');
+  const tr = c.t.map(tn=>{const t=traits.find(x=>x.n===tn); return t?`<div class="trait" style="margin-top:10px"><div class="trait-top">${traitHex(t.n, t.bp.length===1?'unique':'base', 28)}<h4>${esc(t.n)}</h4><div class="bp">${t.bp.map(b=>`<span>${b}</span>`).join('')}</div></div><p style="margin:0">${esc(t.d)}</p>${traitMore(t.n)}</div>`:'';}).join('');
   const inComps = comps.filter(x=>x.core.includes(c.n)).map(x=>`<button class="it-link" data-comp="${x.slug}" style="padding:4px 12px">${x.tier} · ${esc(x.name)}</button>`).join('') || '<span class="note" style="margin:0">Noch in keiner Tierlist-Comp.</span>';
   // Häufigste Items auf diesem Champion über alle Comps
   const freq = {};
   comps.forEach(x=>[...x.board, ...x.alt].forEach(b=>{ if(b.u===c.n) (b.i||[]).forEach(id=>{ const it=findItem(id); if(it) freq[it.id]=(freq[it.id]||0)+1; }); }));
   const best = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([id])=>itLink(itemById[id])).join('');
-  $('#modalBody').innerHTML = `<div style="display:flex;gap:16px;align-items:center;margin-bottom:6px">${avatar(c.n,64)}<div><h2 style="margin:0">${esc(c.n)}</h2><div class="cost"><span class="coin"></span> ${c.c} Gold</div></div></div>
+  const ab = (CH_DATA[c.n] || {}).ab, st = (CH_DATA[c.n] || {}).st;
+  const abHTML = abilityHTML(c.n);
+  $('#modalBody').innerHTML = `<div style="display:flex;gap:16px;align-items:center;margin-bottom:6px">${avatar(c.n,64)}<div><h2 style="margin:0">${esc(c.n)}</h2><div class="cost"><span class="coin"></span> ${c.c} Gold${rangeLabel(c.n) ? ` <span class="ch-rng ${isMelee(c.n) ? 'melee' : 'ranged'}">${rangeLabel(c.n)}</span>` : ''}</div></div></div>
+    ${abHTML ? `<h4 style="margin-top:18px;font-size:.85rem;color:var(--faint)">FÄHIGKEIT</h4>
+      <div class="ch-ab"><div class="ch-ab-head"><b>${esc(ab.n)}</b>${st ? `<span>Mana ${st.mana0} / ${st.mana}</span>` : ''}</div><p>${abHTML}</p>
+      ${/ab-q/.test(abHTML) ? '<small class="ch-note">? = Wert, den Riot für dieses Set nicht in den offiziellen Daten mitliefert.</small>' : ''}${/ab-val/.test(abHTML) ? '<small class="ch-note">Werte für 1★ / 2★ / 3★.</small>' : ''}</div>` : ''}
+    ${st ? `<h4 style="margin-top:18px;font-size:.85rem;color:var(--faint)">WERTE</h4>${champStatsHTML(c.n)}<small class="ch-note">Leben und Angriffsschaden für 1★ / 2★ / 3★.</small>` : ''}
+    ${(()=>{ const h = champPatchHTML(c.n); return h ? `<h4 style="margin-top:18px;font-size:.85rem;color:var(--faint)">LETZTE ÄNDERUNGEN</h4><div class="cp-list">${h}</div>` : ''; })()}
     <h4 style="margin-top:18px;font-size:.85rem;color:var(--faint)">TRAITS</h4>${tr}
     ${best?`<h4 style="margin-top:18px;font-size:.85rem;color:var(--faint)">EMPFOHLENE ITEMS</h4><div class="tag-row">${best}</div>`:''}
     <h4 style="margin-top:18px;font-size:.85rem;color:var(--faint)">IN COMPS</h4><div class="tag-row">${inComps}</div>`;
@@ -1156,7 +1301,7 @@ function renderTraits(){
     const col = t.cat==='origin' ? 'var(--accent)' : 'var(--gold)';
     const icon = t.cat==='origin' ? '<path d="M12 3c-3 3-6 6-6 10a6 6 0 0 0 12 0c0-4-3-7-6-10Z"/>' : '<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/>';
     return `<div class="trait"><div class="trait-top">${traitHex(t.n, t.bp.length===1?'unique':'base', 34)}<div><h4>${esc(t.n)}</h4><small style="color:var(--faint);font-size:.72rem">${t.cat==='origin'?'Ursprung':'Klasse'}</small></div></div>
-      <div class="bp">${t.bp.map(b=>`<span>${b}</span>`).join('')}</div><p>${esc(t.d)}</p>
+      <div class="bp">${t.bp.map(b=>`<span>${b}</span>`).join('')}</div><p>${esc(t.d)}</p>${traitMore(t.n)}
       <div class="trait-units">${units.map(u=>`<button data-champ="${esc(u.n)}" style="background:none;border:0;padding:0;cursor:pointer">${avatar(u.n,40)}</button>`).join('')}</div></div>`;
   }).join('');
 }
@@ -1289,22 +1434,22 @@ function openItem(key){
 document.addEventListener('click', e=>{
   const b=e.target.closest('[data-item]'); if(b){ openItem(b.dataset.item); return; }
   const t=e.target.closest('[data-trait]');
-  if(t){ const n=t.dataset.trait; location.hash='#/bibliothek/traits'; setTimeout(()=>{ $('#traitSearch').value=n; renderTraits(); },10); }
+  if(t){ const n=t.dataset.trait; go('/bibliothek/traits'); setTimeout(()=>{ $('#traitSearch').value=n; renderTraits(); },10); }
 });
 
 /* ================= HOME ================= */
 function pkgHTML(p){
-  return `<div class="card pkg ${p.f?'featured':''}">${p.f||p.b?`<span class="pill${p.b?' gold':''}" style="align-self:flex-start;margin-bottom:8px">${esc(p.b||'Beliebt')}</span>`:''}<h3 style="margin:0">${esc(p.n)}</h3><div class="price">${p.p} <small>${p.u}</small></div><ul>${p.l.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><a href="#/apply" class="btn ${p.f?'btn-primary':'btn-ghost'}" style="justify-content:center">Kennenlernen anfragen</a></div>`;
+  return `<div class="card pkg ${p.f?'featured':''}">${p.f||p.b?`<span class="pill${p.b?' gold':''}" style="align-self:flex-start;margin-bottom:8px">${esc(p.b||'Beliebt')}</span>`:''}<h3 style="margin:0">${esc(p.n)}</h3><div class="price">${p.p} <small>${p.u}</small></div><ul>${p.l.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><a href="/apply" class="btn ${p.f?'btn-primary':'btn-ghost'}" style="justify-content:center">Kennenlernen anfragen</a></div>`;
 }
 function testimonialHTML(t){
-  if(!t.q) return `<div class="card co-quote soon"><span class="co-qm" aria-hidden="true">“</span><p>Feedback folgt</p><b>${esc(t.n)}</b></div>`;
+  if(!t.q) return `<div class="card co-quote soon"><span class="co-qm" aria-hidden="true">“</span><p>Feedback folgt</p><figcaption><b>${esc(t.n)}</b>${t.r?`<span>${esc(t.r)}</span>`:''}</figcaption></div>`;
   return `<figure class="card co-quote"><span class="co-qm" aria-hidden="true">“</span><blockquote>${esc(t.q)}</blockquote><figcaption><b>${esc(t.n)}</b>${t.r?`<span>${esc(t.r)}</span>`:''}</figcaption></figure>`;
 }
 function guideHTML(g){
   return `<div class="card guide"><div class="guide-cover" style="background:${g.col}"><div>${esc(g.t)}<small>TFT Freaks</small></div></div><div><span class="pill">${esc(g.s)}</span><h3 style="margin-top:10px">${esc(g.t)}</h3><p>${esc(g.d)}</p><p style="color:var(--faint);font-size:.82rem">${esc(g.x)}</p><span class="link-arrow">Bald verfügbar</span></div></div>`;
 }
 function renderHome(){
-  $('#ranks').innerHTML = ranks.map(([n,c,f])=>`<a href="#/ranks/${f.toLowerCase()}" class="rank"><div class="rank-gem"><img src="${DD}tft-regalia/TFT_Regalia_${f}.png" alt="TFT Rang ${n}" loading="lazy" onerror="this.outerHTML='<span style=&quot;font:900 1.4rem var(--ff-head);color:${c}&quot;>${n[0]}</span>'"></div>${n}</a>`).join('');
+  $('#ranks').innerHTML = ranks.map(([n,c,f])=>`<a href="/ranks/${f.toLowerCase()}" class="rank"><div class="rank-gem"><img src="${DD}tft-regalia/TFT_Regalia_${f}.png" alt="TFT Rang ${n}" loading="lazy" onerror="this.outerHTML='<span style=&quot;font:900 1.4rem var(--ff-head);color:${c}&quot;>${n[0]}</span>'"></div>${n}</a>`).join('');
   $('#sCount').textContent = mainComps.filter(c=>c.tier==='S').length + ' aktiv';
   // Team: Vi mit offiziellem Set-18-Bild und ihren Traits
   const vi = champBy['Vi'];
@@ -1321,7 +1466,7 @@ $('#applyForm').addEventListener('submit', e=>{ e.preventDefault(); $('#applyOk'
 /* ================= SEARCH ================= */
 const searchIndex = [
   ...champions.map(c=>({label:c.n,type:'Champion',html:avatar(c.n,40),go:()=>{closeSearch();openChamp(c.n);}})),
-  ...traits.map(t=>({label:t.n,type:t.cat==='origin'?'Ursprung':'Klasse',html:traitHex(t.n, t.bp.length===1?'unique':'base', 34),go:()=>{closeSearch();location.hash='#/bibliothek/traits';setTimeout(()=>{$('#traitSearch').value=t.n;renderTraits();},10);}})),
+  ...traits.map(t=>({label:t.n,type:t.cat==='origin'?'Ursprung':'Klasse',html:traitHex(t.n, t.bp.length===1?'unique':'base', 34),go:()=>{closeSearch();go('/bibliothek/traits');setTimeout(()=>{$('#traitSearch').value=t.n;renderTraits();},10);}})),
   ...ITEMS.map(it=>({label:it.en,alt:it.de,type:'Item · '+(ITEM_CATS.find(([k])=>k===it.cat)||[])[1],html:`<img src="${it.img}" alt="" width="40" height="40" loading="lazy" style="width:40px;height:40px;border-radius:8px">`,go:()=>{closeSearch();openItem(it.id);}})),
   ...AUGS.map(a=>({label:a.en,alt:a.de,type:'Augment'+(a.lv?' · '+AUG_LV[a.lv]:''),html:`<img src="${augImg(a)}" alt="" width="40" height="40" loading="lazy" style="width:40px;height:40px;border-radius:8px">`,go:()=>{closeSearch();openAug(a.id);}})),
   ...comps.map(c=>({label:c.name,type:'Comp · '+c.tier,html:avatar(c.carry,40),go:()=>{closeSearch();openComp(c.slug);}})),
@@ -1363,6 +1508,7 @@ const SVGI = {
   guide:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M8 7h7"/>',
   about:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
   apply:'<path d="M5 4h14v16l-7-4-7 4z"/>',
+  patch:'<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7M9 16h5"/>',
   rank:'<path d="M12 3l7 4v6c0 4-3 6.5-7 8-4-1.5-7-4-7-8V7z"/><path d="M12 8l1.2 2.5 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z"/>',
   lib:'<path d="M4 4h4v16H4zM10 4h4v16h-4z"/><path d="M16 5l3.5-1 3 15.5-3.5 1z"/>',
   news:'<path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v8a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5"/>',
@@ -1370,16 +1516,17 @@ const SVGI = {
   tools:'<path d="M14.5 6.5a4 4 0 0 0-5.4 5.1L4 16.7 7.3 20l5.1-5.1a4 4 0 0 0 5.1-5.4l-2.4 2.4-2.4-.6-.6-2.4z"/>'
 };
 const NAV = [
-  {r:'home', h:'#/', l:'Home', mascot:true},
-  {r:'tierlist', h:'#/tierlist', l:'Tierlist', s:'tier', badge: mainComps.length ? TL_PATCH : (setStatus()==='pbe' ? 'PBE' : '')},
-  {r:'bibliothek', h:'#/bibliothek', l:'Bibliothek', s:'lib'},
-  {r:'ranks', h:'#/ranks', l:'Ranks', s:'rank'},
-  {r:'builder', h:'#/builder', l:'Team Builder', s:'builder'},
-  {r:'tools', h:'#/tools', l:'Tools', s:'tools', badge:'Bald'},
-  {r:'coaching', h:'#/coaching', l:'Coaching', s:'coach'},
-  {r:'guides', h:'#/guides', l:'Guides', s:'guide', more:true},
-  {r:'about', h:'#/about', l:'Meet the Team', s:'about', more:true},
-  {r:'apply', h:'#/apply', l:'Bewerbung', s:'apply', more:true},
+  {r:'home', h:'/', l:'Home', mascot:true},
+  {r:'tierlist', h:'/tierlist', l:'Tierlist', s:'tier', badge: mainComps.length ? TL_PATCH : (setStatus()==='pbe' ? 'PBE' : '')},
+  {r:'bibliothek', h:'/bibliothek', l:'Bibliothek', s:'lib'},
+  {r:'builder', h:'/builder', l:'Team Builder', s:'builder'},
+  {r:'ranks', h:'/ranks', l:'Ranks', s:'rank'},
+  {r:'tools', h:'/tools', l:'Tools', s:'tools', badge:'Neu'},
+  {r:'coaching', h:'/coaching', l:'Coaching', s:'coach'},
+  {r:'patches', h:'/patches', l:'Patches', s:'patch', more:true},
+  {r:'guides', h:'/guides', l:'Guides', s:'guide', more:true},
+  {r:'about', h:'/about', l:'Meet the Team', s:'about', more:true},
+  {r:'apply', h:'/apply', l:'Bewerbung', s:'apply', more:true},
 ];function navIcon(n){
   if(n.mascot) return '<span class="tb-ic"><span class="m-face" style="width:100%;height:100%"></span></span>';
   const svg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${SVGI[n.s]}</svg>`;
@@ -1389,8 +1536,8 @@ const NAV = [
 $('#tbNav').innerHTML = NAV.filter(n=>!n.more).map(n=>`<a href="${n.h}" class="tb-item" data-route="${n.r}">${n.badge?`<span class="tb-badge">${n.badge}</span>`:''}${navIcon(n)}<span>${n.l}</span></a>`).join('')
   + '<button class="tb-item tb-more" id="moreBtn" aria-haspopup="true" aria-label="Mehr">···</button>';
 $('#moreMenu').innerHTML = NAV.filter(n=>n.more).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('');
-$('#drawerPanel').innerHTML = `<a href="#/" class="tb-logo" style="border:0;padding:6px 10px 14px;font-size:1.7rem" aria-label="TFT Freaks Startseite"><span class="tft-logo" aria-hidden="true"></span><div><span>TFT</span> <b>Freaks</b></div></a>
-  <h5>Tierlist & Daten</h5>${NAV.filter(n=>['tierlist','bibliothek','ranks','builder','tools'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}
+$('#drawerPanel').innerHTML = `<a href="/" class="tb-logo" style="border:0;padding:6px 10px 14px;font-size:1.7rem" aria-label="TFT Freaks Startseite"><span class="tft-logo" aria-hidden="true"></span><div><span>TFT</span> <b>Freaks</b></div></a>
+  <h5>Tierlist & Daten</h5>${NAV.filter(n=>['tierlist','bibliothek','builder','ranks','tools','patches'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}
   <h5>TFT Freaks</h5>${NAV.filter(n=>['home','coaching','guides','about','apply'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}`;
 const moreMenu = $('#moreMenu');
 $('#moreBtn').onclick = e=>{ e.stopPropagation(); const r=e.currentTarget.getBoundingClientRect(); moreMenu.style.left=Math.min(r.left, innerWidth-240)+'px'; moreMenu.classList.toggle('open'); };
@@ -1399,40 +1546,671 @@ const drawer = $('#drawer');
 $('#burger').onclick = ()=>drawer.classList.add('open');
 drawer.addEventListener('click', e=>{ if(e.target.closest('[data-drawer-close]') || e.target.closest('a')) drawer.classList.remove('open'); });
 
-// Meet the Team: Übersicht (#/about) oder Profil (#/about/<name>)
+// Meet the Team: Übersicht (/about) oder Profil (/about/<name>)
 function setAbout(sub){
   const views = [...document.querySelectorAll('#page-about .mt-view')];
   const key = views.some(v=>v.dataset.about && v.dataset.about===sub) ? sub : '';
   views.forEach(v=>v.hidden = v.dataset.about!==key);
 }
 
+/* ================= TOOLS: Übersicht & Rolldown-Rechner ================= */
+// Shop-Chancen/Pool-Größen pro Set aus data/custom-<Set>.js; Champions pro Kosten aus den offiziellen Set-Daten
+const SHOP = TFT_CUSTOM_SET.shop && Array.isArray(TFT_CUSTOM_SET.shop.odds) ? TFT_CUSTOM_SET.shop : null;
+const SHOP_DISTINCT = [1,2,3,4,5].map(c=>champions.filter(x=>x.c===c).length);
+const RD_MAXK = 9;   // bis 9 Kopien (= ★★★)
+const rd = {champ:'', cost:4, lvl:8, gold:50, out:0, other:0, target:3, buy:true, xp:''};
+(function(){   // Start: Carry der besten Comp, passendes Level
+  const c = champBy[(mainComps.find(x=>x.tier==='S') || mainComps[0] || {}).carry];
+  if(c){ rd.champ = c.n; rd.cost = c.c; rd.lvl = [5,6,7,8,9][c.c-1]; }
+})();
+
+// Chance, dass EIN Shop-Slot den gesuchten Champion zeigt, wenn man schon k Kopien gefunden hat
+function rdSlotP(lvl, cost, out, other, k){
+  const bag = SHOP.bag[cost-1], left = bag - out - k;
+  const pool = bag * SHOP_DISTINCT[cost-1] - out - other - k;
+  return left > 0 && pool > 0 ? (SHOP.odds[lvl-1][cost-1] / 100) * left / pool : 0;
+}
+// Wahrscheinlichkeit für genau 0…9 gefundene Kopien, wenn man `gold` ins Rollen steckt (2 Gold = 5 Slots).
+// buy: jeder Treffer kostet seine Kosten in Gold – fehlt das Gold, kann er nicht gekauft werden.
+function rdDist(lvl, cost, out, other, gold, buy){
+  const K = RD_MAXK + 1, price = buy ? cost : 0, G = Math.max(0, Math.floor(gold));
+  const pk = Array.from({length:K}, (_,k)=> k < RD_MAXK ? rdSlotP(lvl, cost, out, other, k) : 0);
+  const m = new Float64Array((G+1) * K); m[G*K] = 1;
+  for(let g = G; g >= 2; g--){            // Gold sinkt mit jedem Roll – also von oben nach unten abarbeiten
+    for(let k = 0; k < K; k++){
+      const w = m[g*K+k]; if(!w) continue; m[g*K+k] = 0;
+      let st = new Map([[(g-2)*K + k, w]]);
+      for(let s = 0; s < 5; s++){
+        const nx = new Map(), add = (key, v)=>nx.set(key, (nx.get(key)||0) + v);
+        st.forEach((v, key)=>{
+          const gg = Math.floor(key / K), kk = key % K, p = pk[kk];
+          if(p > 0 && gg >= price){ add((gg-price)*K + kk + 1, v*p); add(key, v*(1-p)); } else add(key, v);
+        });
+        st = nx;
+      }
+      st.forEach((v, key)=>{ m[key] += v; });
+    }
+  }
+  const res = new Array(K).fill(0);
+  for(let g = 0; g <= Math.min(1, G); g++) for(let k = 0; k < K; k++) res[k] += m[g*K+k];
+  return res;
+}
+const rdAtLeast = (dist, k) => dist.slice(k).reduce((a,b)=>a+b, 0);
+const rdPct = p => (p*100).toLocaleString('de-DE', {maximumFractionDigits: p > 0 && p < 0.1 ? 1 : 0}) + ' %';
+function rdGoldFor(q){   // kleinstes Gold, mit dem das Ziel mit Chance q erreicht wird
+  const P = g => rdAtLeast(rdDist(rd.lvl, rd.cost, rd.out, rd.other, g, rd.buy), rd.target);
+  let hi = 2; while(P(hi) < q){ hi *= 2; if(hi > 512) return null; }
+  let lo = 0; while(hi - lo > 1){ const mid = (lo + hi) >> 1; if(P(mid) >= q) hi = mid; else lo = mid; }
+  return hi;
+}
+
+function renderTools(sub, a, b){
+  const key = ['rolldown','tierlist','drops'].includes(sub) ? sub : '';
+  document.querySelectorAll('#page-tools .tool-view').forEach(v=>v.hidden = v.dataset.tool!==key);
+  if(key==='rolldown') rdMount();
+  if(key==='tierlist') tmRoute(a, b);
+  if(key==='drops') drRender();
+}
+let rdMounted = false;
+function rdMount(){
+  if(rdMounted) return; rdMounted = true;
+  const app = $('#rdApp');
+  if(!SHOP){ app.innerHTML = ornnSays(`Für Set ${TFT_DATA.set} fehlen mir noch die Shop-Chancen. Sobald sie feststehen, schmiede ich den Rechner nach.`); return; }
+  app.innerHTML = `<div class="rd">
+    <div class="card rd-in">
+      <section><h3 class="rd-h"><b>1</b> Champion</h3>
+        <div class="rd-costs" id="rdCosts">${[1,2,3,4,5].map(c=>`<button type="button" class="rd-cost" data-cost="${c}"><i class="cdot c${c}"></i>${c} Gold</button>`).join('')}</div>
+        <div class="rd-champs" id="rdChamps"></div></section>
+      <section><h3 class="rd-h"><b>2</b> Level &amp; Gold</h3>
+        <label class="rd-f"><span>Level</span><b id="rdLvlV"></b><input type="range" id="rdLvl" min="1" max="11" value="${rd.lvl}"></label>
+        <div class="rd-odds" id="rdOdds"></div>
+        <label class="rd-f"><span>Gold zum Rollen</span><b id="rdGoldV"></b><input type="range" id="rdGold" min="0" max="150" step="2" value="${rd.gold}"></label></section>
+      <section><h3 class="rd-h"><b>3</b> Pool</h3>
+        <div class="rd-nums">
+          <label class="rd-n"><span>Kopien schon draußen</span><input class="input" type="number" id="rdOutN" min="0" value="0"><small>bei allen Spielern – deine eingeschlossen</small></label>
+          <label class="rd-n"><span>Andere <span id="rdCostLbl"></span>-Kosten draußen</span><input class="input" type="number" id="rdOther" min="0" value="0"><small>alle anderen Units dieser Kosten auf Boards und Bänken</small></label>
+        </div></section>
+      <section><h3 class="rd-h"><b>4</b> Ziel</h3>
+        <div class="rd-targets" id="rdTargets">${Array.from({length:RD_MAXK}, (_,i)=>`<button type="button" data-k="${i+1}">${i+1}</button>`).join('')}</div>
+        <p class="rd-hint">So viele Kopien willst du finden · 3 Kopien = ★★ · 9 Kopien = ★★★</p>
+        <label class="rd-chk"><input type="checkbox" id="rdBuy" checked> Treffer kosten Gold <small>(wie im Spiel – ausschalten, um nur die Shops zu zählen)</small></label>
+        <label class="rd-n"><span>XP bis zum nächsten Level <small>(optional)</small></span><input class="input" type="number" id="rdXp" min="0" placeholder="z. B. 28"><small>Dann vergleicht der Rechner: jetzt rollen oder erst leveln und dann rollen?</small></label></section>
+    </div>
+    <div class="card rd-res" id="rdRes" aria-live="polite"></div>
+  </div>
+  <div class="card rd-table-card"><h3 class="rd-h">Shop-Chancen Set ${TFT_DATA.set}</h3><div class="rd-table-wrap"><table class="rd-table" id="rdTable"></table></div>
+    <p class="note">Chance pro Shop-Slot nach Level. Pool: ${SHOP.bag.map((b,i)=>`${i+1}-Kosten ${b} Kopien × ${SHOP_DISTINCT[i]} Champions`).join(' · ')}.</p></div>`;
+  $('#rdCosts').addEventListener('click', e=>{ const b = e.target.closest('[data-cost]'); if(!b) return; rd.cost = +b.dataset.cost; rd.champ = ''; rdChamps(); rdUpdate(); });
+  $('#rdChamps').addEventListener('click', e=>{ const b = e.target.closest('[data-rdc]'); if(!b) return; const c = champBy[b.dataset.rdc]; rd.champ = rd.champ===c.n ? '' : c.n; rd.cost = c.c; rdChamps(); rdUpdate(); });
+  $('#rdTargets').addEventListener('click', e=>{ const b = e.target.closest('[data-k]'); if(!b) return; rd.target = +b.dataset.k; rdUpdate(); });
+  $('#rdLvl').addEventListener('input', e=>{ rd.lvl = +e.target.value; rdUpdate(); });
+  $('#rdGold').addEventListener('input', e=>{ rd.gold = +e.target.value; rdUpdate(); });
+  $('#rdOutN').addEventListener('input', e=>{ rd.out = Math.max(0, parseInt(e.target.value)||0); rdUpdate(); });
+  $('#rdOther').addEventListener('input', e=>{ rd.other = Math.max(0, parseInt(e.target.value)||0); rdUpdate(); });
+  $('#rdBuy').addEventListener('change', e=>{ rd.buy = e.target.checked; rdUpdate(); });
+  $('#rdXp').addEventListener('input', e=>{ rd.xp = e.target.value; rdUpdate(); });
+  rdChamps(); rdUpdate();
+}
+function rdChamps(){
+  $('#rdCosts').querySelectorAll('[data-cost]').forEach(b=>b.classList.toggle('on', +b.dataset.cost===rd.cost));
+  $('#rdChamps').innerHTML = champions.filter(c=>c.c===rd.cost).map(c=>`<button type="button" class="rd-ch${c.n===rd.champ?' on':''}" data-rdc="${esc(c.n)}" title="${esc(c.n)}">${avatar(c.n, 44)}<span>${esc(c.n)}</span></button>`).join('');
+}
+function rdUpdate(){
+  const bag = SHOP.bag[rd.cost-1], maxOther = bag * (SHOP_DISTINCT[rd.cost-1] - 1);
+  rd.out = Math.min(rd.out, bag); rd.other = Math.min(rd.other, maxOther);
+  const outEl = $('#rdOutN'), othEl = $('#rdOther');
+  outEl.max = bag; othEl.max = maxOther;
+  if(+outEl.value > bag) outEl.value = bag;
+  if(+othEl.value > maxOther) othEl.value = maxOther;
+  $('#rdCostLbl').textContent = rd.cost;
+  $('#rdLvlV').textContent = rd.lvl; $('#rdGoldV').textContent = rd.gold + ' Gold';
+  $('#rdTargets').querySelectorAll('[data-k]').forEach(b=>b.classList.toggle('on', +b.dataset.k===rd.target));
+  const odds = SHOP.odds[rd.lvl-1];
+  $('#rdOdds').innerHTML = odds.map((o,i)=>o ? `<span class="c${i+1}${i+1===rd.cost?' on':''}" style="flex:${o}" title="${i+1}-Kosten: ${o} %">${o >= 6 ? o + ' %' : ''}</span>` : '').join('');
+  $('#rdTable').innerHTML = `<thead><tr><th>Level</th>${[1,2,3,4,5].map(c=>`<th class="${c===rd.cost?'on':''}"><i class="cdot c${c}"></i>${c}</th>`).join('')}</tr></thead><tbody>${SHOP.odds.map((r,i)=>`<tr class="${i+1===rd.lvl?'on':''}"><td>${i+1}</td>${r.map((o,c)=>`<td class="${c+1===rd.cost?'on':''}">${o ? o + ' %' : '–'}</td>`).join('')}</tr>`).join('')}</tbody>`;
+
+  const who = rd.champ ? esc(rd.champ) : `deine ${rd.cost}-Kosten-Unit`;
+  const left = bag - rd.out;
+  if(left < rd.target){ $('#rdRes').innerHTML = viSays(`Es sind nur noch ${left} Kopien im Pool – ${rd.target} kannst du nicht mehr finden.`); return; }
+  if(!odds[rd.cost-1]){ $('#rdRes').innerHTML = viSays(`Auf Level ${rd.lvl} tauchen keine ${rd.cost}-Kosten-Units im Shop auf. Erst leveln!`); return; }
+
+  const dist = rdDist(rd.lvl, rd.cost, rd.out, rd.other, rd.gold, rd.buy);
+  const P = rdAtLeast(dist, rd.target), exp = dist.reduce((a,v,k)=>a + v*k, 0);
+  // Vergleich: erst leveln (4 Gold = 4 XP), dann mit dem Rest rollen
+  const xp = parseInt(rd.xp), lvlGold = xp > 0 ? Math.ceil(xp/4) * 4 : 0;
+  let cmp = null, cmpNote = '';
+  if(xp > 0 && rd.lvl < 11){
+    if(rd.gold >= lvlGold){ cmp = rdDist(rd.lvl+1, rd.cost, rd.out, rd.other, rd.gold - lvlGold, rd.buy); }
+    else cmpNote = `Zum Leveln brauchst du ${lvlGold} Gold – du hast nur ${rd.gold}.`;
+  }
+  const pRoll = 1 - Math.pow(1 - rdSlotP(rd.lvl, rd.cost, rd.out, rd.other, 0), 5);
+  const need = [0.5, 0.8, 0.95].map(q=>[q, rdGoldFor(q)]);
+  const bars = Array.from({length:RD_MAXK}, (_,i)=>{
+    const k = i+1, a = rdAtLeast(dist, k), b = cmp ? rdAtLeast(cmp, k) : null;
+    return `<div class="rd-bar${k===rd.target?' on':''}" title="Mindestens ${k}×: ${rdPct(a)}${b!==null?' · nach Leveln: '+rdPct(b):''}">
+      <div class="rd-cols"><span class="rd-fill" style="height:${a*100}%"></span>${b!==null?`<span class="rd-fill alt" style="height:${b*100}%"></span>`:''}</div>
+      <b>${rdPct(a)}</b><small>${k}×</small></div>`;
+  }).join('');
+  let verdict = '';
+  if(cmp){
+    const Q = rdAtLeast(cmp, rd.target), diff = Math.round((Q - P) * 100);
+    verdict = `<div class="rd-cmp ${diff > 0 ? 'up' : 'down'}"><b>${diff > 0 ? 'Erst leveln lohnt sich' : diff < 0 ? 'Lieber jetzt rollen' : 'Kein Unterschied'}</b>
+      <span>Auf Level ${rd.lvl+1} (${lvlGold} Gold fürs Leveln, ${rd.gold - lvlGold} Gold zum Rollen): ${rdPct(Q)} statt ${rdPct(P)}${diff ? ` (${diff > 0 ? '+' : '−'}${Math.abs(diff)} Prozentpunkte)` : ''}.</span></div>`;
+  } else if(cmpNote) verdict = `<div class="rd-cmp">${esc(cmpNote)}</div>`;
+
+  $('#rdRes').innerHTML = `
+    <div class="rd-hero">
+      <div class="rd-ring" style="--p:${(P*100).toFixed(1)}"><b>${rdPct(P)}</b><small>Chance</small></div>
+      <div><span class="rd-kicker">${rd.champ ? avatar(rd.champ, 26) : ''}Level ${rd.lvl} · ${rd.gold} Gold</span>
+        <h3>Mindestens ${rd.target}× ${who}</h3>
+        <p>Im Schnitt findest du <b>${exp.toLocaleString('de-DE', {maximumFractionDigits:1})}</b> Kopien. In einem Roll (5 Slots) taucht ${who} mit <b>${rdPct(pRoll)}</b> Chance mindestens einmal auf.</p></div>
+    </div>
+    ${verdict}
+    <h4 class="rd-sub">Chance auf mindestens …</h4>
+    <div class="rd-bars">${bars}</div>
+    ${cmp ? `<div class="rd-legend"><span><i class="rd-fill"></i>jetzt rollen (Level ${rd.lvl})</span><span><i class="rd-fill alt"></i>erst leveln (Level ${rd.lvl+1})</span></div>` : ''}
+    <h4 class="rd-sub">Wie viel Gold brauchst du für ${rd.target}×?</h4>
+    <div class="rd-need">${need.map(([q, g])=>`<div><small>${q*100} % Chance</small><b>${g === null ? 'über 500' : g + ' Gold'}</b></div>`).join('')}</div>
+    <p class="note">Gerechnet wird Shop für Shop mit dem geteilten Pool aller Spieler: Jede gefundene Kopie fehlt danach im Pool. Nicht berücksichtigt sind Effekte, die Shops verändern (z. B. Augments oder Wisps).</p>`;
+}
+
+/* ================= TOOLS: Tierlist-Maker ================= */
+// Einträge als Schlüssel: c:<Champion> · t:<Trait> · a:<Augment-ID> · i:<Item-ID>
+const TM_KEY = 'tftfreaks_tlmaker_v1_' + TFT_DATA.set;
+const TM_COLORS = ['#ff4040','#ff9a2e','#ffd92e','#3ddc5a','#2f80ed','#a855f7','#ec4899','#8a94a8'];
+const TM_DEFAULT = () => ({title:'', rows:[['S',0],['A',1],['B',2],['C',3],['X',4]].map(([l,c])=>({l, c, items:[]}))});
+const TM_TABS = [['c','Champions'],['t','Traits'],['a','Augments'],['i','Items']];
+const TM_SORTS = {c:[['cost','Kosten'],['name','Name'],['origin','Ursprung'],['class','Klasse']], t:[['type','Typ'],['name','Name']], a:[['lv','Stufe'],['name','Name']], i:[['cat','Kategorie'],['name','Name']]};
+const AUG_BY = Object.fromEntries(AUGS.map(x=>[x.id, x])), ITEM_BY = Object.fromEntries(ITEMS.map(x=>[x.id, x])), TRAIT_BY = Object.fromEntries(traits.map(x=>[x.n, x]));
+// feste Reihenfolge für Teilen-Links (Index statt langer IDs)
+const TM_ORDER = {c:champions.map(x=>x.n).sort(), t:traits.map(x=>x.n).sort(), a:AUGS.map(x=>x.id).sort(), i:ITEMS.map(x=>x.id).sort()};
+const TM_IDX = Object.fromEntries(Object.entries(TM_ORDER).map(([k, arr])=>[k, Object.fromEntries(arr.map((v,i)=>[v,i]))]));
+let tm = null, tmMode = 'build', tmTab = 'c', tmSort = {c:'cost', t:'type', a:'lv', i:'cat'}, tmSel = null, tmShared = false, tmBuilt = false, tmDrag = null;
+
+function tmInfo(key){
+  const ty = key[0], id = key.slice(2);
+  if(ty==='c'){ const c = champBy[id]; return c && {name:id, html:avatar(id, 46)}; }
+  if(ty==='t'){ const t = TRAIT_BY[id]; return t && {name:id, html:traitHex(id, t.bp.length===1 ? 'unique' : 'base', 44)}; }
+  if(ty==='a'){ const x = AUG_BY[id]; return x && {name:x.en, html:`<img src="${augImg(x)}" alt="" loading="lazy">`}; }
+  if(ty==='i'){ const x = ITEM_BY[id]; return x && {name:x.en, html:`<img src="${x.img}" alt="" loading="lazy">`}; }
+  return null;
+}
+const tmTile = key => { const f = tmInfo(key); return f ? `<div class="tm-tile tm-${key[0]}${tmSel===key?' sel':''}" draggable="${tmMode==='build'}" data-k="${esc(key)}" title="${esc(f.name)}">${f.html}</div>` : ''; };
+const tmUsed = () => new Set(tm.rows.flatMap(r=>r.items));
+
+function tmEncode(s){
+  const rows = s.rows.map(r=>[r.l, r.c, r.items.map(k=>{ const i = (TM_IDX[k[0]]||{})[k.slice(2)]; return i===undefined ? '' : k[0] + i.toString(36); }).filter(Boolean).join('.')]);
+  return btoa(unescape(encodeURIComponent(JSON.stringify({t:s.title||'', r:rows})))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function tmDecode(code){
+  try{
+    const o = JSON.parse(decodeURIComponent(escape(atob(code.replace(/-/g,'+').replace(/_/g,'/')))));
+    const rows = (o.r||[]).slice(0, 12).map(([l, c, list])=>({l:String(l||'?').slice(0,12), c:Math.abs(+c||0) % TM_COLORS.length,
+      items:String(list||'').split('.').filter(Boolean).map(tok=>{ const ty = tok[0], v = (TM_ORDER[ty]||[])[parseInt(tok.slice(1), 36)]; return v ? ty + ':' + v : null; }).filter(Boolean)}));
+    return rows.length ? {title:String(o.t||'').slice(0,40), rows} : null;
+  }catch(e){ return null; }
+}
+function tmLoad(){ try{ const s = JSON.parse(localStorage.getItem(TM_KEY)); if(s && Array.isArray(s.rows) && s.rows.length) return s; }catch(e){} return TM_DEFAULT(); }
+function tmSave(){ if(tmShared) return; try{ localStorage.setItem(TM_KEY, JSON.stringify(tm)); }catch(e){} }
+// Änderung an einer geteilten Tierlist → wird zur eigenen Kopie
+function tmChanged(){ if(tmShared){ tmShared = false; setUrl('/tools/tierlist'); } tmSave(); tmRender(); }
+function tmToast(msg){ const t = $('#tmToast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tmToast.h); tmToast.h = setTimeout(()=>t.classList.remove('show'), 2200); }
+
+function tmRoute(a, b){
+  // geteilte Links: /tools/tierlist/<Set>/<Code>
+  if(a && /^\d+$/.test(a) && b){
+    if(+a !== TFT_DATA.set){ try { localStorage.setItem('tftfreaks_set', a); } catch(e){} location.reload(); return; }
+    const st = tmDecode(b);
+    if(st){ tm = st; tmShared = true; tmMode = 'view'; }
+    else { setUrl('/tools/tierlist'); }
+  } else if(!tm || tmShared){ tm = tmLoad(); tmShared = false; }
+  if(!tmBuilt) tmBuild();
+  tmRender();
+}
+function tmBuild(){
+  tmBuilt = true;
+  $('#tmApp').innerHTML = `<div class="tm">
+    <div class="tm-top">
+      <label class="tm-title"><span>Tierlist</span><i aria-hidden="true">›</i><input id="tmTitle" maxlength="40" placeholder="Dein Titel" aria-label="Titel der Tierlist"></label>
+      <div class="tm-mode" id="tmMode" role="group" aria-label="Modus"><button type="button" data-mode="view">Ansehen</button><button type="button" data-mode="build">Bearbeiten</button></div>
+    </div>
+    <div class="tm-shared" id="tmShared" hidden><span>Geteilte Tierlist – zum Ansehen.</span><button type="button" class="btn btn-ghost" id="tmCopyOwn">Als eigene Kopie bearbeiten</button></div>
+    <div class="tm-body">
+      <div class="tm-rows" id="tmRows"></div>
+      <aside class="tm-box" id="tmBox">
+        <div class="tm-box-head"><h3>Toolbox</h3>
+          <div class="tm-acts"><button type="button" id="tmAddRow">+ Zeile</button><button type="button" id="tmClear">Alles leeren</button><button type="button" id="tmShare" class="hl">Teilen</button></div></div>
+        <div class="tm-tabs" id="tmTabs">${TM_TABS.map(([k,l])=>`<button type="button" data-tab="${k}">${l}</button>`).join('')}</div>
+        <input class="input" id="tmSearch" placeholder="Suchen …" aria-label="Suchen">
+        <div class="tm-sorts" id="tmSorts"></div>
+        <div class="tm-pool tm-drop" id="tmPool" data-r="-1"></div>
+        <p class="tm-tip">Ziehen zum Einsortieren · am Handy: antippen, dann Zeile antippen · Doppelklick nimmt einen Eintrag wieder raus</p>
+      </aside>
+    </div>
+    <div class="tm-toast" id="tmToast" role="status"></div>
+  </div>`;
+  const app = $('#tmApp');
+  $('#tmTitle').addEventListener('input', e=>{ tm.title = e.target.value; if(tmShared){ tmShared = false; setUrl('/tools/tierlist'); $('#tmShared').hidden = true; } tmSave(); });
+  $('#tmMode').addEventListener('click', e=>{ const b = e.target.closest('[data-mode]'); if(!b) return; tmMode = b.dataset.mode; tmSel = null; tmRender(); });
+  $('#tmCopyOwn').addEventListener('click', ()=>{ tmMode = 'build'; tmChanged(); tmToast('Kopie angelegt – deine Änderungen werden gespeichert.'); });
+  $('#tmTabs').addEventListener('click', e=>{ const b = e.target.closest('[data-tab]'); if(!b) return; tmTab = b.dataset.tab; tmRenderPool(); });
+  $('#tmSorts').addEventListener('click', e=>{ const b = e.target.closest('[data-sort]'); if(!b) return; tmSort[tmTab] = b.dataset.sort; tmRenderPool(); });
+  $('#tmSearch').addEventListener('input', tmRenderPool);
+  $('#tmAddRow').addEventListener('click', ()=>{ if(tm.rows.length >= 12) return tmToast('Maximal 12 Zeilen.'); const used = new Set(tm.rows.map(r=>r.l)); tm.rows.push({l:['D','E','F','?'].find(x=>!used.has(x)) || '?', c:(tm.rows.length) % TM_COLORS.length, items:[]}); tmChanged(); });
+  $('#tmClear').addEventListener('click', ()=>{ if(!tm.rows.some(r=>r.items.length) || confirm('Alle Einträge aus der Tierlist entfernen?')){ tm.rows.forEach(r=>r.items = []); tmChanged(); } });
+  $('#tmShare').addEventListener('click', ()=>{
+    const url = siteUrl('/tools/tierlist/' + TFT_DATA.set + '/' + tmEncode(tm));
+    const ok = ()=>tmToast('Link kopiert – wer ihn öffnet, sieht deine Tierlist.');
+    if(navigator.clipboard) navigator.clipboard.writeText(url).then(ok, ()=>prompt('Link kopieren:', url)); else prompt('Link kopieren:', url);
+  });
+  // Zeilen-Steuerung (Name, Farbe, verschieben, löschen)
+  $('#tmRows').addEventListener('click', e=>{
+    const ctl = e.target.closest('[data-act]');
+    if(ctl && tmMode==='build'){
+      const i = +ctl.closest('.tm-row').dataset.r, r = tm.rows[i], act = ctl.dataset.act;
+      if(act==='name'){ const v = prompt('Name der Zeile:', r.l); if(v!==null && v.trim()){ r.l = v.trim().slice(0,12); tmChanged(); } }
+      if(act==='color'){ r.c = (r.c + 1) % TM_COLORS.length; tmChanged(); }
+      if(act==='up' && i > 0){ [tm.rows[i-1], tm.rows[i]] = [tm.rows[i], tm.rows[i-1]]; tmChanged(); }
+      if(act==='down' && i < tm.rows.length-1){ [tm.rows[i+1], tm.rows[i]] = [tm.rows[i], tm.rows[i+1]]; tmChanged(); }
+      if(act==='del'){ if(tm.rows.length <= 1) return tmToast('Eine Zeile muss bleiben.'); if(!r.items.length || confirm(`Zeile „${r.l}“ löschen? Die Einträge gehen zurück in die Toolbox.`)){ tm.rows.splice(i, 1); tmChanged(); } }
+      return;
+    }
+  });
+  // Antippen: auswählen, dann Ziel antippen (Handy und Maus)
+  app.addEventListener('click', e=>{
+    if(tmMode!=='build' || e.target.closest('[data-act]')) return;
+    const tile = e.target.closest('.tm-tile'), zone = e.target.closest('.tm-drop');
+    if(tile && (!tmSel || tmSel===tile.dataset.k)){ tmSel = tmSel===tile.dataset.k ? null : tile.dataset.k; tmRender(); return; }
+    if(tmSel && zone){ const k = tmSel; tmSel = null; tmPlace(k, +zone.dataset.r, tile ? tile.dataset.k : null); return; }
+  });
+  app.addEventListener('dblclick', e=>{ const tile = e.target.closest('.tm-rows .tm-tile'); if(tile && tmMode==='build'){ tmSel = null; tmPlace(tile.dataset.k, -1); } });
+  // Drag & Drop
+  app.addEventListener('dragstart', e=>{ const tile = e.target.closest('.tm-tile'); if(!tile || tmMode!=='build') return; tmDrag = tile.dataset.k; e.dataTransfer.effectAllowed = 'move'; try{ e.dataTransfer.setData('text/plain', tmDrag); }catch(_){} tile.classList.add('dragging'); });
+  app.addEventListener('dragend', ()=>{ tmDrag = null; app.querySelectorAll('.dragging,.over').forEach(x=>x.classList.remove('dragging','over')); });
+  app.addEventListener('dragover', e=>{ const zone = e.target.closest('.tm-drop'); if(!zone || !tmDrag) return; e.preventDefault(); app.querySelectorAll('.tm-drop.over').forEach(z=>z!==zone && z.classList.remove('over')); zone.classList.add('over'); });
+  app.addEventListener('dragleave', e=>{ const zone = e.target.closest('.tm-drop'); if(zone && !zone.contains(e.relatedTarget)) zone.classList.remove('over'); });
+  app.addEventListener('drop', e=>{
+    const zone = e.target.closest('.tm-drop'); if(!zone || !tmDrag) return; e.preventDefault();
+    const tile = e.target.closest('.tm-tile');
+    let before = null;
+    if(tile && tile.dataset.k !== tmDrag){ const rc = tile.getBoundingClientRect(); before = e.clientX < rc.left + rc.width/2 ? tile.dataset.k : (tile.nextElementSibling && tile.nextElementSibling.dataset.k) || null; }
+    tmPlace(tmDrag, +zone.dataset.r, before); tmDrag = null;
+  });
+}
+// Eintrag in Zeile r einsortieren (vor `before`), r = -1 → zurück in die Toolbox
+function tmPlace(key, r, before){
+  tm.rows.forEach(row=>{ row.items = row.items.filter(k=>k!==key); });
+  if(r >= 0 && tm.rows[r]){ const list = tm.rows[r].items, i = before ? list.indexOf(before) : -1; if(i >= 0) list.splice(i, 0, key); else list.push(key); }
+  tmChanged();
+}
+function tmRender(){
+  const build = tmMode==='build';
+  $('#tmApp').querySelector('.tm').classList.toggle('view', !build);
+  $('#tmMode').querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('on', b.dataset.mode===tmMode));
+  $('#tmShared').hidden = !tmShared;
+  const ti = $('#tmTitle'); if(document.activeElement !== ti) ti.value = tm.title || ''; ti.readOnly = !build;
+  $('#tmRows').innerHTML = tm.rows.map((r, i)=>`<div class="tm-row" data-r="${i}" style="--rc:${TM_COLORS[r.c]}">
+      <div class="tm-label"><button type="button" data-act="name" title="Umbenennen" ${build?'':'tabindex="-1"'}>${esc(r.l)}</button>
+        ${build ? `<div class="tm-ctl"><button type="button" data-act="up" title="Nach oben" aria-label="Nach oben">▲</button><button type="button" data-act="color" title="Farbe wechseln" aria-label="Farbe wechseln">●</button><button type="button" data-act="down" title="Nach unten" aria-label="Nach unten">▼</button><button type="button" data-act="del" title="Zeile löschen" aria-label="Zeile löschen">✕</button></div>` : ''}</div>
+      <div class="tm-drop" data-r="${i}">${r.items.map(tmTile).join('') || (build ? '<span class="tm-empty">Hierher ziehen</span>' : '')}</div>
+    </div>`).join('');
+  tmRenderPool();
+}
+function tmRenderPool(){
+  if(tmMode!=='build') return;
+  $('#tmTabs').querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on', b.dataset.tab===tmTab));
+  $('#tmSorts').innerHTML = TM_SORTS[tmTab].map(([k,l])=>`<button type="button" data-sort="${k}" class="${tmSort[tmTab]===k?'on':''}">${l}</button>`).join('');
+  const q = $('#tmSearch').value.toLowerCase().trim(), used = tmUsed(), s = tmSort[tmTab];
+  const firstOf = (c, cat) => c.t.map(t=>TRAIT_BY[t]).filter(t=>t && t.cat===cat).map(t=>t.n)[0] || '~';
+  let list;
+  if(tmTab==='c'){
+    list = champions.filter(c=>!q || c.n.toLowerCase().includes(q) || c.t.some(t=>t.toLowerCase().includes(q)));
+    list.sort(s==='name' ? (a,b)=>a.n.localeCompare(b.n) : s==='origin' ? (a,b)=>firstOf(a,'origin').localeCompare(firstOf(b,'origin')) || a.c-b.c : s==='class' ? (a,b)=>firstOf(a,'class').localeCompare(firstOf(b,'class')) || a.c-b.c : (a,b)=>a.c-b.c || a.n.localeCompare(b.n));
+    list = list.map(c=>'c:'+c.n);
+  } else if(tmTab==='t'){
+    list = traits.filter(t=>!q || t.n.toLowerCase().includes(q)).sort(s==='name' ? (a,b)=>a.n.localeCompare(b.n) : (a,b)=>(a.cat===b.cat ? 0 : a.cat==='origin' ? -1 : 1) || a.n.localeCompare(b.n)).map(t=>'t:'+t.n);
+  } else if(tmTab==='a'){
+    list = AUGS.filter(a=>!q || a.en.toLowerCase().includes(q) || (a.de||'').toLowerCase().includes(q)).sort(s==='name' ? (a,b)=>a.en.localeCompare(b.en) : (a,b)=>(a.lv||9)-(b.lv||9) || a.en.localeCompare(b.en)).map(a=>'a:'+a.id);
+  } else {
+    const ord = Object.fromEntries(ITEM_CATS.map(([k],i)=>[k,i]));
+    list = ITEMS.filter(i=>!q || i.en.toLowerCase().includes(q) || (i.de||'').toLowerCase().includes(q)).sort(s==='name' ? (a,b)=>a.en.localeCompare(b.en) : (a,b)=>(ord[itemCat(a)]??9)-(ord[itemCat(b)]??9) || a.en.localeCompare(b.en)).map(i=>'i:'+i.id);
+  }
+  const free = list.filter(k=>!used.has(k));
+  $('#tmPool').innerHTML = free.map(tmTile).join('') || `<span class="tm-empty">${list.length ? 'Alles einsortiert!' : 'Nichts gefunden.'}</span>`;
+}
+
+/* ================= TOOLS: Item-Drop-Rechner ================= */
+// Komponenten aus Creep-Runden kommen aus einem „Sack“: gezogene Komponenten fehlen darin, vor jeder weiteren Creep-Stage
+// kommt von jeder Komponente eine dazu. Beute-Tabellen pro Stage stehen in data/custom-<Set>.js (loot).
+const LOOT = TFT_CUSTOM_SET.loot && TFT_CUSTOM_SET.loot.stages ? TFT_CUSTOM_SET.loot : null;
+const DR_KEY = 'tftfreaks_drops_v1_' + TFT_DATA.set;
+const DR_COMPS = COMPONENTS.filter(id=>!/spatula|fryingpan/i.test(normN(itemById[id].en))).slice(0, 8);   // die 8 Komponenten im Sack
+const DR_STAGES = [[1,'Stage 1','Minions'],[2,'2-7','Creeps'],[3,'3-7','Creeps'],[4,'4-7','Creeps'],[5,'ab 5-7','Xerath']];
+const DR_NEW = () => ({stage:1, start:1, src:'drop', drops:{1:[], 2:[], 3:[], 4:[]}, extra:[]});
+let dr = (()=>{ try { const s = JSON.parse(localStorage.getItem(DR_KEY)); if(s && s.drops) return Object.assign(DR_NEW(), s); } catch(e){} return DR_NEW(); })();
+const drSave = () => { try { localStorage.setItem(DR_KEY, JSON.stringify(dr)); } catch(e){} };
+// Sack nach allen Drops bis einschließlich Stage `upto`
+function drBag(upto){
+  const bag = Object.fromEntries(DR_COMPS.map(id=>[id, dr.start]));
+  let warn = false;
+  for(let s = 1; s <= Math.min(4, upto); s++){
+    if(s > 1) DR_COMPS.forEach(id=>{ bag[id]++; });
+    (dr.drops[s]||[]).forEach(id=>{ if(bag[id] > 0) bag[id]--; else warn = true; });
+  }
+  return {bag, warn, n:Object.values(bag).reduce((a,b)=>a + b, 0)};
+}
+// Wie viele zufällige Komponenten kommen in Stage s noch, wenn schon d gedroppt sind? (nach Beute-Tabelle)
+function drRest(s, d){
+  const rows = (LOOT && LOOT.stages[s]) || [], out = {}; let tot = 0;
+  rows.forEach(r=>{ if(r[4] >= d){ out[r[4] - d] = (out[r[4] - d]||0) + r[7]; tot += r[7]; } });
+  if(!tot) return null;
+  Object.keys(out).forEach(k=>{ out[k] /= tot; });
+  return out;
+}
+// Chance auf mindestens eine Komponente (c im Sack von n), wenn k gezogen werden – ohne Zurücklegen
+const drAtLeast1 = (c, n, k) => { if(!c || !k) return 0; let none = 1; for(let i = 0; i < k; i++) none *= Math.max(0, n - c - i) / (n - i); return 1 - none; };
+const drMix = (dist, c, n) => dist ? Object.entries(dist).reduce((s, [k, p])=>s + p * drAtLeast1(c, n, Math.min(+k, n)), 0) : null;
+const drPct = p => p == null ? '–' : rdPct(p);
+const drIcon = (id, size=34) => { const it = itemById[id]; return it ? `<img src="${it.img}" alt="${esc(it.de || it.en)}" title="${esc(it.de || it.en)}" width="${size}" height="${size}">` : ''; };
+
+function drRender(){
+  const app = $('#drApp'); if(!app) return;
+  if(!LOOT){ app.innerHTML = ornnSays(`Für Set ${TFT_DATA.set} fehlen mir noch die Beute-Tabellen. Sobald sie feststehen, schmiede ich den Rechner nach.`); return; }
+  const s = dr.stage, late = s >= 5, cur = dr.drops[s] || [];
+  const {bag, warn, n} = drBag(s);
+  const rest = late ? null : drRest(s, cur.length);
+  const restK = rest ? Object.entries(rest).reduce((a, [k, p])=>a + k*p, 0) : 0;
+  const nextS = s + 1, nextBag = Object.fromEntries(DR_COMPS.map(id=>[id, bag[id] + 1])), nextN = n + DR_COMPS.length;
+  const nextDist = nextS <= 4 ? drRest(nextS, 0) : null;
+  const stageName = DR_STAGES.find(x=>x[0]===s)[1];
+  // Stage-Leiste
+  const tabs = DR_STAGES.map(([k, l, sub])=>`<button type="button" class="dr-tab${k===s ? ' on' : ''}" data-drstage="${k}"><b>${l}</b><small>${sub}</small>${k <= 4 && (dr.drops[k]||[]).length ? `<i>${dr.drops[k].length}</i>` : ''}</button>`).join('');
+  // Eingabe
+  const pickIds = dr.src==='drop' ? DR_COMPS : COMPONENTS;
+  const pick = late && dr.src==='drop' ? `<p class="dr-note">${esc(LOOT.late)}</p>`
+    : `<div class="dr-pick">${pickIds.map(id=>{ const it = itemById[id]; const left = dr.src==='drop' ? bag[id] : null;
+        return `<button type="button" class="dr-c${left===0 ? ' empty' : ''}" data-dradd="${id}" title="${esc(it.de)} hinzufügen">${drIcon(id, 44)}<span>${esc(it.de)}</span>${left != null ? `<em>${left}× im Sack</em>` : ''}</button>`; }).join('')}</div>`;
+  const got = [1,2,3,4].map(k=>{ const l = dr.drops[k]||[]; return `<div class="dr-row${k===s ? ' on' : ''}"><span>${DR_STAGES[k-1][1]}</span><div>${l.length ? l.map((id, i)=>`<button type="button" class="dr-chip" data-drdel="${k}:${i}" title="Entfernen">${drIcon(id, 28)}</button>`).join('') : '<small>–</small>'}</div></div>`; }).join('')
+    + `<div class="dr-row"><span>Sonstiges</span><div>${dr.extra.length ? dr.extra.map((id, i)=>`<button type="button" class="dr-chip" data-drdel="x:${i}" title="Entfernen">${drIcon(id, 28)}</button>`).join('') : '<small>Karussell, Amboss, Augments …</small>'}</div></div>`;
+  // Wahrscheinlichkeiten
+  const rows = DR_COMPS.map(id=>{
+    const it = itemById[id], c = bag[id];
+    const pNext = late || !n ? null : c / n;
+    const pRest = late || !rest || restK < 0.01 ? null : drMix(rest, c, n);
+    const pNextStage = nextDist ? drMix(nextDist, nextBag[id], nextN) : null;
+    return {id, it, c, pNext, pRest, pNextStage};
+  });
+  const best = Math.max(...rows.map(r=>r.pNext || 0));
+  const dots = c => '<span class="dr-dots">' + Array.from({length:Math.max(c, 1)}, (_, i)=>`<i class="${i < c ? 'on' : ''}"></i>`).join('') + '</span>';
+  const table = `<table class="dr-table"><thead><tr><th>Komponente</th><th>Im Sack</th><th>Nächster Drop</th><th>Mind. 1 im Rest von ${esc(stageName)}</th><th>Mind. 1 in ${nextS <= 4 ? DR_STAGES[nextS-1][1] : '–'}</th></tr></thead><tbody>${rows.map(r=>
+    `<tr class="${r.pNext && r.pNext===best ? 'best' : ''}${r.c===0 ? ' gone' : ''}"><td><span class="dr-name">${drIcon(r.id, 30)}${esc(r.it.de)}</span></td><td>${dots(r.c)} <b>${r.c}</b></td><td><span class="dr-bar"><i style="width:${(r.pNext||0)*100}%"></i></span>${drPct(r.pNext)}</td><td>${drPct(r.pRest)}</td><td>${drPct(r.pNextStage)}</td></tr>`).join('')}</tbody></table>`;
+  const restTxt = late ? 'Ab Stage 5 gibt es keine zufälligen Komponenten mehr.'
+    : !rest ? `Mehr Komponenten als laut Tabelle möglich (max. ${Math.max(...LOOT.stages[s].map(r=>r[4]))}) – prüf deine Eingabe.`
+    : restK < 0.01 ? `In ${esc(stageName)} kommt laut Tabelle keine weitere Komponente – weiter zu ${nextS <= 4 ? DR_STAGES[nextS-1][1] : 'Stage 5'}.`
+    : `Noch erwartet in ${esc(stageName)}: <b>${fmtNum(Math.round(restK*10)/10)}</b> Komponente${Math.abs(restK-1) < 0.05 ? '' : 'n'} (${Object.entries(rest).filter(([,p])=>p > 0.0005).map(([k, p])=>`${k}: ${drPct(p)}`).join(' · ')}).`;
+  // Beute dieser Stage (bedingt auf die schon gedroppten Komponenten)
+  let loot = '';
+  if(!late){
+    const all = LOOT.stages[s], ok = all.filter(r=>r[4] >= cur.length), tot = ok.reduce((a, r)=>a + r[7], 0) || 1;
+    const P = f => ok.filter(f).reduce((a, r)=>a + r[7], 0) / tot;
+    const cnt = {}; all.forEach(r=>{ cnt[r[4]] = (cnt[r[4]]||0) + r[7]; });
+    const maxC = Math.max(...Object.values(cnt));
+    const orbName = r => [r[0] && `${r[0]}× Silber`, r[1] && `${r[1]}× Blau`, r[2] && `${r[2]}× Gold`, r[3] && `${r[3]}× Prismatic`, `${r[4]} Komponente${r[4]===1 ? '' : 'n'}`, r[5] && 'Komponenten-Amboss'].filter(Boolean).join(' + ');
+    loot = `<div class="dr-orbs">
+        <div class="dr-orb prism"><span>Prismatic-Orb</span><b>${drPct(P(r=>r[3] > 0))}</b></div>
+        <div class="dr-orb gold"><span>Gold-Orb</span><b>${drPct(P(r=>r[2] > 0))}</b></div>
+        <div class="dr-orb blue"><span>Blau-Orb</span><b>${drPct(P(r=>r[1] > 0))}</b></div>
+        <div class="dr-orb up"><span>Aufgewertet</span><b>${drPct(P(r=>r[6] > 0))}</b></div>
+      </div>
+      ${cur.length ? `<p class="dr-note">Schon berücksichtigt: Du hast in ${esc(stageName)} ${cur.length} Komponente${cur.length===1 ? '' : 'n'} – Kombinationen mit weniger fallen raus.</p>` : ''}
+      <h4 class="dr-h4">Zufällige Komponenten in ${esc(stageName)}</h4>
+      <div class="dr-counts">${Object.keys(cnt).sort((a,b)=>a-b).map(k=>`<div class="${+k < cur.length ? 'off' : ''}"><span style="height:${cnt[k]/maxC*100}%"></span><b>${fmtNum(Math.round(cnt[k]*10)/10)} %</b><small>${k}</small></div>`).join('')}</div>
+      <details class="dr-more"><summary>Alle Beute-Kombinationen</summary><table class="dr-table small"><tbody>${all.slice().sort((a,b)=>b[7]-a[7]).map(r=>`<tr class="${r[4] < cur.length ? 'gone' : ''}${r[3] ? ' prism' : ''}"><td>${orbName(r)}${r[6] ? ' <span class="dr-up" title="nur in einer aufgewerteten Runde">aufgewertet</span>' : ''}</td><td>${fmtNum(r[7])} %</td></tr>`).join('')}</tbody></table></details>`;
+  } else loot = `<p class="dr-note">${esc(LOOT.late)}</p>`;
+  // Deine Komponenten und was du daraus bauen kannst
+  const mine = [...[1,2,3,4].flatMap(k=>dr.drops[k]||[]), ...dr.extra];
+  const have = {}; mine.forEach(id=>{ have[id] = (have[id]||0) + 1; });
+  const craft = [];
+  Object.keys(have).forEach(a=>Object.keys(have).forEach(b=>{ if(a > b || (a===b && have[a] < 2)) return; const r = recipeOf[[a, b].sort().join('|')]; if(r && !craft.includes(r)) craft.push(r); }));
+  const orbTbl = o => o ? `<div class="dr-orbtbl"><h4>${esc(o.label)} <small>${esc(o.note)} · Wert ${esc(o.wert)}</small></h4><table class="dr-table small"><tbody>${o.items.map(([t, p])=>`<tr><td>${esc(t)}</td><td>${fmtNum(p)} %</td></tr>`).join('')}</tbody></table></div>` : '';
+  app.innerHTML = `<div class="dr">
+    <div class="dr-tabs">${tabs}</div>
+    <div class="dr-grid">
+      <section class="card dr-in">
+        <div class="dr-head"><h3>Was hast du in ${esc(stageName)} bekommen?</h3>
+          <div class="bp-pills"><button type="button" data-drsrc="drop" class="${dr.src==='drop' ? 'on' : ''}">Creep-Drop</button><button type="button" data-drsrc="extra" class="${dr.src==='extra' ? 'on' : ''}">Sonstiges</button></div></div>
+        <p class="dr-note">${dr.src==='drop' ? 'Klick die Komponenten an, die gerade gedroppt sind – sie werden aus dem Sack genommen.' : 'Komponenten aus Karussell, Ambossen oder Augments: zählen für deine Items, aber nicht für den Sack.'}</p>
+        ${pick}
+        ${warn ? '<p class="dr-warn">Eine Komponente ist öfter gedroppt, als laut Sack-Regel möglich. Stell unten den Start-Sack auf „2 von jeder“ um, falls das in deinem Spiel so war.</p>' : ''}
+        <div class="dr-got">${got}</div>
+        <div class="dr-actions">
+          ${s < 5 ? `<button class="btn btn-primary" type="button" data-drstage="${s+1}">Weiter zu ${DR_STAGES[s][1]} →</button>` : ''}
+          <button class="b-tbtn" type="button" data-drundo>Letzten entfernen</button>
+          <button class="b-tbtn" type="button" data-drreset>Neues Spiel</button>
+        </div>
+        <label class="dr-set">Start-Sack:
+          <select class="input" id="drStart"><option value="1"${dr.start===1 ? ' selected' : ''}>1 von jeder Komponente – Stage 1 ohne Doppelte</option><option value="2"${dr.start===2 ? ' selected' : ''}>2 von jeder Komponente</option></select>
+        </label>
+      </section>
+      <section class="card dr-out">
+        <h3>Wahrscheinlichkeiten ${late ? '' : `<small>${n} Komponenten im Sack</small>`}</h3>
+        ${table}
+        <p class="dr-note">${restTxt} Vor ${nextS <= 4 ? DR_STAGES[nextS-1][1] : 'der nächsten Creep-Stage'} kommt von jeder Komponente eine in den Sack.</p>
+      </section>
+    </div>
+    <div class="dr-grid">
+      <section class="card"><h3>Beute in ${esc(stageName)}</h3>${loot}</section>
+      <section class="card"><h3>Deine Komponenten</h3>
+        <div class="dr-have">${mine.length ? Object.entries(have).map(([id, k])=>`<span>${drIcon(id, 34)}${k > 1 ? `<b>×${k}</b>` : ''}</span>`).join('') : '<small class="dr-note">Noch keine.</small>'}</div>
+        ${craft.length ? `<h4 class="dr-h4">Daraus baubar</h4><div class="dr-craft">${craft.map(r=>`<button type="button" data-item="${r.id}" title="${esc(r.en)}">${itImg(r, 38)}</button>`).join('')}</div>` : ''}
+      </section>
+    </div>
+    <details class="card dr-more"><summary>Orb-Inhalte (Gold &amp; Prismatic) und Quelle</summary>
+      <div class="dr-orbgrid">${orbTbl(LOOT.orbs.prism)}${orbTbl(LOOT.orbs.gold)}${orbTbl(LOOT.orbs.gold4)}
+        <div class="dr-orbtbl"><h4>Aufgewertete Runden <small>einmal pro Spiel geheim ausgewürfelt</small></h4><table class="dr-table small"><tbody>${LOOT.upgraded.map(([t, p])=>`<tr><td>${esc(t)}</td><td>${fmtNum(p)} %</td></tr>`).join('')}</tbody></table></div></div>
+      <p class="dr-note">Beute-Tabellen: ${esc(LOOT.source)}. Die Sack-Regel (gezogene Komponenten fehlen, vor jeder Creep-Stage kommt von jeder eine dazu) ist nicht offiziell von Riot dokumentiert – deshalb kannst du den Start-Sack umstellen.</p>
+    </details>
+  </div>`;
+}
+document.addEventListener('click', e=>{
+  const app = e.target.closest && e.target.closest('#drApp'); if(!app) return;
+  const t = e.target;
+  const st = t.closest('[data-drstage]'); if(st){ dr.stage = +st.dataset.drstage; drSave(); drRender(); return; }
+  const src = t.closest('[data-drsrc]'); if(src){ dr.src = src.dataset.drsrc; drSave(); drRender(); return; }
+  const add = t.closest('[data-dradd]'); if(add){ if(dr.src==='extra') dr.extra.push(add.dataset.dradd); else if(dr.stage <= 4) dr.drops[dr.stage].push(add.dataset.dradd); drSave(); drRender(); return; }
+  const del = t.closest('[data-drdel]'); if(del){ const [k, i] = del.dataset.drdel.split(':'); (k==='x' ? dr.extra : dr.drops[k]).splice(+i, 1); drSave(); drRender(); return; }
+  if(t.closest('[data-drundo]')){ const l = dr.src==='extra' ? dr.extra : dr.drops[Math.min(4, dr.stage)]; if(l && l.length){ l.pop(); drSave(); drRender(); } return; }
+  if(t.closest('[data-drreset]')){ if(confirm('Alle Eingaben löschen und ein neues Spiel starten?')){ dr = DR_NEW(); drSave(); drRender(); } return; }
+});
+document.addEventListener('change', e=>{ if(e.target.id==='drStart'){ dr.start = +e.target.value; drSave(); drRender(); } });
+
+/* ================= PATCHES (aus Riots Patchnotes, automatisch vom Update-Skript) ================= */
+const PATCHES = (window.TFT_PATCHES || []).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+const PATCH_NOTES = window.TFT_PATCH_NOTES || {};
+const patchSlug = id => String(id).replace('.', '-');
+const patchBySlug = Object.fromEntries(PATCHES.map(p=>[patchSlug(p.id), p]));
+const TODAY_ISO = new Date().toISOString().slice(0,10);
+const CURRENT_PATCH = PATCHES.find(p=>p.date <= TODAY_ISO);
+const fmtDate = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('de-DE', {day:'numeric', month:'long', year:'numeric'}) : '';
+const patchCount = p => (p.notes || []).reduce((n,s)=>n + (s.ch||[]).length, 0);
+// Namen aus den (deutschen) Patchnotes den Einträgen der Seite zuordnen
+const NAME_IDX = {};
+(()=>{
+  const add = (name, v) => { if(name) NAME_IDX[String(name).toLowerCase()] = NAME_IDX[String(name).toLowerCase()] || v; };
+  TFT_DATA.champions.forEach(c=>{ add(c.n, {ty:'c', k:c.n}); add(c.de, {ty:'c', k:c.n}); });
+  TFT_DATA.traits.forEach(t=>{ add(t.n, {ty:'t', k:t.n}); add(t.de, {ty:'t', k:t.n}); });
+  ITEMS.forEach(i=>{ add(i.en, {ty:'i', k:i.id}); add(i.de, {ty:'i', k:i.id}); });
+  AUGS.forEach(a=>{ add(a.en, {ty:'a', k:a.id}); add(a.de, {ty:'a', k:a.id}); });
+})();
+function patchIcon(subject){
+  const m = NAME_IDX[String(subject||'').toLowerCase()]; if(!m) return '';
+  if(m.ty==='c') return `<button class="pn-ic" data-champ="${esc(m.k)}" type="button">${avatar(m.k, 34)}</button>`;
+  if(m.ty==='t') return `<span class="pn-ic">${traitHex(m.k, 'base', 30)}</span>`;
+  if(m.ty==='i'){ const it = itemById[m.k]; return it ? `<button class="pn-ic" data-item="${esc(it.id)}" type="button"><img src="${it.img}" alt="" loading="lazy"></button>` : ''; }
+  const a = AUG_BY[m.k]; return a ? `<span class="pn-ic"><img src="${augImg(a)}" alt="" loading="lazy"></span>` : '';
+}
+const grpLabel = g => { const s = String(g||''); if(/PATCH-AKTUALISIERUNG/i.test(s)) return 'B-Patch' + (s.includes('·') ? ' · ' + secLabel(s.split('·').slice(1).join('·').trim()) : ''); return secLabel(s).replace(/\bGrosse\b/g, 'Große'); };
+const secLabel = s => String(s||'').toLowerCase().replace(/(^|[\s\-–(„"])(\S)/g, (m,a,b)=>a + b.toUpperCase());
+function patchRowHTML(r){
+  const [s, l, o, n] = r;
+  return `<li class="pn-row">${patchIcon(s) || '<span class="pn-ic pn-dot"></span>'}<div class="pn-txt">${s ? `<b>${esc(s)}</b>` : ''}${l ? `<span class="pn-l">${esc(l)}</span>` : ''}<span class="pn-v">${o ? `<span class="pn-old">${esc(o)}</span><span class="pn-arr">⇒</span>` : ''}<span class="pn-new">${esc(n)}</span></span></div></li>`;
+}
+function renderPatches(sub){
+  const app = $('#patchesApp');
+  if(!PATCHES.length){ app.innerHTML = `<div class="page-head"><div class="crumb">Home / Patches</div><h1>TFT <em class="serif">Patches</em></h1></div>` + ornnSays('Hmph. Die Patchliste ist noch nicht geschmiedet – das Update-Skript holt sie beim nächsten Lauf.'); return; }
+  const p = sub && patchBySlug[sub];
+  if(!p){
+    const sets = [...new Set(PATCHES.map(x=>x.set))];
+    app.innerHTML = `<div class="page-head"><div class="crumb">Home / Patches</div><h1>TFT <em class="serif">Patches</em></h1>
+      <p>Alle Patches mit den offiziellen Änderungen von Riot – automatisch aktualisiert, sobald ein neuer Patch erscheint (alle zwei Wochen, meist dienstags).</p></div>`
+      + sets.map(st=>`<div class="pt-set"><h2>Set ${st}</h2><div class="pt-grid">${PATCHES.filter(x=>x.set===st).map(x=>{
+        const cur = x===CURRENT_PATCH, cnt = patchCount(x), note = PATCH_NOTES[x.id];
+        return `<a class="pt-card${cur?' cur':''}" href="/patches/${patchSlug(x.id)}">
+          <div class="pt-img"${x.img ? ` style="background-image:url('${esc(x.img)}?w=640&fm=webp')"` : ''}>${cur ? '<span class="pill">Aktuell</span>' : ''}</div>
+          <div class="pt-body"><small>${fmtDate(x.date)}</small><h3>Patch ${esc(x.id)}</h3><p>${esc(x.teaser || '')}</p>
+          <div class="pt-meta">${cnt ? `<span>${cnt} Änderungen</span>` : ''}${note ? '<span class="hl">mit Einschätzung</span>' : ''}</div></div></a>`;
+      }).join('')}</div></div>`).join('')
+      + `<p class="note">Quelle: offizielle Patchnotes von Riot Games. Die Änderungen werden automatisch übernommen – die vollständigen Texte findest du jeweils bei Riot.</p>`;
+    return;
+  }
+  const i = PATCHES.indexOf(p), newer = PATCHES[i-1], older = PATCHES[i+1];
+  const grps = []; (p.notes || []).forEach(s=>{ let g = grps.find(x=>x.g===s.grp); if(!g){ g = {g:s.grp, secs:[]}; grps.push(g); } g.secs.push(s); });
+  const note = PATCH_NOTES[p.id];
+  app.innerHTML = `<div class="page-head"><div class="crumb"><a href="/patches">Patches</a> / ${esc(p.id)}</div></div>
+    <div class="pd-hero"${p.img ? ` style="--img:url('${esc(p.img)}?w=1280&fm=webp')"` : ''}><div>
+      <small>${fmtDate(p.date)}${p===CURRENT_PATCH ? ' · <b>Aktueller Patch</b>' : ''}</small><h1>Patch <em class="serif">${esc(p.id)}</em></h1>
+      ${p.teaser ? `<blockquote>${esc(p.teaser)}<cite>– Riot Games</cite></blockquote>` : ''}
+      <a class="btn btn-primary" href="${esc(p.url)}" target="_blank" rel="noopener">Komplette Patchnotes bei Riot ↗</a></div></div>
+    ${note ? `<div class="card pd-note"><h3>Einschätzung von TFT Freaks</h3>${String(note).split(/\n{2,}/).map(t=>`<p>${esc(t).replace(/\n/g,'<br>')}</p>`).join('')}</div>` : ''}
+    ${grps.length ? `<input class="input pd-search" id="pdSearch" placeholder="Champion, Trait, Item oder Augment suchen …" aria-label="Änderungen durchsuchen">
+    <div id="pdList">${grps.map(g=>`<section class="pd-grp">${g.g ? `<h2>${esc(grpLabel(g.g))}</h2>` : ''}${g.secs.map(s=>`<div class="card pd-sec"><h3>${esc(secLabel(s.sec))}</h3><ul>${s.ch.map(patchRowHTML).join('')}</ul></div>`).join('')}</section>`).join('')}</div>`
+      : viSays('Für diesen Patch habe ich keine einzelnen Änderungen gefunden – schau direkt in die Patchnotes bei Riot.')}
+    <div class="pd-nav">${older ? `<a class="btn btn-ghost" href="/patches/${patchSlug(older.id)}">← Patch ${esc(older.id)}</a>` : '<span></span>'}${newer ? `<a class="btn btn-ghost" href="/patches/${patchSlug(newer.id)}">Patch ${esc(newer.id)} →</a>` : ''}</div>
+    <p class="note">Änderungen automatisch aus den offiziellen Patchnotes von Riot Games übernommen. Maßgeblich sind die vollständigen Notizen bei Riot.</p>`;
+  const s = $('#pdSearch');
+  if(s) s.addEventListener('input', ()=>{
+    const q = s.value.toLowerCase().trim();
+    app.querySelectorAll('.pn-row').forEach(li=>{ li.hidden = !!q && !li.textContent.toLowerCase().includes(q); });
+    app.querySelectorAll('.pd-sec').forEach(sec=>{ sec.hidden = ![...sec.querySelectorAll('.pn-row')].some(li=>!li.hidden); });
+    app.querySelectorAll('.pd-grp').forEach(g=>{ g.hidden = ![...g.querySelectorAll('.pd-sec')].some(x=>!x.hidden); });
+  });
+}
+// Letzte Änderungen eines Champions (für das Champion-Fenster)
+function champPatchHTML(name){
+  const keys = [name, (CH_DATA[name]||{}).de].filter(Boolean).map(x=>x.toLowerCase());
+  const out = [];
+  PATCHES.filter(p=>p.set===TFT_DATA.set).forEach(p=>{
+    const rows = (p.notes||[]).flatMap(s=>s.ch).filter(r=>keys.includes(String(r[0]).toLowerCase()));
+    if(rows.length && out.length < 3) out.push(`<div class="cp-p"><a href="/patches/${patchSlug(p.id)}">Patch ${esc(p.id)}</a><ul>${rows.map(r=>`<li>${r[1] ? esc(r[1]) + ': ' : ''}${r[2] ? `<span class="pn-old">${esc(r[2])}</span> ⇒ ` : ''}<b>${esc(r[3])}</b></li>`).join('')}</ul></div>`);
+  });
+  return out.join('');
+}
+
+/* ================= SEITENTITEL & SUCHMASCHINEN ================= */
+// Pro Seite: [Titel, Beschreibung]. Seiten ohne eigenen Inhalt (Platzhalter, Redaktion, 404) werden nicht indexiert.
+function pageMeta(page, sub){
+  const S = `Set ${TFT_DATA.set}`, P = TL_PATCH ? ` (Patch ${TL_PATCH})` : '', rk = rankBy[sub];
+  switch(page){
+    case 'home': return ['TFT Freaks – TFT Tierlist, Comps & Coaching', `Aktuelle TFT Tierlist für ${S}${P}: die besten Comps mit Items, Augments und Aufstellung – dazu Coaching von Challenger-Spielern.`];
+    case 'tierlist':
+      if(sub==='items') return [`TFT Item-Tierlist ${S}${P}`, `Welche Items sind in TFT ${S} am stärksten? Item-Tierlist mit kombinierten Items, Lichtversionen und Artefakten.`];
+      if(sub==='augments') return [`TFT Augment-Tierlist ${S}${P}`, `Die besten Augments in TFT ${S} – sortiert nach Silber, Gold und Prismatisch.`];
+      return [`TFT Tierlist ${S}${P} – die besten Comps`, `Die besten TFT Comps für ${S}${P}: Tierlist mit Aufstellung, Items, Augments und Spielplan für jede Comp.`];
+    case 'bibliothek':
+      if(sub==='items') return [`TFT Items ${S} – Rezepte & Werte`, `Alle Items in TFT ${S}: Rezepte, Komponenten, Lichtversionen, Artefakte und Embleme mit ihren Werten.`];
+      if(sub==='traits') return [`TFT Traits ${S} – Stufen & Units`, `Alle Traits in TFT ${S}: Ursprünge und Klassen mit Stufen, Effekten und den passenden Units.`];
+      return [`TFT Champions ${S} – Kosten & Traits`, `Alle ${champions.length} Champions in TFT ${S} mit Kosten und Traits.`];
+    case 'ranks':
+      if(rk) return [`TFT Rang ${rk.n} – Spielerverteilung`, `Wie viele Spieler sind in TFT ${rk.n}? Verteilung nach Divisionen und Vergleich mit den anderen Rängen.`];
+      return ['TFT Ränge & Spielerverteilung', 'Alle TFT Ränge von Eisen bis Challenger mit Divisionen – und wie viel Prozent der Spieler in jedem Rang stehen.'];
+    case 'builder': return [`TFT Team Builder ${S}`, `Stell dein TFT Team für ${S} zusammen: Units platzieren, Items verteilen, Traits prüfen und das Board als Link teilen.`];
+    case 'coaching': return ['TFT Coaching von Challenger-Spielern', 'TFT Coaching auf Deutsch und Englisch: Fundamentals und VOD-Review mit Challenger-Coaches. Kostenloses Kennenlernen, Einzelstunde 30 €.'];
+    case 'about':
+      if(sub==='crazyslayt') return ['CrazYSlayt – TFT Challenger & Founder', 'Claudio „CrazYSlayt“: Challenger seit Set 15, Founder von TFT Freaks und Coach seit Set 17.'];
+      if(sub==='humbadobo') return ['humbadobo – TFT Challenger & Coach', 'Romano „humbadobo“: Challenger seit Set 15, Peak 1.447 LP und Coach bei TFT Freaks.'];
+      return ['Meet the Team', 'Das Team hinter TFT Freaks: Challenger-Spieler, Coaches – und Vi.'];
+    case 'apply': return ['Coaching anfragen', 'Frag ein kostenloses Kennenlernen für dein TFT Coaching an.'];
+    case 'patches': {
+      const p = patchBySlug[sub];
+      if(p) return [`TFT Patch ${p.id} – alle Änderungen`, `Alle Änderungen aus TFT Patch ${p.id} (${fmtDate(p.date)}) auf einen Blick: Champions, Traits, Items und Augments. ${p.teaser || ''}`.trim()];
+      return ['TFT Patch Notes – alle Änderungen', 'Alle TFT Patches mit den offiziellen Änderungen von Riot: Champions, Traits, Items und Augments – automatisch aktuell.'];
+    }
+    case 'impressum': return ['Impressum', 'Impressum von TFT Freaks.'];
+    case 'datenschutz': return ['Datenschutzerklärung', 'Datenschutzerklärung von TFT Freaks.'];
+    case 'guides': return ['TFT Guides', '', true];
+    case 'tools':
+      if(sub==='tierlist') return [`TFT Tierlist-Maker ${S} – eigene Tierlist erstellen`, `Erstell deine eigene TFT Tierlist für ${S}: Champions, Traits, Augments und Items per Drag & Drop ranken und als Link teilen.`];
+      if(sub==='rolldown') return [`TFT Rolldown-Rechner ${S} – Chancen auf deine Units`, `Wie wahrscheinlich triffst du deine Units beim Rollen? Rolldown-Rechner für TFT ${S} mit Shop-Chancen pro Level, Pool-Größen und Level-Vergleich.`];
+      if(sub==='drops') return [`TFT Item-Drop-Rechner ${S} – welche Komponente kommt als Nächstes?`, `Trag deine Item-Drops aus den Creep-Runden ein und sieh die Chancen für die nächsten Komponenten in TFT ${S} – mit Gold- und Prismatic-Orb-Chancen pro Stage.`];
+      if(sub==='simulator') return [`TFT Kampf-Simulator ${S} – Teams gegeneinander testen`, `Lass zwei TFT Teams für ${S} gegeneinander kämpfen: Laufwege, Ziele, Fähigkeiten und Sprünge Schritt für Schritt – mit Items, Sternen, Traits und Augments.`];
+      return ['TFT Tools', `Rechner und Werkzeuge für TFT ${S}: Rolldown-Rechner, Kampf-Simulator, Tierlist-Maker und mehr.`];
+    case 'news': return ['TFT News', '', true];
+    case 'admin': return ['Redaktion', '', true];
+    default: return ['Seite nicht gefunden', '', true];
+  }
+}
+function headTag(sel, make){ let el = document.head.querySelector(sel); if(!el){ el = make(); document.head.appendChild(el); } return el; }
+function setMeta(page, sub){
+  const [title, desc, noindex] = pageMeta(page, sub);
+  document.title = page==='home' ? title : title + ' | TFT Freaks';
+  if(desc) headTag('meta[name="description"]', ()=>Object.assign(document.createElement('meta'), {name:'description'})).content = desc;
+  headTag('meta[name="robots"]', ()=>Object.assign(document.createElement('meta'), {name:'robots'})).content = noindex ? 'noindex' : 'index, follow';
+  if(FILE_MODE) return;
+  if(noindex){ const c = document.head.querySelector('link[rel="canonical"]'); if(c) c.remove(); return; }
+  // kanonische Adresse: eine Adresse pro Inhalt (z. B. /bibliothek statt /bibliothek/champions, Builder ohne Team-Code)
+  const keep = {tierlist:['items','augments'], bibliothek:['items','traits'], tools:['rolldown','tierlist','simulator','drops'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
+  const path = page==='home' ? '/' : '/' + page + (keep.includes(sub) ? '/' + sub : '');
+  headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + path;
+}
+
+// Interne Links ohne Neuladen öffnen (Strg/Mittelklick öffnen weiterhin einen neuen Tab)
+document.addEventListener('click', e=>{
+  if(e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const a = e.target.closest('a[href]'); if(!a || a.target === '_blank') return;
+  const h = a.getAttribute('href');
+  if(h.startsWith('#') && !h.startsWith('#/')){   // Sprunganker wie #main
+    e.preventDefault();
+    const t = h.length > 1 && document.getElementById(h.slice(1));
+    if(t){ t.scrollIntoView(); t.focus({preventScroll:true}); }
+    return;
+  }
+  const p = h.startsWith('#/') ? h.slice(1) : h;
+  if(!p.startsWith('/') || p.startsWith('//')) return;
+  e.preventDefault(); go(p);
+});
+
 function route(){
-  // normale Sprunganker (z. B. #main) nicht als Seite behandeln
-  const routed = !location.hash || location.hash.startsWith('#/');
-  if(!routed && document.querySelector('.page.active')) return;
-  const parts = routed ? location.hash.replace(/^#\/?/,'').split('/') : [''];
+  // lokal: normale Sprunganker (z. B. #main) nicht als Seite behandeln
+  if(FILE_MODE && location.hash && !location.hash.startsWith('#/') && document.querySelector('.page.active')) return;
+  const parts = curPath().replace(/^\/+/,'').split('/');
   let page = parts[0] || 'home', sub = parts[1];
   // alte Adressen weiter unterstützen
   if(['champions','items','traits'].includes(page)){ sub = page; page = 'bibliothek'; }
   if(page==='augments'){ sub = 'augments'; page = 'tierlist'; }
-  const valid = ['home','tierlist','bibliothek','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz'];
+  const valid = ['home','tierlist','bibliothek','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches'];
   if(!valid.includes(page)) page='notfound';
-  const pageId = page==='bibliothek' ? 'library' : page;
+  const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche
+  const pageId = page==='bibliothek' ? 'library' : isSim ? 'builder' : page;
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+pageId));
   let navKey = page;
+  if(!isSim) simPause();
   if(page==='tierlist') setTab(['items','augments'].includes(sub)?sub:'comps');
   if(page==='bibliothek') setLib(['items','traits'].includes(sub)?sub:'champions');
   if(page==='ranks') setRank(sub);
-  if(page==='builder') builderRoute(sub, parts[2]);
+  if(page==='builder') builderRoute(sub, parts[2], 'builder');
   if(page==='admin') renderAdmin();
   if(page==='about') setAbout(sub);
+  if(isSim) builderRoute(parts[2], parts[3], 'sim');
+  else if(page==='tools') renderTools(sub, parts[2], parts[3]);
+  if(page==='patches') renderPatches(sub);
   document.querySelectorAll('[data-route]').forEach(a=>a.classList.toggle('active', a.dataset.route===navKey));
-  if(['guides','about','apply'].includes(navKey)) $('#moreBtn').classList.add('active');
+  if(['guides','about','apply','patches'].includes(navKey)) $('#moreBtn').classList.add('active');
   else $('#moreBtn').classList.remove('active');
   moreMenu.classList.remove('open'); drawer.classList.remove('open');
   closeModal(); window.scrollTo(0,0);
+  setMeta(page, sub);
 }
-window.addEventListener('hashchange', route);
+window.addEventListener(FILE_MODE ? 'hashchange' : 'popstate', route);
 
 /* init */
 renderSetSwitcher();

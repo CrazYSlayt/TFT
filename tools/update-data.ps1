@@ -17,10 +17,15 @@
     -Version 16.20     bestimmte CommunityDragon-Version statt der neuesten
     -ItemPrefix DA     Präfix der Set-Items, falls die automatische Erkennung danebenliegt
     -OnlyRanks         nur die Rangverteilung aktualisieren (dauert ein paar Sekunden)
+    -Publish           danach den Ordner data automatisch committen und zu GitHub hochladen (für die geplante Aufgabe)
+  Patches: Die Patch-Liste kommt von Riot (teamfighttactics.leagueoflegends.com). Pro Patch wird ein Datenstand in
+  data\history\ abgelegt; fehlende Patches des Sets werden aus älteren CommunityDragon-Versionen nachgeholt.
+  Daraus entsteht data\patches.js mit allen erkannten Änderungen. Eigene Kommentare: data\patch-kommentare.js.
 #>
 param(
   [switch]$NoPbe,
   [switch]$OnlyRanks,
+  [switch]$Publish,
   [int]$Set = 0,
   [string]$Version = '',
   [string]$ItemPrefix = ''
@@ -41,9 +46,21 @@ function Step($msg) { Write-Host "» $msg" -ForegroundColor Cyan }
 function Warn($msg) { Write-Host "  ! $msg" -ForegroundColor Yellow }
 function NewObj { return New-Object 'System.Collections.Generic.Dictionary[string,object]' }
 function Png($p) { if (-not $p -or ([string]$p).StartsWith('{')) { return $null }; return (([string]$p).ToLower() -replace '\.(tex|dds)$', '.png') }
-function Fx($eff) {
+# Riot speichert manche Wert-Namen nur als Hash ({7a9d7f0e} = FNV-1a des kleingeschriebenen Namens).
+# Die Klarnamen stehen als Platzhalter im Beschreibungstext (@EssencePerDeath@) – daraus bauen wir die Rückübersetzung.
+function Fnv([string]$s) { [uint32]$h = 2166136261; foreach ($b in [Text.Encoding]::UTF8.GetBytes($s.ToLower())) { $h = $h -bxor $b; $h = [uint32](([uint64]$h * 16777619) % 4294967296) }; return '{' + $h.ToString('x8') + '}' }
+function HashNames([string[]]$texts) {
+  $m = @{}
+  foreach ($t in $texts) { if ($t) { foreach ($x in [regex]::Matches($t, '@([A-Za-z0-9_]+)(?:\*100)?@')) { $n = $x.Groups[1].Value; $m[(Fnv $n)] = $n } } }
+  return $m
+}
+function Fx($eff, $names) {
   $o = NewObj
-  if ($eff) { foreach ($k in $eff.Keys) { $v = $eff[$k]; if ($null -ne $v -and -not ([string]$k).StartsWith('{') -and ($v -is [int] -or $v -is [decimal] -or $v -is [double])) { $o[[string]$k] = [Math]::Round([double]$v, 4) } } }
+  if ($eff) { foreach ($k in $eff.Keys) {
+    $v = $eff[$k]; $key = [string]$k
+    if ($key.StartsWith('{')) { if ($names -and $names.ContainsKey($key)) { $key = $names[$key] } else { continue } }
+    if ($null -ne $v -and ($v -is [int] -or $v -is [decimal] -or $v -is [double])) { $o[$key] = [Math]::Round([double]$v, 4) }
+  } }
   return $o
 }
 function J($x) {
@@ -83,7 +100,8 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
   $enItem = @{}; foreach ($i in $EN['items']) { $enItem[$i['apiName']] = $i }
   $deItem = @{}; foreach ($i in $DE['items']) { $deItem[$i['apiName']] = $i }
 
-  # --- Champions ---
+  # --- Champions (inkl. Werte, Reichweite und Fähigkeit – Texte auf Deutsch) ---
+  $deChamp = @{}; foreach ($c in $sdDE['champions']) { $deChamp[[string]$c['apiName']] = $c }
   $champs = New-Object 'System.Collections.Generic.List[object]'; $prefixCount = @{}
   foreach ($c in $sdEN['champions']) {
     $tr = @($c['traits']); $cost = [int]$c['cost']
@@ -92,6 +110,26 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
     $o['api'] = [string]$c['apiName']; $o['n'] = [string]$c['name']; $o['c'] = $cost
     $o['t'] = [string[]]@($tr | ForEach-Object { [string]$_ })
     $o['sq'] = Png $c['squareIcon']; $o['tile'] = Png $c['tileIcon']
+    if ($deChamp[$o['api']] -and $deChamp[$o['api']]['name'] -and [string]$deChamp[$o['api']]['name'] -ne $o['n']) { $o['de'] = [string]$deChamp[$o['api']]['name'] }
+    $s = $c['stats']
+    if ($s) {
+      $st = NewObj
+      foreach ($p in @(@('hp','hp'),@('mana','mana'),@('mana0','initialMana'),@('ad','damage'),@('as','attackSpeed'),@('ar','armor'),@('mr','magicResist'),@('crit','critChance'),@('range','range'))) {
+        if ($null -ne $s[$p[1]]) { $st[$p[0]] = [Math]::Round([double]$s[$p[1]], 3) }
+      }
+      $o['st'] = $st
+    }
+    $ab = $c['ability']; $abDE = $(if ($deChamp[$o['api']]) { $deChamp[$o['api']]['ability'] } else { $null })
+    if ($ab -and ($ab['desc'] -or ($abDE -and $abDE['desc']))) {
+      $a = NewObj
+      $a['n'] = $(if ($abDE -and $abDE['name']) { [string]$abDE['name'] } else { [string]$ab['name'] })
+      $a['d'] = $(if ($abDE -and $abDE['desc']) { [string]$abDE['desc'] } else { [string]$ab['desc'] })
+      # Werte pro Sternestufe (nur wenn Riot sie mitliefert – in Set 18 fast nie)
+      $v = NewObj
+      foreach ($x in @($ab['variables'])) { if ($x -and $x['name'] -and $x['value']) { $vals = @($x['value']); if ($vals.Count -ge 4) { $v[[string]$x['name']] = [double[]]@($vals[1], $vals[2], $vals[3] | ForEach-Object { [Math]::Round([double]$_, 3) }) } } }
+      if ($v.Count) { $a['v'] = $v }
+      $o['ab'] = $a
+    }
     $champs.Add($o)
     $p = ([string]$c['apiName'] -split '_')[0]; $prefixCount[$p] = 1 + [int]$prefixCount[$p]
   }
@@ -110,6 +148,9 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
     $o['de'] = $(if ($d) { [string]$d['name'] } else { [string]$t['name'] })
     $o['bp'] = [int[]]$bp; $o['icon'] = Png $t['icon']
     $o['desc'] = $(if ($d -and $d['desc']) { [string]$d['desc'] } else { [string]$t['desc'] })
+    # Werte je Stufe (z. B. 3/5/7 Units) mit entschlüsselten Namen
+    $names = HashNames @([string]$t['desc'], $(if ($d) { [string]$d['desc'] } else { '' }))
+    $o['fx'] = [object[]]@(@($t['effects']) | Where-Object { $_ -and [int]$_['minUnits'] -gt 0 } | ForEach-Object { $e = NewObj; $e['min'] = [int]$_['minUnits']; $e['max'] = [int]$_['maxUnits']; $e['v'] = Fx $_['variables'] $names; $e })
     $traits.Add($o)
   }
 
@@ -170,7 +211,7 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
     $o['icon'] = $icon
     $o['comp'] = [string[]]@(@($e['composition']) | Where-Object { $_ } | ForEach-Object { [string]$_ })
     $o['desc'] = $(if (-not $isEmblem -and $src -and $src['desc']) { [string]$src['desc'] } else { $null })
-    $o['fx'] = $(if (-not $isEmblem -and $src) { Fx $src['effects'] } else { NewObj })
+    $o['fx'] = $(if (-not $isEmblem -and $src) { Fx $src['effects'] (HashNames @([string]$src['desc'], [string]$e['desc'])) } else { NewObj })
     $n = [string]$e['name']; $kat = 'other'
     if ($compIds[$api]) { $kat = 'component' }
     elseif ($api -match 'Emblem' -or $n -like 'Tactician*') { $kat = 'emblem' }
@@ -194,7 +235,7 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
     if ($nm -match '(?:[-_])(i{1,3})$') { $lv = $Matches[1].Length } elseif ($nm -match '(?:t|[-_]|[a-z])([123])$') { $lv = [int]$Matches[1] }
     $o = NewObj
     $o['id'] = [string]$api; $o['en'] = [string]$e['name']; $o['de'] = $(if ($d) { [string]$d['name'] } else { [string]$e['name'] })
-    $o['desc'] = $(if ($src['desc']) { [string]$src['desc'] } else { $null }); $o['fx'] = Fx $src['effects']
+    $o['desc'] = $(if ($src['desc']) { [string]$src['desc'] } else { $null }); $o['fx'] = Fx $src['effects'] (HashNames @([string]$src['desc'], [string]$e['desc']))
     $o['icon'] = $icon; $o['lv'] = $lv
     $augs.Add($o)
   }
@@ -265,6 +306,107 @@ function UpdateRanks {
 }
 if ($OnlyRanks) { UpdateRanks; Write-Host 'Fertig.' -ForegroundColor Green; return }
 
+# ======================= Patches =======================
+$histDir = Join-Path $dataDir 'history'
+$UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'
+# Patch-Artikel aus Riots News-Übersicht (eingebettete Seitendaten) lesen
+function RiotPatches {
+  $html = (Invoke-WebRequest 'https://teamfighttactics.leagueoflegends.com/de-de/news/game-updates/' -UseBasicParsing -UserAgent $UA -TimeoutSec 60).Content
+  $json = [regex]::Match($html, '<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)</script>').Groups[1].Value
+  if (-not $json) { throw 'Seitendaten nicht gefunden' }
+  $found = New-Object 'System.Collections.Generic.List[object]'
+  $walk = {
+    param($node)
+    if ($node -is [System.Collections.IDictionary]) {
+      if ($node.ContainsKey('title') -and $node.ContainsKey('action') -and ([string]$node['title']) -match 'Patch (\d+)\.(\d+)\s*$') { $found.Add($node) }
+      foreach ($v in @($node.Values)) { & $walk $v }
+    } elseif ($node -is [System.Collections.IEnumerable] -and -not ($node -is [string])) { foreach ($v in $node) { & $walk $v } }
+  }
+  & $walk ($ser.DeserializeObject($json))
+  $out = @{}
+  foreach ($n in $found) {
+    $m = [regex]::Match([string]$n['title'], 'Patch (\d+)\.(\d+)'); $id = $m.Groups[1].Value + '.' + $m.Groups[2].Value
+    if ($out.ContainsKey($id)) { continue }
+    $url = [string]$n['action']['payload']['url']; if ($url.StartsWith('/')) { $url = 'https://teamfighttactics.leagueoflegends.com' + $url.TrimEnd('/') + '/' }
+    $date = $(if ($n['publishedAt']) { [string]$n['publishedAt'] } elseif ($n['analytics']) { [string]$n['analytics']['publishDate'] } else { '' })
+    $o = NewObj
+    $o['id'] = $id; $o['set'] = [int]$m.Groups[1].Value; $o['title'] = "Patch $id"; $o['url'] = $url; $o['date'] = $date.Substring(0, [Math]::Min(10, $date.Length))
+    $o['teaser'] = $(if ($n['description'] -and $n['description']['body']) { [Net.WebUtility]::HtmlDecode(([string]$n['description']['body'] -replace '<[^>]+>', '')).Trim() } else { '' })
+    $o['img'] = $(if ($n['media'] -and $n['media']['url']) { ([string]$n['media']['url']) -replace '\?.*$', '' } else { '' })
+    $out[$id] = $o
+  }
+  return $out
+}
+# Änderungszeilen aus einem Patch-Artikel lesen: Abschnitt (z. B. "1-GOLD-EINHEIT") und Zeilen "Name – Wert: alt ⇒ neu".
+# Unterpunkte ohne eigenen Namen ("Angriffstempo: 0,7 ⇒ 0,75") gehören zum übergeordneten Punkt.
+function CleanTxt([string]$s) { return ([Net.WebUtility]::HtmlDecode(($s -replace '<[^>]+>', ' ')) -replace '\s+', ' ').Trim() }
+function PatchChanges([string]$url) {
+  $html = (Invoke-WebRequest $url -UseBasicParsing -UserAgent $UA -TimeoutSec 60).Content
+  $secs = New-Object 'System.Collections.Generic.List[object]'; $cur = $null
+  $stack = New-Object 'System.Collections.Generic.List[object]'
+  $inHead = $false; $head = ''; $pos = 0; $grp = ''
+  foreach ($m in [regex]::Matches($html, '<(/?)(ul|ol|li|h2|h3|h4)\b[^>]*>')) {
+    $txt = $html.Substring($pos, $m.Index - $pos); $pos = $m.Index + $m.Length
+    if ($inHead) { $head += $txt } elseif ($stack.Count) { [void]$stack[$stack.Count-1].t.Append($txt) }
+    $close = $m.Groups[1].Value -eq '/'; $tag = $m.Groups[2].Value
+    if ($tag -match '^h[234]$') {
+      if (-not $close) { $inHead = $true; $head = '' }
+      else {
+        $inHead = $false; $name = CleanTxt $head
+        # h2 = Gruppe (z. B. "PATCH-AKTUALISIERUNG" = B-Patch, "GROSSE ÄNDERUNGEN"); ein Datum als h4 gehört zur Gruppe
+        if ($tag -eq 'h2') { $grp = $name; $cur = $null }
+        elseif ($name -match '^\d{1,2}\.\s+\S+$') { $grp = ($grp + ' · ' + $name).Trim(' ·') }
+        elseif ($name) { $cur = NewObj; $cur['sec'] = $name; $cur['grp'] = $grp; $cur['ch'] = New-Object 'System.Collections.Generic.List[object]'; $secs.Add($cur) }
+      }
+      continue
+    }
+    if ($tag -eq 'ul' -or $tag -eq 'ol') { if (-not $close -and $stack.Count) { $p = $stack[$stack.Count-1]; if (-not $p.lead) { $p.lead = CleanTxt $p.t.ToString() } }; continue }
+    if (-not $close) { $stack.Add([pscustomobject]@{ t = (New-Object Text.StringBuilder); lead = '' }); continue }
+    if (-not $stack.Count) { continue }
+    $it = $stack[$stack.Count-1]; $stack.RemoveAt($stack.Count-1)
+    $line = $(if ($it.lead) { $it.lead } else { CleanTxt $it.t.ToString() })
+    if (-not $cur -or $line -notmatch '⇒') { continue }
+    # Oberpunkte (z. B. "Camille" > "Schaden – Angriffsschaden: …"): oberster Punkt = Name, die übrigen gehören zur Bezeichnung
+    $anc = @($stack | ForEach-Object { ($_.lead -replace '\s*[–:].*$', '').Trim() } | Where-Object { $_ })
+    $mm = [regex]::Match($line, '^(?<s>.+?) – (?<l>.+?):\s*(?<o>.*?)\s*⇒\s*(?<n>.+)$')
+    if (-not $mm.Success) { $mm = [regex]::Match($line, '^(?<l>[^:]+):\s*(?<o>.*?)\s*⇒\s*(?<n>.+)$') }
+    if ($mm.Success) {
+      $parts = @($anc) + @($(if ($mm.Groups['s'].Success) { $mm.Groups['s'].Value.Trim() })) + @($mm.Groups['l'].Value.Trim()) | Where-Object { $_ }
+      $s = $(if ($parts.Count -gt 1) { $parts[0] } else { '' }); $l = $(if ($parts.Count -gt 1) { ($parts[1..($parts.Count-1)]) -join ' – ' } else { $parts[0] })
+      $cur['ch'].Add([object[]]@($s, $l, $mm.Groups['o'].Value.Trim(), $mm.Groups['n'].Value.Trim()))
+    } else { $cur['ch'].Add([object[]]@($(if ($anc.Count) { $anc[0] } else { '' }), '', '', $line)) }
+  }
+  $res = New-Object 'System.Collections.Generic.List[object]'
+  foreach ($x in $secs) { if ($x['ch'].Count) { $x['ch'] = [object[]]$x['ch'].ToArray(); $res.Add($x) } }
+  return [object[]]$res.ToArray()
+}
+function ReadJson($f) { return $ser.DeserializeObject([IO.File]::ReadAllText($f, [Text.Encoding]::UTF8)) }
+function UpdatePatches([int]$liveSet) {
+  Step 'Patches: Liste von Riot laden …'
+  New-Item -ItemType Directory -Force $histDir | Out-Null
+  $listFile = Join-Path $histDir 'patches.json'
+  $all = @{}
+  if (Test-Path $listFile) { foreach ($p in @(ReadJson $listFile)) { $all[[string]$p['id']] = $p } }
+  $new = @()
+  try {
+    $riot = RiotPatches
+    foreach ($id in $riot.Keys) { if ($all.ContainsKey($id)) { foreach ($k in $riot[$id].Keys) { $all[$id][$k] = $riot[$id][$k] } } else { $all[$id] = $riot[$id]; $new += $id } }
+    Write-Host "  $($riot.Count) Patch-Artikel bei Riot gefunden$(if ($new.Count) { ' – neu: ' + ($new -join ', ') })."
+  } catch { Warn "Riot-Patchliste nicht erreichbar ($($_.Exception.Message)) – nutze die gespeicherte Liste." }
+  # Änderungen aus den Artikeln des aktuellen und vorherigen Sets lesen (der neueste wird immer neu gelesen – wegen B-Patches)
+  $newest = @($all.Values | Sort-Object { [string]$_['date'] } -Descending)[0]
+  foreach ($p in @($all.Values | Where-Object { [int]$_['set'] -ge ($liveSet - 1) })) {
+    if ($p.ContainsKey('notes') -and $p -ne $newest) { continue }
+    try { $p['notes'] = PatchChanges ([string]$p['url']); $n = 0; foreach ($s in $p['notes']) { $n += @($s['ch']).Count }; Write-Host "  Patch $($p['id']): $n Änderungen gelesen." }
+    catch { Warn "Patch $($p['id']) nicht lesbar: $($_.Exception.Message)" }
+  }
+  $sorted = @($all.Values | Sort-Object { [string]$_['date'] } -Descending)
+  [IO.File]::WriteAllText($listFile, (J $sorted), $utf8)
+  $show = @($sorted | Where-Object { [int]$_['set'] -ge ($liveSet - 1) })
+  [IO.File]::WriteAllText((Join-Path $dataDir 'patches.js'), "// TFT Freaks – Patches (automatisch erzeugt mit tools\update-data.ps1 aus Riots Patchnotes, nicht von Hand bearbeiten)`n// Eigene Kommentare zu Patches gehören in data\patch-kommentare.js`nwindow.TFT_PATCHES = $(J $show);`n", $utf8)
+  Write-Host ("  geschrieben: data\patches.js ({0} Patches)" -f $show.Count) -ForegroundColor Green
+}
+
 # ======================= 1. Live-Server =======================
 if (-not $Version) {
   Step 'Neueste Live-Version ermitteln …'
@@ -319,4 +461,25 @@ foreach ($s in $list) { Write-Host ("  Set {0,-3} {1,-7} {2,-12} {3}" -f $s['set
 
 # ======================= 4. Rangverteilung =======================
 UpdateRanks
+
+# ======================= 5. Patches: Liste von Riot, Archiv pro Patch, erkannte Änderungen =======================
+UpdatePatches $liveSet
+
+# ======================= 6. Optional: automatisch veröffentlichen (nur der Ordner data) =======================
+if ($Publish) {
+  Step 'Veröffentlichen …'
+  $git = Join-Path $env:LOCALAPPDATA 'PortableGit\cmd\git.exe'
+  if (-not (Test-Path $git)) { Warn 'Git nicht gefunden – nicht veröffentlicht.' }
+  else {
+    Push-Location $root
+    & $git add -- data
+    & $git diff --cached --quiet -- data
+    if ($LASTEXITCODE -ne 0) {
+      & $git commit -q -m "Automatisches Daten-Update $today" -- data
+      $env:GCM_INTERACTIVE = 'never'; & $git push -q
+      if ($LASTEXITCODE -eq 0) { Write-Host '  Neue Daten veröffentlicht.' -ForegroundColor Green } else { Warn 'Hochladen fehlgeschlagen (Anmeldung?) – beim nächsten Mal "veröffentlichen" sagen.' }
+    } else { Write-Host '  Keine neuen Daten – nichts zu veröffentlichen.' }
+    Pop-Location
+  }
+}
 Write-Host 'Fertig.' -ForegroundColor Green

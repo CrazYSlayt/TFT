@@ -42,6 +42,56 @@ window.TFT_CUSTOM = {
   },
   // Augments, für die Riot nur ein Platzhalter-Icon liefert – eigene Icons liegen in assets/augments/<ID>.webp
   augmentIcons: ['DA_18_BlossomTraitAugment','DA_18_CovenTraitAugment','DA_18_CovenTraitAugment_LootToAP','DA_18_ElderwoodTraitAugment','DA_18_FOURcing','DA_18_FaeTraitAugment','DA_18_FloraFatalisAugment','DA_18_InfernoTraitAugment','DA_18_LunarTraitAugment','DA_18_LunarTraitAugmentPlus','DA_18_LuxAugmentII','DA_18_OnesTwosThree','DA_18_PrimalAugmentPlus_Nidalee','DA_18_PrimalAugmentPlus_Sivir','DA_18_PrimalAugment_Nidalee','DA_18_PrimalAugment_Sivir','DA_18_ResidualMagic','DA_18_ResidualMagicPlus','DA_18_ResidualMagicPlusPlus','DA_18_RiftbeastTraitAugment','DA_18_RivalsAugment','DA_18_SolarTraitAugment','DA_18_SprykinAugment','DA_18_WeightTheWorth','DA_18_WispRebatePlus','DA_18_WispRebatePlusPlus','DA_BlackthornTraitAugment','DA_BonusGift','DA_BonusGiftPlus','DA_CapitalGainsI','DA_CapitalGainsII','DA_ChampDelivery','DA_ChampDeliveryPlus','DA_ChampDeliveryPlusPlus','DA_ComponentQuest','DA_FutureFocused','DA_ItsMeBaby','DA_LoadedDice','DA_NestingAnvils','DA_NestingAnvilsPlus','DA_QuickStreaks','DA_TraitLadder','DA_VerticalityI','DA_VerticalityII','DA_VerticalityIII'],
+  // Shop für den Rolldown-Rechner (Patch 18.4; Quellen: EsportsTales, TFTFlow). Champions pro Kosten kommen automatisch aus den Set-Daten.
+  shop: {
+    bag: [30, 25, 18, 10, 9],          // Kopien pro Champion (1- bis 5-Kosten)
+    odds: [                             // Chance pro Shop-Slot in %, Level 1–11 (1/2/3/4/5-Kosten)
+      [100, 0, 0, 0, 0], [100, 0, 0, 0, 0], [75, 25, 0, 0, 0], [55, 30, 15, 0, 0], [45, 33, 20, 2, 0], [30, 40, 25, 5, 0],
+      [16, 30, 43, 10, 1], [15, 20, 32, 30, 3], [10, 17, 25, 33, 15], [5, 10, 20, 40, 25], [1, 2, 12, 50, 35]
+    ],
+    xp: [2, 2, 6, 10, 20, 36, 56, 68, 68] // XP von Level 1→2 … 9→10
+  },
+  // Beute aus den Creep-Runden (für den Item-Drop-Rechner). Quelle: tftflow.com/tables/set18/stage-loot-orbs
+  // Pro Stage alle möglichen Beute-Kombinationen: [Silber, Blau, Gold, Prisma, zufällige Komponenten, Komponenten-Amboss, aufgewertet (0/1), Chance %]
+  loot: {
+    source: 'tftflow.com (Set 18)',
+    stages: {
+      1: [[3,0,0,0,3,0,0,31],[0,1,0,0,3,0,0,31],[3,1,0,0,2,0,0,10.6],[0,2,0,0,2,0,0,10.6],[3,2,0,0,1,0,0,5.3],[3,0,0,0,5,0,1,2.8],[0,1,0,0,5,0,1,2.8],[0,1,0,0,4,0,1,2.3],[0,2,0,0,3,0,1,2.3],[5,0,0,0,3,0,1,1.1]],
+      2: [[0,1,0,0,2,0,0,17.7],[1,0,0,0,2,0,0,17.7],[1,0,0,0,3,0,0,17.7],[2,0,0,0,2,0,0,13.3],[0,1,0,0,3,0,0,13.3],[3,0,0,0,3,0,1,5],[1,0,1,0,2,0,1,5],[1,1,0,0,2,0,0,4.4],[0,2,0,0,2,0,0,4.4],[0,1,1,0,2,0,1,1.4]],
+      3: [[1,0,0,0,4,0,0,17.7],[1,1,0,0,3,0,0,17.7],[2,0,0,0,4,0,0,17.7],[3,0,0,0,3,0,0,13.3],[0,2,0,0,3,0,0,13.3],[0,2,0,0,2,0,0,4.4],[0,1,0,0,4,0,0,4.4],[1,0,1,0,3,0,1,3.5],[1,0,0,0,5,0,1,3.3],[1,0,0,1,3,0,1,2.8],[0,1,1,0,3,0,1,1.5],[1,0,1,0,4,0,1,0.2]],
+      4: [[1,1,0,0,1,1,0,17.7],[2,1,0,0,1,1,0,17.7],[2,0,0,0,1,1,0,17.7],[1,0,0,0,3,1,0,13.3],[3,0,0,0,2,1,0,13.3],[0,2,0,0,1,1,0,4.4],[1,0,0,0,4,1,0,4.4],[1,0,1,0,2,1,1,3.6],[1,1,0,0,3,1,1,3.4],[2,0,0,1,1,1,1,3.1],[0,2,1,0,2,1,1,0.9],[0,0,1,1,1,1,1,0.3]]
+    },
+    // ab Stage 5: Xerath – Silber-Orb bei 66 % Leben, Blau-Orb bei 33 %, Amboss für ein fertiges Item beim Sieg
+    late: 'Silber-Orb bei 66 % Leben, Blau-Orb bei 33 %, Amboss für ein fertiges Item beim Sieg – keine zufälligen Komponenten mehr.',
+    upgraded: [['Keine aufgewertete Runde', 63], ['Eine', 30], ['Zwei', 5.8], ['Drei', 1], ['Alle', 0.2]],
+    orbs: {
+      gold: {label:'Gold-Orb', wert:'15–18 Gold', items:[['15 Gold', 20], ['4 Gold + Bratpfanne + Pfannenwender + Umgestalter', 15], ['Amboss (fertiges Item)', 18], ['6 Gold + 2 zufällige 4-Kosten', 15], ['2 Gold + 4 zufällige 3-Kosten', 13], ['1 Gold + Diebeshandschuhe', 10], ['Champion-Duplikator + 6 Gold', 3], ['Champion-Duplikator + 2 Gold + kleiner Duplikator', 3], ['5 Gold + 3 zufällige 3-Kosten', 3]], note:'Stage 2–3'},
+      gold4: {label:'Gold-Orb', wert:'≈ 18 Gold', items:[['13 Gold + zufälliger 5-Kosten', 21.1], ['2 Gold + 2 Komponenten-Ambosse', 21.1], ['10 Gold + 2 zufällige 4-Kosten', 15.8], ['2 Gold + Amboss (fertiges Item)', 15.8], ['3 Gold + Diebeshandschuhe', 10.5], ['1 Gold + Bratpfanne + Pfannenwender + Umgestalter + Komponenten-Amboss', 5.3], ['Champion-Duplikator + 8 Gold', 5.3], ['7 Gold + 2 zufällige 5-Kosten', 5.3]], note:'ab Stage 4'},
+      prism: {label:'Prismatic-Orb', wert:'≈ 40 Gold', items:[['Item-Entferner + 2 Artefakt-Ambosse', 15], ['24 Meisterwerk-Aufwertungen + Item-Entferner + Komponenten-Amboss', 15], ['24 Gold + Meisterwerk-Aufwertung', 15], ['18 Gold + Umgestalter + Amboss (fertig) + Komponenten-Amboss + Pfannenwender', 15], ['18 Gold + Umgestalter + Amboss (fertig) + Komponenten-Amboss + Bratpfanne', 15], ['Lichtgegenstand-Glückstruhe + 10 Gold', 15], ['25 Gold + Item-Entferner + Artefakt-Amboss', 10]], note:'ab Stage 3'}
+    }
+  },
+  // Schwarzdorn (Blackthorn): Die Unit auf dem Opferfeld wird vor dem Kampf geopfert.
+  // Alle Champions erhalten das Leben der Trait-Stufe (175/350/600), Schwarzdorn-Champions zusätzlich Werte je nach Rolle des Opfers:
+  // Grundwert × Faktor (Kosten/Sterne des Opfers) × Stufe (1 / 1,3 / 1,6). Quelle: tftips.app/tables/blackthorn-sacrifice (Patch 18.4)
+  blackthorn: {
+    hex: 17,                            // Brett-Feld 0–27, Reihe 0 = vorne → 3. Reihe von vorne, Mitte
+    role: {
+      tank: {hpP: 0.17, res: 12},       // % max. Leben, Rüstung und Magieresistenz
+      ad:   {adP: 0.24, asP: 0.14},     // % Angriffsschaden, % Angriffstempo
+      ap:   {regen: 2, amp: 0.12}       // Manaregeneration, Schadenssteigerung
+    },
+    mult: [                             // Kosten 1–5 × Sterne 1–4
+      [0.6, 1, 1.75, 2.5], [0.7, 1.4, 2.8, 5], [0.8, 1.75, 3.3, 8], [1.1, 2.1, 50, 500], [1.4, 3, 100, 999]
+    ]
+  },
+  // Rolle jedes Champions (tank / ad / ap) – für das Schwarzdorn-Opfer. Riot liefert die Rolle in den Set-Daten nicht mit.
+  roles: {
+    'Akali':'ad', 'Camille':'ad', 'Cinderling':'ad', 'Karma':'ap', 'Kobuko':'tank', 'Leona':'tank', 'Ornn':'tank', 'Pebbles':'ap', 'Rakan':'tank', "Rek'Sai":'tank', 'Varus':'ad', 'Veigar':'ap', 'Xayah':'ad', 'Yorick':'tank',
+    'Alistar':'tank', 'Caitlyn':'ad', 'Elise':'tank', 'Gromp':'ap', 'Kayle':'ap', 'LeBlanc':'ap', 'Murkwolf':'ad', 'Scuttlecrab':'tank', 'Sejuani':'tank', 'Shen':'tank', 'Teemo':'ap', 'Warwick':'ad', 'Yunara':'ad',
+    'Azir':'ap', 'Cassiopeia':'ap', 'Diana':'tank', 'Fiddlesticks':'tank', 'Hecarim':'tank', "Kha'Zix":'ap', "Kog'Maw":'ad', 'Krug':'tank', 'Mama Beak':'ad', 'Master Yi':'ad', 'Rammus':'tank', 'Rengar':'ad', 'Tristana':'ad', 'Vi':'tank',
+    'Ahri':'ap', 'Amumu':'tank', 'Aphelios':'ad', 'Brambleback':'ad', 'Ezreal':'ad', 'Lillia':'tank', 'Malphite':'tank', 'Morgana':'tank', 'Nidalee':'ap', 'Sentinel':'tank', 'Sett':'tank', 'Sivir':'ad', 'Soraka':'ap', 'Zyra':'ap',
+    'Alune':'ap', 'Ashe':'ad', 'Draven':'ad', 'Elder Dragon':'ad', 'Gnar':'ad', 'Ivern':'ap', 'Kennen':'ap', 'Lux':'ap', 'Maokai':'tank', 'Taric':'tank'
+  },
   // Elderwood-Pflanzen (platzierbare Einheiten ohne Champion-Daten). Reihenfolge nicht ändern – Builder-Links hängen davon ab.
   plants: {
     'Lifebloom': 'assets/plants/lifebloom.webp',
