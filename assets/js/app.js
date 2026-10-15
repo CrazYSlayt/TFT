@@ -1527,7 +1527,6 @@ const SVGI = {
   lib:'<path d="M4 4h4v16H4zM10 4h4v16h-4z"/><path d="M16 5l3.5-1 3 15.5-3.5 1z"/>',
   news:'<path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v8a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5"/>',
   builder:'<path d="M7 3.5l4 2.3v4.6l-4 2.3-4-2.3V5.8z"/><path d="M17 3.5l4 2.3v4.6l-4 2.3-4-2.3V5.8z"/><path d="M12 12l4 2.3v4.6l-4 2.3-4-2.3v-4.6z"/>',
-  stats:'<path d="M4 19h16"/><path d="M7 16V11M12 16V7M17 16v-4"/>',
   tools:'<path d="M14.5 6.5a4 4 0 0 0-5.4 5.1L4 16.7 7.3 20l5.1-5.1a4 4 0 0 0 5.1-5.4l-2.4 2.4-2.4-.6-.6-2.4z"/>'
 };
 const NAV = [
@@ -1538,7 +1537,6 @@ const NAV = [
   {r:'ranks', h:'/ranks', l:'Ranks', s:'rank'},
   {r:'tools', h:'/tools', l:'Tools', s:'tools', badge:'Neu'},
   {r:'coaching', h:'/coaching', l:'Coaching', s:'coach'},
-  {r:'stats', h:'/stats', l:'Stats', s:'stats', more:true},
   {r:'patches', h:'/patches', l:'Patches', s:'patch', more:true},
   {r:'guides', h:'/guides', l:'Guides', s:'guide', more:true},
   {r:'about', h:'/about', l:'Meet the Team', s:'about', more:true},
@@ -1553,7 +1551,7 @@ $('#tbNav').innerHTML = NAV.filter(n=>!n.more).map(n=>`<a href="${n.h}" class="t
   + '<button class="tb-item tb-more" id="moreBtn" aria-haspopup="true" aria-label="Mehr">···</button>';
 $('#moreMenu').innerHTML = NAV.filter(n=>n.more).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('');
 $('#drawerPanel').innerHTML = `<a href="/" class="tb-logo" style="border:0;padding:6px 10px 14px;font-size:1.7rem" aria-label="TFT Freaks Startseite"><span class="tft-logo" aria-hidden="true"></span><div><span>TFT</span> <b>Freaks</b></div></a>
-  <h5>Tierlist & Daten</h5>${NAV.filter(n=>['tierlist','bibliothek','builder','ranks','stats','tools','patches'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}
+  <h5>Tierlist & Daten</h5>${NAV.filter(n=>['tierlist','bibliothek','builder','ranks','tools','patches'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}
   <h5>TFT Freaks</h5>${NAV.filter(n=>['home','coaching','guides','about','apply'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}`;
 const moreMenu = $('#moreMenu');
 $('#moreBtn').onclick = e=>{ e.stopPropagation(); const r=e.currentTarget.getBoundingClientRect(); moreMenu.style.left=Math.min(r.left, innerWidth-240)+'px'; moreMenu.classList.toggle('open'); };
@@ -2131,16 +2129,7 @@ function champPatchHTML(name){
   return out.join('');
 }
 
-/* ================= STATS: Leiste oben + Stats-Seite ================= */
-// Riot veröffentlicht keine Online-Zahlen für TFT. Wir zeigen, was es gibt: Rangverteilung (+ Verlauf seit Set 3),
-// den aktuellen Patch mit Countdown und was in der Tierlist steigt.
-const ST_ORDER = RANK_TIERS.map(t=>t.k);
-const ST_HIST = (RK && Array.isArray(RK.history) ? RK.history : []).slice().reverse();   // ältester Stand zuerst
-function stShares(h){ const o = {}; ST_ORDER.forEach(k=>{ const d = h.div && h.div[k]; o[k] = Array.isArray(d) ? d.reduce((a,b)=>a+b, 0) : (h.apex && typeof h.apex[k]==='number' ? h.apex[k] : 0); }); return o; }
-const stAtLeast = (sh, k) => { const all = ST_ORDER.reduce((s,x)=>s + (sh[x]||0), 0) || 100; return ST_ORDER.slice(ST_ORDER.indexOf(k)).reduce((s,x)=>s + (sh[x]||0), 0) / all * 100; };
-const stMostCommon = sh => ST_ORDER.reduce((a,k)=>sh[k] > sh[a] ? k : a, ST_ORDER[0]);
-const ST_NOW = Object.fromEntries(RANK_TIERS.map(t=>[t.k, t.total]));
-const ST_TOP = rankBy[stMostCommon(ST_NOW)];
+/* ================= LEISTE OBEN: LP-Grenzen + nächster Patch ================= */
 // Patch-Countdown: Riot patcht meist mittwochs um 4:30 Uhr (deutsche Zeit) im Zwei-Wochen-Takt.
 // Feste Termine aus data/patch-kommentare.js (TFT_PATCH_SCHEDULE) haben Vorrang.
 const ST_PATCH = TL_PATCH || (CURRENT_PATCH ? CURRENT_PATCH.id : '');
@@ -2170,147 +2159,23 @@ function stCountdown(){
 }
 const stNextLabel = () => { const n = stNextPatch(); if(!n) return ''; return n.d.toLocaleString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', timeZone:'Europe/Berlin'}) + ' Uhr' + (n.fixed ? '' : ' · geschätzt'); };
 // LP-Grenzen (Challenger/Großmeister) pro Server: zuerst aus data/cutoffs.js, dann live über /api/cutoffs (Vercel-Funktion)
-const ST_REG = {euw:'EUW', eune:'EUNE', na:'NA', kr:'KR'};
 let ST_CUT = window.TFT_CUTOFFS && window.TFT_CUTOFFS.regions ? window.TFT_CUTOFFS : null, ST_CUT_LIVE = false;
 const stCut = r => ST_CUT && ST_CUT.regions[r];
 if(!FILE_MODE) fetch('/api/cutoffs').then(r=>r.ok ? r.json() : null).then(d=>{
-  if(d && d.regions && Object.keys(d.regions).length){ ST_CUT = d; ST_CUT_LIVE = true; renderStatBar(); if($('#page-stats').classList.contains('active')) renderStats(); }
+  if(d && d.regions && Object.keys(d.regions).length){ ST_CUT = d; ST_CUT_LIVE = true; renderStatBar(); }
 }).catch(()=>{});
 const fmtLP = v => v.toLocaleString('de-DE') + ' LP';
-// Meistgebautes Item / meistgespielter Champion: gezählt über die Comps der Tierlist (S-Tier zählt mehr als C-Tier)
-function stTally(){
-  const w = {S:4, A:3, B:2, C:1, X:1}, items = {}, units = {};
-  mainComps.forEach(c=>{ const k = w[c.tier] || 1;
-    (c.board||[]).forEach(b=>{ if(champBy[b.u]) units[b.u] = (units[b.u]||0) + k; (b.i||[]).forEach(id=>{ const it = findItem(id); if(it && it.cat==='craft') items[it.id] = (items[it.id]||0) + k; }); }); });
-  const comps = id => mainComps.filter(c=>(c.board||[]).some(b=>(b.i||[]).some(x=>(findItem(x)||{}).id===id))).length;
-  const compsU = u => mainComps.filter(c=>(c.board||[]).some(b=>b.u===u)).length;
-  // Reihenfolge: in den meisten Comps; bei Gleichstand zählt, wie gut die Comps sind
-  const top = (o, n) => Object.keys(o).map(k=>({k, n:n(k), w:o[k]})).sort((a,b)=>b.n - a.n || b.w - a.w).slice(0, 5);
-  return {items:top(items, comps).map(x=>({it:itemById[x.k], n:x.n})), units:top(units, compsU).map(x=>({u:x.k, n:x.n}))};
-}
-const stRising = () => { const ord = {S:0,A:1,B:2,C:3,X:4}; return mainComps.filter(c=>c.sticker===2).sort((a,b)=>(ord[a.tier]??9)-(ord[b.tier]??9)); };
+// Leiste oben: LP-Grenzen für Challenger und Großmeister (EUW) und der nächste Patch
 function renderStatBar(){
-  const el = $('#statBar'); if(!el || !RK) return;
-  // Aufbau wie bei Dota: große Zahlen vorne (LP-Grenzen EUW), dann meistgebautes Item, Champion und Patch-Countdown
-  const cut = stCut('euw'), tal = stTally(), it = tal.items[0], un = tal.units[0];
+  const el = $('#statBar'); if(!el) return;
+  const cut = stCut('euw'), dot = `<i class="sb-dot${ST_CUT_LIVE ? ' live' : ''}" title="${ST_CUT_LIVE ? 'Live' : 'Gespeicherter Stand'}"></i>`;
   el.innerHTML = `<div class="wrap sb-in">
-    ${cut ? `<span class="sb-main"><img src="${rankImg(rankBy.challenger)}" alt="" width="40" height="40"><span class="sb-num"><b>${fmtLP(cut.ch)}</b><small><i class="sb-dot${ST_CUT_LIVE ? ' live' : ''}" title="${ST_CUT_LIVE ? 'Live' : 'Gespeicherter Stand'}"></i>Challenger · EUW</small></span></span>
-    <span class="sb-main sb-hide"><img src="${rankImg(rankBy.grandmaster)}" alt="" width="40" height="40"><span class="sb-num"><b>${fmtLP(cut.gm)}</b><small><i class="sb-dot${ST_CUT_LIVE ? ' live' : ''}"></i>Großmeister · EUW</small></span></span>` : ''}
-    ${it ? `<span class="sb-item sb-hide"><img class="sb-itimg" src="${it.it.img}" alt="" width="34" height="34"><span><small>Meistgebautes Item</small><b>${esc(it.it.de || it.it.en)}</b></span></span>` : ''}
-    ${un ? `<span class="sb-item sb-hide"><span class="sb-ic">${avatar(un.u, 34)}</span><span><small>Meistgespielter Champion</small><b>${esc(un.u)}</b></span></span>` : ''}
-    ${ST_PATCH ? `<span class="sb-item sb-hide" title="Nächster Patch: ${esc(stNextLabel())}"><span class="sb-patch">${esc(ST_PATCH)}</span><span><small>Nächster Patch in</small><b data-countdown>${stCountdown()}</b></span></span>` : ''}</div>`;
+    ${cut ? `<a class="sb-main" href="/ranks/challenger"><img src="${rankImg(rankBy.challenger)}" alt="" width="40" height="40"><span class="sb-num"><b>${fmtLP(cut.ch)}</b><small>${dot}Challenger · EUW</small></span></a>
+    <a class="sb-main" href="/ranks/grandmaster"><img src="${rankImg(rankBy.grandmaster)}" alt="" width="40" height="40"><span class="sb-num"><b>${fmtLP(cut.gm)}</b><small>${dot}Großmeister · EUW</small></span></a>` : ''}
+    ${ST_PATCH ? `<a class="sb-item sb-hide" href="/patches" title="Nächster Patch: ${esc(stNextLabel())}"><span class="sb-patch">${esc(ST_PATCH)}</span><span><small>Nächster Patch in</small><b data-countdown>${stCountdown()}</b></span></a>` : ''}</div>`;
+  el.hidden = !cut && !ST_PATCH;
 }
 setInterval(()=>document.querySelectorAll('[data-countdown]').forEach(e=>{ e.textContent = stCountdown(); }), 60000);
-
-let stRange = 'set10';
-function stChartHTML(){
-  const pts = ST_HIST.filter(h=>stRange==='all' || +h.set >= 10).map(h=>{ const sh = stShares(h); return {h, gold:stAtLeast(sh, 'gold'), dia:stAtLeast(sh, 'diamond'), top:stMostCommon(sh)}; });
-  if(pts.length < 2) return '<p class="note">Für den Verlauf fehlen noch Daten.</p>';
-  const W = 760, H = 300, L = 44, R = 16, T = 14, B = 34, n = pts.length;
-  const max = Math.max(10, Math.ceil(Math.max(...pts.map(p=>p.gold)) / 10) * 10);
-  const x = i => L + i * (W - L - R) / (n - 1), y = v => T + (1 - v / max) * (H - T - B);
-  const line = k => pts.map((p, i)=>`${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(p[k]).toFixed(1)}`).join(' ');
-  let grid = '';
-  for(let v = 0; v <= max; v += max > 50 ? 20 : 10) grid += `<line class="st-gl" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="st-ax" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v} %</text>`;
-  let ticks = ''; pts.forEach((p, i)=>{ if(i===0 || p.h.set !== pts[i-1].h.set) ticks += `<line class="st-tick" x1="${x(i)}" x2="${x(i)}" y1="${T}" y2="${H - B}"/><text class="st-ax" x="${x(i)}" y="${H - B + 18}" text-anchor="middle">Set ${esc(p.h.set)}</text>`; });
-  const last = pts[n - 1];
-  const area = `${line('gold')} L${x(n-1)} ${y(0)} L${x(0)} ${y(0)} Z`;
-  return `<div class="st-chartwrap"><svg class="st-chart" id="stChart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Anteil der Spieler in Gold oder höher und Diamant oder höher, von Set ${esc(pts[0].h.set)} bis Set ${esc(last.h.set)}">
-      ${grid}${ticks}<path class="st-area" d="${area}"/>
-      <path class="st-line gold" d="${line('gold')}"/><path class="st-line dia" d="${line('dia')}"/>
-      <circle class="st-end gold" cx="${x(n-1)}" cy="${y(last.gold)}" r="4.5"/><circle class="st-end dia" cx="${x(n-1)}" cy="${y(last.dia)}" r="4.5"/>
-      <g id="stHover" class="st-hover" style="display:none"><line id="stHx" class="st-cross" y1="${T}" y2="${H - B}"/><circle id="stHg" class="st-hdot gold" r="5"/><circle id="stHd" class="st-hdot dia" r="5"/></g>
-      <rect id="stHit" x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="transparent"/>
-    </svg><div class="st-tip" id="stTip" hidden></div></div>
-    <div class="sr-only"><table><caption>Rangverteilung im Verlauf</caption><tr><th>Monat</th><th>Set</th><th>Gold oder höher</th><th>Diamant oder höher</th><th>Häufigster Rang</th></tr>${pts.map(p=>`<tr><td>${esc(p.h.month)}</td><td>${esc(p.h.set)}</td><td>${fmtPct(p.gold)}</td><td>${fmtPct(p.dia)}</td><td>${esc(rankBy[p.top].n)}</td></tr>`).join('')}</table></div>`;
-}
-function stWireChart(){
-  const svg = $('#stChart'); if(!svg) return;
-  const pts = ST_HIST.filter(h=>stRange==='all' || +h.set >= 10).map(h=>{ const sh = stShares(h); return {h, gold:stAtLeast(sh, 'gold'), dia:stAtLeast(sh, 'diamond'), top:stMostCommon(sh)}; });
-  const W = 760, H = 300, L = 44, R = 16, T = 14, B = 34, n = pts.length;
-  const max = Math.max(10, Math.ceil(Math.max(...pts.map(p=>p.gold)) / 10) * 10);
-  const x = i => L + i * (W - L - R) / (n - 1), y = v => T + (1 - v / max) * (H - T - B);
-  const hov = $('#stHover'), tip = $('#stTip');
-  const show = e=>{
-    const bb = svg.getBoundingClientRect(), sx = (e.clientX - bb.left) / bb.width * W;
-    const i = Math.max(0, Math.min(n - 1, Math.round((sx - L) / ((W - L - R) / (n - 1))))), p = pts[i];
-    hov.style.display = ''; $('#stHx').setAttribute('x1', x(i)); $('#stHx').setAttribute('x2', x(i));
-    $('#stHg').setAttribute('cx', x(i)); $('#stHg').setAttribute('cy', y(p.gold)); $('#stHd').setAttribute('cx', x(i)); $('#stHd').setAttribute('cy', y(p.dia));
-    tip.hidden = false;
-    tip.innerHTML = `<b>${esc(p.h.month)}</b><small>Set ${esc(p.h.set)} · ${esc(p.h.setName || '')}</small><span><i class="gold"></i>Gold oder höher <strong>${fmtPct(p.gold)}</strong></span><span><i class="dia"></i>Diamant oder höher <strong>${fmtPct(p.dia)}</strong></span><span class="st-tipc">Am häufigsten: <strong>${esc(rankBy[p.top].n)}</strong></span>`;
-    const px = x(i) / W * bb.width; tip.style.left = Math.min(bb.width - tip.offsetWidth - 4, Math.max(4, px + 14)) + 'px';
-  };
-  svg.addEventListener('mousemove', show);
-  svg.addEventListener('touchstart', e=>show(e.touches[0]), {passive:true});
-  svg.addEventListener('mouseleave', ()=>{ hov.style.display = 'none'; tip.hidden = true; });
-}
-function renderStats(){
-  const app = $('#statsApp'); if(!app) return;
-  if(!RK){ app.innerHTML = ornnSays('Die Rangdaten fehlen gerade. Ich schmiede sie beim nächsten Update nach.'); return; }
-  const top3 = [['gold','Gold oder höher'],['emerald','Smaragd oder höher'],['master','Meister oder höher']].filter(([k])=>rankBy[k] && rankBy[k].total > 0);
-  const maxT = Math.max(...RANK_TIERS.map(t=>t.total));
-  app.innerHTML = `<div class="page-head st-head"><div class="crumb"><a href="/">Home</a> / Stats</div>
-      <h1>TFT <em class="serif">Stats</em></h1>
-      <p>In welcher Elo spielen die meisten, und ab wie viel LP ist man gerade Challenger? Rangverteilung, Verlauf seit Set 3, LP-Grenzen pro Server, der aktuelle Patch und die meistgebauten Items.</p></div>
-    <section class="st-hero">
-      <div class="st-hl">
-        <div class="st-badges"><span class="st-badge">TFT · STATS</span><span class="st-live"><i></i>Stand ${esc(RK.month)}</span></div>
-        <p class="st-kicker">Die meisten Spieler sind in</p>
-        <div class="st-big"><img src="${rankImg(ST_TOP)}" alt="" width="104" height="104"><div><b>${esc(ST_TOP.n)}</b><span>${fmtPct(ST_TOP.total)} aller Ranked-Spieler · Set ${esc(RK.set)}</span></div></div>
-        <div class="st-tiles">
-          ${ST_PATCH ? `<a class="st-tile" href="/patches"><span class="st-ti">${SVG_IC('patch')}</span><span><b>${esc(ST_PATCH)}</b><small>aktueller Patch</small></span></a>` : ''}
-          <div class="st-tile"><span class="st-ti">${SVG_IC('clock')}</span><span><b data-countdown>${stCountdown()}</b><small>bis zum nächsten Patch · ${esc(stNextLabel())}</small></span></div>
-          <a class="st-tile" href="/ranks/challenger"><span class="st-ti"><img src="${rankImg(rankBy.challenger)}" alt="" width="26" height="26"></span><span><b>${fmtPct(rankBy.challenger.total)}</b><small>sind Challenger</small></span></a>
-        </div>
-      </div>
-      <div class="st-mascot m-chibi" role="img" aria-label="Vi"></div>
-      <div class="st-hr">${top3.map(([k, l])=>`<a class="st-card" href="/ranks/${k}"><img src="${rankImg(rankBy[k])}" alt="" width="40" height="40"><span><small>${l}</small><b>Top ${fmtPct(rankBy[k].topTier)}</b><em>${fmtPct(rankBy[k].total)} sind ${esc(rankBy[k].n)}</em></span></a>`).join('')}</div>
-    </section>
-    <div class="st-grid">
-      <section class="card st-box">
-        <div class="st-boxhead"><h3>${SVG_IC('chart')} Rangverteilung im Verlauf</h3>
-          <div class="bp-pills" id="stRange"><button type="button" data-st="set10" class="${stRange==='set10' ? 'on' : ''}">Seit Set 10</button><button type="button" data-st="all" class="${stRange==='all' ? 'on' : ''}">Seit Set 3</button></div></div>
-        <p class="st-sub">Anteil der Ranked-Spieler pro Rang oder höher · <a href="${esc(RK.url)}" target="_blank" rel="noopener">${esc(RK.source)}</a></p>
-        <div class="st-legend"><span><i class="gold"></i>Gold oder höher</span><span><i class="dia"></i>Diamant oder höher</span></div>
-        <div id="stChartBox">${stChartHTML()}</div>
-      </section>
-      <section class="card st-box">
-        <div class="st-boxhead"><h3>${SVG_IC('rank')} Rangverteilung <small>Set ${esc(RK.set)}</small></h3></div>
-        <div class="st-dist">${RANK_TIERS.slice().reverse().map(t=>`<a class="st-row" href="/ranks/${t.k}"><img src="${rankImg(t)}" alt="" width="28" height="28"><span class="st-rn">${esc(t.n)}</span>
-          <span class="st-bar"><i style="width:${(t.total / maxT * 100).toFixed(1)}%"></i></span>${t===ST_TOP ? '<span class="st-most">am häufigsten</span>' : `<small>Top ${fmtPct(t.topTier)}</small>`}<b>${fmtPct(t.total)}</b></a>`).join('')}</div>
-        <p class="st-sub">„Top X %“ = dieser Rang oder höher. <a href="/ranks">Alle Divisionen →</a></p>
-      </section>
-    </div>
-    <div class="st-grid st-grid3">
-      <section class="card st-box">
-        <div class="st-boxhead"><h3>${SVG_IC('rank')} LP-Grenzen</h3><small class="st-sub">täglich neu berechnet</small></div>
-        ${ST_CUT ? `<div class="st-cuts"><div class="st-cuthead"><span></span><span><img src="${rankImg(rankBy.challenger)}" alt="" width="22" height="22">Challenger</span><span><img src="${rankImg(rankBy.grandmaster)}" alt="" width="22" height="22">Großmeister</span></div>
-          ${Object.keys(ST_REG).filter(r=>stCut(r)).map(r=>`<div class="st-cut${r==='euw' ? ' hl' : ''}"><b>${ST_REG[r]}</b><span>${fmtLP(stCut(r).ch)}</span><span>${fmtLP(stCut(r).gm)}</span></div>`).join('')}</div>
-          <p class="st-sub">Ab so viel LP ist man gerade Challenger bzw. Großmeister · <a href="${esc(ST_CUT.url)}" target="_blank" rel="noopener">${esc(ST_CUT.source)}</a></p>` : '<p class="note">Die LP-Grenzen sind gerade nicht verfügbar.</p>'}
-      </section>
-      <section class="card st-box">
-        <div class="st-boxhead"><h3>${SVG_IC('up')} Meistgebaut &amp; meistgespielt</h3><small class="st-sub">in der Tierlist · Patch ${esc(TL_PATCH || '')}</small></div>
-        ${(()=>{ const tal = stTally(); return `<div class="st-most2"><div>${tal.items.map((x, i)=>`<button type="button" class="st-mi" data-item="${x.it.id}"><i>${i+1}</i><img src="${x.it.img}" alt="" width="34" height="34"><span><b>${esc(x.it.de || x.it.en)}</b><small>in ${x.n} Comps</small></span></button>`).join('')}</div>
-          <div>${tal.units.map((x, i)=>`<button type="button" class="st-mi" data-champ="${esc(x.u)}"><i>${i+1}</i>${avatar(x.u, 34)}<span><b>${esc(x.u)}</b><small>in ${x.n} Comps</small></span></button>`).join('')}</div></div>`; })()}
-        <p class="st-sub">Gezählt: in wie vielen Comps der Tierlist es vorkommt. Bei Gleichstand gewinnt, was in den besseren Comps steckt.</p>
-      </section>
-      <a class="st-promo" href="/coaching">
-        <small>TFT FREAKS · COACHING</small><h3>Du willst höher klettern?</h3>
-        <p>Challenger-Coaches schauen sich deine Spiele an – das erste Kennenlernen ist kostenlos.</p>
-        <span class="st-promo-btn">Coaching ansehen →</span>
-      </a>
-    </div>`;
-  stWireChart();
-}
-function SVG_IC(k){
-  const p = {patch:'<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/>', clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', chart:'<path d="M4 19h16"/><path d="M5 15l4-4 4 3 6-7"/>', rank:'<path d="M12 3l7 4v6c0 4-3 6.5-7 8-4-1.5-7-4-7-8V7z"/>', up:'<path d="M4 17l6-6 4 4 6-7"/><path d="M15 8h5v5"/>'}[k] || '';
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">${p}</svg>`;
-}
-document.addEventListener('click', e=>{
-  const r = e.target.closest && e.target.closest('#stRange [data-st]'); if(r){ stRange = r.dataset.st; document.querySelectorAll('#stRange [data-st]').forEach(b=>b.classList.toggle('on', b===r)); $('#stChartBox').innerHTML = stChartHTML(); stWireChart(); return; }
-  const c = e.target.closest && e.target.closest('[data-st-comp]'); if(c){ openComp(c.dataset.stComp); }
-});
-
 /* ================= SEITENTITEL & SUCHMASCHINEN ================= */
 // Pro Seite: [Titel, Beschreibung]. Seiten ohne eigenen Inhalt (Platzhalter, Redaktion, 404) werden nicht indexiert.
 function pageMeta(page, sub){
@@ -2340,7 +2205,6 @@ function pageMeta(page, sub){
       if(p) return [`TFT Patch ${p.id} – alle Änderungen`, `Alle Änderungen aus TFT Patch ${p.id} (${fmtDate(p.date)}) auf einen Blick: Champions, Traits, Items und Augments. ${p.teaser || ''}`.trim()];
       return ['TFT Patch Notes – alle Änderungen', 'Alle TFT Patches mit den offiziellen Änderungen von Riot: Champions, Traits, Items und Augments – automatisch aktuell.'];
     }
-    case 'stats': return ['TFT Stats – Rangverteilung & LP-Grenzen', `TFT Stats für ${S}: Rangverteilung, Verlauf seit Set 3, LP-Grenzen für Challenger und Großmeister, Patch-Countdown und die meistgebauten Items.`];
     case 'impressum': return ['Impressum', 'Impressum von TFT Freaks.'];
     case 'datenschutz': return ['Datenschutzerklärung', 'Datenschutzerklärung von TFT Freaks.'];
     case 'guides': return ['TFT Guides', '', true];
@@ -2393,7 +2257,7 @@ function route(){
   // alte Adressen weiter unterstützen
   if(['champions','items','traits'].includes(page)){ sub = page; page = 'bibliothek'; }
   if(page==='augments'){ sub = 'augments'; page = 'tierlist'; }
-  const valid = ['home','tierlist','bibliothek','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches','stats'];
+  const valid = ['home','tierlist','bibliothek','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches'];
   if(!valid.includes(page)) page='notfound';
   const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche
   const pageId = page==='bibliothek' ? 'library' : isSim ? 'builder' : page;
@@ -2409,9 +2273,8 @@ function route(){
   if(isSim) builderRoute(parts[2], parts[3], 'sim');
   else if(page==='tools') renderTools(sub, parts[2], parts[3]);
   if(page==='patches') renderPatches(sub);
-  if(page==='stats') renderStats();
   document.querySelectorAll('[data-route]').forEach(a=>a.classList.toggle('active', a.dataset.route===navKey));
-  if(['guides','about','apply','patches','stats'].includes(navKey)) $('#moreBtn').classList.add('active');
+  if(['guides','about','apply','patches'].includes(navKey)) $('#moreBtn').classList.add('active');
   else $('#moreBtn').classList.remove('active');
   moreMenu.classList.remove('open'); drawer.classList.remove('open');
   closeModal(); window.scrollTo(0,0);
