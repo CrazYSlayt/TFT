@@ -741,7 +741,7 @@ function simLoadPick(side, val){
     const c = val==='@random' ? pickOne(simPickList()) : compBySlug[val]; if(!c) return;
     // Units ohne Sternangabe in der Tierlist: 2 Sterne (typisch fürs Lategame), 3★-Angaben bleiben
     (c.board||[]).forEach(b=>{ if(b.h==null || b.h<0 || b.h>27) return; board[b.h] = {u:b.u, s:b.s||2, i:(b.i||[]).map(id=>(findItem(id)||{}).id).filter(Boolean).slice(0,3)}; });
-    augs = (c.augs||[]).filter(id=>augById[id]).slice(0,3);
+    // Augments der Tierlist sind nur Vorschläge – nicht automatisch mitnehmen, die wählt man selbst
     label = `„${c.name}“ geladen`;
   }
   if(side==='e'){ eBoard = board; eAugs = augs; } else { bBoard = board; bAugs = augs; }

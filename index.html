@@ -371,7 +371,13 @@
     <div class="page-head">
       <div class="crumb">Home / Redaktion</div>
       <h1>Redaktion <em class="serif">Tierlist bearbeiten</em></h1>
-      <p>Comps per Drag &amp; Drop zwischen den Tiers verschieben und anklicken zum Bearbeiten. Änderungen speichern automatisch in diesem Browser. Für die Live-Seite: „Exportieren“ und die Datei <b>tierlist-data-<span data-setno>18</span>.js</b> neben die index.html legen. Jedes Set hat seine eigene Tierlist – das Set wechselst du oben links.</p>
+      <p>Comps per Drag &amp; Drop zwischen den Tiers verschieben und anklicken zum Bearbeiten. Items, Augments und Holds bewertest du in ihren Tabs genauso. Änderungen speichern automatisch in diesem Browser. Für die Live-Seite: „Exportieren“ und die Datei <b>tierlist-data-<span data-setno>18</span>.js</b> neben die index.html legen. Jedes Set hat seine eigene Tierlist – das Set wechselst du oben links.</p>
+    </div>
+    <div class="tabs" id="admTabs">
+      <button class="tab active" data-adm-tab="comps">Comps</button>
+      <button class="tab" data-adm-tab="items">Items</button>
+      <button class="tab" data-adm-tab="augments">Augments</button>
+      <button class="tab" data-adm-tab="holds">Holds</button>
     </div>
     <div class="adm-bar">
       <button class="btn btn-primary" id="admNew" type="button">+ Neue Comp</button>
@@ -381,10 +387,11 @@
       <a class="btn btn-ghost" href="/tierlist">Vorschau</a>
       <span class="adm-status" id="admStatus"></span>
     </div>
-    <div class="adm-wrap">
+    <div class="adm-wrap" id="admCompsView">
       <div id="admRows"></div>
       <aside class="card adm-edit" id="admEdit"></aside>
     </div>
+    <div id="admTL" hidden></div>
   </div>
 </div>
 
@@ -453,13 +460,6 @@
             <div class="tc-art" aria-hidden="true"><img src="assets/tools/simulator.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4l9 9M4 4h4M4 4v4"/><path d="M20 4l-9 9M20 4h-4M20 4v4"/><path d="M9 15l-4 4M15 15l4 4M7.5 13.5l3 3M16.5 13.5l-3 3"/></svg></span></div>
           </a>
           <div class="tc-cap"><span>TFT Kampf-Simulator</span><span class="tc-st wip">In Arbeit</span></div>
-        </div>
-        <div class="tc-item tc-soon">
-          <div class="tc">
-            <div class="tc-text"><span class="tc-tag">Rechner</span><h3>Econ- &amp; XP-Rechner</h3><p>Zinsen, XP und dein Gold-Plan für die nächsten Runden.</p></div>
-            <div class="tc-art" aria-hidden="true"><img src="assets/tools/econ.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v10M9.5 9.5c0-1.2 1.1-2 2.5-2s2.5.8 2.5 2-1.1 1.8-2.5 2.2-2.5 1-2.5 2.3 1.1 2 2.5 2 2.5-.8 2.5-2"/></svg></span></div>
-          </div>
-          <div class="tc-cap"><span>TFT Econ- &amp; XP-Rechner</span><span class="tc-st soon">Bald</span></div>
         </div>
       </div>
     </div>

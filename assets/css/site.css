@@ -1150,6 +1150,20 @@ a.mt-card:hover{transform:translateY(-2px);border-color:var(--accent)}
 .adm-card.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
 .adm-card.dragging{opacity:.35}
 .adm-card.adm-ins{box-shadow:-5px 0 0 0 var(--accent)}
+/* Redaktion: Items, Augments, Holds */
+.adm-tlbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.adm-tlbar .input{margin-left:auto;max-width:260px}
+.adm-tl{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;width:74px;padding:6px 4px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line-2);cursor:grab;user-select:none;text-align:center}
+.adm-tl img{width:44px;height:44px;border-radius:8px;pointer-events:none}
+.adm-tl .adm-hx{width:40px;height:46px;pointer-events:none}
+.adm-tl span:last-child{font-size:.64rem;line-height:1.15;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.adm-tl:hover{border-color:var(--accent-2)}
+.adm-tl.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.adm-tl.dragging{opacity:.35}
+.adm-tl.adm-ins{box-shadow:-5px 0 0 0 var(--accent)}
+.adm-tldrop{cursor:default}
+#admTabs{margin-bottom:14px}
+#admCompsView[hidden],#admNew[hidden]{display:none}
 .adm-hx{width:34px;height:39px;flex-shrink:0;display:block}
 .adm-hx.big{width:52px;height:60px}
 .adm-txt{min-width:0}

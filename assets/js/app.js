@@ -901,7 +901,8 @@ function admSave(msg){
   if(adm.source && adm.source!=='TFT Freaks'){ adm.basedOn = adm.source; } adm.source = 'TFT Freaks';
   let ok = true; try { localStorage.setItem(TL_DRAFT_KEY, JSON.stringify(adm)); } catch(e){ ok = false; }
   tierSource = {src:'draft', data:adm};
-  rebuildComps(adm.comps); filterComps(); updateTlNote();
+  ITEM_TL = adm.itemTL || {}; AUG_TL = adm.augTL || {}; HOLD_TL = adm.holdTL || {};
+  rebuildComps(adm.comps); filterComps(); renderItemTL(); renderAugTL(); renderHoldTL(); updateTlNote();
   admStatus(ok ? (msg || 'Entwurf gespeichert · ' + new Date().toLocaleTimeString(LOC,{hour:'2-digit',minute:'2-digit'})) : 'Speichern im Browser nicht möglich – bitte exportieren!');
 }
 function updateTlNote(){
@@ -953,7 +954,7 @@ function renderAdminEdit(){
     <datalist id="admItemList">${ITEMS.filter(i=>B_ITEM_CATS.includes(i.cat)).map(i=>`<option value="${esc(i.en)}">`).join('')}</datalist>`;
 }
 function renderAdmin(){
-  admEnsure(); renderAdminRows(); renderAdminEdit(); admStatus(admSourceText());
+  admEnsure(); renderAdminRows(); renderAdminEdit(); renderAdminTL(); admStatus(admSourceText());
 }
 function admAdd(kind){
   const c = admBySlug(admSel), inp = document.querySelector(`#admEdit [data-add="${kind}"]`); if(!c || !inp) return;
@@ -1081,6 +1082,87 @@ document.addEventListener('drop', e=>{
 document.addEventListener('dragend', ()=>{ admDragSlug = null; admClearMarks(); document.querySelectorAll('.adm-card.dragging').forEach(x=>x.classList.remove('dragging')); });
 updateTlNote();
 
+/* --- Redaktion: Items, Augments und Holds bewerten (Drag & Drop oder antippen → Reihe antippen) --- */
+let admTab = 'comps', admTLSel = null, admTLDrag = null, admTLq = '';
+const admTLf = {items:'craftables', alv:'1', ast:'All', hold:'1'};
+const ADM_ITEM_CATS = [['craftables','Kombiniert','craft'],['radiants','Lichtversionen','radiant'],['ornns','Artefakte','artifact'],['emblems','Embleme','emblem']];
+const ADM_TL_ROWS = ['S','A','B','C'];
+// Bewertungen der aktuellen Auswahl (wird bei Bedarf angelegt)
+function admTLObj(){
+  admEnsure();
+  if(admTab==='items'){ adm.itemTL = adm.itemTL || {}; return adm.itemTL[admTLf.items] = adm.itemTL[admTLf.items] || {}; }
+  if(admTab==='augments'){ adm.augTL = adm.augTL || {}; const st = adm.augTL[admTLf.ast] = adm.augTL[admTLf.ast] || {}; return st[admTLf.alv] = st[admTLf.alv] || {}; }
+  adm.holdTL = adm.holdTL || {}; return adm.holdTL[admTLf.hold] = adm.holdTL[admTLf.hold] || {};
+}
+// Alles, was in der aktuellen Auswahl bewertet werden kann
+function admTLPool(){
+  if(admTab==='items'){ const cat = ADM_ITEM_CATS.find(c=>c[0]===admTLf.items)[2]; return ITEMS.filter(i=>i.cat===cat && !(cat==='emblem' && /Tactician/i.test(i.id + ' ' + i.en))).map(i=>i.id); }
+  if(admTab==='augments') return AUGS.filter(a=>a.lv===+admTLf.alv && !AUG_DUP.has(a.id)).map(a=>a.id);
+  return champions.filter(c=>c.c===+admTLf.hold).map(c=>c.n);
+}
+function admTLInfo(id){
+  if(admTab==='items'){ const it = findItem(id); return it && {name:it.en, html:`<img src="${it.img}" alt="" loading="lazy">`}; }
+  if(admTab==='augments'){ const a = augById[id]; return a && {name:a.en, html:`<img src="${augImg(a)}" alt="" loading="lazy">`}; }
+  return champBy[id] && {name:id, html:`<span class="adm-hx">${hexHTML(id)}</span>`};
+}
+const admTLTile = id => { const f = admTLInfo(id); return f ? `<div class="adm-tl${admTLSel===id?' sel':''}" draggable="true" data-tlk="${esc(id)}" title="${esc(f.name)}">${f.html}<span>${esc(f.name)}</span></div>` : ''; };
+function renderAdminTL(){
+  const box = $('#admTL'); if(!box) return;
+  const comps = admTab==='comps';
+  $('#admCompsView').hidden = !comps; box.hidden = comps; $('#admNew').hidden = !comps;
+  $('#admTabs').querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.admTab===admTab));
+  if(comps) return;
+  const chip = (key, v, l) => `<button class="chip-btn${admTLf[key]===v?' active':''}" type="button" data-tlf="${key}:${v}">${l}</button>`;
+  const filters = admTab==='items' ? ADM_ITEM_CATS.map(([v,l])=>chip('items', v, l)).join('')
+    : admTab==='augments' ? `<div class="tag-row">${[['1','Silber'],['2','Gold'],['3','Prismatisch']].map(([v,l])=>chip('alv', v, l)).join('')}</div><div class="tag-row">${[['All','Alle Phasen'],['2-1','2-1'],['3-2','3-2'],['4-2','4-2']].map(([v,l])=>chip('ast', v, l)).join('')}</div>`
+    : [['1','1-Kosten'],['2','2-Kosten'],['3','3-Kosten']].map(([v,l])=>chip('hold', v, l)).join('');
+  const tl = admTLObj(), rated = new Set(ADM_TL_ROWS.flatMap(t=>tl[t]||[]));
+  const q = admTLq.toLowerCase().trim();
+  const rest = admTLPool().filter(id=>!rated.has(id)).filter(id=>{ const f = admTLInfo(id); return f && (!q || f.name.toLowerCase().includes(q)); }).sort((a,b)=>admTLInfo(a).name.localeCompare(admTLInfo(b).name));
+  const row = (k, label, ids, col) => `<div class="adm-row" style="--tc:${col}"><div class="adm-lbl"><b>${k}</b><small>${label}</small><em>${ids.length}</em></div><div class="adm-drop adm-tldrop" data-tlrow="${k}">${ids.map(admTLTile).join('') || '<span class="adm-empty">Hierher ziehen</span>'}</div></div>`;
+  box.innerHTML = `<div class="toolbar adm-tlbar">${filters}<input class="input" id="admTLSearch" placeholder="Unbewertete suchen…" value="${esc(admTLq)}"></div>
+    <p class="note" style="margin:0 0 12px">Ziehen oder antippen und dann eine Reihe antippen. Die Reihenfolge in einer Reihe ist die Reihenfolge auf der Seite. Zurück nach „Nicht bewertet“ entfernt die Bewertung.</p>
+    ${ADM_TL_ROWS.map(t=>row(t, t + '-Tier', (tl[t]||[]).filter(id=>admTLInfo(id)), TIER_COL[t])).join('')}
+    ${row('–', 'Nicht bewertet', rest, '#4a4d63').replace('data-tlrow="–"', 'data-tlrow="none"')}`;
+}
+function admTLMove(id, row, beforeId){
+  const tl = admTLObj();
+  ADM_TL_ROWS.forEach(t=>{ if(tl[t]){ tl[t] = tl[t].filter(x=>x!==id); if(!tl[t].length) delete tl[t]; } });
+  if(row!=='none'){ const arr = tl[row] = tl[row] || [], at = beforeId ? arr.indexOf(beforeId) : -1; arr.splice(at<0 ? arr.length : at, 0, id); }
+  admTLSel = null; admSave(row==='none' ? 'Bewertung entfernt' : `In ${row}-Tier verschoben`); renderAdminTL();
+}
+function admTLBefore(zone, x, y){
+  return [...zone.querySelectorAll('.adm-tl:not(.dragging)')].find(el=>{ const r = el.getBoundingClientRect(); return y < r.top || (y <= r.bottom && x < r.left + r.width/2); }) || null;
+}
+document.addEventListener('click', e=>{
+  if(!e.target.closest || !e.target.closest('#page-admin')) return;
+  const tab = e.target.closest('[data-adm-tab]'); if(tab){ admTab = tab.dataset.admTab; admTLSel = null; admTLq = ''; renderAdminTL(); return; }
+  const f = e.target.closest('[data-tlf]'); if(f){ const [k, v] = f.dataset.tlf.split(':'); admTLf[k] = v; admTLSel = null; renderAdminTL(); return; }
+  const tile = e.target.closest('.adm-tl'); if(tile){ admTLSel = admTLSel===tile.dataset.tlk ? null : tile.dataset.tlk; renderAdminTL(); return; }
+  const zone = e.target.closest('.adm-tldrop'); if(zone && admTLSel) admTLMove(admTLSel, zone.dataset.tlrow, null);
+});
+document.addEventListener('input', e=>{ if(e.target.id==='admTLSearch'){ admTLq = e.target.value; const pos = e.target.selectionStart; renderAdminTL(); const i = $('#admTLSearch'); i.focus(); i.setSelectionRange(pos, pos); } });
+document.addEventListener('dragstart', e=>{
+  const t = e.target.closest && e.target.closest('.adm-tl'); if(!t) return;
+  admTLDrag = t.dataset.tlk; e.dataTransfer.setData('text/plain', 'tl:' + admTLDrag); e.dataTransfer.effectAllowed = 'move';
+  setTimeout(()=>t.classList.add('dragging'), 0);
+});
+document.addEventListener('dragover', e=>{
+  if(!admTLDrag || !e.target.closest) return;
+  const zone = e.target.closest('.adm-tldrop'); if(!zone) return;
+  e.preventDefault(); admClearMarks();
+  const b = admTLBefore(zone, e.clientX, e.clientY);
+  if(b) b.classList.add('adm-ins'); else zone.classList.add('adm-ins-end');
+});
+document.addEventListener('drop', e=>{
+  if(!admTLDrag || !e.target.closest) return;
+  const zone = e.target.closest('.adm-tldrop'); if(!zone) return;
+  e.preventDefault();
+  const b = admTLBefore(zone, e.clientX, e.clientY), id = admTLDrag;
+  admTLDrag = null; admClearMarks(); admTLMove(id, zone.dataset.tlrow, b && zone.dataset.tlrow!=='none' ? b.dataset.tlk : null);
+});
+document.addEventListener('dragend', ()=>{ admTLDrag = null; admClearMarks(); document.querySelectorAll('.adm-tl.dragging').forEach(x=>x.classList.remove('dragging')); });
+
 /* ================= SET-AUSWAHL (Live / PBE / Archiv) ================= */
 const SET_LABEL = {live:'Live', pbe:'PBE', archiv:'Archiv'};
 const setStatus = () => (window.TFT_SET && TFT_SET.status) || TFT_DATA.channel || 'live';
@@ -1176,8 +1258,7 @@ const BUDDY_LINES = {
       'Der Item-Drop-Rechner zählt mit, was noch im Item-Pool liegt. Reine Mathematik!',
       'Mit dem Tierlist-Maker baust du deine eigene Tierlist – und schickst sie als Link an deine Freunde.',
       'Der Kampf-Simulator steht noch auf meiner Werkbank. Ein paar Schrauben fehlen noch!',
-      'Ein Experiment ist kein Experiment ohne Wiederholung: Im Simulator rechnest du einen Kampf 100-mal.',
-      'Econ- und XP-Rechner? Die Baupläne liegen schon auf meinem Tisch.'].filter(Boolean);
+      'Ein Experiment ist kein Experiment ohne Wiederholung: Im Simulator rechnest du einen Kampf 100-mal.'].filter(Boolean);
   },
   // Heimerdinger in den einzelnen Tools (erscheint nur, wenn assets/tools/<tool>.webp existiert)
   tlmaker(){ return ['S-Tier oder C-Tier? Hmm … eine Frage für die Wissenschaft – und für deine Meinung!',

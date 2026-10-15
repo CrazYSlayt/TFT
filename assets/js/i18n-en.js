@@ -879,5 +879,9 @@ window.I18N_EN = {
   "Ein starkes Paar früh ist {0} wert. Na ja, eigentlich Leben!": "An early strong pair is worth {0}. Well, actually health!",
   "Klick auf einen Champion – dann siehst du seine Traits und Fähigkeit.": "Click a champion – then you'll see its traits and ability.",
   "TFT Holds Set {0} (Patch {1}b) – welche Units du früh hältst": "TFT Holds Set {0} (Patch {1}b) – which units to hold early",
-  "Welche {0}-, {1}- und {2}-Kosten-Champions lohnen sich in TFT Set {3} von {4}-{5} bis {6}-{7} zu halten? Holds-Tierlist von S bis C.": "Which {0}, {1} and {2} cost champions are worth holding in TFT Set {3} from {4}-{5} to {6}-{7}? Holds tier list from S to C."
+  "Welche {0}-, {1}- und {2}-Kosten-Champions lohnen sich in TFT Set {3} von {4}-{5} bis {6}-{7} zu halten? Holds-Tierlist von S bis C.": "Which {0}, {1} and {2} cost champions are worth holding in TFT Set {3} from {4}-{5} to {6}-{7}? Holds tier list from S to C.",
+  "Stand: Patch {0}b · aktualisiert am {1}/{2}/{3} · Bewertungen von TFT Freaks · Aufstellungen ursprünglich nach": "As of patch {0}b · updated on {1}/{2}/{3} · ratings by TFT Freaks · boards originally from",
+  "Comps per Drag & Drop zwischen den Tiers verschieben und anklicken zum Bearbeiten. Items, Augments und Holds bewertest du in ihren Tabs genauso. Änderungen speichern automatisch in diesem Browser. Für die Live-Seite: „Exportieren“ und die Datei": "Drag & drop comps between the tiers and click them to edit. Items, augments and holds are rated the same way in their tabs. Changes save automatically in this browser. For the live site: \"Export\" and put the file",
+  "Veröffentlichter Stand (tierlist-data-{0}.js)": "Published version (tierlist-data-{0}.js)",
+  "Dein Team · greift an": "Your team · attacking"
 };
