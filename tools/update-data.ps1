@@ -263,48 +263,95 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
 }
 
 # ======================= Rangverteilung (EsportsTales) =======================
+# Eine Monatstabelle von EsportsTales lesen → @{div; apex} oder $null, wenn Werte fehlen (z. B. Sets vor Smaragd)
+function ParseRankTable([string]$tb) {
+  $vals = @{}
+  # Zellen ohne innere Tags lesen, dann Rang + Prozentwert paarweise zuordnen
+  $cells = @([regex]::Matches($tb, '(?is)<td[^>]*>(.*?)</td>') | ForEach-Object { ([Net.WebUtility]::HtmlDecode(($_.Groups[1].Value -replace '<[^>]+>', ''))).Trim() })
+  for ($c = 0; $c -lt $cells.Count - 1; $c++) {
+    if ($cells[$c] -match '^[A-Za-z]+(?:\s+(?:IV|III|II|I))?$' -and $cells[$c + 1] -match '^([\d.,]+)\s*%$') {
+      $vals[($cells[$c].ToLower() -replace '\s+', ' ')] = [double]::Parse(($matches[1] -replace ',', '.'), [Globalization.CultureInfo]::InvariantCulture); $c++
+    }
+  }
+  $div = NewObj; $apex = NewObj; $sum = 0.0; $missing = @()
+  foreach ($t in 'iron','bronze','silver','gold','platinum','emerald','diamond') {
+    # Smaragd gab es nicht in jedem Set – dann bleibt die Liste leer
+    if ($t -eq 'emerald' -and -not ($vals.Keys | Where-Object { $_ -like 'emerald*' })) { $div[$t] = [double[]]@(); continue }
+    $arr = @(); foreach ($d in 'iv','iii','ii','i') { $k = "$t $d"; if ($vals.ContainsKey($k)) { $arr += $vals[$k]; $sum += $vals[$k] } else { $missing += $k } }
+    $div[$t] = [double[]]$arr
+  }
+  foreach ($t in 'master','grandmaster','challenger') { if ($vals.ContainsKey($t)) { $apex[$t] = $vals[$t]; $sum += $vals[$t] } else { $missing += $t } }
+  if ($missing.Count -or $sum -lt 90 -or $sum -gt 110) { return @{ ok = $false; missing = $missing; sum = $sum } }
+  return @{ ok = $true; div = $div; apex = $apex }
+}
+
 function UpdateRanks {
   Step 'Rangverteilung von EsportsTales laden …'
   $url = 'https://www.esportstales.com/teamfight-tactics/seasonal-rank-system-and-player-distribution'
   $out = Join-Path $dataDir 'ranks.js'
   try {
     $html = (Invoke-WebRequest $url -UseBasicParsing -UserAgent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) TFTFreaks-Update' -TimeoutSec 60).Content
-    # Der neueste Stand steht oben: erste "Set NN - Name"-Überschrift, danach die erste Monatsüberschrift und deren Tabelle
-    $ms = [regex]::Match($html, '(?i)<h[1-4][^>]*>\s*Set\s+(\d+(?:\.\d+)?)\s*-\s*([^<]+?)\s*</h[1-4]>')
-    if (-not $ms.Success) { throw 'Set-Überschrift nicht gefunden' }
     $months = 'January','February','March','April','May','June','July','August','September','October','November','December'
-    $mm = [regex]::Match($html.Substring($ms.Index), '(?i)<h[1-4][^>]*>\s*(' + ($months -join '|') + ')\s+(\d{4})\s*</h[1-4]>')
-    if (-not $mm.Success) { throw 'Monatsüberschrift nicht gefunden' }
-    $t0 = $html.IndexOf('<table', $ms.Index + $mm.Index); $t1 = $html.IndexOf('</table>', $t0)
-    if ($t0 -lt 0 -or $t1 -lt 0) { throw 'Tabelle nicht gefunden' }
-    $tb = $html.Substring($t0, $t1 - $t0)
-    $vals = @{}
-    foreach ($m in [regex]::Matches($tb, '(?is)<td[^>]*>\s*([A-Za-z]+(?:\s+(?:IV|III|II|I))?)\s*</td>\s*<td[^>]*>\s*([\d.,]+)\s*%\s*</td>')) {
-      $vals[($m.Groups[1].Value.ToLower() -replace '\s+', ' ')] = [double]::Parse(($m.Groups[2].Value -replace ',', '.'), [Globalization.CultureInfo]::InvariantCulture)
-    }
-    $div = NewObj; $apex = NewObj; $sum = 0.0; $missing = @()
-    foreach ($t in 'iron','bronze','silver','gold','platinum','emerald','diamond') {
-      $arr = @(); foreach ($d in 'iv','iii','ii','i') { $k = "$t $d"; if ($vals.ContainsKey($k)) { $arr += $vals[$k]; $sum += $vals[$k] } else { $missing += $k } }
-      $div[$t] = [double[]]$arr
-    }
-    foreach ($t in 'master','grandmaster','challenger') { if ($vals.ContainsKey($t)) { $apex[$t] = $vals[$t]; $sum += $vals[$t] } else { $missing += $t } }
-    if ($missing.Count) { throw "Werte fehlen: $($missing -join ', ')" }
-    if ($sum -lt 90 -or $sum -gt 110) { throw ("Summe {0:N1} % unplausibel" -f $sum) }
     $deMonth = @{ January='Januar'; February='Februar'; March='März'; April='April'; May='Mai'; June='Juni'; July='Juli'; August='August'; September='September'; October='Oktober'; November='November'; December='Dezember' }
-    $mEn = (Get-Culture).TextInfo.ToTitleCase($mm.Groups[1].Value.ToLower())
-    $month = $deMonth[$mEn] + ' ' + $mm.Groups[2].Value
+    # Alle Sets der Seite (neuestes oben), darin alle Monatsüberschriften mit ihrer Tabelle
+    $sets = @([regex]::Matches($html, '(?i)<h[1-4][^>]*>\s*Set\s+(\d+(?:\.\d+)?)\s*[-:]\s*([^<]+?)\s*</h[1-4]>'))
+    if (-not $sets.Count) { throw 'Set-Überschrift nicht gefunden' }
+    $history = New-Object System.Collections.ArrayList
+    for ($i = 0; $i -lt $sets.Count; $i++) {
+      $from = $sets[$i].Index; $to = $(if ($i + 1 -lt $sets.Count) { $sets[$i + 1].Index } else { $html.Length })
+      $part = $html.Substring($from, $to - $from)
+      foreach ($mm in [regex]::Matches($part, '(?i)<h[1-4][^>]*>\s*(' + ($months -join '|') + ')\s+(\d{4})\s*</h[1-4]>')) {
+        $t0 = $part.IndexOf('<table', $mm.Index); if ($t0 -lt 0) { continue }
+        $t1 = $part.IndexOf('</table>', $t0); if ($t1 -lt 0) { continue }
+        $r = ParseRankTable $part.Substring($t0, $t1 - $t0)
+        if (-not $r.ok) { continue }   # ältere Sets ohne Smaragd o. Ä.
+        $mEn = (Get-Culture).TextInfo.ToTitleCase($mm.Groups[1].Value.ToLower())
+        $h = NewObj
+        $h['set'] = $sets[$i].Groups[1].Value; $h['setName'] = [Net.WebUtility]::HtmlDecode($sets[$i].Groups[2].Value)
+        $h['month'] = $deMonth[$mEn] + ' ' + $mm.Groups[2].Value; $h['ym'] = '{0}-{1:00}' -f $mm.Groups[2].Value, ([array]::IndexOf($months, $mEn) + 1)
+        $h['div'] = $r.div; $h['apex'] = $r.apex
+        [void]$history.Add($h)
+      }
+    }
+    if (-not $history.Count) { throw 'keine vollständige Monatstabelle gefunden' }
+    $cur = $history[0]
     $o = NewObj
     $o['source'] = 'EsportsTales'; $o['url'] = $url
-    $o['set'] = $ms.Groups[1].Value; $o['setName'] = [Net.WebUtility]::HtmlDecode($ms.Groups[2].Value)
-    $o['month'] = $month; $o['checked'] = $today; $o['div'] = $div; $o['apex'] = $apex
+    $o['set'] = $cur['set']; $o['setName'] = $cur['setName']
+    $o['month'] = $cur['month']; $o['checked'] = $today; $o['div'] = $cur['div']; $o['apex'] = $cur['apex']
+    # Verlauf für die Stats-Seite (neuester Stand zuerst)
+    $hist = New-Object System.Collections.ArrayList
+    foreach ($h in $history) { $x = NewObj; foreach ($k in 'set','setName','month','ym','div','apex') { $x[$k] = $h[$k] }; [void]$hist.Add($x) }
+    $o['history'] = $hist.ToArray()
     $old = $(if (Test-Path $out) { [IO.File]::ReadAllText($out, $utf8) } else { '' })
-    $same = $old -match ('"month":"' + [regex]::Escape($month) + '"') -and $old -match ('"set":"' + [regex]::Escape($o['set']) + '"')
-    [IO.File]::WriteAllText($out, "// TFT Freaks – Rangverteilung für die Ranks-Seite (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_RANKS = $(J $o);`n", $utf8)
-    if ($same) { Write-Host "  Keine neuen Zahlen – EsportsTales steht weiter bei Set $($o['set']), $month." }
-    else { Write-Host "  Neuer Stand: Set $($o['set']), $month" -ForegroundColor Green }
+    $same = $old -match ('"month":"' + [regex]::Escape($o['month']) + '"') -and $old -match ('"set":"' + [regex]::Escape($o['set']) + '"') -and $old -match '"history"'
+    [IO.File]::WriteAllText($out, "// TFT Freaks – Rangverteilung für die Ranks- und Stats-Seite (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_RANKS = $(J $o);`n", $utf8)
+    if ($same) { Write-Host "  Keine neuen Zahlen – EsportsTales steht weiter bei Set $($o['set']), $($o['month'])." }
+    else { Write-Host "  Neuer Stand: Set $($o['set']), $($o['month']) · Verlauf: $($hist.Count) Monate" -ForegroundColor Green }
   } catch { Warn "Rangverteilung nicht aktualisiert ($($_.Exception.Message)) – die bisherigen Zahlen bleiben." }
 }
-if ($OnlyRanks) { UpdateRanks; Write-Host 'Fertig.' -ForegroundColor Green; return }
+
+# LP-Grenzen für Challenger und Großmeister pro Server (tactics.tools-Bestenliste). Rückfall für die Live-Abfrage unter /api/cutoffs.
+function UpdateCutoffs {
+  Step 'LP-Grenzen (Challenger/Großmeister) von tactics.tools laden …'
+  $out = Join-Path $dataDir 'cutoffs.js'
+  $ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36'
+  $regions = NewObj
+  foreach ($r in 'euw','eune','na','kr') {
+    try {
+      $c = (Invoke-WebRequest "https://tactics.tools/leaderboards/$r" -UseBasicParsing -UserAgent $ua -TimeoutSec 45).Content
+      $m = [regex]::Match($c, 'Cutoffs</div>.*?challenger_solo[^>]*>\s*<div>([\d.,]+)\s*LP</div>.*?grandmaster_solo[^>]*>\s*<div>([\d.,]+)\s*LP</div>', 'Singleline')
+      if (-not $m.Success) { throw 'Werte nicht gefunden' }
+      $x = NewObj; $x['ch'] = [int]($m.Groups[1].Value -replace '[^\d]', ''); $x['gm'] = [int]($m.Groups[2].Value -replace '[^\d]', '')
+      $regions[$r] = $x
+    } catch { Warn "LP-Grenzen $r nicht geladen ($($_.Exception.Message))" }
+  }
+  if (-not $regions.Count) { Warn 'Keine LP-Grenzen – die bisherigen bleiben.'; return }
+  $o = NewObj; $o['source'] = 'tactics.tools'; $o['url'] = 'https://tactics.tools/leaderboards/euw'; $o['checked'] = (Get-Date).ToString('yyyy-MM-ddTHH:mm'); $o['regions'] = $regions
+  [IO.File]::WriteAllText($out, "// TFT Freaks – LP-Grenzen für Challenger/Großmeister (automatisch erzeugt mit tools\update-data.ps1; live über /api/cutoffs)`nwindow.TFT_CUTOFFS = $(J $o);`n", $utf8)
+  Write-Host ("  " + (($regions.Keys | ForEach-Object { "$($_.ToUpper()) $($regions[$_]['ch'])/$($regions[$_]['gm']) LP" }) -join ' · ')) -ForegroundColor Green
+}
+if ($OnlyRanks) { UpdateRanks; UpdateCutoffs; Write-Host 'Fertig.' -ForegroundColor Green; return }
 
 # ======================= Patches =======================
 $histDir = Join-Path $dataDir 'history'
@@ -461,7 +508,7 @@ foreach ($s in $list) { Write-Host ("  Set {0,-3} {1,-7} {2,-12} {3}" -f $s['set
 
 # ======================= 4. Rangverteilung =======================
 UpdateRanks
-
+UpdateCutoffs
 # ======================= 5. Patches: Liste von Riot, Archiv pro Patch, erkannte Änderungen =======================
 UpdatePatches $liveSet
 

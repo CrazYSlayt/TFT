@@ -49,7 +49,21 @@ const PLANT_IMG = TFT_CUSTOM_SET.plants || {};
 const AUG_IMG = Object.fromEntries((TFT_CUSTOM_SET.augmentIcons || []).map(id=>[id, 'assets/augments/' + id + '.webp']));
 // Augments: offizielle Daten des gewählten Sets; die Stufe aus deiner Augment-Tierlist hat Vorrang
 const AUG_TL_LV = {}; Object.values(AUG_TL).forEach(st=>Object.entries(st).forEach(([lv,tiers])=>Object.values(tiers).forEach(ids=>ids.forEach(id=>{ AUG_TL_LV[id] = +lv; }))));
-const AUGS = TFT_DATA.augments.map(a=>Object.assign({}, a, {icon: TFT_DATA.cdn + a.icon, lv: AUG_TL_LV[a.id] || a.lv}));
+// Stufe: aus der Tierlist, sonst aus Riots Daten, sonst aus dem Icon-Namen (…-i / …ii / …iii)
+const augLvFromIcon = icon => { const m = String(icon).match(/(i{1,3})\.png$/i); return m ? m[1].length : 0; };
+const AUGS = TFT_DATA.augments.map(a=>Object.assign({}, a, {icon: TFT_DATA.cdn + a.icon, lv: AUG_TL_LV[a.id] || a.lv || augLvFromIcon(a.icon)}));
+// Riot führt viele Augments doppelt (Set-18-Version DA_… und eine alte Version aus früheren Sets).
+// In Auswahl-Listen nur eine zeigen – die alten bleiben in AUGS, damit bestehende Links ihre Positionen behalten.
+const AUG_DUP = (()=>{ const by = {}, dup = new Set();
+  AUGS.forEach(a=>{ (by[a.en.toLowerCase()] = by[a.en.toLowerCase()] || []).push(a); });   // gleicher Name, auch wenn die alte Version eine andere Stufe hat
+  // Gibt es eine Set-18-Version (DA_…), fallen alle alten weg. Pro Stufe bleibt je eine Version stehen
+  // (z. B. „Tons of Stats!“ Gold und „TONS of Stats!“ Prismatisch sind zwei verschiedene Augments).
+  Object.values(by).forEach(g=>{
+    if(g.length < 2) return;
+    const cur = g.filter(a=>/^DA_/.test(a.id)), pool = cur.length ? cur : g, seen = new Set();
+    g.forEach(a=>{ if(!pool.includes(a) || seen.has(a.lv)) dup.add(a.id); else seen.add(a.lv); });
+  });
+  return dup; })();
 
 
 const packages = [
@@ -720,7 +734,7 @@ const splitKey = k => { const [s, h, n] = String(k).split(':'); return [s, +h, n
 function bCopy(text, ok){ if(navigator.clipboard) navigator.clipboard.writeText(text).then(()=>bHint(ok), ()=>prompt('Kopieren:', text)); else prompt('Kopieren:', text); }
 function bOpenAugPicker(side){
   bAugSide = side;
-  const draw = q => { q = (q||'').toLowerCase(); const cur = sideAugs(side); return AUGS.filter(a=>!cur.includes(a.id) && (!q || a.en.toLowerCase().includes(q) || a.de.toLowerCase().includes(q))).sort((a,b)=>(a.lv||9)-(b.lv||9) || a.en.localeCompare(b.en)).slice(0,120)
+  const draw = q => { q = (q||'').toLowerCase(); const cur = sideAugs(side); return AUGS.filter(a=>!cur.includes(a.id) && !AUG_DUP.has(a.id) && (!q || a.en.toLowerCase().includes(q) || a.de.toLowerCase().includes(q))).sort((a,b)=>(a.lv||9)-(b.lv||9) || a.en.localeCompare(b.en)).slice(0,120)
     .map(a=>`<button class="b-augpick" type="button" data-baug-add="${a.id}" title="${esc(a.de)}"><img src="${augImg(a)}" alt=""><span>${esc(a.en)}</span><small>${a.lv?AUG_LV[a.lv]:''}</small></button>`).join(''); };
   $('#modalBody').innerHTML = `<h2 style="margin:0 0 12px">Augment wählen${side==='e'?' (Gegner)':''}</h2><input class="input" id="bAugSearch" placeholder="Augment suchen…" style="width:100%" autocomplete="off"><div class="b-augpicklist" id="bAugPickList">${draw('')}</div>`;
   openModal(); setTimeout(()=>{ const i = $('#bAugSearch'); if(i){ i.focus(); i.oninput = ()=>{ $('#bAugPickList').innerHTML = draw(i.value); }; } }, 30);
@@ -1118,7 +1132,7 @@ const BUDDY_LINES = {
     return ['Willkommen in meiner Werkstatt! Such dir ein Werkzeug aus – alles frisch kalibriert.',
       'Rollen oder leveln? Mein Rolldown-Rechner kennt die Antwort. Wissenschaft!',
       o ? `Auf Level 8 ist jeder Shop-Slot zu ${o[3]} % eine 4-Kosten-Unit. Faszinierend, nicht wahr?` : null,
-      'Der Item-Drop-Rechner zählt mit, was noch im Sack liegt. Reine Mathematik!',
+      'Der Item-Drop-Rechner zählt mit, was noch im Item-Pool liegt. Reine Mathematik!',
       'Mit dem Tierlist-Maker baust du deine eigene Tierlist – und schickst sie als Link an deine Freunde.',
       'Der Kampf-Simulator steht noch auf meiner Werkbank. Ein paar Schrauben fehlen noch!',
       'Ein Experiment ist kein Experiment ohne Wiederholung: Im Simulator rechnest du einen Kampf 100-mal.',
@@ -1126,7 +1140,7 @@ const BUDDY_LINES = {
   },
   // Heimerdinger in den einzelnen Tools (erscheint nur, wenn assets/tools/<tool>.webp existiert)
   tlmaker(){ return ['S-Tier oder C-Tier? Hmm … eine Frage für die Wissenschaft – und für deine Meinung!',
-    'Zieh Champions, Traits, Items oder Augments in die Reihen. Oder tipp erst an, dann auf die Zeile.',
+    'Zieh Champions, Items, Artefakte, Embleme oder Augments in die Reihen. Oder tipp erst an, dann auf die Zeile.',
     'Klick auf ein Label, um die Reihe umzubenennen. Farbe und Reihenfolge änderst du direkt daneben.',
     'Bis zu 12 Reihen! Genug Platz für jede noch so verrückte Hypothese.',
     'Fertig? Mit „Teilen“ bekommst du einen Link. Perfekt für hitzige Diskussionen mit Freunden!']; },
@@ -1134,7 +1148,7 @@ const BUDDY_LINES = {
     'Je mehr Kopien schon weg sind, desto schlechter deine Chancen. Trag sie ein – Präzision ist alles!',
     'Der Vergleich zeigt dir, ob ein Level vor dem Rollen mehr bringt. Faszinierend!',
     'Zwei Gold pro Roll, fünf Slots pro Shop. Den Rest erledigt die Mathematik.']; },
-  drops(){ return ['Komponenten kommen aus einem Sack. Ich zähle mit, was noch drin ist!',
+  drops(){ return ['Komponenten kommen aus einem Item-Pool. Ich zähle mit, was noch drin ist!',
     'Klick die Komponenten an, sobald sie droppen. Je genauer du bist, desto besser meine Vorhersage.',
     'Vor jeder Creep-Stage kommt von jeder Komponente eine dazu. Ein wunderbar logisches System!',
     'Prismatic-Orbs gibt es erst ab 3-7. Geduld ist auch eine Wissenschaft!']; },
@@ -1468,7 +1482,7 @@ const searchIndex = [
   ...champions.map(c=>({label:c.n,type:'Champion',html:avatar(c.n,40),go:()=>{closeSearch();openChamp(c.n);}})),
   ...traits.map(t=>({label:t.n,type:t.cat==='origin'?'Ursprung':'Klasse',html:traitHex(t.n, t.bp.length===1?'unique':'base', 34),go:()=>{closeSearch();go('/bibliothek/traits');setTimeout(()=>{$('#traitSearch').value=t.n;renderTraits();},10);}})),
   ...ITEMS.map(it=>({label:it.en,alt:it.de,type:'Item · '+(ITEM_CATS.find(([k])=>k===it.cat)||[])[1],html:`<img src="${it.img}" alt="" width="40" height="40" loading="lazy" style="width:40px;height:40px;border-radius:8px">`,go:()=>{closeSearch();openItem(it.id);}})),
-  ...AUGS.map(a=>({label:a.en,alt:a.de,type:'Augment'+(a.lv?' · '+AUG_LV[a.lv]:''),html:`<img src="${augImg(a)}" alt="" width="40" height="40" loading="lazy" style="width:40px;height:40px;border-radius:8px">`,go:()=>{closeSearch();openAug(a.id);}})),
+  ...AUGS.filter(a=>!AUG_DUP.has(a.id)).map(a=>({label:a.en,alt:a.de,type:'Augment'+(a.lv?' · '+AUG_LV[a.lv]:''),html:`<img src="${augImg(a)}" alt="" width="40" height="40" loading="lazy" style="width:40px;height:40px;border-radius:8px">`,go:()=>{closeSearch();openAug(a.id);}})),
   ...comps.map(c=>({label:c.name,type:'Comp · '+c.tier,html:avatar(c.carry,40),go:()=>{closeSearch();openComp(c.slug);}})),
 ];
 let sResults=[], sFocus=0;
@@ -1513,6 +1527,7 @@ const SVGI = {
   lib:'<path d="M4 4h4v16H4zM10 4h4v16h-4z"/><path d="M16 5l3.5-1 3 15.5-3.5 1z"/>',
   news:'<path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v8a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5"/>',
   builder:'<path d="M7 3.5l4 2.3v4.6l-4 2.3-4-2.3V5.8z"/><path d="M17 3.5l4 2.3v4.6l-4 2.3-4-2.3V5.8z"/><path d="M12 12l4 2.3v4.6l-4 2.3-4-2.3v-4.6z"/>',
+  stats:'<path d="M4 19h16"/><path d="M7 16V11M12 16V7M17 16v-4"/>',
   tools:'<path d="M14.5 6.5a4 4 0 0 0-5.4 5.1L4 16.7 7.3 20l5.1-5.1a4 4 0 0 0 5.1-5.4l-2.4 2.4-2.4-.6-.6-2.4z"/>'
 };
 const NAV = [
@@ -1523,6 +1538,7 @@ const NAV = [
   {r:'ranks', h:'/ranks', l:'Ranks', s:'rank'},
   {r:'tools', h:'/tools', l:'Tools', s:'tools', badge:'Neu'},
   {r:'coaching', h:'/coaching', l:'Coaching', s:'coach'},
+  {r:'stats', h:'/stats', l:'Stats', s:'stats', more:true},
   {r:'patches', h:'/patches', l:'Patches', s:'patch', more:true},
   {r:'guides', h:'/guides', l:'Guides', s:'guide', more:true},
   {r:'about', h:'/about', l:'Meet the Team', s:'about', more:true},
@@ -1537,7 +1553,7 @@ $('#tbNav').innerHTML = NAV.filter(n=>!n.more).map(n=>`<a href="${n.h}" class="t
   + '<button class="tb-item tb-more" id="moreBtn" aria-haspopup="true" aria-label="Mehr">···</button>';
 $('#moreMenu').innerHTML = NAV.filter(n=>n.more).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('');
 $('#drawerPanel').innerHTML = `<a href="/" class="tb-logo" style="border:0;padding:6px 10px 14px;font-size:1.7rem" aria-label="TFT Freaks Startseite"><span class="tft-logo" aria-hidden="true"></span><div><span>TFT</span> <b>Freaks</b></div></a>
-  <h5>Tierlist & Daten</h5>${NAV.filter(n=>['tierlist','bibliothek','builder','ranks','tools','patches'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}
+  <h5>Tierlist & Daten</h5>${NAV.filter(n=>['tierlist','bibliothek','builder','ranks','stats','tools','patches'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}
   <h5>TFT Freaks</h5>${NAV.filter(n=>['home','coaching','guides','about','apply'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}`;
 const moreMenu = $('#moreMenu');
 $('#moreBtn').onclick = e=>{ e.stopPropagation(); const r=e.currentTarget.getBoundingClientRect(); moreMenu.style.left=Math.min(r.left, innerWidth-240)+'px'; moreMenu.classList.toggle('open'); };
@@ -1719,13 +1735,19 @@ function rdUpdate(){
 const TM_KEY = 'tftfreaks_tlmaker_v1_' + TFT_DATA.set;
 const TM_COLORS = ['#ff4040','#ff9a2e','#ffd92e','#3ddc5a','#2f80ed','#a855f7','#ec4899','#8a94a8'];
 const TM_DEFAULT = () => ({title:'', rows:[['S',0],['A',1],['B',2],['C',3],['X',4]].map(([l,c])=>({l, c, items:[]}))});
-const TM_TABS = [['c','Champions'],['t','Traits'],['a','Augments'],['i','Items']];
-const TM_SORTS = {c:[['cost','Kosten'],['name','Name'],['origin','Ursprung'],['class','Klasse']], t:[['type','Typ'],['name','Name']], a:[['lv','Stufe'],['name','Name']], i:[['cat','Kategorie'],['name','Name']]};
+// Tabs der Toolbox: Items, Artefakte und Embleme sind alles Item-Einträge (i:…) – nur anders gefiltert.
+// Traits (t:…) haben keinen Tab mehr, werden in älteren geteilten Tierlists aber weiter angezeigt.
+const TM_TABS = [['c','Champions'],['i','Items'],['r','Artefakte'],['e','Embleme'],['a','Augments']];
+const TM_ITEM_TABS = {i:['craft','radiant','component'], r:['artifact'], e:['emblem']};
+// Augments: statt Sortierung eine Auswahl nach Stufe (Silber / Gold / Prismatisch)
+const TM_SORTS = {c:[['cost','Kosten'],['name','Name'],['origin','Ursprung'],['class','Klasse']], t:[['type','Typ'],['name','Name']], a:[['1','Silber'],['2','Gold'],['3','Prismatisch']], i:[['cat','Kategorie'],['name','Name']], r:[['name','Name']], e:[['name','Name']]};
+// Taktiker-Krone, -Umhang und -Schild geben nur +1 Teamgröße – keine Embleme
+const tmIsTactician = it => /Tactician/i.test(it.id + ' ' + it.en);
 const AUG_BY = Object.fromEntries(AUGS.map(x=>[x.id, x])), ITEM_BY = Object.fromEntries(ITEMS.map(x=>[x.id, x])), TRAIT_BY = Object.fromEntries(traits.map(x=>[x.n, x]));
 // feste Reihenfolge für Teilen-Links (Index statt langer IDs)
 const TM_ORDER = {c:champions.map(x=>x.n).sort(), t:traits.map(x=>x.n).sort(), a:AUGS.map(x=>x.id).sort(), i:ITEMS.map(x=>x.id).sort()};
 const TM_IDX = Object.fromEntries(Object.entries(TM_ORDER).map(([k, arr])=>[k, Object.fromEntries(arr.map((v,i)=>[v,i]))]));
-let tm = null, tmMode = 'build', tmTab = 'c', tmSort = {c:'cost', t:'type', a:'lv', i:'cat'}, tmSel = null, tmShared = false, tmBuilt = false, tmDrag = null;
+let tm = null, tmMode = 'build', tmTab = 'c', tmSort = {c:'cost', t:'type', a:'1', i:'cat', r:'name', e:'name'}, tmSel = null, tmShared = false, tmBuilt = false, tmDrag = null;
 
 function tmInfo(key){
   const ty = key[0], id = key.slice(2);
@@ -1870,26 +1892,27 @@ function tmRenderPool(){
   } else if(tmTab==='t'){
     list = traits.filter(t=>!q || t.n.toLowerCase().includes(q)).sort(s==='name' ? (a,b)=>a.n.localeCompare(b.n) : (a,b)=>(a.cat===b.cat ? 0 : a.cat==='origin' ? -1 : 1) || a.n.localeCompare(b.n)).map(t=>'t:'+t.n);
   } else if(tmTab==='a'){
-    list = AUGS.filter(a=>!q || a.en.toLowerCase().includes(q) || (a.de||'').toLowerCase().includes(q)).sort(s==='name' ? (a,b)=>a.en.localeCompare(b.en) : (a,b)=>(a.lv||9)-(b.lv||9) || a.en.localeCompare(b.en)).map(a=>'a:'+a.id);
+    list = AUGS.filter(a=>String(a.lv||1)===s && !AUG_DUP.has(a.id) && (!q || a.en.toLowerCase().includes(q) || (a.de||'').toLowerCase().includes(q))).sort((a,b)=>a.en.localeCompare(b.en)).map(a=>'a:'+a.id);
   } else {
-    const ord = Object.fromEntries(ITEM_CATS.map(([k],i)=>[k,i]));
-    list = ITEMS.filter(i=>!q || i.en.toLowerCase().includes(q) || (i.de||'').toLowerCase().includes(q)).sort(s==='name' ? (a,b)=>a.en.localeCompare(b.en) : (a,b)=>(ord[itemCat(a)]??9)-(ord[itemCat(b)]??9) || a.en.localeCompare(b.en)).map(i=>'i:'+i.id);
+    const cats = TM_ITEM_TABS[tmTab] || TM_ITEM_TABS.i, ord = Object.fromEntries(cats.map((k,i)=>[k,i]));
+    list = ITEMS.filter(i=>cats.includes(itemCat(i)) && !(tmTab==='e' && tmIsTactician(i)) && (!q || i.en.toLowerCase().includes(q) || (i.de||'').toLowerCase().includes(q)))
+      .sort(s==='cat' ? (a,b)=>(ord[itemCat(a)]??9)-(ord[itemCat(b)]??9) || a.en.localeCompare(b.en) : (a,b)=>a.en.localeCompare(b.en)).map(i=>'i:'+i.id);
   }
   const free = list.filter(k=>!used.has(k));
   $('#tmPool').innerHTML = free.map(tmTile).join('') || `<span class="tm-empty">${list.length ? 'Alles einsortiert!' : 'Nichts gefunden.'}</span>`;
 }
 
 /* ================= TOOLS: Item-Drop-Rechner ================= */
-// Komponenten aus Creep-Runden kommen aus einem „Sack“: gezogene Komponenten fehlen darin, vor jeder weiteren Creep-Stage
+// Komponenten aus Creep-Runden kommen aus einem Item-Pool: gezogene Komponenten fehlen darin, vor jeder weiteren Creep-Stage
 // kommt von jeder Komponente eine dazu. Beute-Tabellen pro Stage stehen in data/custom-<Set>.js (loot).
 const LOOT = TFT_CUSTOM_SET.loot && TFT_CUSTOM_SET.loot.stages ? TFT_CUSTOM_SET.loot : null;
 const DR_KEY = 'tftfreaks_drops_v1_' + TFT_DATA.set;
-const DR_COMPS = COMPONENTS.filter(id=>!/spatula|fryingpan/i.test(normN(itemById[id].en))).slice(0, 8);   // die 8 Komponenten im Sack
+const DR_COMPS = COMPONENTS.filter(id=>!/spatula|fryingpan/i.test(normN(itemById[id].en))).slice(0, 8);   // die 8 Komponenten im Item-Pool
 const DR_STAGES = [[1,'Stage 1','Minions'],[2,'2-7','Creeps'],[3,'3-7','Creeps'],[4,'4-7','Creeps'],[5,'ab 5-7','Xerath']];
 const DR_NEW = () => ({stage:1, start:1, src:'drop', drops:{1:[], 2:[], 3:[], 4:[]}, extra:[]});
 let dr = (()=>{ try { const s = JSON.parse(localStorage.getItem(DR_KEY)); if(s && s.drops) return Object.assign(DR_NEW(), s); } catch(e){} return DR_NEW(); })();
 const drSave = () => { try { localStorage.setItem(DR_KEY, JSON.stringify(dr)); } catch(e){} };
-// Sack nach allen Drops bis einschließlich Stage `upto`
+// Item-Pool nach allen Drops bis einschließlich Stage `upto`
 function drBag(upto){
   const bag = Object.fromEntries(DR_COMPS.map(id=>[id, dr.start]));
   let warn = false;
@@ -1907,7 +1930,7 @@ function drRest(s, d){
   Object.keys(out).forEach(k=>{ out[k] /= tot; });
   return out;
 }
-// Chance auf mindestens eine Komponente (c im Sack von n), wenn k gezogen werden – ohne Zurücklegen
+// Chance auf mindestens eine Komponente (c im Pool von n), wenn k gezogen werden – ohne Zurücklegen
 const drAtLeast1 = (c, n, k) => { if(!c || !k) return 0; let none = 1; for(let i = 0; i < k; i++) none *= Math.max(0, n - c - i) / (n - i); return 1 - none; };
 const drMix = (dist, c, n) => dist ? Object.entries(dist).reduce((s, [k, p])=>s + p * drAtLeast1(c, n, Math.min(+k, n)), 0) : null;
 const drPct = p => p == null ? '–' : rdPct(p);
@@ -1929,7 +1952,7 @@ function drRender(){
   const pickIds = dr.src==='drop' ? DR_COMPS : COMPONENTS;
   const pick = late && dr.src==='drop' ? `<p class="dr-note">${esc(LOOT.late)}</p>`
     : `<div class="dr-pick">${pickIds.map(id=>{ const it = itemById[id]; const left = dr.src==='drop' ? bag[id] : null;
-        return `<button type="button" class="dr-c${left===0 ? ' empty' : ''}" data-dradd="${id}" title="${esc(it.de)} hinzufügen">${drIcon(id, 44)}<span>${esc(it.de)}</span>${left != null ? `<em>${left}× im Sack</em>` : ''}</button>`; }).join('')}</div>`;
+        return `<button type="button" class="dr-c${left===0 ? ' empty' : ''}" data-dradd="${id}" title="${esc(it.de)} hinzufügen">${drIcon(id, 44)}<span>${esc(it.de)}</span>${left != null ? `<em>${left}× im Pool</em>` : ''}</button>`; }).join('')}</div>`;
   const got = [1,2,3,4].map(k=>{ const l = dr.drops[k]||[]; return `<div class="dr-row${k===s ? ' on' : ''}"><span>${DR_STAGES[k-1][1]}</span><div>${l.length ? l.map((id, i)=>`<button type="button" class="dr-chip" data-drdel="${k}:${i}" title="Entfernen">${drIcon(id, 28)}</button>`).join('') : '<small>–</small>'}</div></div>`; }).join('')
     + `<div class="dr-row"><span>Sonstiges</span><div>${dr.extra.length ? dr.extra.map((id, i)=>`<button type="button" class="dr-chip" data-drdel="x:${i}" title="Entfernen">${drIcon(id, 28)}</button>`).join('') : '<small>Karussell, Amboss, Augments …</small>'}</div></div>`;
   // Wahrscheinlichkeiten
@@ -1942,7 +1965,7 @@ function drRender(){
   });
   const best = Math.max(...rows.map(r=>r.pNext || 0));
   const dots = c => '<span class="dr-dots">' + Array.from({length:Math.max(c, 1)}, (_, i)=>`<i class="${i < c ? 'on' : ''}"></i>`).join('') + '</span>';
-  const table = `<table class="dr-table"><thead><tr><th>Komponente</th><th>Im Sack</th><th>Nächster Drop</th><th>Mind. 1 im Rest von ${esc(stageName)}</th><th>Mind. 1 in ${nextS <= 4 ? DR_STAGES[nextS-1][1] : '–'}</th></tr></thead><tbody>${rows.map(r=>
+  const table = `<table class="dr-table"><thead><tr><th>Komponente</th><th>Im Pool</th><th>Nächster Drop</th><th>Mind. 1 im Rest von ${esc(stageName)}</th><th>Mind. 1 in ${nextS <= 4 ? DR_STAGES[nextS-1][1] : '–'}</th></tr></thead><tbody>${rows.map(r=>
     `<tr class="${r.pNext && r.pNext===best ? 'best' : ''}${r.c===0 ? ' gone' : ''}"><td><span class="dr-name">${drIcon(r.id, 30)}${esc(r.it.de)}</span></td><td>${dots(r.c)} <b>${r.c}</b></td><td><span class="dr-bar"><i style="width:${(r.pNext||0)*100}%"></i></span>${drPct(r.pNext)}</td><td>${drPct(r.pRest)}</td><td>${drPct(r.pNextStage)}</td></tr>`).join('')}</tbody></table>`;
   const restTxt = late ? 'Ab Stage 5 gibt es keine zufälligen Komponenten mehr.'
     : !rest ? `Mehr Komponenten als laut Tabelle möglich (max. ${Math.max(...LOOT.stages[s].map(r=>r[4]))}) – prüf deine Eingabe.`
@@ -1974,28 +1997,28 @@ function drRender(){
   Object.keys(have).forEach(a=>Object.keys(have).forEach(b=>{ if(a > b || (a===b && have[a] < 2)) return; const r = recipeOf[[a, b].sort().join('|')]; if(r && !craft.includes(r)) craft.push(r); }));
   const orbTbl = o => o ? `<div class="dr-orbtbl"><h4>${esc(o.label)} <small>${esc(o.note)} · Wert ${esc(o.wert)}</small></h4><table class="dr-table small"><tbody>${o.items.map(([t, p])=>`<tr><td>${esc(t)}</td><td>${fmtNum(p)} %</td></tr>`).join('')}</tbody></table></div>` : '';
   app.innerHTML = `<div class="dr">
-    <div class="dr-tabs">${tabs}</div>
+    <div class="dr-top"><div class="dr-tabs">${tabs}</div>
+      <button class="dr-new" type="button" data-drreset title="Alle Eingaben löschen und mit einem neuen Spiel starten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Neues Spiel</button></div>
     <div class="dr-grid">
       <section class="card dr-in">
         <div class="dr-head"><h3>Was hast du in ${esc(stageName)} bekommen?</h3>
           <div class="bp-pills"><button type="button" data-drsrc="drop" class="${dr.src==='drop' ? 'on' : ''}">Creep-Drop</button><button type="button" data-drsrc="extra" class="${dr.src==='extra' ? 'on' : ''}">Sonstiges</button></div></div>
-        <p class="dr-note">${dr.src==='drop' ? 'Klick die Komponenten an, die gerade gedroppt sind – sie werden aus dem Sack genommen.' : 'Komponenten aus Karussell, Ambossen oder Augments: zählen für deine Items, aber nicht für den Sack.'}</p>
+        <p class="dr-note">${dr.src==='drop' ? 'Klick die Komponenten an, die gerade gedroppt sind – sie werden aus dem Item-Pool genommen.' : 'Komponenten aus Karussell, Ambossen oder Augments: zählen für deine Items, aber nicht für den Item-Pool.'}</p>
         ${pick}
-        ${warn ? '<p class="dr-warn">Eine Komponente ist öfter gedroppt, als laut Sack-Regel möglich. Stell unten den Start-Sack auf „2 von jeder“ um, falls das in deinem Spiel so war.</p>' : ''}
+        ${warn ? '<p class="dr-warn">Eine Komponente ist öfter gedroppt, als laut Pool-Regel möglich. Stell unten den Start-Pool auf „2 von jeder“ um, falls das in deinem Spiel so war.</p>' : ''}
         <div class="dr-got">${got}</div>
         <div class="dr-actions">
           ${s < 5 ? `<button class="btn btn-primary" type="button" data-drstage="${s+1}">Weiter zu ${DR_STAGES[s][1]} →</button>` : ''}
           <button class="b-tbtn" type="button" data-drundo>Letzten entfernen</button>
-          <button class="b-tbtn" type="button" data-drreset>Neues Spiel</button>
         </div>
-        <label class="dr-set">Start-Sack:
+        <label class="dr-set">Start-Pool:
           <select class="input" id="drStart"><option value="1"${dr.start===1 ? ' selected' : ''}>1 von jeder Komponente – Stage 1 ohne Doppelte</option><option value="2"${dr.start===2 ? ' selected' : ''}>2 von jeder Komponente</option></select>
         </label>
       </section>
       <section class="card dr-out">
-        <h3>Wahrscheinlichkeiten ${late ? '' : `<small>${n} Komponenten im Sack</small>`}</h3>
+        <h3>Wahrscheinlichkeiten ${late ? '' : `<small>${n} Komponenten im Pool</small>`}</h3>
         ${table}
-        <p class="dr-note">${restTxt} Vor ${nextS <= 4 ? DR_STAGES[nextS-1][1] : 'der nächsten Creep-Stage'} kommt von jeder Komponente eine in den Sack.</p>
+        <p class="dr-note">${restTxt} Vor ${nextS <= 4 ? DR_STAGES[nextS-1][1] : 'der nächsten Creep-Stage'} kommt von jeder Komponente eine in den Item-Pool.</p>
       </section>
     </div>
     <div class="dr-grid">
@@ -2008,7 +2031,7 @@ function drRender(){
     <details class="card dr-more"><summary>Orb-Inhalte (Gold &amp; Prismatic) und Quelle</summary>
       <div class="dr-orbgrid">${orbTbl(LOOT.orbs.prism)}${orbTbl(LOOT.orbs.gold)}${orbTbl(LOOT.orbs.gold4)}
         <div class="dr-orbtbl"><h4>Aufgewertete Runden <small>einmal pro Spiel geheim ausgewürfelt</small></h4><table class="dr-table small"><tbody>${LOOT.upgraded.map(([t, p])=>`<tr><td>${esc(t)}</td><td>${fmtNum(p)} %</td></tr>`).join('')}</tbody></table></div></div>
-      <p class="dr-note">Beute-Tabellen: ${esc(LOOT.source)}. Die Sack-Regel (gezogene Komponenten fehlen, vor jeder Creep-Stage kommt von jeder eine dazu) ist nicht offiziell von Riot dokumentiert – deshalb kannst du den Start-Sack umstellen.</p>
+      <p class="dr-note">Beute-Tabellen: ${esc(LOOT.source)}. Die Pool-Regel (gezogene Komponenten fehlen, vor jeder Creep-Stage kommt von jeder eine dazu) ist nicht offiziell von Riot dokumentiert – deshalb kannst du den Start-Pool umstellen.</p>
     </details>
   </div>`;
 }
@@ -2027,6 +2050,8 @@ document.addEventListener('change', e=>{ if(e.target.id==='drStart'){ dr.start =
 /* ================= PATCHES (aus Riots Patchnotes, automatisch vom Update-Skript) ================= */
 const PATCHES = (window.TFT_PATCHES || []).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
 const PATCH_NOTES = window.TFT_PATCH_NOTES || {};
+const PATCH_FOCUS = window.TFT_PATCH_FOCUS || {};   // Bildausschnitt pro Patch (data/patch-kommentare.js)
+const patchFocus = p => /^\d{1,3}% \d{1,3}%$/.test(PATCH_FOCUS[p.id] || '') ? PATCH_FOCUS[p.id] : '50% 30%';
 const patchSlug = id => String(id).replace('.', '-');
 const patchBySlug = Object.fromEntries(PATCHES.map(p=>[patchSlug(p.id), p]));
 const TODAY_ISO = new Date().toISOString().slice(0,10);
@@ -2066,7 +2091,7 @@ function renderPatches(sub){
       + sets.map(st=>`<div class="pt-set"><h2>Set ${st}</h2><div class="pt-grid">${PATCHES.filter(x=>x.set===st).map(x=>{
         const cur = x===CURRENT_PATCH, cnt = patchCount(x), note = PATCH_NOTES[x.id];
         return `<a class="pt-card${cur?' cur':''}" href="/patches/${patchSlug(x.id)}">
-          <div class="pt-img"${x.img ? ` style="background-image:url('${esc(x.img)}?w=640&fm=webp')"` : ''}>${cur ? '<span class="pill">Aktuell</span>' : ''}</div>
+          <div class="pt-img"${x.img ? ` style="background-image:url('${esc(x.img)}?w=640&fm=webp');background-position:${esc(patchFocus(x))}"` : ''}>${cur ? '<span class="pill">Aktuell</span>' : ''}</div>
           <div class="pt-body"><small>${fmtDate(x.date)}</small><h3>Patch ${esc(x.id)}</h3><p>${esc(x.teaser || '')}</p>
           <div class="pt-meta">${cnt ? `<span>${cnt} Änderungen</span>` : ''}${note ? '<span class="hl">mit Einschätzung</span>' : ''}</div></div></a>`;
       }).join('')}</div></div>`).join('')
@@ -2077,7 +2102,7 @@ function renderPatches(sub){
   const grps = []; (p.notes || []).forEach(s=>{ let g = grps.find(x=>x.g===s.grp); if(!g){ g = {g:s.grp, secs:[]}; grps.push(g); } g.secs.push(s); });
   const note = PATCH_NOTES[p.id];
   app.innerHTML = `<div class="page-head"><div class="crumb"><a href="/patches">Patches</a> / ${esc(p.id)}</div></div>
-    <div class="pd-hero"${p.img ? ` style="--img:url('${esc(p.img)}?w=1280&fm=webp')"` : ''}><div>
+    <div class="pd-hero"${p.img ? ` style="--img:url('${esc(p.img)}?w=1280&fm=webp');--pos:${esc(patchFocus(p))}"` : ''}><div>
       <small>${fmtDate(p.date)}${p===CURRENT_PATCH ? ' · <b>Aktueller Patch</b>' : ''}</small><h1>Patch <em class="serif">${esc(p.id)}</em></h1>
       ${p.teaser ? `<blockquote>${esc(p.teaser)}<cite>– Riot Games</cite></blockquote>` : ''}
       <a class="btn btn-primary" href="${esc(p.url)}" target="_blank" rel="noopener">Komplette Patchnotes bei Riot ↗</a></div></div>
@@ -2105,6 +2130,186 @@ function champPatchHTML(name){
   });
   return out.join('');
 }
+
+/* ================= STATS: Leiste oben + Stats-Seite ================= */
+// Riot veröffentlicht keine Online-Zahlen für TFT. Wir zeigen, was es gibt: Rangverteilung (+ Verlauf seit Set 3),
+// den aktuellen Patch mit Countdown und was in der Tierlist steigt.
+const ST_ORDER = RANK_TIERS.map(t=>t.k);
+const ST_HIST = (RK && Array.isArray(RK.history) ? RK.history : []).slice().reverse();   // ältester Stand zuerst
+function stShares(h){ const o = {}; ST_ORDER.forEach(k=>{ const d = h.div && h.div[k]; o[k] = Array.isArray(d) ? d.reduce((a,b)=>a+b, 0) : (h.apex && typeof h.apex[k]==='number' ? h.apex[k] : 0); }); return o; }
+const stAtLeast = (sh, k) => { const all = ST_ORDER.reduce((s,x)=>s + (sh[x]||0), 0) || 100; return ST_ORDER.slice(ST_ORDER.indexOf(k)).reduce((s,x)=>s + (sh[x]||0), 0) / all * 100; };
+const stMostCommon = sh => ST_ORDER.reduce((a,k)=>sh[k] > sh[a] ? k : a, ST_ORDER[0]);
+const ST_NOW = Object.fromEntries(RANK_TIERS.map(t=>[t.k, t.total]));
+const ST_TOP = rankBy[stMostCommon(ST_NOW)];
+// Patch-Countdown: Riot patcht meist mittwochs um 4:30 Uhr (deutsche Zeit) im Zwei-Wochen-Takt.
+// Feste Termine aus data/patch-kommentare.js (TFT_PATCH_SCHEDULE) haben Vorrang.
+const ST_PATCH = TL_PATCH || (CURRENT_PATCH ? CURRENT_PATCH.id : '');
+// Uhrzeit in deutscher Zeit (Sommer-/Winterzeit automatisch) → echter Zeitpunkt, egal wo der Besucher ist
+function berlinTime(y, mo, d, h, mi){
+  const guess = Date.UTC(y, mo - 1, d, h, mi);
+  const off = (()=>{ try { const p = new Intl.DateTimeFormat('en-US', {timeZone:'Europe/Berlin', timeZoneName:'shortOffset'}).formatToParts(new Date(guess)).find(x=>x.type==='timeZoneName').value.match(/GMT([+-]\d+)/); return p ? +p[1] : 1; } catch(e){ return 1; } })();
+  return new Date(guess - off * 36e5);
+}
+function stNextPatch(){
+  const now = new Date();
+  const fixed = Object.entries(window.TFT_PATCH_SCHEDULE || {}).map(([id, s])=>{ const m = String(s).match(/^(\d{4})-(\d\d)-(\d\d)(?:[ T](\d\d):(\d\d))?/); return m ? {id, d:berlinTime(+m[1], +m[2], +m[3], +(m[4]||4), +(m[5]||30)), fixed:true} : null; })
+    .filter(x=>x && x.d > now).sort((a,b)=>a.d - b.d)[0];
+  if(fixed) return fixed;
+  if(!CURRENT_PATCH || !CURRENT_PATCH.date) return null;
+  // Live-Termin des letzten Patches: erster Mittwoch ab dem Datum der Patchnotes, 4:30 Uhr
+  const [y, mo, d] = CURRENT_PATCH.date.split('-').map(Number), base = new Date(Date.UTC(y, mo - 1, d));
+  base.setUTCDate(base.getUTCDate() + (3 - base.getUTCDay() + 7) % 7);
+  let k = 0, t;   // k = 0: Patchnotes sind schon da, der Patch selbst aber noch nicht live
+  do { const x = new Date(base); x.setUTCDate(x.getUTCDate() + 14 * k++); t = berlinTime(x.getUTCFullYear(), x.getUTCMonth() + 1, x.getUTCDate(), 4, 30); } while(t <= now);
+  return {d:t, fixed:false};
+}
+function stCountdown(){
+  const n = stNextPatch(); if(!n) return '–';
+  const ms = n.d - new Date(), days = Math.floor(ms / 864e5), hrs = Math.floor(ms % 864e5 / 36e5), min = Math.floor(ms % 36e5 / 6e4);
+  return days > 0 ? `${days} T ${hrs} Std` : hrs > 0 ? `${hrs} Std ${min} Min` : `${min} Min`;
+}
+const stNextLabel = () => { const n = stNextPatch(); if(!n) return ''; return n.d.toLocaleString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', timeZone:'Europe/Berlin'}) + ' Uhr' + (n.fixed ? '' : ' · geschätzt'); };
+// LP-Grenzen (Challenger/Großmeister) pro Server: zuerst aus data/cutoffs.js, dann live über /api/cutoffs (Vercel-Funktion)
+const ST_REG = {euw:'EUW', eune:'EUNE', na:'NA', kr:'KR'};
+let ST_CUT = window.TFT_CUTOFFS && window.TFT_CUTOFFS.regions ? window.TFT_CUTOFFS : null, ST_CUT_LIVE = false;
+const stCut = r => ST_CUT && ST_CUT.regions[r];
+if(!FILE_MODE) fetch('/api/cutoffs').then(r=>r.ok ? r.json() : null).then(d=>{
+  if(d && d.regions && Object.keys(d.regions).length){ ST_CUT = d; ST_CUT_LIVE = true; renderStatBar(); if($('#page-stats').classList.contains('active')) renderStats(); }
+}).catch(()=>{});
+const fmtLP = v => v.toLocaleString('de-DE') + ' LP';
+// Meistgebautes Item / meistgespielter Champion: gezählt über die Comps der Tierlist (S-Tier zählt mehr als C-Tier)
+function stTally(){
+  const w = {S:4, A:3, B:2, C:1, X:1}, items = {}, units = {};
+  mainComps.forEach(c=>{ const k = w[c.tier] || 1;
+    (c.board||[]).forEach(b=>{ if(champBy[b.u]) units[b.u] = (units[b.u]||0) + k; (b.i||[]).forEach(id=>{ const it = findItem(id); if(it && it.cat==='craft') items[it.id] = (items[it.id]||0) + k; }); }); });
+  const comps = id => mainComps.filter(c=>(c.board||[]).some(b=>(b.i||[]).some(x=>(findItem(x)||{}).id===id))).length;
+  const compsU = u => mainComps.filter(c=>(c.board||[]).some(b=>b.u===u)).length;
+  // Reihenfolge: in den meisten Comps; bei Gleichstand zählt, wie gut die Comps sind
+  const top = (o, n) => Object.keys(o).map(k=>({k, n:n(k), w:o[k]})).sort((a,b)=>b.n - a.n || b.w - a.w).slice(0, 5);
+  return {items:top(items, comps).map(x=>({it:itemById[x.k], n:x.n})), units:top(units, compsU).map(x=>({u:x.k, n:x.n}))};
+}
+const stRising = () => { const ord = {S:0,A:1,B:2,C:3,X:4}; return mainComps.filter(c=>c.sticker===2).sort((a,b)=>(ord[a.tier]??9)-(ord[b.tier]??9)); };
+function renderStatBar(){
+  const el = $('#statBar'); if(!el || !RK) return;
+  // Aufbau wie bei Dota: große Zahlen vorne (LP-Grenzen EUW), dann meistgebautes Item, Champion und Patch-Countdown
+  const cut = stCut('euw'), tal = stTally(), it = tal.items[0], un = tal.units[0];
+  el.innerHTML = `<div class="wrap sb-in">
+    ${cut ? `<span class="sb-main"><img src="${rankImg(rankBy.challenger)}" alt="" width="40" height="40"><span class="sb-num"><b>${fmtLP(cut.ch)}</b><small><i class="sb-dot${ST_CUT_LIVE ? ' live' : ''}" title="${ST_CUT_LIVE ? 'Live' : 'Gespeicherter Stand'}"></i>Challenger · EUW</small></span></span>
+    <span class="sb-main sb-hide"><img src="${rankImg(rankBy.grandmaster)}" alt="" width="40" height="40"><span class="sb-num"><b>${fmtLP(cut.gm)}</b><small><i class="sb-dot${ST_CUT_LIVE ? ' live' : ''}"></i>Großmeister · EUW</small></span></span>` : ''}
+    ${it ? `<span class="sb-item sb-hide"><img class="sb-itimg" src="${it.it.img}" alt="" width="34" height="34"><span><small>Meistgebautes Item</small><b>${esc(it.it.de || it.it.en)}</b></span></span>` : ''}
+    ${un ? `<span class="sb-item sb-hide"><span class="sb-ic">${avatar(un.u, 34)}</span><span><small>Meistgespielter Champion</small><b>${esc(un.u)}</b></span></span>` : ''}
+    ${ST_PATCH ? `<span class="sb-item sb-hide" title="Nächster Patch: ${esc(stNextLabel())}"><span class="sb-patch">${esc(ST_PATCH)}</span><span><small>Nächster Patch in</small><b data-countdown>${stCountdown()}</b></span></span>` : ''}</div>`;
+}
+setInterval(()=>document.querySelectorAll('[data-countdown]').forEach(e=>{ e.textContent = stCountdown(); }), 60000);
+
+let stRange = 'set10';
+function stChartHTML(){
+  const pts = ST_HIST.filter(h=>stRange==='all' || +h.set >= 10).map(h=>{ const sh = stShares(h); return {h, gold:stAtLeast(sh, 'gold'), dia:stAtLeast(sh, 'diamond'), top:stMostCommon(sh)}; });
+  if(pts.length < 2) return '<p class="note">Für den Verlauf fehlen noch Daten.</p>';
+  const W = 760, H = 300, L = 44, R = 16, T = 14, B = 34, n = pts.length;
+  const max = Math.max(10, Math.ceil(Math.max(...pts.map(p=>p.gold)) / 10) * 10);
+  const x = i => L + i * (W - L - R) / (n - 1), y = v => T + (1 - v / max) * (H - T - B);
+  const line = k => pts.map((p, i)=>`${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(p[k]).toFixed(1)}`).join(' ');
+  let grid = '';
+  for(let v = 0; v <= max; v += max > 50 ? 20 : 10) grid += `<line class="st-gl" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="st-ax" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v} %</text>`;
+  let ticks = ''; pts.forEach((p, i)=>{ if(i===0 || p.h.set !== pts[i-1].h.set) ticks += `<line class="st-tick" x1="${x(i)}" x2="${x(i)}" y1="${T}" y2="${H - B}"/><text class="st-ax" x="${x(i)}" y="${H - B + 18}" text-anchor="middle">Set ${esc(p.h.set)}</text>`; });
+  const last = pts[n - 1];
+  const area = `${line('gold')} L${x(n-1)} ${y(0)} L${x(0)} ${y(0)} Z`;
+  return `<div class="st-chartwrap"><svg class="st-chart" id="stChart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Anteil der Spieler in Gold oder höher und Diamant oder höher, von Set ${esc(pts[0].h.set)} bis Set ${esc(last.h.set)}">
+      ${grid}${ticks}<path class="st-area" d="${area}"/>
+      <path class="st-line gold" d="${line('gold')}"/><path class="st-line dia" d="${line('dia')}"/>
+      <circle class="st-end gold" cx="${x(n-1)}" cy="${y(last.gold)}" r="4.5"/><circle class="st-end dia" cx="${x(n-1)}" cy="${y(last.dia)}" r="4.5"/>
+      <g id="stHover" class="st-hover" style="display:none"><line id="stHx" class="st-cross" y1="${T}" y2="${H - B}"/><circle id="stHg" class="st-hdot gold" r="5"/><circle id="stHd" class="st-hdot dia" r="5"/></g>
+      <rect id="stHit" x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="transparent"/>
+    </svg><div class="st-tip" id="stTip" hidden></div></div>
+    <div class="sr-only"><table><caption>Rangverteilung im Verlauf</caption><tr><th>Monat</th><th>Set</th><th>Gold oder höher</th><th>Diamant oder höher</th><th>Häufigster Rang</th></tr>${pts.map(p=>`<tr><td>${esc(p.h.month)}</td><td>${esc(p.h.set)}</td><td>${fmtPct(p.gold)}</td><td>${fmtPct(p.dia)}</td><td>${esc(rankBy[p.top].n)}</td></tr>`).join('')}</table></div>`;
+}
+function stWireChart(){
+  const svg = $('#stChart'); if(!svg) return;
+  const pts = ST_HIST.filter(h=>stRange==='all' || +h.set >= 10).map(h=>{ const sh = stShares(h); return {h, gold:stAtLeast(sh, 'gold'), dia:stAtLeast(sh, 'diamond'), top:stMostCommon(sh)}; });
+  const W = 760, H = 300, L = 44, R = 16, T = 14, B = 34, n = pts.length;
+  const max = Math.max(10, Math.ceil(Math.max(...pts.map(p=>p.gold)) / 10) * 10);
+  const x = i => L + i * (W - L - R) / (n - 1), y = v => T + (1 - v / max) * (H - T - B);
+  const hov = $('#stHover'), tip = $('#stTip');
+  const show = e=>{
+    const bb = svg.getBoundingClientRect(), sx = (e.clientX - bb.left) / bb.width * W;
+    const i = Math.max(0, Math.min(n - 1, Math.round((sx - L) / ((W - L - R) / (n - 1))))), p = pts[i];
+    hov.style.display = ''; $('#stHx').setAttribute('x1', x(i)); $('#stHx').setAttribute('x2', x(i));
+    $('#stHg').setAttribute('cx', x(i)); $('#stHg').setAttribute('cy', y(p.gold)); $('#stHd').setAttribute('cx', x(i)); $('#stHd').setAttribute('cy', y(p.dia));
+    tip.hidden = false;
+    tip.innerHTML = `<b>${esc(p.h.month)}</b><small>Set ${esc(p.h.set)} · ${esc(p.h.setName || '')}</small><span><i class="gold"></i>Gold oder höher <strong>${fmtPct(p.gold)}</strong></span><span><i class="dia"></i>Diamant oder höher <strong>${fmtPct(p.dia)}</strong></span><span class="st-tipc">Am häufigsten: <strong>${esc(rankBy[p.top].n)}</strong></span>`;
+    const px = x(i) / W * bb.width; tip.style.left = Math.min(bb.width - tip.offsetWidth - 4, Math.max(4, px + 14)) + 'px';
+  };
+  svg.addEventListener('mousemove', show);
+  svg.addEventListener('touchstart', e=>show(e.touches[0]), {passive:true});
+  svg.addEventListener('mouseleave', ()=>{ hov.style.display = 'none'; tip.hidden = true; });
+}
+function renderStats(){
+  const app = $('#statsApp'); if(!app) return;
+  if(!RK){ app.innerHTML = ornnSays('Die Rangdaten fehlen gerade. Ich schmiede sie beim nächsten Update nach.'); return; }
+  const top3 = [['gold','Gold oder höher'],['emerald','Smaragd oder höher'],['master','Meister oder höher']].filter(([k])=>rankBy[k] && rankBy[k].total > 0);
+  const maxT = Math.max(...RANK_TIERS.map(t=>t.total));
+  app.innerHTML = `<div class="page-head st-head"><div class="crumb"><a href="/">Home</a> / Stats</div>
+      <h1>TFT <em class="serif">Stats</em></h1>
+      <p>In welcher Elo spielen die meisten, und ab wie viel LP ist man gerade Challenger? Rangverteilung, Verlauf seit Set 3, LP-Grenzen pro Server, der aktuelle Patch und die meistgebauten Items.</p></div>
+    <section class="st-hero">
+      <div class="st-hl">
+        <div class="st-badges"><span class="st-badge">TFT · STATS</span><span class="st-live"><i></i>Stand ${esc(RK.month)}</span></div>
+        <p class="st-kicker">Die meisten Spieler sind in</p>
+        <div class="st-big"><img src="${rankImg(ST_TOP)}" alt="" width="104" height="104"><div><b>${esc(ST_TOP.n)}</b><span>${fmtPct(ST_TOP.total)} aller Ranked-Spieler · Set ${esc(RK.set)}</span></div></div>
+        <div class="st-tiles">
+          ${ST_PATCH ? `<a class="st-tile" href="/patches"><span class="st-ti">${SVG_IC('patch')}</span><span><b>${esc(ST_PATCH)}</b><small>aktueller Patch</small></span></a>` : ''}
+          <div class="st-tile"><span class="st-ti">${SVG_IC('clock')}</span><span><b data-countdown>${stCountdown()}</b><small>bis zum nächsten Patch · ${esc(stNextLabel())}</small></span></div>
+          <a class="st-tile" href="/ranks/challenger"><span class="st-ti"><img src="${rankImg(rankBy.challenger)}" alt="" width="26" height="26"></span><span><b>${fmtPct(rankBy.challenger.total)}</b><small>sind Challenger</small></span></a>
+        </div>
+      </div>
+      <div class="st-mascot m-chibi" role="img" aria-label="Vi"></div>
+      <div class="st-hr">${top3.map(([k, l])=>`<a class="st-card" href="/ranks/${k}"><img src="${rankImg(rankBy[k])}" alt="" width="40" height="40"><span><small>${l}</small><b>Top ${fmtPct(rankBy[k].topTier)}</b><em>${fmtPct(rankBy[k].total)} sind ${esc(rankBy[k].n)}</em></span></a>`).join('')}</div>
+    </section>
+    <div class="st-grid">
+      <section class="card st-box">
+        <div class="st-boxhead"><h3>${SVG_IC('chart')} Rangverteilung im Verlauf</h3>
+          <div class="bp-pills" id="stRange"><button type="button" data-st="set10" class="${stRange==='set10' ? 'on' : ''}">Seit Set 10</button><button type="button" data-st="all" class="${stRange==='all' ? 'on' : ''}">Seit Set 3</button></div></div>
+        <p class="st-sub">Anteil der Ranked-Spieler pro Rang oder höher · <a href="${esc(RK.url)}" target="_blank" rel="noopener">${esc(RK.source)}</a></p>
+        <div class="st-legend"><span><i class="gold"></i>Gold oder höher</span><span><i class="dia"></i>Diamant oder höher</span></div>
+        <div id="stChartBox">${stChartHTML()}</div>
+      </section>
+      <section class="card st-box">
+        <div class="st-boxhead"><h3>${SVG_IC('rank')} Rangverteilung <small>Set ${esc(RK.set)}</small></h3></div>
+        <div class="st-dist">${RANK_TIERS.slice().reverse().map(t=>`<a class="st-row" href="/ranks/${t.k}"><img src="${rankImg(t)}" alt="" width="28" height="28"><span class="st-rn">${esc(t.n)}</span>
+          <span class="st-bar"><i style="width:${(t.total / maxT * 100).toFixed(1)}%"></i></span>${t===ST_TOP ? '<span class="st-most">am häufigsten</span>' : `<small>Top ${fmtPct(t.topTier)}</small>`}<b>${fmtPct(t.total)}</b></a>`).join('')}</div>
+        <p class="st-sub">„Top X %“ = dieser Rang oder höher. <a href="/ranks">Alle Divisionen →</a></p>
+      </section>
+    </div>
+    <div class="st-grid st-grid3">
+      <section class="card st-box">
+        <div class="st-boxhead"><h3>${SVG_IC('rank')} LP-Grenzen</h3><small class="st-sub">täglich neu berechnet</small></div>
+        ${ST_CUT ? `<div class="st-cuts"><div class="st-cuthead"><span></span><span><img src="${rankImg(rankBy.challenger)}" alt="" width="22" height="22">Challenger</span><span><img src="${rankImg(rankBy.grandmaster)}" alt="" width="22" height="22">Großmeister</span></div>
+          ${Object.keys(ST_REG).filter(r=>stCut(r)).map(r=>`<div class="st-cut${r==='euw' ? ' hl' : ''}"><b>${ST_REG[r]}</b><span>${fmtLP(stCut(r).ch)}</span><span>${fmtLP(stCut(r).gm)}</span></div>`).join('')}</div>
+          <p class="st-sub">Ab so viel LP ist man gerade Challenger bzw. Großmeister · <a href="${esc(ST_CUT.url)}" target="_blank" rel="noopener">${esc(ST_CUT.source)}</a></p>` : '<p class="note">Die LP-Grenzen sind gerade nicht verfügbar.</p>'}
+      </section>
+      <section class="card st-box">
+        <div class="st-boxhead"><h3>${SVG_IC('up')} Meistgebaut &amp; meistgespielt</h3><small class="st-sub">in der Tierlist · Patch ${esc(TL_PATCH || '')}</small></div>
+        ${(()=>{ const tal = stTally(); return `<div class="st-most2"><div>${tal.items.map((x, i)=>`<button type="button" class="st-mi" data-item="${x.it.id}"><i>${i+1}</i><img src="${x.it.img}" alt="" width="34" height="34"><span><b>${esc(x.it.de || x.it.en)}</b><small>in ${x.n} Comps</small></span></button>`).join('')}</div>
+          <div>${tal.units.map((x, i)=>`<button type="button" class="st-mi" data-champ="${esc(x.u)}"><i>${i+1}</i>${avatar(x.u, 34)}<span><b>${esc(x.u)}</b><small>in ${x.n} Comps</small></span></button>`).join('')}</div></div>`; })()}
+        <p class="st-sub">Gezählt: in wie vielen Comps der Tierlist es vorkommt. Bei Gleichstand gewinnt, was in den besseren Comps steckt.</p>
+      </section>
+      <a class="st-promo" href="/coaching">
+        <small>TFT FREAKS · COACHING</small><h3>Du willst höher klettern?</h3>
+        <p>Challenger-Coaches schauen sich deine Spiele an – das erste Kennenlernen ist kostenlos.</p>
+        <span class="st-promo-btn">Coaching ansehen →</span>
+      </a>
+    </div>`;
+  stWireChart();
+}
+function SVG_IC(k){
+  const p = {patch:'<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/>', clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', chart:'<path d="M4 19h16"/><path d="M5 15l4-4 4 3 6-7"/>', rank:'<path d="M12 3l7 4v6c0 4-3 6.5-7 8-4-1.5-7-4-7-8V7z"/>', up:'<path d="M4 17l6-6 4 4 6-7"/><path d="M15 8h5v5"/>'}[k] || '';
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">${p}</svg>`;
+}
+document.addEventListener('click', e=>{
+  const r = e.target.closest && e.target.closest('#stRange [data-st]'); if(r){ stRange = r.dataset.st; document.querySelectorAll('#stRange [data-st]').forEach(b=>b.classList.toggle('on', b===r)); $('#stChartBox').innerHTML = stChartHTML(); stWireChart(); return; }
+  const c = e.target.closest && e.target.closest('[data-st-comp]'); if(c){ openComp(c.dataset.stComp); }
+});
 
 /* ================= SEITENTITEL & SUCHMASCHINEN ================= */
 // Pro Seite: [Titel, Beschreibung]. Seiten ohne eigenen Inhalt (Platzhalter, Redaktion, 404) werden nicht indexiert.
@@ -2135,11 +2340,12 @@ function pageMeta(page, sub){
       if(p) return [`TFT Patch ${p.id} – alle Änderungen`, `Alle Änderungen aus TFT Patch ${p.id} (${fmtDate(p.date)}) auf einen Blick: Champions, Traits, Items und Augments. ${p.teaser || ''}`.trim()];
       return ['TFT Patch Notes – alle Änderungen', 'Alle TFT Patches mit den offiziellen Änderungen von Riot: Champions, Traits, Items und Augments – automatisch aktuell.'];
     }
+    case 'stats': return ['TFT Stats – Rangverteilung & LP-Grenzen', `TFT Stats für ${S}: Rangverteilung, Verlauf seit Set 3, LP-Grenzen für Challenger und Großmeister, Patch-Countdown und die meistgebauten Items.`];
     case 'impressum': return ['Impressum', 'Impressum von TFT Freaks.'];
     case 'datenschutz': return ['Datenschutzerklärung', 'Datenschutzerklärung von TFT Freaks.'];
     case 'guides': return ['TFT Guides', '', true];
     case 'tools':
-      if(sub==='tierlist') return [`TFT Tierlist-Maker ${S} – eigene Tierlist erstellen`, `Erstell deine eigene TFT Tierlist für ${S}: Champions, Traits, Augments und Items per Drag & Drop ranken und als Link teilen.`];
+      if(sub==='tierlist') return [`TFT Tierlist-Maker ${S} – eigene Tierlist erstellen`, `Erstell deine eigene TFT Tierlist für ${S}: Champions, Items, Artefakte, Embleme und Augments per Drag & Drop ranken und als Link teilen.`];
       if(sub==='rolldown') return [`TFT Rolldown-Rechner ${S} – Chancen auf deine Units`, `Wie wahrscheinlich triffst du deine Units beim Rollen? Rolldown-Rechner für TFT ${S} mit Shop-Chancen pro Level, Pool-Größen und Level-Vergleich.`];
       if(sub==='drops') return [`TFT Item-Drop-Rechner ${S} – welche Komponente kommt als Nächstes?`, `Trag deine Item-Drops aus den Creep-Runden ein und sieh die Chancen für die nächsten Komponenten in TFT ${S} – mit Gold- und Prismatic-Orb-Chancen pro Stage.`];
       if(sub==='simulator') return [`TFT Kampf-Simulator ${S} – Teams gegeneinander testen`, `Lass zwei TFT Teams für ${S} gegeneinander kämpfen: Laufwege, Ziele, Fähigkeiten und Sprünge Schritt für Schritt – mit Items, Sternen, Traits und Augments.`];
@@ -2187,7 +2393,7 @@ function route(){
   // alte Adressen weiter unterstützen
   if(['champions','items','traits'].includes(page)){ sub = page; page = 'bibliothek'; }
   if(page==='augments'){ sub = 'augments'; page = 'tierlist'; }
-  const valid = ['home','tierlist','bibliothek','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches'];
+  const valid = ['home','tierlist','bibliothek','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches','stats'];
   if(!valid.includes(page)) page='notfound';
   const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche
   const pageId = page==='bibliothek' ? 'library' : isSim ? 'builder' : page;
@@ -2203,8 +2409,9 @@ function route(){
   if(isSim) builderRoute(parts[2], parts[3], 'sim');
   else if(page==='tools') renderTools(sub, parts[2], parts[3]);
   if(page==='patches') renderPatches(sub);
+  if(page==='stats') renderStats();
   document.querySelectorAll('[data-route]').forEach(a=>a.classList.toggle('active', a.dataset.route===navKey));
-  if(['guides','about','apply','patches'].includes(navKey)) $('#moreBtn').classList.add('active');
+  if(['guides','about','apply','patches','stats'].includes(navKey)) $('#moreBtn').classList.add('active');
   else $('#moreBtn').classList.remove('active');
   moreMenu.classList.remove('open'); drawer.classList.remove('open');
   closeModal(); window.scrollTo(0,0);
@@ -2215,4 +2422,4 @@ window.addEventListener(FILE_MODE ? 'hashchange' : 'popstate', route);
 /* init */
 renderSetSwitcher();
 document.querySelectorAll('.data-src').forEach(el=>{ el.textContent = `Offizielle Spieldaten: CommunityDragon ${TFT_DATA.version} · Set ${TFT_DATA.set} · aktualisiert am ${new Date(TFT_DATA.generated).toLocaleDateString('de-DE')}. Werte können sich mit Patches ändern.`; });
-renderHome(); filterComps(); renderItemTL(); renderAugTL(); renderChamps(); renderTraits(); renderItems(); renderRecipes(); route();
+renderStatBar(); renderHome(); filterComps(); renderItemTL(); renderAugTL(); renderChamps(); renderTraits(); renderItems(); renderRecipes(); route();

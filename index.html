@@ -27,6 +27,8 @@
 </header>
 <div class="more-menu" id="moreMenu"></div>
 <div class="drawer" id="drawer"><div class="drawer-bg" data-drawer-close></div><div class="drawer-panel" id="drawerPanel"></div></div>
+<!-- Stats-Leiste: in welcher Elo die meisten spielen, was steigt, nächster Patch → /stats -->
+<a class="statbar" id="statBar" href="/stats" aria-label="TFT Stats öffnen"></a>
 
 <main id="main">
 
@@ -408,7 +410,7 @@
         </div>
         <div class="tc-item">
           <a class="tc" href="/tools/drops">
-            <div class="tc-text"><span class="tc-tag">Rechner</span><h3>Item-Drop-Rechner</h3><p>Was droppt als Nächstes? Der Sack verrät es.</p></div>
+            <div class="tc-text"><span class="tc-tag">Rechner</span><h3>Item-Drop-Rechner</h3><p>Was droppt als Nächstes? Der Item-Pool verrät es.</p></div>
             <div class="tc-art" aria-hidden="true"><img src="assets/tools/drops.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 8h10l2 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><circle cx="12" cy="14" r="2"/></svg></span></div>
           </a>
           <div class="tc-cap"><span>TFT Item-Drop-Rechner</span><span class="tc-st">Neu</span></div>
@@ -452,7 +454,7 @@
       <div class="page-head" data-tool-art="tierlist" data-art-buddy="tlmaker">
         <div class="crumb"><a href="/tools">Tools</a> / Tierlist-Maker</div>
         <h1>Tierlist-<em class="serif">Maker</em></h1>
-        <p>Deine eigene Tierlist für Set <span data-setno>18</span>: Champions, Traits, Augments und Items per Drag &amp; Drop einsortieren – und mit einem Link teilen.</p>
+        <p>Deine eigene Tierlist für Set <span data-setno>18</span>: Champions, Items, Artefakte, Embleme und Augments per Drag &amp; Drop einsortieren – und mit einem Link teilen.</p>
       </div>
       <div id="tmApp"></div>
     </div>
@@ -462,12 +464,17 @@
       <div class="page-head" data-tool-art="drops" data-art-buddy="drops">
         <div class="crumb"><a href="/tools">Tools</a> / Item-Drop-Rechner</div>
         <h1>Item-Drop-<em class="serif">Rechner</em></h1>
-        <p>Komponenten aus den Creep-Runden kommen aus einem Sack: Was gedroppt ist, fehlt darin – vor jeder neuen Creep-Stage kommt von jeder Komponente eine dazu. Trag deine Drops ein und sieh, was als Nächstes kommen kann.</p>
+        <p>Komponenten aus den Creep-Runden kommen aus einem Item-Pool: Was gedroppt ist, fehlt darin – vor jeder neuen Creep-Stage kommt von jeder Komponente eine dazu. Trag deine Drops ein und sieh, was als Nächstes kommen kann.</p>
       </div>
       <div id="drApp"></div>
     </div>
   </div>
 </div>
+<!-- ================= STATS ================= -->
+<div class="page" id="page-stats">
+  <div class="wrap" id="statsApp"></div>
+</div>
+
 <!-- ================= 404 (Ornn) ================= -->
 <div class="page" id="page-notfound">
   <div class="wrap">
@@ -889,6 +896,7 @@
 <!-- Offizielle Spieldaten: Übersicht aller Sets (erzeugt mit "Daten aktualisieren.cmd" / tools\update-data.ps1) -->
 <script src="data/sets.js"></script>
 <script src="data/ranks.js"></script>
+<script src="data/cutoffs.js"></script>
 <script src="data/patches.js"></script>
 <script src="data/patch-kommentare.js"></script>
 <script>

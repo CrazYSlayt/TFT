@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/((?!assets/|data/|tools/[^/]*\\.|tierlist-data-|robots\\.txt|sitemap\\.xml|TFT\\.html).*)", "destination": "/index.html" }
+    { "source": "/((?!api/|assets/|data/|tools/[^/]*\\.|tierlist-data-|robots\\.txt|sitemap\\.xml|TFT\\.html).*)", "destination": "/index.html" }
   ]
 }
