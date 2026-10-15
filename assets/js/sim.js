@@ -38,7 +38,7 @@ const SIM_SPEC = {};
 function simSpec(n){
   if(SIM_SPEC[n]) return SIM_SPEC[n];
   const d = CH_DATA[n] || {}, st = d.st || {};
-  const txt = plainDesc(String((d.ab && d.ab.d) || '').replace(/%i:scale\w+%/g, ' ').replace(/\\n|\r/g, ' ')).replace(/\{[^}]*\}/g, '').replace(/\s+/g, ' ');
+  const txt = plainDesc(String((d.ab && (d.ab.dDe || d.ab.d)) || '').replace(/%i:scale\w+%/g, ' ').replace(/\\n|\r/g, ' ')).replace(/\{[^}]*\}/g, '').replace(/\s+/g, ' ');
   let act = txt, pas = '';
   const ia = txt.search(/Aktiv:/);
   if(ia >= 0){ pas = txt.slice(0, ia); act = txt.slice(ia + 6); }
@@ -141,7 +141,7 @@ function sShield(src, tgt, v, dur, label, onBreak){
   v *= sOtRed();
   tgt.shields.push({v, end:SS.t + dur, onBreak});
   if(src) src.shielded += v;
-  if(label) sLog('shield', {s:tgt.id, txt:`${sName(tgt)} erhält ${Math.round(v)} Schild (${label})`});
+  if(label) sLog('shield', {s:tgt.id, txt:L(`${sName(tgt)} erhält ${Math.round(v)} Schild (${label})`, `${sName(tgt)} gains ${Math.round(v)} shield (${label})`)});
 }
 function sHeal(src, tgt, v){
   if(!tgt.alive || v <= 0) return 0;
@@ -154,7 +154,7 @@ function sStun(src, tgt, dur){
   if(!tgt.alive || tgt.ccImm > SS.t || SS.t >= SIM_OT + 8) return;
   dur *= sOtRed();
   tgt.stunEnd = Math.max(tgt.stunEnd, SS.t + dur);
-  sLog('stun', {s:src ? src.id : -1, d:tgt.id, txt:`${sName(tgt)} ist ${fmtNum(Math.round(dur*10)/10)} s betäubt`});
+  sLog('stun', {s:src ? src.id : -1, d:tgt.id, txt:L(`${sName(tgt)} ist ${fmtNum(Math.round(dur*10)/10)} s betäubt`, `${sName(tgt)} is stunned for ${fmtNum(Math.round(dur*10)/10)} s`)});
 }
 function sDamage(src, tgt, raw, type, o){
   o = o || {};
@@ -196,7 +196,7 @@ function sDie(u, killer){
   if(!u.alive) return;
   u.hp = 0; u.alive = false; u.deathT = SS.t; u.st = 'dead';
   if(SS.occ[u.cell]===u.id) SS.occ[u.cell] = -1;
-  sLog('death', {s:u.id, txt:`${sName(u)} wurde besiegt${killer && killer!==u ? ' von ' + sName(killer) : ''}`});
+  sLog('death', {s:u.id, txt:L(`${sName(u)} wurde besiegt${killer && killer!==u ? ' von ' + sName(killer) : ''}`, `${sName(u)} was defeated${killer && killer!==u ? ' by ' + sName(killer) : ''}`)});
   if(killer && killer.alive){ killer.kills++; for(const f of killer.on.kill) f(u); }
   for(const f of SS.team[1 - u.side].enemyDeath) f(u, killer);
 }
@@ -271,7 +271,7 @@ function sAttack(u, tg){
   const sp = u.spec, ad = sAD(u);
   if(sp.counter && u.attacks % sp.counter===0){
     const sum = {v:0}; sDamage(u, tg, simPow(u) * 0.6, sp.dt, {ab:true, canCrit:u.prec, sum});
-    sLog('cast', {s:u.id, d:tg.id, hits:[tg.id], v:Math.round(sum.v), txt:`${sName(u)}: ${esc(sp.name || 'Fähigkeit')} trifft ${sName(tg)} für ${Math.round(sum.v)}`});
+    sLog('cast', {s:u.id, d:tg.id, hits:[tg.id], v:Math.round(sum.v), txt:L(`${sName(u)}: ${esc(sp.name || 'Fähigkeit')} trifft ${sName(tg)} für ${Math.round(sum.v)}`, `${sName(u)}: ${esc(sp.name || 'Ability')} hits ${sName(tg)} for ${Math.round(sum.v)}`)});
   } else sDamage(u, tg, ad, 'phys', {atk:true, canCrit:true});
   if(u.emp > 0){ u.emp--; sDamage(u, tg, u.empD, sp.dt, {ab:true, canCrit:u.prec}); }
   if(sp.onHit || (sp.transform && u.casts > 0)) sDamage(u, tg, simPow(u) * 0.15, 'magic', {ab:true});
@@ -291,13 +291,13 @@ function sCast(u, tg){
     const pick = sp.dash==='lowest' ? sByKey(pool, e=>e.hp/e.maxHp)[0] : sp.dash==='farthest' ? sByKey(pool, e=>-SIM_GRID.D[u.cell][e.cell])[0] : sp.dash==='cluster' ? sCluster(u, pool, 1) : tg;
     if(sp.dash==='away'){
       const c = SIM_GRID.NB[u.cell].concat(...SIM_GRID.NB[u.cell].map(x=>SIM_GRID.NB[x])).filter((x,i,a)=>a.indexOf(x)===i && SS.occ[x]===-1).sort((a,b)=>SIM_GRID.D[b][tg.cell] - SIM_GRID.D[a][tg.cell])[0];
-      if(c !== undefined && SIM_GRID.D[c][tg.cell] <= u.range){ const from = u.cell; sMoveTo(u, c, 0.3, true); sLog('jump', {s:u.id, from, to:c, txt:`${sName(u)} teleportiert sich von ${sName(tg)} weg`}); }
+      if(c !== undefined && SIM_GRID.D[c][tg.cell] <= u.range){ const from = u.cell; sMoveTo(u, c, 0.3, true); sLog('jump', {s:u.id, from, to:c, txt:L(`${sName(u)} teleportiert sich von ${sName(tg)} weg`, `${sName(u)} teleports away from ${sName(tg)}`)}); }
     } else if(pick){
       const dest = SIM_GRID.D[u.cell][pick.cell]===1 ? u.cell : sFreeNear(pick.cell, u.cell);
       if(dest >= 0 && dest !== u.cell){
         const from = u.cell; sMoveTo(u, dest, 0.35, true);
-        const why = sp.dash==='lowest' ? ' (wenigstes Leben)' : sp.dash==='farthest' ? ' (am weitesten weg)' : sp.dash==='cluster' ? ' (größte Gruppe)' : '';
-        sLog('jump', {s:u.id, from, to:dest, d:pick.id, txt:`${sName(u)} springt zu ${sName(pick)}${why}`});
+        const why = sp.dash==='lowest' ? L(' (wenigstes Leben)', ' (lowest health)') : sp.dash==='farthest' ? L(' (am weitesten weg)', ' (farthest away)') : sp.dash==='cluster' ? L(' (größte Gruppe)', ' (largest group)') : '';
+        sLog('jump', {s:u.id, from, to:dest, d:pick.id, txt:L(`${sName(u)} springt zu ${sName(pick)}${why}`, `${sName(u)} jumps to ${sName(pick)}${why}`)});
       }
       main = pick; if(u.tgt !== pick){ u.tgt = pick; u.tgtSince = t; }
     }
@@ -347,12 +347,12 @@ function sCast(u, tg){
   // Ionenfunke in der Nähe: Wirken kostet Leben
   SS.units.forEach(e=>{ if(e.alive && e.side!==u.side && e.ionic && SIM_GRID.D[e.cell][u.cell] <= 2) sDamage(e, u, u.maxMana * e.ionic, 'magic', {noHooks:true}); });
   const parts = [];
-  if(sum.v) parts.push(`${Math.round(sum.v)} Schaden`);
-  if(sp.dot && sp.dmg && !sp.emp) parts.push('Schaden über Zeit');
-  if(sp.emp) parts.push(`nächste ${sp.emp} Angriffe verstärkt`);
-  if(sp.self.shield) parts.push('Schild'); if(sp.self.heal) parts.push('Heilung');
-  if(sp.stun) parts.push('Betäubung'); if(sp.taunt) parts.push('Spott');
-  sLog('cast', {s:u.id, d:main ? main.id : -1, hits, r:sp.r, c:center, v:Math.round(sum.v), txt:`${sName(u)} wirkt ${esc(sp.name || 'Fähigkeit')}${hits.length ? ' auf ' + hits.slice(0,3).map(id=>sName(SS.units[id])).join(', ') + (hits.length > 3 ? ` +${hits.length-3}` : '') : ''}${parts.length ? ' – ' + parts.join(', ') : ''}`});
+  if(sum.v) parts.push(L(`${Math.round(sum.v)} Schaden`, `${Math.round(sum.v)} damage`));
+  if(sp.dot && sp.dmg && !sp.emp) parts.push(L('Schaden über Zeit', 'damage over time'));
+  if(sp.emp) parts.push(L(`nächste ${sp.emp} Angriffe verstärkt`, `next ${sp.emp} attacks empowered`));
+  if(sp.self.shield) parts.push(L('Schild', 'shield')); if(sp.self.heal) parts.push(L('Heilung', 'healing'));
+  if(sp.stun) parts.push(L('Betäubung', 'stun')); if(sp.taunt) parts.push(L('Spott', 'taunt'));
+  sLog('cast', {s:u.id, d:main ? main.id : -1, hits, r:sp.r, c:center, v:Math.round(sum.v), txt:`${sName(u)} ${L('wirkt', 'casts')} ${esc(sp.name || L('Fähigkeit', 'ability'))}${hits.length ? L(' auf ', ' on ') + hits.slice(0,3).map(id=>sName(SS.units[id])).join(', ') + (hits.length > 3 ? ` +${hits.length-3}` : '') : ''}${parts.length ? ' – ' + parts.join(', ') : ''}`});
 }
 
 /* ---------- Ein Schritt pro Unit ---------- */
@@ -371,7 +371,7 @@ function sTick(u){
   if(forced) tg = forced;
   if(!(tg && sTargetable(tg) && SIM_GRID.D[u.cell][tg.cell] <= u.range)){
     const bfs = sBfs(u), nt = forced || sPick(u, bfs);
-    if(nt !== u.tgt){ u.tgt = nt; u.tgtSince = t; if(nt) sLog('tgt', {s:u.id, d:nt.id, txt:`${sName(u)} nimmt ${sName(nt)} ins Visier`}); }
+    if(nt !== u.tgt){ u.tgt = nt; u.tgtSince = t; if(nt) sLog('tgt', {s:u.id, d:nt.id, txt:L(`${sName(u)} nimmt ${sName(nt)} ins Visier`, `${sName(u)} targets ${sName(nt)}`)}); }
     tg = nt;
     if(!tg){ u.st = 'idle'; u.path = null; return; }
     if(SIM_GRID.D[u.cell][tg.cell] > u.range){ sStep(u, tg, bfs); return; }
@@ -403,14 +403,14 @@ function sItemStats(u, fx){
 const SIM_ITEMS = {
   adaptivehelm(u, fx){ if(u.row <= 1){ u.ar += fx.FrontlineResists||30; u.mr += fx.FrontlineResists||30; } else { u.adP += (fx.BacklineADAP||10)/100; u.ap += fx.BacklineADAP||10; } },
   archangelsstaff(u, fx){ sEvery(u, fx.IntervalSeconds||5, ()=>{ u.ap += fx.APPerInterval||20; }); },
-  bloodthirster(u, fx){ sLow(u, (fx.HealthThreshold||40)/100, ()=>sShield(u, u, u.maxHp*(fx.ShieldHealthPercent||25)/100, fx.ShieldDuration||5, 'Blutdürster')); },
+  bloodthirster(u, fx){ sLow(u, (fx.HealthThreshold||40)/100, ()=>sShield(u, u, u.maxHp*(fx.ShieldHealthPercent||25)/100, fx.ShieldDuration||5, L('Blutdürster', 'Bloodthirster'))); },
   bramblevest(u, fx){ u.atkTaken *= 1 - (fx.AutoDamageReduction||0.05); let cd = 0;
     u.on.hurt.push((src, d, ty, o)=>{ if(!o.atk || SS.t < cd) return; cd = SS.t + (fx.ICD||2); sEnemiesNear(u, u.cell, 1).forEach(e=>sDamage(u, e, fx['1StarAoEDamage']||100, 'magic', {noHooks:true})); }); },
-  crownguard(u, fx){ u.on.start.push(()=>sShield(u, u, u.maxHp*(fx.ShieldSize||25)/100, fx.ShieldDuration||8, 'Kronenwächter')); sAt(u, fx.ShieldDuration||8, ()=>{ u.ap += fx.ShieldBonusAP||25; }); },
+  crownguard(u, fx){ u.on.start.push(()=>sShield(u, u, u.maxHp*(fx.ShieldSize||25)/100, fx.ShieldDuration||8, L('Kronenwächter', 'Crownguard'))); sAt(u, fx.ShieldDuration||8, ()=>{ u.ap += fx.ShieldBonusAP||25; }); },
   deathblade(u, fx){ u.amp += fx.BonusDamage||0.1; },
   dragonsclaw(u, fx){ sEvery(u, fx.HealthRegenInterval||2, ()=>sHeal(u, u, u.maxHp*(fx.PercentHealthDamage||2.5)/100)); },
   edgeofnight(u, fx){ sLow(u, (fx.HealthThreshold||60)/100, ()=>{ u.untarget = SS.t + (fx.StealthDuration||1); u.debs = []; u.stunEnd = Math.min(u.stunEnd, SS.t);
-    SS.units.forEach(e=>{ if(e.tgt===u){ e.tgt = null; } }); sLog('proc', {s:u.id, txt:`${sName(u)} wird kurz unangreifbar (Schneide der Nacht)`}); }); },
+    SS.units.forEach(e=>{ if(e.tgt===u){ e.tgt = null; } }); sLog('proc', {s:u.id, txt:L(`${sName(u)} wird kurz unangreifbar (Schneide der Nacht)`, `${sName(u)} becomes untargetable for a moment (Edge of Night)`)}); }); },
   evenshroud(u, fx){ u.buffs.push({k:'ar', v:fx.BonusResists||15, end:fx.BonusResistDuration||15}, {k:'mr', v:fx.BonusResists||15, end:fx.BonusResistDuration||15});
     sEvery(u, 0.5, ()=>sEnemiesNear(u, u.cell, fx.HexRange||2).forEach(e=>{ sDebuff(e, 'sunder', (fx.ARReductionAmount||30)/100, 1, u); sDebuff(e, 'shred', (fx.ARReductionAmount||30)/100, 1, u); })); },
   gargoylestoneplate(u, fx){ sEvery(u, 0.25, ()=>{ u.gargRes = SS.units.filter(e=>e.alive && e.side!==u.side && e.tgt===u).length * (fx.ArmorPerEnemy||10); }); },
@@ -425,19 +425,19 @@ const SIM_ITEMS = {
   lastwhisper(u, fx){ u.on.hit.push(t=>sDebuff(t, 'sunder', (fx.ArmorReductionPercent||30)/100, fx.ArmorBreakDuration||3, u)); },
   morellonomicon(u, fx){ u.on.hit.push((t, d, ty, o)=>{ if(!o.ab) return; sDebuff(t, 'burn', (fx.BurnPercent||1)/100, fx.BurnDuration||10, u); sDebuff(t, 'wound', (fx.GrievousWoundsPercent||33)/100, fx.BurnDuration||10, u); }); },
   nashorstooth(u, fx){ u.manaOnAtk += fx.BaseManaOnHit||2; },
-  protectorsvow(u, fx){ u.mana += fx.CombatStartMana||20; sLow(u, (fx.HealthThreshold||40)/100, ()=>sShield(u, u, u.maxHp*(fx.ShieldHealthPercent||20)/100, fx.ShieldDuration||60, 'Beschützerschwur')); },
+  protectorsvow(u, fx){ u.mana += fx.CombatStartMana||20; sLow(u, (fx.HealthThreshold||40)/100, ()=>sShield(u, u, u.maxHp*(fx.ShieldHealthPercent||20)/100, fx.ShieldDuration||60, L('Beschützerschwur', 'Protector\'s Vow'))); },
   quicksilver(u, fx){ u.ccImm = fx.SpellShieldDuration||18; sEvery(u, 2, ()=>{ if(SS.t < u.ccImm) u.asP += fx.ProcAttackSpeed||0.03; }); },
   rabadonsdeathcap(u, fx){ u.amp += fx.BonusDamage||0.15; },
   redbuff(u, fx){ u.amp += fx.BonusDamage||0.06; u.on.hit.push(t=>{ sDebuff(t, 'burn', (fx.BurnPercent||1)/100, fx.Duration||5, u); sDebuff(t, 'wound', (fx.HealingReductionPct||33)/100, fx.Duration||5, u); }); },
   spearofshojin(u, fx){ u.manaOnAtk += fx.FlatManaRestore||5; },
   spiritvisage(u, fx){ sEvery(u, fx.HealTickRate||1, ()=>sHeal(u, u, Math.min(fx.MaxHeal||250, (u.maxHp - u.hp)*(fx.MissingHealthHeal||0.02)))); },
   steadfastheart(u, fx){ u.dr.push(()=>u.hp/u.maxHp > (fx.ThresholdForEmpower||0.5) ? (fx.EmpoweredDurability||0.15) : (fx.BaseDurability||0.05)); },
-  steraksgage(u, fx){ sLow(u, (fx.HealthThreshold||60)/100, ()=>sShield(u, u, u.maxHp*(fx.PercentHealthShield||0.4), fx.ShieldDuration||4, 'Steraks Pfand')); },
+  steraksgage(u, fx){ sLow(u, (fx.HealthThreshold||60)/100, ()=>sShield(u, u, u.maxHp*(fx.PercentHealthShield||0.4), fx.ShieldDuration||4, L('Steraks Pfand', 'Sterak\'s Gage'))); },
   strikersflail(u, fx){ u.on.hit.push((t, d, ty, o, crit)=>{ if(crit && u.buffs.filter(b=>b.k==='amp' && b.flail && b.end > SS.t).length < (fx.MaxStacks||4)) u.buffs.push({k:'amp', v:fx.BuffDamageAmp||0.05, end:SS.t + (fx.Duration||5), flail:1}); }); },
   sunfirecape(u, fx){ sEvery(u, fx.ICD||2, ()=>sEnemiesNear(u, u.cell, fx.HexRange||2).forEach(e=>{ sDebuff(e, 'burn', (fx.BurnPercent||1)/100, fx.BurnDuration||10, u); sDebuff(e, 'wound', (fx.GrievousWoundsPercent||33)/100, fx.BurnDuration||10, u); })); },
   titansresolve(u, fx){ let n = 0; const cap = fx.StackCap||25; const add = ()=>{ if(n >= cap) return; n++; u.adP += fx.StackingAD||0.02; u.ap += fx.StackingSP||2; if(n===cap) u.amp += fx.StackedAmp||0.1; }; u.on.atk.push(add); u.on.hurt.push(add); },
   voidstaff(u, fx){ u.on.hit.push(t=>sDebuff(t, 'shred', (fx.MRShred||30)/100, fx.MRShredDuration||5, u)); },
-  zhonyasparadox(u, fx){ sLow(u, (fx.PercentHealthThreshold||40)/100, ()=>{ u.invuln = SS.t + (fx.InvulnDuration||3); u.stunEnd = Math.max(u.stunEnd, u.invuln); sLog('proc', {s:u.id, txt:`${sName(u)} ist ${fx.InvulnDuration||3} s unverwundbar (Zhonyas Paradoxon)`}); }); },
+  zhonyasparadox(u, fx){ sLow(u, (fx.PercentHealthThreshold||40)/100, ()=>{ u.invuln = SS.t + (fx.InvulnDuration||3); u.stunEnd = Math.max(u.stunEnd, u.invuln); sLog('proc', {s:u.id, txt:L(`${sName(u)} ist ${fx.InvulnDuration||3} s unverwundbar (Zhonyas Paradoxon)`, `${sName(u)} is invulnerable for ${fx.InvulnDuration||3} s (Zhonya's Paradox)`)}); }); },
   statikkshiv(u, fx){ u.on.atk.push(()=>{ if(u.attacks % 3) return; sByKey(sAlive(1-u.side), e=>SIM_GRID.D[u.cell][e.cell]).slice(0, fx.NumTargets||4).forEach(e=>{ sDamage(u, e, (fx.Damage||30) * sAP(u)/100, 'magic', {noHooks:true}); sDebuff(e, 'shred', 0.3, 5, u); }); }); },
   titanichydra(u, fx){ u.on.hit.push((t, d, ty, o)=>{ if(!o.atk) return; sEnemiesNear(u, t.cell, 1).filter(e=>e!==t).forEach(e=>sDamage(u, e, sAD(u)*(fx.PercentAttackDamageSplash||6)/100 + u.maxHp*(fx.PercentMaxHealthSplash||4)/100, 'phys', {noHooks:true})); }); },
   mittens(u, fx){ u.dr.push((fx.PercentDR||25)/100 * 0.4); },
@@ -472,7 +472,7 @@ const SIM_TRAITS = {
   Juggernaut(v, m, all){ all.forEach(u=>u.dr.push(m.includes(u) ? (v.JuggernautDurability||0) : (v.TeamDurability||0))); },
   Inferno(v, m){ m.forEach(u=>u.on.hit.push(t=>{ sDebuff(t, 'burnI', (v.HPBurnPerSecond||1)/100, v.Duration||3, u); sDebuff(t, 'wound', (v.WoundPercent||33)/100, v.Duration||3, u); })); },
   Attuned(v, m, all){ all.forEach(u=>{ u.dr.push((v.Durability||0)/2); u.amp += (v.DamageAmp||0)/2; }); return 'teil'; },
-  Vanguard(v, m){ m.forEach(u=>{ const sh = ()=>sShield(u, u, u.maxHp*(v.MaxHealthShield||0), v.ShieldDuration||10, 'Frontkämpfer'); u.on.start.push(sh); sLow(u, v.HealthThreshold||0.5, sh); if(v.DurabilityIncrease) u.dr.push(()=>u.shields.length ? v.DurabilityIncrease : 0); }); },
+  Vanguard(v, m){ m.forEach(u=>{ const sh = ()=>sShield(u, u, u.maxHp*(v.MaxHealthShield||0), v.ShieldDuration||10, L('Frontkämpfer', 'Vanguard')); u.on.start.push(sh); sLow(u, v.HealthThreshold||0.5, sh); if(v.DurabilityIncrease) u.dr.push(()=>u.shields.length ? v.DurabilityIncrease : 0); }); },
   Brawler(v, m, all){ all.forEach(u=>{ u.hpF += v.BrawlerTeamHealth||0; }); m.forEach(u=>{ u.hpP += v.BrawlerHealthPercent||0; }); },
   Blackthorn(v, m, all, k, ctx){
     const cfg = simBlackthorn(), s = ctx.sac;
@@ -483,11 +483,11 @@ const SIM_TRAITS = {
     all.forEach(u=>{ u.hpF += v.Health||0; });
     m.forEach(u=>{ u.hpP += (r.hpP||0)*f; u.ar += (r.res||0)*f; u.mr += (r.res||0)*f; u.adP += (r.adP||0)*f; u.asP += (r.asP||0)*f; u.regen += (r.regen||0)*f; u.amp += (r.amp||0)*f; });
     const bits = [];
-    if(r.hpP) bits.push(`+${fmtNum(Math.round(r.hpP*f*1000)/10)} % Leben`); if(r.res) bits.push(`+${fmtNum(Math.round(r.res*f*10)/10)} Rüstung & MR`);
-    if(r.adP) bits.push(`+${fmtNum(Math.round(r.adP*f*1000)/10)} % AD`); if(r.asP) bits.push(`+${fmtNum(Math.round(r.asP*f*1000)/10)} % Angriffstempo`);
-    if(r.regen) bits.push(`+${fmtNum(Math.round(r.regen*f*10)/10)} Manareg.`); if(r.amp) bits.push(`+${fmtNum(Math.round(r.amp*f*1000)/10)} % Schadenssteigerung`);
+    if(r.hpP) bits.push(`+${fmtNum(Math.round(r.hpP*f*1000)/10)} % ${L('Leben', 'health')}`); if(r.res) bits.push(`+${fmtNum(Math.round(r.res*f*10)/10)} ${L('Rüstung & MR', 'armor & MR')}`);
+    if(r.adP) bits.push(`+${fmtNum(Math.round(r.adP*f*1000)/10)} % AD`); if(r.asP) bits.push(`+${fmtNum(Math.round(r.asP*f*1000)/10)} % ${L('Angriffstempo', 'attack speed')}`);
+    if(r.regen) bits.push(`+${fmtNum(Math.round(r.regen*f*10)/10)} ${L('Manareg.', 'mana regen')}`); if(r.amp) bits.push(`+${fmtNum(Math.round(r.amp*f*1000)/10)} % ${L('Schadenssteigerung', 'damage amp')}`);
     ctx.info.sac = {u:s.u, s:s.s||1, role, f, hp:v.Health||0, bits};
-    sLog('sac', {s:-1, side:ctx.side, txt:`${esc(s.u)} ${'★'.repeat(s.s||1)} wird auf dem Schwarzdorn-Feld geopfert (${SIM_ROLE_DE[role]}) – alle Champions +${v.Health||0} Leben, Schwarzdorn: ${bits.join(', ')}`});
+    sLog('sac', {s:-1, side:ctx.side, txt:L(`${esc(s.u)} ${'★'.repeat(s.s||1)} wird auf dem Schwarzdorn-Feld geopfert (${SIM_ROLE_DE[role]}) – alle Champions +${v.Health||0} Leben, Schwarzdorn: ${bits.join(', ')}`, `${esc(s.u)} ${'★'.repeat(s.s||1)} is sacrificed on the Blackthorn hex (${SIM_ROLE_DE[role]}) – all champions +${v.Health||0} health, Blackthorn: ${bits.join(', ')}`)});
     return 'ja';
   },
   Executioner(v, m){ m.forEach(u=>{ u.crit += v.CritChance||0; u.prec = true; if(v.BonusBleedPercent) u.on.hit.push((t, d)=>sDot(u, t, d*v.BonusBleedPercent, v.BleedDuration||3, 'true')); }); },
@@ -622,7 +622,7 @@ function simRun(boards, seed, quiet){
   boards.forEach((b, side)=>{ S.info[side] = sSetup(S, side, b.board, b.augs); });
   S.units.forEach(u=>{ u.maxHp = (u.hp0 + u.hpF) * (1 + u.hpP); u.hp = u.maxHp; if(u.maxMana > 5) u.mana = Math.min(u.mana, u.maxMana); u.atkCD = 0.2 + S.rng()*0.1; });
   S.units.forEach(u=>u.on.start.forEach(f=>f()));
-  sLog('start', {txt:'Kampfbeginn'});
+  sLog('start', {txt:L('Kampfbeginn', 'Combat starts')});
   const order = S.units.slice();
   let winner = -1;
   for(let step = 0; ; step++){
@@ -630,14 +630,14 @@ function simRun(boards, seed, quiet){
     if(step && step % 10===0) sTickDots();
     for(let i = order.length - 1; i > 0; i--){ const j = Math.floor(S.rng() * (i+1)); [order[i], order[j]] = [order[j], order[i]]; }
     for(const u of order) if(u.alive) sTick(u);
-    if(S.t===SIM_OT) sLog('ot', {txt:'Verlängerung: Schaden und Angriffstempo steigen jede Sekunde'});
+    if(S.t===SIM_OT) sLog('ot', {txt:L('Verlängerung: Schaden und Angriffstempo steigen jede Sekunde', 'Overtime: damage and attack speed increase every second')});
     if(!quiet) sFrame(S, step);
     const a0 = S.units.some(u=>u.alive && u.side===0 && !u.plant), a1 = S.units.some(u=>u.alive && u.side===1 && !u.plant);
     if(!a0 || !a1){ winner = a0 ? 0 : a1 ? 1 : -1; break; }
     if(S.t >= SIM_END){ winner = -1; break; }
   }
   S.winner = winner; S.end = S.t;
-  sLog('end', {txt:winner===0 ? 'Sieg! Dein Team gewinnt.' : winner===1 ? 'Niederlage – der Gegner gewinnt.' : 'Unentschieden – Zeit abgelaufen.'});
+  sLog('end', {txt:winner===0 ? L('Sieg! Dein Team gewinnt.', 'Victory! Your team wins.') : winner===1 ? L('Niederlage – der Gegner gewinnt.', 'Defeat – the enemy wins.') : L('Unentschieden – Zeit abgelaufen.', 'Draw – time ran out.')});
   SS = null;
   return S;
 }
@@ -875,23 +875,23 @@ const simTxt = s => String(s).replace(/\u0001(\d+)\u0002/g, (m, id)=>simNameHTML
 const SIM_ST = {move:'läuft', atk:'greift an', cast:'wirkt Fähigkeit', stun:'betäubt', jump:'springt', idle:'wartet', dead:'besiegt'};
 function simLastStats(i, fi){ for(let j = fi; j >= 0; j--){ const s = simRes.frames[j][i].s; if(s) return s; } return null; }
 function simAbilityText(u){
-  const sp = u.spec; if(u.plant) return 'Pflanze: steht im Weg und fängt Angriffe ab, greift selbst nicht an.';
+  const sp = u.spec; if(u.plant) return L('Pflanze: steht im Weg und fängt Angriffe ab, greift selbst nicht an.', 'Plant: blocks the way and absorbs attacks, doesn\'t attack itself.');
   const bits = [];
-  if(sp.counter) bits.push(`jeder ${sp.counter}. Angriff ist verstärkt`);
-  else if(sp.noCast) bits.push('nur passiv (kein Mana)');
-  if(sp.dash) bits.push({lowest:'springt zum Gegner mit dem wenigsten Leben', farthest:'springt zum entferntesten Gegner', cluster:'springt in die größte Gruppe', away:'teleportiert sich vom Ziel weg', target:'springt/stürmt zum Ziel'}[sp.dash]);
-  else if(sp.tgt==='cluster') bits.push('zielt auf die größte Gruppe');
-  else if(sp.tgt==='lowest') bits.push('zielt auf den Gegner mit dem wenigsten Leben');
-  else if(sp.tgt==='farthest') bits.push('zielt auf den entferntesten Gegner');
-  else if(sp.tgt==='near') bits.push(`trifft die ${sp.n} nächsten Gegner`);
-  if(sp.line) bits.push('trifft in einer Linie'); else if(sp.r) bits.push(`Fläche ${sp.r} ${sp.r===1 ? 'Feld' : 'Felder'}`);
-  if(sp.bounce) bits.push('springt auf weitere Gegner über');
-  if(sp.dmg && !sp.noCast) bits.push(`${sp.dot ? 'Schaden über Zeit' : 'Schaden'}: ${sp.dt==='magic' ? 'magisch' : sp.dt==='true' ? 'absolut' : 'normal'}`);
-  if(sp.emp) bits.push(`verstärkt die nächsten ${sp.emp} Angriffe`);
-  if(sp.self.shield) bits.push('Schild'); if(sp.self.heal) bits.push('Heilung');
-  if(sp.ally.shield) bits.push('Schild für Verbündete'); if(sp.ally.heal) bits.push('heilt Verbündete');
-  if(sp.stun) bits.push('Betäubung'); if(sp.taunt) bits.push('Spott'); if(sp.as) bits.push('+Angriffstempo');
-  if(sp.shred) bits.push('Magiefraktur'); if(sp.sunder) bits.push('Fraktur'); if(sp.burn) bits.push('Verbrennung'); if(sp.wound) bits.push('Verwundung');
+  if(sp.counter) bits.push(L(`jeder ${sp.counter}. Angriff ist verstärkt`, `every ${sp.counter}rd attack is empowered`));
+  else if(sp.noCast) bits.push(L('nur passiv (kein Mana)', 'passive only (no mana)'));
+  if(sp.dash) bits.push((EN ? {lowest:'jumps to the enemy with the lowest health', farthest:'jumps to the farthest enemy', cluster:'jumps into the largest group', away:'teleports away from the target', target:'jumps/dashes to the target'} : {lowest:'springt zum Gegner mit dem wenigsten Leben', farthest:'springt zum entferntesten Gegner', cluster:'springt in die größte Gruppe', away:'teleportiert sich vom Ziel weg', target:'springt/stürmt zum Ziel'})[sp.dash]);
+  else if(sp.tgt==='cluster') bits.push(L('zielt auf die größte Gruppe', 'targets the largest group'));
+  else if(sp.tgt==='lowest') bits.push(L('zielt auf den Gegner mit dem wenigsten Leben', 'targets the enemy with the lowest health'));
+  else if(sp.tgt==='farthest') bits.push(L('zielt auf den entferntesten Gegner', 'targets the farthest enemy'));
+  else if(sp.tgt==='near') bits.push(L(`trifft die ${sp.n} nächsten Gegner`, `hits the ${sp.n} nearest enemies`));
+  if(sp.line) bits.push(L('trifft in einer Linie', 'hits in a line')); else if(sp.r) bits.push(EN ? `area ${sp.r} ${sp.r===1 ? 'hex' : 'hexes'}` : `Fläche ${sp.r} ${sp.r===1 ? 'Feld' : 'Felder'}`);
+  if(sp.bounce) bits.push(L('springt auf weitere Gegner über', 'bounces to more enemies'));
+  if(sp.dmg && !sp.noCast) bits.push(EN ? `${sp.dot ? 'damage over time' : 'damage'}: ${sp.dt==='magic' ? 'magic' : sp.dt==='true' ? 'true' : 'physical'}` : `${sp.dot ? 'Schaden über Zeit' : 'Schaden'}: ${sp.dt==='magic' ? 'magisch' : sp.dt==='true' ? 'absolut' : 'normal'}`);
+  if(sp.emp) bits.push(L(`verstärkt die nächsten ${sp.emp} Angriffe`, `empowers the next ${sp.emp} attacks`));
+  if(sp.self.shield) bits.push(L('Schild', 'shield')); if(sp.self.heal) bits.push(L('Heilung', 'healing'));
+  if(sp.ally.shield) bits.push(L('Schild für Verbündete', 'shield for allies')); if(sp.ally.heal) bits.push(L('heilt Verbündete', 'heals allies'));
+  if(sp.stun) bits.push(L('Betäubung', 'stun')); if(sp.taunt) bits.push(L('Spott', 'taunt')); if(sp.as) bits.push(L('+Angriffstempo', '+attack speed'));
+  if(sp.shred) bits.push(L('Magiefraktur', 'shred')); if(sp.sunder) bits.push(L('Fraktur', 'sunder')); if(sp.burn) bits.push(L('Verbrennung', 'burn')); if(sp.wound) bits.push(L('Verwundung', 'wound'));
   return bits.join(' · ');
 }
 function simSide(fi){
@@ -929,7 +929,7 @@ function simSide(fi){
   const mc = simMC ? (simMC.n < 100 ? `<p class="note">Rechne … ${simMC.n} / 100</p>` : `<div class="ss-mc"><div class="ss-mcbar"><i class="w0" style="width:${simMC.w0}%"></i><i class="wd" style="width:${simMC.wd}%"></i><i class="w1" style="width:${simMC.w1}%"></i></div><p><b class="s0">${simMC.w0} % Sieg</b> · ${simMC.wd} % Unentschieden · <b class="s1">${simMC.w1} % Niederlage</b><br><small>Ø ${simFmt(simMC.dur)} s · Ø ${simFmt(simMC.left)} Units übrig beim Sieger</small></p></div>`) : '';
   const status = side => { const inf = r.info[side]; const ch = (t, res)=>`<span class="ss-chip ${res}" title="${res==='ja' ? 'wird simuliert' : res==='teil' ? 'vereinfacht simuliert' : 'wirkt nicht im Kampf / nicht simuliert'}">${esc(t)}</span>`;
     const bt = inf.traits.find(t=>t.n==='Blackthorn');
-    const sac = inf.sac ? `<p class="ss-sac"><b>Schwarzdorn-Opfer:</b> ${esc(inf.sac.u)} <span class="ss-star">${'★'.repeat(inf.sac.s)}</span> (${SIM_ROLE_DE[inf.sac.role]}) – alle Champions +${inf.sac.hp} Leben; Schwarzdorn-Champions ${inf.sac.bits.join(', ')}.</p>`
+    const sac = inf.sac ? `<p class="ss-sac"><b>${L('Schwarzdorn-Opfer:', 'Blackthorn sacrifice:')}</b> ${esc(inf.sac.u)} <span class="ss-star">${'★'.repeat(inf.sac.s)}</span> (${SIM_ROLE_DE[inf.sac.role]}) – ${L(`alle Champions +${inf.sac.hp} Leben; Schwarzdorn-Champions`, `all champions +${inf.sac.hp} health; Blackthorn champions`)} ${inf.sac.bits.join(', ')}.</p>`
       : bt && simBlackthorn() ? '<p class="ss-sac off">Schwarzdorn ist aktiv, aber auf dem Opferfeld (3. Reihe, Mitte) steht kein Champion – kein Bonus.</p>' : '';
     return (inf.traits.length ? inf.traits.map(t=>ch(`${t.n} ${t.k}`, t.res)).join('') : '<small>keine aktiven Traits</small>') + (inf.augs.length ? '<br>' + inf.augs.map(a=>ch(a.n, a.res)).join('') : '') + sac; };
   box.innerHTML = `${res}<div class="ss-count"><span class="s0">Du: <b>${alive(0)}</b> Units</span><span class="s1">Gegner: <b>${alive(1)}</b> Units</span></div>${mc}

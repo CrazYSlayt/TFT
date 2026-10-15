@@ -103,6 +103,8 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
   # --- Champions (inkl. Werte, Reichweite und Fähigkeit – Texte auf Deutsch) ---
   $deChamp = @{}; foreach ($c in $sdDE['champions']) { $deChamp[[string]$c['apiName']] = $c }
   $champs = New-Object 'System.Collections.Generic.List[object]'; $prefixCount = @{}
+  # Englische Texte für die englische Seite (eigene Datei tft-data-<Set>-en.js)
+  $enChamps = NewObj; $enTraits = NewObj; $enItems = NewObj; $enAugs = NewObj
   foreach ($c in $sdEN['champions']) {
     $tr = @($c['traits']); $cost = [int]$c['cost']
     if ($tr.Count -eq 0 -or $cost -lt 1 -or $cost -gt 5 -or ([string]$c['name']) -match '\(') { continue }
@@ -129,6 +131,7 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
       foreach ($x in @($ab['variables'])) { if ($x -and $x['name'] -and $x['value']) { $vals = @($x['value']); if ($vals.Count -ge 4) { $v[[string]$x['name']] = [double[]]@($vals[1], $vals[2], $vals[3] | ForEach-Object { [Math]::Round([double]$_, 3) }) } } }
       if ($v.Count) { $a['v'] = $v }
       $o['ab'] = $a
+      if ($ab['desc']) { $x = NewObj; $x['n'] = [string]$ab['name']; $x['d'] = [string]$ab['desc']; $enChamps[$o['api']] = $x }
     }
     $champs.Add($o)
     $p = ([string]$c['apiName'] -split '_')[0]; $prefixCount[$p] = 1 + [int]$prefixCount[$p]
@@ -148,6 +151,7 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
     $o['de'] = $(if ($d) { [string]$d['name'] } else { [string]$t['name'] })
     $o['bp'] = [int[]]$bp; $o['icon'] = Png $t['icon']
     $o['desc'] = $(if ($d -and $d['desc']) { [string]$d['desc'] } else { [string]$t['desc'] })
+    if ($t['desc']) { $enTraits[$o['api']] = [string]$t['desc'] }
     # Werte je Stufe (z. B. 3/5/7 Units) mit entschlüsselten Namen
     $names = HashNames @([string]$t['desc'], $(if ($d) { [string]$d['desc'] } else { '' }))
     $o['fx'] = [object[]]@(@($t['effects']) | Where-Object { $_ -and [int]$_['minUnits'] -gt 0 } | ForEach-Object { $e = NewObj; $e['min'] = [int]$_['minUnits']; $e['max'] = [int]$_['maxUnits']; $e['v'] = Fx $_['variables'] $names; $e })
@@ -211,6 +215,7 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
     $o['icon'] = $icon
     $o['comp'] = [string[]]@(@($e['composition']) | Where-Object { $_ } | ForEach-Object { [string]$_ })
     $o['desc'] = $(if (-not $isEmblem -and $src -and $src['desc']) { [string]$src['desc'] } else { $null })
+    if ($o['desc']) { $srcEn = $enItem[[string]$src['apiName']]; if ($srcEn -and $srcEn['desc']) { $enItems[$o['id']] = [string]$srcEn['desc'] } }
     $o['fx'] = $(if (-not $isEmblem -and $src) { Fx $src['effects'] (HashNames @([string]$src['desc'], [string]$e['desc'])) } else { NewObj })
     $n = [string]$e['name']; $kat = 'other'
     if ($compIds[$api]) { $kat = 'component' }
@@ -237,6 +242,7 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
     $o['id'] = [string]$api; $o['en'] = [string]$e['name']; $o['de'] = $(if ($d) { [string]$d['name'] } else { [string]$e['name'] })
     $o['desc'] = $(if ($src['desc']) { [string]$src['desc'] } else { $null }); $o['fx'] = Fx $src['effects'] (HashNames @([string]$src['desc'], [string]$e['desc']))
     $o['icon'] = $icon; $o['lv'] = $lv
+    if ($e['desc']) { $enAugs[$o['id']] = [string]$e['desc'] }
     $augs.Add($o)
   }
   $augs = @($augs | Sort-Object { $_['id'] })
@@ -260,6 +266,10 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
   [void]$sb.AppendLine("};")
   [IO.File]::WriteAllText($out, $sb.ToString(), $utf8)
   Write-Host ("  geschrieben: {0} ({1:N0} KB)" -f $out, ((Get-Item $out).Length / 1KB)) -ForegroundColor Green
+  $en = NewObj; $en['champions'] = $enChamps; $en['traits'] = $enTraits; $en['items'] = $enItems; $en['augments'] = $enAugs
+  $outEn = Join-Path $dataDir "tft-data-$SetNo-en.js"
+  [IO.File]::WriteAllText($outEn, "// TFT Freaks – englische Texte zu Set $SetNo für die englische Seite (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_DATA_EN = $(J $en);`n", $utf8)
+  Write-Host ("  geschrieben: {0} ({1:N0} KB)" -f $outEn, ((Get-Item $outEn).Length / 1KB)) -ForegroundColor Green
 }
 
 # ======================= Rangverteilung (EsportsTales) =======================
@@ -357,22 +367,22 @@ if ($OnlyRanks) { UpdateRanks; UpdateCutoffs; Write-Host 'Fertig.' -ForegroundCo
 $histDir = Join-Path $dataDir 'history'
 $UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'
 # Patch-Artikel aus Riots News-Übersicht (eingebettete Seitendaten) lesen
-function RiotPatches {
-  $html = (Invoke-WebRequest 'https://teamfighttactics.leagueoflegends.com/de-de/news/game-updates/' -UseBasicParsing -UserAgent $UA -TimeoutSec 60).Content
+function RiotPatches([string]$loc = 'de-de') {
+  $html = (Invoke-WebRequest "https://teamfighttactics.leagueoflegends.com/$loc/news/game-updates/" -UseBasicParsing -UserAgent $UA -TimeoutSec 60).Content
   $json = [regex]::Match($html, '<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)</script>').Groups[1].Value
   if (-not $json) { throw 'Seitendaten nicht gefunden' }
   $found = New-Object 'System.Collections.Generic.List[object]'
   $walk = {
     param($node)
     if ($node -is [System.Collections.IDictionary]) {
-      if ($node.ContainsKey('title') -and $node.ContainsKey('action') -and ([string]$node['title']) -match 'Patch (\d+)\.(\d+)\s*$') { $found.Add($node) }
+      if ($node.ContainsKey('title') -and $node.ContainsKey('action') -and ([string]$node['title']) -match '(?i)patch (\d+)\.(\d+)\s*$') { $found.Add($node) }
       foreach ($v in @($node.Values)) { & $walk $v }
     } elseif ($node -is [System.Collections.IEnumerable] -and -not ($node -is [string])) { foreach ($v in $node) { & $walk $v } }
   }
   & $walk ($ser.DeserializeObject($json))
   $out = @{}
   foreach ($n in $found) {
-    $m = [regex]::Match([string]$n['title'], 'Patch (\d+)\.(\d+)'); $id = $m.Groups[1].Value + '.' + $m.Groups[2].Value
+    $m = [regex]::Match([string]$n['title'], '(?i)patch (\d+)\.(\d+)'); $id = $m.Groups[1].Value + '.' + $m.Groups[2].Value
     if ($out.ContainsKey($id)) { continue }
     $url = [string]$n['action']['payload']['url']; if ($url.StartsWith('/')) { $url = 'https://teamfighttactics.leagueoflegends.com' + $url.TrimEnd('/') + '/' }
     $date = $(if ($n['publishedAt']) { [string]$n['publishedAt'] } elseif ($n['analytics']) { [string]$n['analytics']['publishDate'] } else { '' })
@@ -402,7 +412,7 @@ function PatchChanges([string]$url) {
         $inHead = $false; $name = CleanTxt $head
         # h2 = Gruppe (z. B. "PATCH-AKTUALISIERUNG" = B-Patch, "GROSSE ÄNDERUNGEN"); ein Datum als h4 gehört zur Gruppe
         if ($tag -eq 'h2') { $grp = $name; $cur = $null }
-        elseif ($name -match '^\d{1,2}\.\s+\S+$') { $grp = ($grp + ' · ' + $name).Trim(' ·') }
+        elseif ($name -match '^\d{1,2}\.\s+\S+$' -or $name -match '^(?i)(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(st|nd|rd|th)?$') { $grp = ($grp + ' · ' + $name).Trim(' ·') }
         elseif ($name) { $cur = NewObj; $cur['sec'] = $name; $cur['grp'] = $grp; $cur['ch'] = New-Object 'System.Collections.Generic.List[object]'; $secs.Add($cur) }
       }
       continue
@@ -418,7 +428,7 @@ function PatchChanges([string]$url) {
     $mm = [regex]::Match($line, '^(?<s>.+?) – (?<l>.+?):\s*(?<o>.*?)\s*⇒\s*(?<n>.+)$')
     if (-not $mm.Success) { $mm = [regex]::Match($line, '^(?<l>[^:]+):\s*(?<o>.*?)\s*⇒\s*(?<n>.+)$') }
     if ($mm.Success) {
-      $parts = @($anc) + @($(if ($mm.Groups['s'].Success) { $mm.Groups['s'].Value.Trim() })) + @($mm.Groups['l'].Value.Trim()) | Where-Object { $_ }
+      $parts = @(@($anc) + @($(if ($mm.Groups['s'].Success) { $mm.Groups['s'].Value.Trim() })) + @($mm.Groups['l'].Value.Trim()) | Where-Object { $_ })
       $s = $(if ($parts.Count -gt 1) { $parts[0] } else { '' }); $l = $(if ($parts.Count -gt 1) { ($parts[1..($parts.Count-1)]) -join ' – ' } else { $parts[0] })
       $cur['ch'].Add([object[]]@($s, $l, $mm.Groups['o'].Value.Trim(), $mm.Groups['n'].Value.Trim()))
     } else { $cur['ch'].Add([object[]]@($(if ($anc.Count) { $anc[0] } else { '' }), '', '', $line)) }
@@ -452,6 +462,23 @@ function UpdatePatches([int]$liveSet) {
   $show = @($sorted | Where-Object { [int]$_['set'] -ge ($liveSet - 1) })
   [IO.File]::WriteAllText((Join-Path $dataDir 'patches.js'), "// TFT Freaks – Patches (automatisch erzeugt mit tools\update-data.ps1 aus Riots Patchnotes, nicht von Hand bearbeiten)`n// Eigene Kommentare zu Patches gehören in data\patch-kommentare.js`nwindow.TFT_PATCHES = $(J $show);`n", $utf8)
   Write-Host ("  geschrieben: data\patches.js ({0} Patches)" -f $show.Count) -ForegroundColor Green
+  # Englische Fassung derselben Patches (Riots en-gb-Seite) für die englische Seite → data\patches-en.js
+  try {
+    $enFile = Join-Path $histDir 'patches-en.json'
+    $en = @{}; if (Test-Path $enFile) { foreach ($p in @(ReadJson $enFile)) { $en[[string]$p['id']] = $p } }
+    $riotEn = RiotPatches 'en-gb'
+    foreach ($id in $riotEn.Keys) { if ($en.ContainsKey($id)) { foreach ($k in 'url','teaser','title') { $en[$id][$k] = $riotEn[$id][$k] } } else { $en[$id] = $riotEn[$id] } }
+    foreach ($p in $show) {
+      $id = [string]$p['id']; $e = $en[$id]; if (-not $e) { continue }
+      if ($e.ContainsKey('notes') -and $p -ne $newest) { continue }
+      try { $e['notes'] = PatchChanges ([string]$e['url']) } catch { Warn "Patch $id (englisch) nicht lesbar: $($_.Exception.Message)" }
+    }
+    $outEn = NewObj
+    foreach ($p in $show) { $e = $en[[string]$p['id']]; if ($e) { $x = NewObj; foreach ($k in 'url','teaser','notes') { if ($e.ContainsKey($k)) { $x[$k] = $e[$k] } }; $outEn[[string]$p['id']] = $x } }
+    [IO.File]::WriteAllText($enFile, (J @($en.Values)), $utf8)
+    [IO.File]::WriteAllText((Join-Path $dataDir 'patches-en.js'), "// TFT Freaks – Patches auf Englisch für die englische Seite (automatisch erzeugt mit tools\update-data.ps1 aus Riots englischen Patchnotes)`nwindow.TFT_PATCHES_EN = $(J $outEn);`n", $utf8)
+    Write-Host ("  geschrieben: data\patches-en.js ({0} Patches auf Englisch)" -f $outEn.Count) -ForegroundColor Green
+  } catch { Warn "Englische Patchnotes nicht aktualisiert ($($_.Exception.Message)) – die bisherigen bleiben." }
 }
 
 # ======================= 1. Live-Server =======================
@@ -490,7 +517,7 @@ if (-not $NoPbe) {
 Step 'Set-Übersicht schreiben …'
 $legacy = Join-Path $dataDir 'tft-data.js'; if (Test-Path $legacy) { Remove-Item $legacy }   # alte Einzeldatei (vor dem Set-Umschalter)
 $list = New-Object 'System.Collections.Generic.List[object]'
-foreach ($f in Get-ChildItem $dataDir -Filter 'tft-data-*.js') {
+foreach ($f in (Get-ChildItem $dataDir -Filter 'tft-data-*.js' | Where-Object { $_.Name -notlike '*-en.js' })) {
   $head = (Get-Content $f.FullName -TotalCount 4 -Encoding UTF8) -join "`n"
   $m = [regex]::Match($head, 'set:(\d+), channel:"(\w+)", version:"([^"]*)", generated:"([^"]*)"')
   if (-not $m.Success) { Warn "Unbekanntes Format: $($f.Name)"; continue }

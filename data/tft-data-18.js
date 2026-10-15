@@ -1,7 +1,7 @@
 // TFT Freaks – offizielle Spieldaten (automatisch erzeugt mit tools\update-data.ps1, nicht von Hand bearbeiten)
-// Quelle: CommunityDragon 16.20 (live) · Set 18 · erzeugt am 2026-10-14
+// Quelle: CommunityDragon 16.20 (live) · Set 18 · erzeugt am 2026-10-15
 window.TFT_DATA = {
-set:18, channel:"live", version:"16.20", generated:"2026-10-14", cdn:"https://raw.communitydragon.org/16.20/game/",
+set:18, channel:"live", version:"16.20", generated:"2026-10-15", cdn:"https://raw.communitydragon.org/16.20/game/",
 champions:[
 {"api":"DA_18_Akali_AD","n":"Akali","c":1,"t":["Inferno","Adaptor","Ravager"],"sq":"assets/characters/tft18_akali/skins/base/images/tft18_akali_splash_tile_2.png","tile":"assets/characters/tft18_akali/tft18_akali_square.png","st":{"hp":650,"mana":25,"mana0":0,"ad":40,"as":0.75,"ar":35,"mr":35,"crit":0.25,"range":1},"ab":{"n":"Kunai-Angriff","d":"\u003cBright\u003eAnpasser \u003c/Bright\u003e%i:scaleAD%\u003cBright\u003e:\u003c/Bright\u003e Wirf eine Kunai-Salve auf das Ziel, die @PhysicalDamageCalc1@ %i:scaleAD%%i:scaleAP% normalen Schaden verursacht. Wenn das Ziel \u003ckeyword\u003ebrennt\u003c/keyword\u003e, erleidet es zusätzlich @PhysicalDamageCalc2@ %i:scaleAD% Schaden.\u000d\\n\u000d\\n\u003cdim\u003eAnpasser \u003c/dim\u003e%i:scaleAP%\u003cdim\u003e: Wenn die Fähigkeit das Ziel tötet, wird sie erneut gewirkt.\u003c/dim\u003e"}},
 {"api":"DA_18_Camille","n":"Camille","c":1,"t":["Coven","Ravager"],"sq":"assets/characters/tft18_camille/skins/base/images/tft18_camille_splash_tile_2.png","tile":"assets/characters/tft18_camille/tft18_camille_square.png","st":{"hp":700,"mana":25,"mana0":0,"ad":40,"as":0.75,"ar":40,"mr":40,"crit":0.25,"range":1},"ab":{"n":"Defensiver Klingenfeger","d":"Schlitzt das Ziel auf, um ihm @PhysicalDamageCalc1@ %i:scaleAD%%i:scaleAP% normalen Schaden zuzufügen, und erhält @ShieldDuration@ Sekunden lang einen Schild in Höhe von @AbilityShield@."}},

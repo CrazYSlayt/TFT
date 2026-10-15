@@ -4,6 +4,21 @@
 <meta charset="UTF-8">
 <!-- Online gelten alle Dateipfade ab der Startseite (auch unter /tierlist/items); lokal per Doppelklick bleiben sie relativ -->
 <script>if (location.protocol !== 'file:') document.write('<base href="/">');</script>
+<script>
+// Sprache: Adressen mit /en/… sind Englisch, alle anderen Deutsch.
+// Erstbesuch ohne gespeicherte Wahl und mit nicht-deutschem Browser → englische Version (nicht für Suchmaschinen).
+(function(){
+  var file = location.protocol === 'file:', p = (file ? location.hash.replace(/^#/, '') : location.pathname) || '/';
+  var en = /^\/en(\/|$)/.test(p), pref = null;
+  try { pref = localStorage.getItem('tftfreaks_lang'); } catch(e){}
+  var bot = /bot|crawl|spider|slurp|lighthouse|preview/i.test(navigator.userAgent);
+  var langs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'de'];
+  var wantEn = pref === 'en' || (!pref && !bot && !langs.some(function(l){ return /^de/i.test(l); }));
+  if(!en && wantEn && !file){ location.replace('/en' + p + location.search); return; }
+  window.TFT_LANG = en ? 'en' : 'de';
+  if(en){ document.documentElement.lang = 'en'; document.write('<script src="assets/js/i18n-en.js"><\/script>'); }
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0b1324">
 <meta name="description" content="TFT Freaks — TFT Tierlist, Comps, Items, Augments, Champions und Coaching für Set 18 Enchanted Wilds.">
@@ -840,7 +855,7 @@
       <p>Bilder von Champions, Items, Augments, Traits und Rängen sowie die Titelbilder der Patches werden direkt von den Servern von Riot Games (ddragon.leagueoflegends.com und cmsassets.rgpub.io, Riot Games, Inc., USA) und des Community-Projekts CommunityDragon (raw.communitydragon.org) geladen. Dabei wird deine IP-Adresse an diese Server übertragen – technisch lässt sich ein Bild anders nicht abrufen. Rechtsgrundlage ist unser berechtigtes Interesse an einer vollständigen und aktuellen Darstellung der Spieldaten (Art. 6 Abs. 1 lit. f DSGVO).</p>
 
       <h2>5. Speicherung im Browser</h2>
-      <p>Einige Funktionen speichern Einstellungen im lokalen Speicher deines Browsers (localStorage): das gewählte Set, dein Board im Team Builder und Entwürfe in der Redaktion. Diese Daten bleiben auf deinem Gerät und werden nicht an uns übertragen. Die Speicherung ist für die von dir genutzte Funktion erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG). Du kannst sie jederzeit über die Einstellungen deines Browsers löschen.</p>
+      <p>Einige Funktionen speichern Einstellungen im lokalen Speicher deines Browsers (localStorage): das gewählte Set, die gewählte Sprache, dein Board im Team Builder und Entwürfe in der Redaktion. Diese Daten bleiben auf deinem Gerät und werden nicht an uns übertragen. Die Speicherung ist für die von dir genutzte Funktion erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG). Du kannst sie jederzeit über die Einstellungen deines Browsers löschen.</p>
 
       <h2>6. Bewerbungsformular</h2>
       <p>Das Bewerbungsformular ist derzeit noch nicht angeschlossen: Eingegebene Daten werden weder übertragen noch gespeichert. Sobald sich das ändert, ergänzen wir hier, wie die Daten verarbeitet werden.</p>
@@ -894,10 +909,11 @@
 <script src="data/cutoffs.js"></script>
 <script src="data/patches.js"></script>
 <script src="data/patch-kommentare.js"></script>
+<script>if (window.TFT_LANG === 'en') document.write('<script src="data/patches-en.js"><\/script>');</script>
 <script>
 // Set wählen (Builder-Link > gespeicherte Auswahl > Live-Set) und dessen Daten + veröffentlichte Tierlist laden
 (function(){
-  var sets = window.TFT_SETS || [], want = 0, m = location.pathname.match(/^\/(?:builder|tools\/tierlist|tools\/simulator)\/(\d+)\//) || location.hash.match(/^#\/(?:builder|tools\/tierlist|tools\/simulator)\/(\d+)\//);
+  var sets = window.TFT_SETS || [], want = 0, m = location.pathname.match(/^\/(?:en\/)?(?:builder|tools\/tierlist|tools\/simulator)\/(\d+)\//) || location.hash.match(/^#\/(?:en\/)?(?:builder|tools\/tierlist|tools\/simulator)\/(\d+)\//);
   if (m) want = +m[1];
   if (!want) { try { want = +localStorage.getItem('tftfreaks_set') || 0; } catch (e) {} }
   var pick = sets.filter(function (s) { return s.set === want; })[0] || sets.filter(function (s) { return s.status === 'live'; })[0] || sets[0];
@@ -906,6 +922,7 @@
     document.write('<script src="data/' + pick.file + '"><\/script>');
     document.write('<script src="data/custom-' + pick.set + '.js"><\/script>');  // optional: eigene Trait-Texte, Icons, Pflanzen
     document.write('<script src="tierlist-data-' + pick.set + '.js"><\/script>'); // optional: Tierlist (aus der Redaktion exportiert)
+    if (window.TFT_LANG === 'en') document.write('<script src="data/' + pick.file.replace(/\.js$/, '-en.js') + '"><\/script>');  // englische Beschreibungen
   }
 })();
 </script>

@@ -2,21 +2,40 @@
 /* ================= ADRESSEN ================= */
 // Online echte Pfade (/tierlist/items), lokal per Doppelklick (file://) wie bisher #/tierlist/items
 const FILE_MODE = location.protocol === 'file:';
-const curPath = () => (FILE_MODE ? location.hash.replace(/^#/, '') : location.pathname) || '/';
-function setUrl(path){ history.replaceState(null, '', FILE_MODE ? '#' + path : path); }
+// Sprache: Englisch unter /en/… (festgelegt im Kopf von index.html), sonst Deutsch. Intern arbeiten alle Pfade ohne /en.
+const LANG = window.TFT_LANG === 'en' ? 'en' : 'de', EN = LANG === 'en', LOC = EN ? 'en-GB' : 'de-DE';
+const L = (de, en) => EN ? en : de;   // kurze Texte direkt im Code übersetzen
+const rawPath = () => (FILE_MODE ? location.hash.replace(/^#/, '') : location.pathname) || '/';
+const curPath = () => { const p = rawPath(); return EN ? (p.replace(/^\/en(?=\/|$)/, '') || '/') : p; };
+const withLang = p => EN && /^\/(?!en(\/|$)|api\/|assets\/|data\/)/.test(p) ? '/en' + p : (EN && p === '/' ? '/en/' : p);
+function setUrl(path){ path = withLang(path); history.replaceState(null, '', FILE_MODE ? '#' + path : path); }
 function go(path){
+  path = withLang(path);
   if(FILE_MODE){ location.hash = '#' + path; return; }
   if(path === location.pathname) return;   // wie früher bei gleichem #: nichts tun
   history.pushState(null, '', path);
   route();
 }
-const siteUrl = path => FILE_MODE ? location.href.split('#')[0] + '#' + path : location.origin + path;
+const siteUrl = path => FILE_MODE ? location.href.split('#')[0] + '#' + withLang(path) : location.origin + withLang(path);
 // alte Links mit #/… (vor der Umstellung geteilt) auf echte Pfade umleiten
 if(!FILE_MODE && location.hash.startsWith('#/')) history.replaceState(null, '', location.hash.slice(1));
 
 /* ================= DATA ================= */
 const CDRAGON = id => `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${id}.png`;
 
+// Englische Seite: offizielle englische Texte (data/tft-data-<Set>-en.js) übernehmen und überall die englischen Namen zeigen.
+// Der deutsche Fähigkeitstext bleibt als ab.dDe erhalten – der Kampf-Simulator liest die Fähigkeiten daraus.
+if(EN){
+  const X = window.TFT_DATA_EN || {};
+  // de0/n0 = deutscher Name (für die Übersetzung von Sätzen, in denen ein deutscher Name fest im Text steht)
+  TFT_DATA.champions.forEach(c=>{ const x = (X.champions||{})[c.api]; if(x && c.ab){ c.ab.dDe = c.ab.d; c.ab.n0 = c.ab.n; c.ab.n = x.n || c.ab.n; c.ab.d = x.d || c.ab.d; } if(c.de){ c.de0 = c.de; delete c.de; } });
+  TFT_DATA.traits.forEach(t=>{ const d = (X.traits||{})[t.api]; if(d) t.desc = d; t.de0 = t.de; t.de = t.n; });
+  TFT_DATA.items.forEach(i=>{ const d = (X.items||{})[i.id]; if(d) i.desc = d; i.de0 = i.de; i.de = i.en; });
+  TFT_DATA.augments.forEach(a=>{ const d = (X.augments||{})[a.id]; if(d) a.desc = d; a.de0 = a.de; a.de = a.en; });
+  // Patches: englische Artikel, Teaser und Änderungen (data/patches-en.js)
+  const PE = window.TFT_PATCHES_EN || {};
+  (window.TFT_PATCHES || []).forEach(p=>{ const e = PE[p.id]; if(e){ if(e.url) p.url = e.url; if(e.teaser) p.teaser = e.teaser; if(e.notes) p.notes = e.notes; } });
+}
 // Offizielle Champions aus data/tft-data.js (CommunityDragon)
 const champions = TFT_DATA.champions.map(c=>({n:c.n, c:c.c, t:c.t}));
 const champBy = Object.fromEntries(champions.map(c=>[c.n,c]));
@@ -24,7 +43,7 @@ const champBy = Object.fromEntries(champions.map(c=>[c.n,c]));
 // Eigene Trait-Texte und Einteilung (Ursprung/Klasse). Offizielle Namen, Breakpoints und Icons kommen aus data/tft-data.js.
 const TRAIT_META = (window.TFT_CUSTOM && TFT_CUSTOM.traits) || {};
 const plainDesc = s => String(s||'').replace(/<br>/gi,' ').replace(/<[^>]+>/g,'').replace(/@[^@]*@/g,'').replace(/\s+/g,' ').trim();
-const traits = TFT_DATA.traits.map(x=>{ const m = TRAIT_META[x.n] || {}; return {n:x.n, cat:m.cat||'origin', bp:x.bp.map(String), d:m.d || plainDesc(x.desc)}; });
+const traits = TFT_DATA.traits.map(x=>{ const m = TRAIT_META[x.n] || {}; return {n:x.n, cat:m.cat||'origin', bp:x.bp.map(String), d:(!EN && m.d) || plainDesc(x.desc)}; });
 
 
 
@@ -388,16 +407,16 @@ const RK = window.TFT_RANKS && window.TFT_RANKS.div && window.TFT_RANKS.apex ? w
 const RANK_SRC = RK ? {name:RK.source, url:RK.url, when:`Set ${RK.set}, Stand ${RK.month}`}
   : {name:'EsportsTales', url:'https://www.esportstales.com/teamfight-tactics/seasonal-rank-system-and-player-distribution', when:'Set 18, Stand September 2026'};
 const RANK_TIERS = [
-  {k:'iron', n:'Eisen', f:'Iron', div:[0.006,0.27,1.1,1.4], d:'Der Einstieg ins Ranked. Hier zählen die Grundlagen: Leben schonen, Econ verstehen, eine Comp sicher spielen.'},
-  {k:'bronze', n:'Bronze', f:'Bronze', div:[2.7,4.3,5.9,6.5], d:'Bronze trennt Neulinge von regelmäßigen Spielern. Wer Zinsen sauber mitnimmt, steigt hier schnell auf.'},
-  {k:'silver', n:'Silber', f:'Silver', div:[9.8,9.7,9.5,7.1], d:'Silber ist die größte Gruppe der Spielerbasis. Stabil Top 4 spielen reicht, um hier rauszukommen.'},
-  {k:'gold', n:'Gold', f:'Gold', div:[10,7.2,5.4,3.2], d:'Gold liegt zwischen Silber und Platin. Zwei Comps sicher beherrschen bringt dich zum nächsten Rang.'},
-  {k:'platinum', n:'Platin', f:'Platinum', div:[5.3,3.1,2.1,1.1], d:'Platin ist klar überdurchschnittlich. Positionierung und Item-Entscheidungen machen jetzt den Unterschied.'},
-  {k:'emerald', n:'Smaragd', f:'Emerald', div:[1.7,0.89,0.55,0.25], d:'Smaragd gehört zur oberen Spitze. Flexibel spielen und die Lobby lesen wird hier Pflicht.'},
-  {k:'diamond', n:'Diamant', f:'Diamond', div:[0.42,0.19,0.11,0.03], d:'Diamant ist die Elite der Ranglisten-Spieler. Jeder Fehler kostet hier spürbar LP.'},
-  {k:'master', n:'Meister', f:'Master', pct:0.21, d:'Ab Meister gibt es keine Divisionen mehr – nur noch LP. Jede Partie zählt direkt.'},
-  {k:'grandmaster', n:'Großmeister', f:'GrandMaster', pct:0.05, d:'Großmeister gehören zu den besten Spielern ihrer Region. Die LP-Grenze hängt vom Server ab.'},
-  {k:'challenger', n:'Challenger', f:'Challenger', pct:0.023, d:'Die Spitze jeder Region – mit begrenzten Plätzen. Höher geht es nicht.'},
+  {k:'iron', n:L('Eisen','Iron'), f:'Iron', div:[0.006,0.27,1.1,1.4], d:'Der Einstieg ins Ranked. Hier zählen die Grundlagen: Leben schonen, Econ verstehen, eine Comp sicher spielen.'},
+  {k:'bronze', n:L('Bronze','Bronze'), f:'Bronze', div:[2.7,4.3,5.9,6.5], d:'Bronze trennt Neulinge von regelmäßigen Spielern. Wer Zinsen sauber mitnimmt, steigt hier schnell auf.'},
+  {k:'silver', n:L('Silber','Silver'), f:'Silver', div:[9.8,9.7,9.5,7.1], d:'Silber ist die größte Gruppe der Spielerbasis. Stabil Top 4 spielen reicht, um hier rauszukommen.'},
+  {k:'gold', n:L('Gold','Gold'), f:'Gold', div:[10,7.2,5.4,3.2], d:'Gold liegt zwischen Silber und Platin. Zwei Comps sicher beherrschen bringt dich zum nächsten Rang.'},
+  {k:'platinum', n:L('Platin','Platinum'), f:'Platinum', div:[5.3,3.1,2.1,1.1], d:'Platin ist klar überdurchschnittlich. Positionierung und Item-Entscheidungen machen jetzt den Unterschied.'},
+  {k:'emerald', n:L('Smaragd','Emerald'), f:'Emerald', div:[1.7,0.89,0.55,0.25], d:'Smaragd gehört zur oberen Spitze. Flexibel spielen und die Lobby lesen wird hier Pflicht.'},
+  {k:'diamond', n:L('Diamant','Diamond'), f:'Diamond', div:[0.42,0.19,0.11,0.03], d:'Diamant ist die Elite der Ranglisten-Spieler. Jeder Fehler kostet hier spürbar LP.'},
+  {k:'master', n:L('Meister','Master'), f:'Master', pct:0.21, d:'Ab Meister gibt es keine Divisionen mehr – nur noch LP. Jede Partie zählt direkt.'},
+  {k:'grandmaster', n:L('Großmeister','Grandmaster'), f:'GrandMaster', pct:0.05, d:'Großmeister gehören zu den besten Spielern ihrer Region. Die LP-Grenze hängt vom Server ab.'},
+  {k:'challenger', n:L('Challenger','Challenger'), f:'Challenger', pct:0.023, d:'Die Spitze jeder Region – mit begrenzten Plätzen. Höher geht es nicht.'},
 ];
 if(RK) RANK_TIERS.forEach(t=>{ if(t.div){ if(Array.isArray(RK.div[t.k]) && RK.div[t.k].length===4) t.div = RK.div[t.k]; } else if(typeof RK.apex[t.k]==='number') t.pct = RK.apex[t.k]; });
 const DIVS = ['IV','III','II','I'];
@@ -410,7 +429,7 @@ const RANK_SUM = acc;
 RANK_ENTRIES.forEach(e=>{ e.top = Math.min(100, RANK_SUM - e.below); });
 // "Top x %" aus den Werten ab diesem Rang aufwärts; "darunter" = Rest auf 100 % (Quellwerte summieren rundungsbedingt auf ~100,1 %)
 RANK_TIERS.forEach(t=>{ const es = RANK_ENTRIES.filter(e=>e.t===t); t.topTier = Math.min(100, RANK_SUM - es[0].below); t.below = Math.max(0, 100 - t.topTier); });
-const fmtPct = v => v.toLocaleString('de-DE', {maximumFractionDigits: v < 0.1 || (v > 99.9 && v < 100) ? 3 : v < 1 || v > 99 ? 2 : 1}) + ' %';
+const fmtPct = v => v.toLocaleString(LOC, {maximumFractionDigits: v < 0.1 || (v > 99.9 && v < 100) ? 3 : v < 1 || v > 99 ? 2 : 1}) + L(' %', '%');
 const rankBy = Object.fromEntries(RANK_TIERS.map(t=>[t.k,t]));
 
 function rankCell(e, extra=''){
@@ -864,14 +883,14 @@ function admSave(msg){
   let ok = true; try { localStorage.setItem(TL_DRAFT_KEY, JSON.stringify(adm)); } catch(e){ ok = false; }
   tierSource = {src:'draft', data:adm};
   rebuildComps(adm.comps); filterComps(); updateTlNote();
-  admStatus(ok ? (msg || 'Entwurf gespeichert · ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})) : 'Speichern im Browser nicht möglich – bitte exportieren!');
+  admStatus(ok ? (msg || 'Entwurf gespeichert · ' + new Date().toLocaleTimeString(LOC,{hour:'2-digit',minute:'2-digit'})) : 'Speichern im Browser nicht möglich – bitte exportieren!');
 }
 function updateTlNote(){
   const el = $('#tlSrc'); if(!el) return;
   const D = tierSource.data, link = '<a href="https://tftacademy.com/tierlist/comps" target="_blank" rel="noopener" style="text-decoration:underline">TFTAcademy</a>';
   if(!(D.comps||[]).length){ el.textContent = `Für Set ${TFT_DATA.set} gibt es noch keine Tierlist.`; return; }
   if(D.source==='TFTAcademy'){ el.innerHTML = `Stand: Patch ${esc(D.patch||TL_PATCH)} · Bewertungen und Aufstellungen nach ${link}`; return; }
-  const d = D.updated ? new Date(D.updated).toLocaleDateString('de-DE') : '';
+  const d = D.updated ? new Date(D.updated).toLocaleDateString(LOC) : '';
   el.innerHTML = `Stand: Patch ${esc(D.patch||TL_PATCH)}${d?' · aktualisiert am '+d:''} · Bewertungen von TFT Freaks${D.basedOn==='TFTAcademy' || (TL_FILE && TL_FILE.source==='TFTAcademy') ? ' · Aufstellungen ursprünglich nach ' + link : ''}`;
 }
 function admCardHTML(c){
@@ -1008,7 +1027,7 @@ document.addEventListener('click', e=>{
   if(t.id==='admExport'){
     admEnsure();
     const data = {version:1, set:TFT_DATA.set, patch:adm.patch, updated:adm.updated || new Date().toISOString().slice(0,10), source:adm.source || 'TFT Freaks', basedOn:adm.basedOn || '', comps:adm.comps, itemTL:adm.itemTL || ITEM_TL, augTL:adm.augTL || AUG_TL};
-    const js = '// TFT Freaks – Tierlist-Daten, exportiert aus der Redaktion am ' + new Date().toLocaleString('de-DE') + '\n// Datei neben die index.html legen, dann sehen alle Besucher diesen Stand.\nwindow.TIERLIST_DATA = ' + JSON.stringify(data) + ';\n';
+    const js = '// TFT Freaks – Tierlist-Daten, exportiert aus der Redaktion am ' + new Date().toLocaleString(LOC) + '\n// Datei neben die index.html legen, dann sehen alle Besucher diesen Stand.\nwindow.TIERLIST_DATA = ' + JSON.stringify(data) + ';\n';
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([js], {type:'text/javascript'})); a.download = `tierlist-data-${TFT_DATA.set}.js`;
     document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
     admStatus(`Exportiert: tierlist-data-${TFT_DATA.set}.js – neben die index.html legen.`); return;
@@ -1046,7 +1065,7 @@ updateTlNote();
 /* ================= SET-AUSWAHL (Live / PBE / Archiv) ================= */
 const SET_LABEL = {live:'Live', pbe:'PBE', archiv:'Archiv'};
 const setStatus = () => (window.TFT_SET && TFT_SET.status) || TFT_DATA.channel || 'live';
-const fmtDay = d => { const x = new Date(d); return isNaN(x) ? '' : x.toLocaleDateString('de-DE'); };
+const fmtDay = d => { const x = new Date(d); return isNaN(x) ? '' : x.toLocaleDateString(LOC); };
 function renderSetSwitcher(){
   const sets = window.TFT_SETS || [], cur = TFT_DATA.set, st = setStatus();
   $('#setSw').innerHTML = `<button class="set-btn" id="setBtn" type="button" aria-haspopup="true" aria-expanded="false" title="Set wechseln"><b>Set ${cur}</b><span class="set-st ${st}">${SET_LABEL[st]||esc(st)}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
@@ -1352,7 +1371,7 @@ const radiantOf = it => ITEMS.find(r=>r.cat==='radiant' && radiantBase(r)===it) 
 const emblemTrait = it => it.cat==='emblem' && / Emblem$/.test(it.en) ? it.en.replace(/ Emblem$/,'') : null;
 
 const STATS = [['AD',100,' % AD'],['AP',1,' AP'],['AS',1,' % AS'],['Health',1,' Leben'],['Armor',1,' Rüstung'],['MagicResist',1,' MR'],['CritChance',1,' % Krit'],['ManaRegen',1,' Manareg.'],['StatOmnivamp',100,' % Omnivamp']];
-const fmtNum = v => String(Math.round(v*100)/100).replace('.',',');
+const fmtNum = v => EN ? String(Math.round(v*100)/100) : String(Math.round(v*100)/100).replace('.',',');
 const itemStats = it => STATS.filter(([k])=>it.fx[k]).map(([k,m,l])=>`<span class="it-stat">+${fmtNum(it.fx[k]*m)}${l}</span>`).join('');
 function itemDescHTML(it){
   const tr = emblemTrait(it);
@@ -1610,7 +1629,7 @@ function rdDist(lvl, cost, out, other, gold, buy){
   return res;
 }
 const rdAtLeast = (dist, k) => dist.slice(k).reduce((a,b)=>a+b, 0);
-const rdPct = p => (p*100).toLocaleString('de-DE', {maximumFractionDigits: p > 0 && p < 0.1 ? 1 : 0}) + ' %';
+const rdPct = p => (p*100).toLocaleString(LOC, {maximumFractionDigits: p > 0 && p < 0.1 ? 1 : 0}) + L(' %', '%');
 function rdGoldFor(q){   // kleinstes Gold, mit dem das Ziel mit Chance q erreicht wird
   const P = g => rdAtLeast(rdDist(rd.lvl, rd.cost, rd.out, rd.other, g, rd.buy), rd.target);
   let hi = 2; while(P(hi) < q){ hi *= 2; if(hi > 512) return null; }
@@ -1717,7 +1736,7 @@ function rdUpdate(){
       <div class="rd-ring" style="--p:${(P*100).toFixed(1)}"><b>${rdPct(P)}</b><small>Chance</small></div>
       <div><span class="rd-kicker">${rd.champ ? avatar(rd.champ, 26) : ''}Level ${rd.lvl} · ${rd.gold} Gold</span>
         <h3>Mindestens ${rd.target}× ${who}</h3>
-        <p>Im Schnitt findest du <b>${exp.toLocaleString('de-DE', {maximumFractionDigits:1})}</b> Kopien. In einem Roll (5 Slots) taucht ${who} mit <b>${rdPct(pRoll)}</b> Chance mindestens einmal auf.</p></div>
+        <p>Im Schnitt findest du <b>${exp.toLocaleString(LOC, {maximumFractionDigits:1})}</b> Kopien. In einem Roll (5 Slots) taucht ${who} mit <b>${rdPct(pRoll)}</b> Chance mindestens einmal auf.</p></div>
     </div>
     ${verdict}
     <h4 class="rd-sub">Chance auf mindestens …</h4>
@@ -2054,7 +2073,7 @@ const patchSlug = id => String(id).replace('.', '-');
 const patchBySlug = Object.fromEntries(PATCHES.map(p=>[patchSlug(p.id), p]));
 const TODAY_ISO = new Date().toISOString().slice(0,10);
 const CURRENT_PATCH = PATCHES.find(p=>p.date <= TODAY_ISO);
-const fmtDate = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('de-DE', {day:'numeric', month:'long', year:'numeric'}) : '';
+const fmtDate = d => d ? new Date(d + 'T12:00:00').toLocaleDateString(LOC, {day:'numeric', month:'long', year:'numeric'}) : '';
 const patchCount = p => (p.notes || []).reduce((n,s)=>n + (s.ch||[]).length, 0);
 // Namen aus den (deutschen) Patchnotes den Einträgen der Seite zuordnen
 const NAME_IDX = {};
@@ -2065,6 +2084,9 @@ const NAME_IDX = {};
   ITEMS.forEach(i=>{ add(i.en, {ty:'i', k:i.id}); add(i.de, {ty:'i', k:i.id}); });
   AUGS.forEach(a=>{ add(a.en, {ty:'a', k:a.id}); add(a.de, {ty:'a', k:a.id}); });
 })();
+// Englische Patchnotes schreiben „Camille Ability Damage: …“ ohne Trennstrich – den Namen vorne abtrennen
+if(EN) (()=>{ const names = Object.keys(NAME_IDX).sort((a,b)=>b.length - a.length);
+  PATCHES.forEach(p=>(p.notes||[]).forEach(s=>(s.ch||[]).forEach(r=>{ if(r[0] || !r[1]) return; const l = r[1].toLowerCase(), n = names.find(x=>l.startsWith(x + ' ')); if(n){ r[0] = r[1].slice(0, n.length); r[1] = r[1].slice(n.length).trim(); } }))); })();
 function patchIcon(subject){
   const m = NAME_IDX[String(subject||'').toLowerCase()]; if(!m) return '';
   if(m.ty==='c') return `<button class="pn-ic" data-champ="${esc(m.k)}" type="button">${avatar(m.k, 34)}</button>`;
@@ -2072,7 +2094,7 @@ function patchIcon(subject){
   if(m.ty==='i'){ const it = itemById[m.k]; return it ? `<button class="pn-ic" data-item="${esc(it.id)}" type="button"><img src="${it.img}" alt="" loading="lazy"></button>` : ''; }
   const a = AUG_BY[m.k]; return a ? `<span class="pn-ic"><img src="${augImg(a)}" alt="" loading="lazy"></span>` : '';
 }
-const grpLabel = g => { const s = String(g||''); if(/PATCH-AKTUALISIERUNG/i.test(s)) return 'B-Patch' + (s.includes('·') ? ' · ' + secLabel(s.split('·').slice(1).join('·').trim()) : ''); return secLabel(s).replace(/\bGrosse\b/g, 'Große'); };
+const grpLabel = g => { const s = String(g||''); if(/PATCH-AKTUALISIERUNG|MID-PATCH UPDATE/i.test(s)) return 'B-Patch' + (s.includes('·') ? ' · ' + secLabel(s.split('·').slice(1).join('·').trim()) : ''); return secLabel(s).replace(/\bGrosse\b/g, 'Große'); };
 const secLabel = s => String(s||'').toLowerCase().replace(/(^|[\s\-–(„"])(\S)/g, (m,a,b)=>a + b.toUpperCase());
 function patchRowHTML(r){
   const [s, l, o, n] = r;
@@ -2155,16 +2177,16 @@ function stNextPatch(){
 function stCountdown(){
   const n = stNextPatch(); if(!n) return '–';
   const ms = n.d - new Date(), days = Math.floor(ms / 864e5), hrs = Math.floor(ms % 864e5 / 36e5), min = Math.floor(ms % 36e5 / 6e4);
-  return days > 0 ? `${days} T ${hrs} Std` : hrs > 0 ? `${hrs} Std ${min} Min` : `${min} Min`;
+  return EN ? (days > 0 ? `${days}d ${hrs}h` : hrs > 0 ? `${hrs}h ${min}m` : `${min}m`) : days > 0 ? `${days} T ${hrs} Std` : hrs > 0 ? `${hrs} Std ${min} Min` : `${min} Min`;
 }
-const stNextLabel = () => { const n = stNextPatch(); if(!n) return ''; return n.d.toLocaleString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', timeZone:'Europe/Berlin'}) + ' Uhr' + (n.fixed ? '' : ' · geschätzt'); };
+const stNextLabel = () => { const n = stNextPatch(); if(!n) return ''; return n.d.toLocaleString(LOC, {weekday:'short', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', timeZone:'Europe/Berlin'}) + L(' Uhr', '') + (n.fixed ? '' : L(' · geschätzt', ' · estimated')); };
 // LP-Grenzen (Challenger/Großmeister) pro Server: zuerst aus data/cutoffs.js, dann live über /api/cutoffs (Vercel-Funktion)
 let ST_CUT = window.TFT_CUTOFFS && window.TFT_CUTOFFS.regions ? window.TFT_CUTOFFS : null, ST_CUT_LIVE = false;
 const stCut = r => ST_CUT && ST_CUT.regions[r];
 if(!FILE_MODE) fetch('/api/cutoffs').then(r=>r.ok ? r.json() : null).then(d=>{
   if(d && d.regions && Object.keys(d.regions).length){ ST_CUT = d; ST_CUT_LIVE = true; renderStatBar(); }
 }).catch(()=>{});
-const fmtLP = v => v.toLocaleString('de-DE') + ' LP';
+const fmtLP = v => v.toLocaleString(LOC) + ' LP';
 // Leiste oben: LP-Grenzen für Challenger und Großmeister (EUW) und der nächste Patch
 function renderStatBar(){
   const el = $('#statBar'); if(!el) return;
@@ -2172,7 +2194,7 @@ function renderStatBar(){
   el.innerHTML = `<div class="wrap sb-in">
     ${cut ? `<a class="sb-main" href="/ranks/challenger"><img src="${rankImg(rankBy.challenger)}" alt="" width="40" height="40"><span class="sb-num"><b>${fmtLP(cut.ch)}</b><small>${dot}Challenger · EUW</small></span></a>
     <a class="sb-main" href="/ranks/grandmaster"><img src="${rankImg(rankBy.grandmaster)}" alt="" width="40" height="40"><span class="sb-num"><b>${fmtLP(cut.gm)}</b><small>${dot}Großmeister · EUW</small></span></a>` : ''}
-    ${ST_PATCH ? `<a class="sb-item sb-hide" href="/patches" title="Nächster Patch: ${esc(stNextLabel())}"><span class="sb-patch">${esc(ST_PATCH)}</span><span><small>Nächster Patch in</small><b data-countdown>${stCountdown()}</b></span></a>` : ''}</div>`;
+    ${ST_PATCH ? `<a class="sb-item sb-hide" href="/patches" title="${L('Nächster Patch', 'Next patch')}: ${esc(stNextLabel())}"><span class="sb-patch">${esc(ST_PATCH)}</span><span><small>Nächster Patch in</small><b data-countdown>${stCountdown()}</b></span></a>` : ''}</div>`;
   el.hidden = !cut && !ST_PATCH;
 }
 setInterval(()=>document.querySelectorAll('[data-countdown]').forEach(e=>{ e.textContent = stCountdown(); }), 60000);
@@ -2202,7 +2224,7 @@ function pageMeta(page, sub){
     case 'apply': return ['Coaching anfragen', 'Frag ein kostenloses Kennenlernen für dein TFT Coaching an.'];
     case 'patches': {
       const p = patchBySlug[sub];
-      if(p) return [`TFT Patch ${p.id} – alle Änderungen`, `Alle Änderungen aus TFT Patch ${p.id} (${fmtDate(p.date)}) auf einen Blick: Champions, Traits, Items und Augments. ${p.teaser || ''}`.trim()];
+      if(p) return [`TFT Patch ${p.id} – alle Änderungen`, L(`Alle Änderungen aus TFT Patch ${p.id} (${fmtDate(p.date)}) auf einen Blick: Champions, Traits, Items und Augments. ${p.teaser || ''}`, `All changes from TFT patch ${p.id} (${fmtDate(p.date)}) at a glance: champions, traits, items and augments. ${p.teaser || ''}`).trim()];
       return ['TFT Patch Notes – alle Änderungen', 'Alle TFT Patches mit den offiziellen Änderungen von Riot: Champions, Traits, Items und Augments – automatisch aktuell.'];
     }
     case 'impressum': return ['Impressum', 'Impressum von TFT Freaks.'];
@@ -2221,7 +2243,8 @@ function pageMeta(page, sub){
 }
 function headTag(sel, make){ let el = document.head.querySelector(sel); if(!el){ el = make(); document.head.appendChild(el); } return el; }
 function setMeta(page, sub){
-  const [title, desc, noindex] = pageMeta(page, sub);
+  let [title, desc, noindex] = pageMeta(page, sub);
+  title = tr(title); if(desc) desc = tr(desc);   // englische Seite: über das Wörterbuch
   document.title = page==='home' ? title : title + ' | TFT Freaks';
   if(desc) headTag('meta[name="description"]', ()=>Object.assign(document.createElement('meta'), {name:'description'})).content = desc;
   headTag('meta[name="robots"]', ()=>Object.assign(document.createElement('meta'), {name:'robots'})).content = noindex ? 'noindex' : 'index, follow';
@@ -2230,7 +2253,9 @@ function setMeta(page, sub){
   // kanonische Adresse: eine Adresse pro Inhalt (z. B. /bibliothek statt /bibliothek/champions, Builder ohne Team-Code)
   const keep = {tierlist:['items','augments'], bibliothek:['items','traits'], tools:['rolldown','tierlist','simulator','drops'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
   const path = page==='home' ? '/' : '/' + page + (keep.includes(sub) ? '/' + sub : '');
-  headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + path;
+  headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + withLang(path);
+  // beide Sprachfassungen für Suchmaschinen verknüpfen
+  [['de', path], ['en', '/en' + path], ['x-default', path]].forEach(([l, p])=>{ headTag(`link[rel="alternate"][hreflang="${l}"]`, ()=>Object.assign(document.createElement('link'), {rel:'alternate', hreflang:l})).href = location.origin + p; });
 }
 
 // Interne Links ohne Neuladen öffnen (Strg/Mittelklick öffnen weiterhin einen neuen Tab)
@@ -2282,7 +2307,116 @@ function route(){
 }
 window.addEventListener(FILE_MODE ? 'hashchange' : 'popstate', route);
 
+/* ================= ÜBERSETZUNG (englische Seite) ================= */
+// Die deutschen Texte bleiben im Code. Auf /en/… ersetzt ein Wörterbuch (assets/js/i18n-en.js) jeden sichtbaren Text:
+// Schlüssel = deutscher Text; Zahlen und Namen (Champions, Traits, Items, Augments …) stehen darin als {0}, {1} ….
+// Ablauf pro Text: genauer Treffer → nur Zahlen ersetzt → Zahlen und Namen ersetzt. Ohne Treffer bleibt der Text, wie er ist.
+const I18N_HARVEST = !EN && /[?&]i18nharvest/.test(location.search);   // nur zum Sammeln aller Texte (Entwicklung)
+const I18N = EN ? (window.I18N_EN || {}) : {};
+const I18N_SEEN = new Map(), I18N_CACHE = new Map(), I18N_OUT = new Set();
+let I18N_NAMES = null;
+const I18N_DE2EN = new Map();   // deutscher Name → englischer Name (englische Seite)
+const RANK_DE_EN = [['Eisen','Iron'],['Silber','Silver'],['Platin','Platinum'],['Smaragd','Emerald'],['Diamant','Diamond'],['Meister','Master'],['Großmeister','Grandmaster']];
+function i18nNames(){
+  if(I18N_NAMES) return I18N_NAMES;
+  const s = new Set();
+  const add = n => { n = String(n||'').trim(); if(n.length >= 2) s.add(n); };
+  // auf der englischen Seite: deutsche Namen, die fest in einem deutschen Satz stehen, werden zum englischen Namen
+  const map = (de, en) => { de = String(de||'').trim(); if(EN && de.length >= 3 && en && de !== en && !I18N_DE2EN.has(de)){ I18N_DE2EN.set(de, en); add(de); } };
+  TFT_DATA.champions.forEach(c=>{ add(c.n); if(c.de) add(c.de); if(c.ab) add(c.ab.n); map(c.de0, c.n); if(c.ab) map(c.ab.n0, c.ab.n); });
+  TFT_DATA.traits.forEach(t=>{ add(t.n); add(t.de); map(t.de0, t.n); });
+  TFT_DATA.items.forEach(i=>{ add(i.en); add(i.de); map(i.de0, i.en); });
+  TFT_DATA.augments.forEach(a=>{ add(a.en); add(a.de); map(a.de0, a.en); });
+  comps.forEach(c=>add(c.name)); Object.keys(PLANTS).forEach(add);
+  RANK_TIERS.forEach(t=>add(t.n)); RANK_DE_EN.forEach(([d, e])=>map(d, e));
+  (window.I18N_EN_NOTNAMES || []).forEach(n=>s.delete(n));   // Wörter, die auch normale Wörter sind
+  const by = new Map();
+  [...s].sort((a,b)=>b.length - a.length).forEach(n=>{ const k = n.slice(0, 2); (by.get(k) || by.set(k, []).get(k)).push(n); });
+  return I18N_NAMES = by;
+}
+const I18N_WORD = /[\p{L}\p{N}]/u;
+// Zahlen (und optional Namen) durch {0}, {1} … ersetzen
+function i18nKey(t, names){
+  const args = []; let out = '', i = 0;
+  const by = names ? i18nNames() : null;
+  while(i < t.length){
+    const prevWord = i > 0 && I18N_WORD.test(t[i-1]);
+    if(!prevWord && /\d/.test(t[i])){ const m = t.slice(i).match(/^\d+(?:[.,]\d+)*/); out += '{' + args.length + '}'; args.push(m[0]); i += m[0].length; continue; }
+    if(by && !prevWord){
+      const hit = (by.get(t.substr(i, 2)) || []).find(n=>t.startsWith(n, i) && !I18N_WORD.test(t[i + n.length] || ''));
+      if(hit){ out += '{' + args.length + '}'; args.push(hit); i += hit.length; continue; }
+    }
+    out += t[i++];
+  }
+  return {key:out, args};
+}
+// deutsche Zahlen aus festem Text ins englische Format: 1.447 → 1,447 · 0,02 → 0.02 (englische Zahlen bleiben unverändert)
+const i18nNum = a => /^[1-9]\d{0,2}(\.\d{3})+$/.test(a) ? a.replace(/\./g, ',') : (/^\d+,\d+$/.test(a) && !/^[1-9]\d{0,2},\d{3}$/.test(a) ? a.replace(',', '.') : a);
+const i18nFill = (v, args) => v.replace(/\{(\d+)\}/g, (m, k)=>args[+k] !== undefined ? (I18N_DE2EN.get(args[+k]) || (EN ? i18nNum(args[+k]) : args[+k])) : m);
+// Einen Text übersetzen (oder beim Sammeln merken). Gibt null zurück, wenn nichts zu tun ist.
+function trStr(s){
+  if(!EN && !I18N_HARVEST) return null;
+  const t = String(s).replace(/\s+/g, ' ').trim();
+  if(!t || !/\p{L}/u.test(t) || I18N_OUT.has(t)) return null;
+  if(I18N_HARVEST){ if(!I18N_SEEN.has(t)) I18N_SEEN.set(t, curPath()); return null; }
+  if(I18N_CACHE.has(t)) return I18N_CACHE.get(t);
+  const q = t.replace(/(\d)%/g, '$1 %');   // englische Zahlen „36.1%“ wie im deutschen Schlüssel „36,1 %“ behandeln
+  let v = I18N[q], res = null;
+  if(v === undefined){ const k = i18nKey(q, false); if(k.args.length && I18N[k.key] !== undefined) v = i18nFill(I18N[k.key], k.args);
+    else { const k2 = i18nKey(q, true); if(k2.args.length && I18N[k2.key] !== undefined) v = i18nFill(I18N[k2.key], k2.args);
+      else if(k2.key === '{0}' && I18N_DE2EN.has(k2.args[0])) v = I18N_DE2EN.get(k2.args[0]); } }   // deutscher Name allein
+  if(v !== undefined){ res = v.replace(/(\d) %/g, '$1%'); I18N_OUT.add(res.replace(/\s+/g, ' ').trim()); }
+  else if(!I18N_SEEN.has(t)) I18N_SEEN.set(t, curPath());   // fehlt im Wörterbuch → window.i18nMissing()
+  if(I18N_CACHE.size > 20000) I18N_CACHE.clear();
+  I18N_CACHE.set(t, res);
+  return res;
+}
+const tr = s => { const v = trStr(s); return v === null ? s : v; };
+const I18N_ATTRS = ['title', 'placeholder', 'aria-label', 'alt'];
+function i18nNode(root){
+  if(root.nodeType === 3){ const p = root.parentNode; if(!p || p.closest && p.closest('script,style,textarea,[data-noi18n]')) return;
+    const v = trStr(root.nodeValue); if(v !== null){ const lead = root.nodeValue.match(/^\s*/)[0], tail = root.nodeValue.match(/\s*$/)[0]; root.nodeValue = lead + v + tail; } return; }
+  if(root.nodeType !== 1 || root.closest('script,style,[data-noi18n]')) return;
+  const tw = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {acceptNode: n=>n.nodeType===1 && /^(SCRIPT|STYLE|TEXTAREA)$/.test(n.tagName) || n.nodeType===1 && n.hasAttribute('data-noi18n') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT});
+  let n = root;
+  do {
+    if(n.nodeType === 3){ const v = trStr(n.nodeValue); if(v !== null){ const lead = n.nodeValue.match(/^\s*/)[0], tail = n.nodeValue.match(/\s*$/)[0]; n.nodeValue = lead + v + tail; } }
+    else {
+      for(const a of I18N_ATTRS){ const x = n.getAttribute(a); if(x){ const v = trStr(x); if(v !== null) n.setAttribute(a, v); } }
+      if(EN && n.tagName === 'A'){ const h = n.getAttribute('href'); if(h && h[0] === '/' && h[1] !== '/'){ const w = withLang(h); if(w !== h) n.setAttribute('href', w); } }
+    }
+  } while((n = tw.nextNode()));
+}
+function i18nStart(){
+  if(!EN && !I18N_HARVEST) return;
+  i18nNode(document.body);
+  new MutationObserver(list=>{ for(const m of list){
+    if(m.type === 'childList') m.addedNodes.forEach(i18nNode);
+    else if(m.type === 'characterData') i18nNode(m.target);
+    else if(m.type === 'attributes'){   // nur das geänderte Attribut prüfen, nicht den ganzen Inhalt
+      const el = m.target, a = m.attributeName, x = el.getAttribute(a); if(!x || el.closest('[data-noi18n]')) continue;
+      if(a === 'href'){ if(EN && el.tagName === 'A' && x[0] === '/' && x[1] !== '/'){ const w = withLang(x); if(w !== x) el.setAttribute('href', w); } }
+      else { const v = trStr(x); if(v !== null) el.setAttribute(a, v); }
+    }
+  } }).observe(document.body, {childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['title','placeholder','aria-label','alt','href']});
+  // Meldungen in Dialogen ebenfalls übersetzen
+  const c = window.confirm.bind(window), p = window.prompt.bind(window), a = window.alert.bind(window);
+  window.confirm = m => c(tr(m)); window.prompt = (m, d) => p(tr(m), d); window.alert = m => a(tr(m));
+}
+// Entwicklung: alle Texte ohne Übersetzung (auf /en/) bzw. alle gesammelten Texte (mit ?i18nharvest) als Liste
+window.i18nMissing = () => [...I18N_SEEN.entries()].map(([t, p])=>p + '\t' + t).join('\n');
+window.i18nKeys = () => [...I18N_SEEN.keys()].map(t=>{ const k = i18nKey(t, true); return k.key; });
+
+// Sprachumschalter oben rechts (merkt sich die Wahl)
+$('#openSearch').insertAdjacentHTML('beforebegin', `<a class="tb-lang" id="langBtn" href="${EN ? curPath() : '/en' + (curPath()==='/' ? '/' : curPath())}" hreflang="${EN ? 'de' : 'en'}" title="${EN ? 'Deutsche Version' : 'English version'}" data-noi18n>${EN ? '<b>EN</b><span>DE</span>' : '<b>DE</b><span>EN</span>'}</a>`);
+$('#langBtn').addEventListener('click', e=>{
+  e.preventDefault(); e.stopPropagation();
+  try { localStorage.setItem('tftfreaks_lang', EN ? 'de' : 'en'); } catch(_){}
+  const p = curPath(); location.href = (EN ? p : '/en' + (p === '/' ? '/' : p)) + location.search;
+}, true);
+i18nStart();
+
 /* init */
 renderSetSwitcher();
-document.querySelectorAll('.data-src').forEach(el=>{ el.textContent = `Offizielle Spieldaten: CommunityDragon ${TFT_DATA.version} · Set ${TFT_DATA.set} · aktualisiert am ${new Date(TFT_DATA.generated).toLocaleDateString('de-DE')}. Werte können sich mit Patches ändern.`; });
+document.querySelectorAll('.data-src').forEach(el=>{ el.textContent = L(`Offizielle Spieldaten: CommunityDragon ${TFT_DATA.version} · Set ${TFT_DATA.set} · aktualisiert am ${new Date(TFT_DATA.generated).toLocaleDateString(LOC)}. Werte können sich mit Patches ändern.`, `Official game data: CommunityDragon ${TFT_DATA.version} · Set ${TFT_DATA.set} · updated on ${new Date(TFT_DATA.generated).toLocaleDateString(LOC)}. Values may change with patches.`); });
 renderStatBar(); renderHome(); filterComps(); renderItemTL(); renderAugTL(); renderChamps(); renderTraits(); renderItems(); renderRecipes(); route();
