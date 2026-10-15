@@ -1734,3 +1734,36 @@ details.card.dr-more{margin:0}
 .dps-split .ph{background:#ff8a1f}.dps-split .mg{background:#4f8cff}.dps-split .tr{background:#e8e8f0}
 @media (max-width:980px){ .dps{grid-template-columns:minmax(0,1fr)} .dps-res{position:static} }
 @media (max-width:560px){ .dps-build{grid-template-columns:24px auto 1fr} .dps-bname{grid-column:1/-1} .dps-del{grid-row:1;grid-column:3;justify-self:end} .dps-slot > button:first-child{width:40px;height:40px} .dps-in,.dps-res{padding:14px} }
+
+/* ================= TOOL-TEXTBLOCK (unter jedem Tool: Erklärung, Anleitung, FAQ) ================= */
+.tool-seo{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;margin-top:40px;padding:28px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,rgba(79,140,255,.05),transparent 40%),var(--panel)}
+.tool-seo.b-simonly{display:none}
+.sim-mode .tool-seo.b-simonly{display:grid}
+.tool-seo h2{margin:0 0 12px;font-size:1.45rem;line-height:1.2}
+.tool-seo h3{margin:22px 0 10px;font-size:1.02rem}
+.tool-seo .ts-side h3:first-child{margin-top:0}
+.tool-seo p{color:var(--muted);line-height:1.65;margin:0 0 10px}
+.ts-steps{list-style:none;counter-reset:ts;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.ts-steps li{counter-increment:ts;position:relative;padding-left:40px;color:var(--muted);line-height:1.55;min-height:28px}
+.ts-steps li::before{content:counter(ts);position:absolute;left:0;top:-1px;width:28px;height:28px;border-radius:9px;background:var(--accent-soft);color:var(--accent-2);font-weight:800;font-size:.85rem;display:flex;align-items:center;justify-content:center}
+.ts-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ts-list li{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:12px;background:#13131b;border:1px solid var(--line)}
+.ts-list a{font-weight:800;color:var(--text);text-decoration:none}
+.ts-list a:hover{color:var(--accent-2)}
+.ts-list span{font-size:.84rem;color:var(--muted);line-height:1.45}
+.ts-side{display:flex;flex-direction:column;gap:8px}
+.ts-side details{border:1px solid var(--line);border-radius:12px;background:#13131b;padding:0 14px}
+.ts-side summary{cursor:pointer;list-style:none;padding:12px 22px 12px 0;font-weight:700;font-size:.9rem;position:relative}
+.ts-side summary::-webkit-details-marker{display:none}
+.ts-side summary::after{content:"+";position:absolute;right:0;top:9px;color:var(--accent-2);font-size:1.1rem;font-weight:800}
+.ts-side details[open] summary::after{content:"–"}
+.ts-side details p{font-size:.86rem;margin:0 0 12px}
+.ts-links{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.ts-links a{display:inline-flex;padding:7px 12px;border-radius:99px;border:1px solid var(--line-2);color:var(--text);text-decoration:none;font-size:.82rem;font-weight:700}
+.ts-links a:hover{border-color:var(--accent);color:var(--accent-2)}
+@media (max-width:900px){ .tool-seo{grid-template-columns:minmax(0,1fr);padding:20px} .ts-list{grid-template-columns:1fr} }
+
+/* Tool-Überschriften: Suchbegriff farbig mit Doppelpunkt, danach Beschreibung (normale Schreibweise) */
+.page-head h1.tool-h1{font-family:var(--ff-body);font-style:normal;text-transform:none;font-weight:800;font-size:clamp(1.45rem,2.5vw,2.1rem);line-height:1.22;letter-spacing:-.01em;max-width:860px}
+.tool-h1 .th-key{color:var(--accent-2)}
+.tool-h1 .wip-pill{vertical-align:middle;font-size:.7rem}

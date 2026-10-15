@@ -1,5 +1,10 @@
 {
+  "functions": {
+    "api/sitemap.js": { "includeFiles": "data/patches.js" }
+  },
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/robots.txt", "destination": "/api/robots" },
     { "source": "/((?!api/|assets/|data/|tools/[^/]*\\.|tierlist-data-|robots\\.txt|sitemap\\.xml|TFT\\.html).*)", "destination": "/index.html" }
   ]
 }

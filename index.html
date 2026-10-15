@@ -23,6 +23,11 @@
 <meta name="theme-color" content="#0b1324">
 <meta name="description" content="TFT Freaks — TFT Tierlist, Comps, Items, Augments, Champions und Coaching für Set 18 Enchanted Wilds.">
 <title>TFT Freaks — TFT Tierlist, Comps & Coaching</title>
+<meta property="og:site_name" content="TFT Freaks">
+<meta property="og:type" content="website">
+<meta property="og:title" content="TFT Freaks — TFT Tierlist, Comps, Tools & Coaching">
+<meta property="og:description" content="TFT Tierlist mit Comps, Items und Augments, kostenlose TFT Tools wie Rolldown-Rechner und DPS-Rechner – und Coaching von Challenger-Spielern.">
+<meta name="twitter:card" content="summary">
 <link rel="icon" type="image/png" href="assets/img/tft-logo.png">
 <link rel="stylesheet" href="assets/css/fonts.css">
 <link rel="stylesheet" href="assets/css/site.css">
@@ -301,7 +306,7 @@
   <div class="wrap">
     <div class="page-head" data-tool-art="simulator" data-art-buddy="sim">
       <div class="crumb" id="bCrumb"><a href="/">Home</a> / Team Builder</div>
-      <h1 id="bTitle">Team Builder <em class="serif">Set <span data-setno>18</span></em></h1>
+      <h1 id="bTitle" class="tool-h1"><span class="th-key">TFT Team Builder:</span> Board planen für Set <span data-setno>18</span></h1>
       <p id="bIntro">Zieh Units aufs Brett, verteil Items und sieh sofort, welche Traits aktiv sind. Auf dem Handy: erst antippen, dann aufs Feld tippen.</p>
     </div>
     <div class="b-ctx" id="bCtx" hidden></div>
@@ -362,6 +367,52 @@
       </div>
       <div class="bp-body"><div class="bp-units" id="bPoolUnits"></div><div class="bp-items" id="bPoolItems"></div></div>
     </div>
+    <section class="tool-seo b-only" aria-labelledby="ts-builder">
+      <div class="ts-main">
+        <h2 id="ts-builder">TFT Team Builder: Plan dein Board</h2>
+        <p>Mit dem Team Builder stellst du dein Board zusammen, bevor du es spielst: Units platzieren, Items verteilen, Sterne setzen und sofort sehen, welche Traits aktiv sind. Fertige Teams teilst du als Link oder Team-Code – perfekt für Discord, Coaching oder deine nächste Ranked-Partie.</p>
+        <h3>So benutzt du den Team Builder</h3>
+        <ol class="ts-steps">
+          <li>Zieh Units aufs Brett – oder tipp erst eine Unit und dann ein Feld an.</li>
+          <li>Gib deinen Units Items und klick auf die Sterne, um das Sternelevel zu ändern.</li>
+          <li>Links siehst du alle aktiven Traits, rechts Augments und die Komponenten, die du für deine Items brauchst.</li>
+          <li>Teile dein Team als Link oder Team-Code. Mit „Gegner“ stellst du zusätzlich ein gegnerisches Board auf.</li>
+        </ol>
+        <h3>Aus der Tierlist direkt ins Board</h3>
+        <p>Jede Comp aus unserer TFT Tierlist kannst du mit einem Klick im Team Builder öffnen und dort anpassen. Willst du wissen, ob dein Board gegen ein anderes gewinnt, lädst du es im Kampf-Simulator.</p>
+      </div>
+      <aside class="ts-side">
+        <h3>Häufige Fragen</h3>
+        <details><summary>Ist der Team Builder kostenlos?</summary><p>Ja, kostenlos und ohne Anmeldung. Dein Board bleibt in deinem Browser gespeichert.</p></details>
+        <details><summary>Wie teile ich mein Team?</summary><p>Über die Symbole oben rechts: Link kopieren oder Team-Code kopieren. Mit „Importieren“ lädst du einen Code oder Link wieder.</p></details>
+        <details><summary>Kann ich Teams aus früheren Sets bauen?</summary><p>Ja. Über die Set-Auswahl wechselst du zu älteren Sets oder zur PBE-Vorschau, wenn sie verfügbar ist.</p></details>
+        <h3>Weitere Tools</h3>
+        <ul class="ts-links"><li><a href="/tools/simulator">Kampf-Simulator</a></li><li><a href="/tools/dps">DPS-Rechner</a></li><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="/tools/rolldown">Rolldown-Rechner</a></li></ul>
+      </aside>
+    </section>
+    <section class="tool-seo b-simonly" aria-labelledby="ts-sim">
+      <div class="ts-main">
+        <h2 id="ts-sim">TFT Kampf-Simulator: Teste deine Teams, bevor du sie spielst</h2>
+        <p>Welches Board gewinnt – deins oder das des Gegners? Im Kampf-Simulator stellst du zwei Teams mit Items, Sternen und Augments auf und siehst den Kampf Schritt für Schritt: wer wohin läuft, wen er angreift, wann er seine Fähigkeit wirkt und wer am meisten Schaden macht.</p>
+        <h3>So benutzt du den Kampf-Simulator</h3>
+        <ol class="ts-steps">
+          <li>Stell dein Team und das Gegner-Team auf – oder lade Comps direkt aus der Tierlist.</li>
+          <li>Starte den Kampf und spul vor oder zurück.</li>
+          <li>Klick eine Unit an, um Ziel, Laufweg, Werte und ihre nächste Aktion zu sehen.</li>
+          <li>Rechne den Kampf 100-mal, um die Siegchance beider Teams zu sehen.</li>
+        </ol>
+        <h3>Gut zu wissen</h3>
+        <p>Der Kampf-Simulator ist noch in Arbeit. Grundwerte und Items kommen von Riot, Fähigkeiten werden aus den offiziellen Texten gelesen und geschätzt, wo Riot keine Zahlen liefert. Die Ergebnisse sind Richtwerte – ideal, um Aufstellungen und Item-Verteilungen zu vergleichen.</p>
+      </div>
+      <aside class="ts-side">
+        <h3>Häufige Fragen</h3>
+        <details><summary>Wie genau ist der Kampf-Simulator?</summary><p>Er folgt den bekannten Kampfregeln von TFT: Zielwahl, Laufwege, 10 Mana pro Angriff, Mana durch erlittenen Schaden und Verlängerung ab 30 Sekunden. Die Stärke mancher Fähigkeiten ist geschätzt, deshalb sind die Ergebnisse Richtwerte.</p></details>
+        <details><summary>Kann ich Comps aus der Tierlist laden?</summary><p>Ja, über die Auswahl über den Brettern. Die Augments wählst du selbst – die aus der Tierlist sind nur Vorschläge.</p></details>
+        <details><summary>Was zeigt das 100-mal-Rechnen?</summary><p>Weil Krits und manche Entscheidungen Zufall sind, rechnet der Simulator den Kampf 100-mal und zeigt, wie oft jedes Team gewinnt.</p></details>
+        <h3>Weitere Tools</h3>
+        <ul class="ts-links"><li><a href="/tools/dps">DPS-Rechner</a></li><li><a href="/builder">Team Builder</a></li><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="/tools/rolldown">Rolldown-Rechner</a></li></ul>
+      </aside>
+    </section>
   </div>
 </div>
 
@@ -427,7 +478,7 @@
           <button class="buddy-img m-heimer" type="button" aria-label="Heimerdinger – nächster Tipp" title="Klick für den nächsten Tipp"></button>
         </div>
         <div class="crumb">Home / Tools</div>
-        <h1>TFT <em class="serif">Tools</em></h1>
+        <h1 class="tool-h1"><span class="th-key">Teamfight Tactics Tools:</span> Kostenlose TFT Rechner für Set <span data-setno>18</span></h1>
         <p>Rechner und Werkzeuge für deine Partien – mit den offiziellen Daten von Set <span data-setno>18</span>.</p>
       </div>
       <!-- Kacheln: Maskottchen-Bild je Tool unter assets/tools/<name>.webp (transparent, ca. 420 × 420 px).
@@ -469,46 +520,159 @@
           <div class="tc-cap"><span>TFT DPS-Rechner</span><span class="tc-st">Neu</span></div>
         </div>
       </div>
+      <section class="tool-seo" aria-labelledby="ts-tools">
+        <div class="ts-main">
+          <h2 id="ts-tools">Kostenlose TFT Tools für Set <span data-setno>18</span></h2>
+          <p>Bessere Entscheidungen in TFT fangen mit den richtigen Zahlen an. Unsere Tools rechnen mit den offiziellen Daten des aktuellen Sets und laufen direkt im Browser – kostenlos, ohne Anmeldung und auf dem Handy genauso wie am PC.</p>
+          <h3>Welches Tool hilft dir wobei?</h3>
+          <ul class="ts-list">
+            <li><a href="/tools/rolldown">Rolldown-Rechner</a><span>Rollen oder leveln? Die Chancen, deine Units zu finden – mit Shop-Odds pro Level und Pool-Größen.</span></li>
+            <li><a href="/tools/dps">DPS-Rechner</a><span>Vergleich bis zu vier Item-Builds eines Champions und sieh im Graph, welcher am meisten Schaden macht.</span></li>
+            <li><a href="/tools/drops">Item-Drop-Rechner</a><span>Welche Komponente kommt als Nächstes aus dem Item-Pool? Trag deine Drops ein und plan deine Items.</span></li>
+            <li><a href="/tools/tierlist">Tierlist-Maker</a><span>Deine eigene Tierlist für Champions, Items, Artefakte, Embleme und Augments – per Link teilbar.</span></li>
+            <li><a href="/tools/simulator">Kampf-Simulator</a><span>Zwei Teams, ein Kampf: Laufwege, Ziele und Fähigkeiten Schritt für Schritt.</span></li>
+            <li><a href="/builder">Team Builder</a><span>Plan dein Board mit Items und Sternen und sieh sofort, welche Traits aktiv sind.</span></li>
+          </ul>
+        </div>
+        <aside class="ts-side">
+          <h3>Häufige Fragen</h3>
+          <details><summary>Sind die TFT Tools kostenlos?</summary><p>Ja. Alle Tools sind kostenlos und brauchen keine Anmeldung. Deine Eingaben bleiben in deinem Browser.</p></details>
+          <details><summary>Mit welchen Daten rechnen die Tools?</summary><p>Mit den offiziellen Spieldaten des aktuellen Sets von CommunityDragon: Champions, Items, Traits und Augments. Nach jedem Patch werden sie automatisch aktualisiert.</p></details>
+          <details><summary>Funktionieren die Tools auf dem Handy?</summary><p>Ja. Alle Tools sind für das Handy gebaut – statt zu ziehen tippst du einfach erst auf ein Element und dann auf das Ziel.</p></details>
+        </aside>
+      </section>
     </div>
 
     <!-- Rolldown-Rechner -->
     <div class="tool-view" data-tool="rolldown" hidden>
       <div class="page-head" data-tool-art="rolldown" data-art-buddy="rolldown">
         <div class="crumb"><a href="/tools">Tools</a> / Rolldown-Rechner</div>
-        <h1>Rolldown-<em class="serif">Rechner</em></h1>
+        <h1 class="tool-h1"><span class="th-key">TFT Rolldown-Rechner:</span> Odds &amp; Chancen pro Level</h1>
         <p>Wie wahrscheinlich findest du deine Units, wenn du jetzt rollst? Wähl Champion, Level und Gold – gerechnet wird mit den Shop-Chancen und Pool-Größen von Set <span data-setno>18</span>.</p>
       </div>
       <div id="rdApp"></div>
+      <section class="tool-seo" aria-labelledby="ts-rolldown">
+        <div class="ts-main">
+          <h2 id="ts-rolldown">TFT Rolldown-Rechner: Wie hoch sind deine Chancen?</h2>
+          <p>Im Rolldown entscheidet sich oft die ganze Partie: Rollst du jetzt alles runter oder levelst du erst? Der Rolldown-Rechner zeigt dir, wie wahrscheinlich du eine bestimmte Unit findest – mit den Shop-Chancen pro Level und den Pool-Größen jeder Kostenstufe im aktuellen Set.</p>
+          <h3>So benutzt du den Rolldown-Rechner</h3>
+          <ol class="ts-steps">
+            <li>Wähl die Unit, die du suchst. Die Kostenstufe stellt der Rechner automatisch ein.</li>
+            <li>Stell dein Level und das Gold ein, das du zum Rollen ausgeben willst. Jeder Reroll kostet 2 Gold und zeigt dir 5 neue Units.</li>
+            <li>Trag ein, wie viele Kopien schon draußen sind – auf deinem Board, deiner Bank und bei den Gegnern.</li>
+            <li>Wähl dein Ziel: 3 Kopien für ★★ oder 9 Kopien für ★★★. Mit den XP bis zum nächsten Level vergleicht der Rechner zusätzlich, ob sich erst leveln lohnt.</li>
+          </ol>
+          <h3>Warum Pool und Level so viel ausmachen</h3>
+          <p>Jede Unit gibt es nur in begrenzter Anzahl im gemeinsamen Pool aller acht Spieler. Hält ein Gegner dieselbe Unit, findest du sie seltener – deshalb lohnt sich Scouten vor dem Rolldown. Dein Level bestimmt, wie oft eine Kostenstufe im Shop auftaucht. 4-Kosten-Comps rollen meist auf Level 8, Reroll-Comps mit 1- bis 3-Kostern auf einem niedrigeren Level.</p>
+        </div>
+        <aside class="ts-side">
+          <h3>Häufige Fragen</h3>
+          <details><summary>Was bedeutet Rolldown in TFT?</summary><p>Beim Rolldown steckst du viel Gold auf einmal in Rerolls, um die wichtigsten Units deiner Comp zu finden und dein Board stark zu machen.</p></details>
+          <details><summary>Wie viel kostet ein Reroll?</summary><p>Ein Reroll kostet 2 Gold. Jeder Shop zeigt 5 Units, die Kostenstufen kommen mit den Chancen deines aktuellen Levels.</p></details>
+          <details><summary>Wo sehe ich die Shop-Chancen pro Level?</summary><p>In der Tabelle direkt unter dem Rechner: dort stehen die Chancen jeder Kostenstufe für alle Level des aktuellen Sets.</p></details>
+          <details><summary>Zählen gekaufte Units mit?</summary><p>Ja. Standardmäßig kosten Treffer Gold wie im Spiel. Schaltest du das aus, zählt der Rechner nur die Shops.</p></details>
+          <h3>Weitere Tools</h3>
+          <ul class="ts-links"><li><a href="/tools/dps">DPS-Rechner</a></li><li><a href="/tools/drops">Item-Drop-Rechner</a></li><li><a href="/tools/tierlist">Tierlist-Maker</a></li><li><a href="/tools/simulator">Kampf-Simulator</a></li></ul>
+        </aside>
+      </section>
     </div>
 
     <!-- Tierlist-Maker -->
     <div class="tool-view" data-tool="tierlist" hidden>
       <div class="page-head" data-tool-art="tierlist" data-art-buddy="tlmaker">
         <div class="crumb"><a href="/tools">Tools</a> / Tierlist-Maker</div>
-        <h1>Tierlist-<em class="serif">Maker</em></h1>
+        <h1 class="tool-h1"><span class="th-key">TFT Tierlist-Maker:</span> Eigene Tierlist erstellen &amp; teilen</h1>
         <p>Deine eigene Tierlist für Set <span data-setno>18</span>: Champions, Items, Artefakte, Embleme und Augments per Drag &amp; Drop einsortieren – und mit einem Link teilen.</p>
       </div>
       <div id="tmApp"></div>
+      <section class="tool-seo" aria-labelledby="ts-tierlist">
+        <div class="ts-main">
+          <h2 id="ts-tierlist">TFT Tierlist-Maker: Erstell deine eigene Tierlist</h2>
+          <p>Du hast deine eigene Meinung zur Meta? Mit dem Tierlist-Maker sortierst du Champions, Items, Artefakte, Embleme und Augments des aktuellen Sets in deine eigenen Reihen – und teilst das Ergebnis mit einem Link, zum Beispiel in Discord oder mit deinem Duo.</p>
+          <h3>So erstellst du deine Tierlist</h3>
+          <ol class="ts-steps">
+            <li>Wähl oben den Bereich: Champions, Items, Artefakte, Embleme oder Augments.</li>
+            <li>Zieh die Kacheln in die Reihen – oder tipp erst eine Kachel und dann eine Reihe an.</li>
+            <li>Benenn die Reihen um und änder Farben und Reihenfolge. Bis zu 12 Reihen sind möglich.</li>
+            <li>Mit „Teilen“ bekommst du einen Link, der genau deine Tierlist zeigt.</li>
+          </ol>
+          <h3>Ideen für deine Tierlist</h3>
+          <p>Bewerte Augments für 2-1 anders als für 4-2, ranke die besten Carrys eines Traits oder bau eine Tierlist nur aus Artefakten. Wenn du wissen willst, wie wir die Meta sehen, schau in unsere TFT Tierlist mit Comps, Items, Augments und Holds.</p>
+        </div>
+        <aside class="ts-side">
+          <h3>Häufige Fragen</h3>
+          <details><summary>Ist der Tierlist-Maker kostenlos?</summary><p>Ja, komplett kostenlos und ohne Anmeldung.</p></details>
+          <details><summary>Wird meine Tierlist gespeichert?</summary><p>Ja, dein Entwurf bleibt automatisch in deinem Browser. Zum Teilen erstellst du einen Link – wer ihn öffnet, sieht genau deine Tierlist.</p></details>
+          <details><summary>Woher kommen die Bilder und Namen?</summary><p>Aus den offiziellen Spieldaten des aktuellen Sets. Nach einem Patch sind neue Champions, Items und Augments automatisch dabei.</p></details>
+          <h3>Weitere Tools</h3>
+          <ul class="ts-links"><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="/tools/dps">DPS-Rechner</a></li><li><a href="/tools/rolldown">Rolldown-Rechner</a></li><li><a href="/tools/drops">Item-Drop-Rechner</a></li></ul>
+        </aside>
+      </section>
     </div>
 
     <!-- Item-Drop-Rechner -->
     <div class="tool-view" data-tool="drops" hidden>
       <div class="page-head" data-tool-art="drops" data-art-buddy="drops">
         <div class="crumb"><a href="/tools">Tools</a> / Item-Drop-Rechner</div>
-        <h1>Item-Drop-<em class="serif">Rechner</em></h1>
+        <h1 class="tool-h1"><span class="th-key">TFT Item-Drop-Rechner:</span> Komponenten-Chancen aus dem Item-Pool</h1>
         <p>Komponenten aus den Creep-Runden kommen aus einem Item-Pool: Was gedroppt ist, fehlt darin – vor jeder neuen Creep-Stage kommt von jeder Komponente eine dazu. Trag deine Drops ein und sieh, was als Nächstes kommen kann.</p>
       </div>
       <div id="drApp"></div>
+      <section class="tool-seo" aria-labelledby="ts-drops">
+        <div class="ts-main">
+          <h2 id="ts-drops">TFT Item-Drop-Rechner: Welche Komponente kommt als Nächstes?</h2>
+          <p>Die Komponenten aus den Creep-Runden sind kein reiner Zufall: Sie kommen aus einem Item-Pool. Was schon gedroppt ist, fehlt im Pool – dadurch werden die übrigen Komponenten wahrscheinlicher. Der Item-Drop-Rechner zählt für dich mit und zeigt dir die Chancen für den nächsten Drop.</p>
+          <h3>So benutzt du den Item-Drop-Rechner</h3>
+          <ol class="ts-steps">
+            <li>Wähl die aktuelle Stage.</li>
+            <li>Klick jede Komponente an, sobald sie droppt.</li>
+            <li>Lies ab, welche Komponenten am wahrscheinlichsten als Nächstes kommen, und plan deine Items danach.</li>
+          </ol>
+          <h3>Warum das im Spiel hilft</h3>
+          <p>Wer weiß, welche Komponenten noch im Pool liegen, kann früher festlegen, welches Item er baut und welche Comp zu seinen Drops passt. Gerade im Early Game entscheidet das, ob du dein erstes Item früh slammen kannst.</p>
+        </div>
+        <aside class="ts-side">
+          <h3>Häufige Fragen</h3>
+          <details><summary>Sind Item-Drops in TFT zufällig?</summary><p>Nicht ganz. Die Komponenten kommen aus einem Item-Pool: Was schon gedroppt ist, fehlt darin, bis neue Komponenten dazukommen.</p></details>
+          <details><summary>Wann kommen neue Komponenten in den Pool?</summary><p>Vor jeder neuen Creep-Stage kommt von jeder Komponente eine dazu.</p></details>
+          <details><summary>Zeigt der Rechner auch Orbs?</summary><p>Ja, pro Stage siehst du auch die Chancen auf Gold- und Prismatic-Orbs.</p></details>
+          <h3>Weitere Tools</h3>
+          <ul class="ts-links"><li><a href="/tools/dps">DPS-Rechner</a></li><li><a href="/tools/rolldown">Rolldown-Rechner</a></li><li><a href="/tierlist/items">Item-Tierlist</a></li><li><a href="/bibliothek/items">Item-Rezepte</a></li></ul>
+        </aside>
+      </section>
     </div>
 
     <!-- DPS-Rechner -->
     <div class="tool-view" data-tool="dps" hidden>
       <div class="page-head" data-tool-art="dps" data-art-buddy="dps">
         <div class="crumb"><a href="/tools">Tools</a> / DPS-Rechner</div>
-        <h1>DPS-<em class="serif">Rechner</em></h1>
+        <h1 class="tool-h1"><span class="th-key">TFT DPS-Rechner:</span> Item-Builds im Schadens-Vergleich</h1>
         <p>Wie viel Schaden macht dein Carry mit welchen Items? Wähl einen Champion, stell bis zu vier Item-Builds zusammen und vergleich, wie sich der Schaden über 30 Sekunden aufbaut.</p>
       </div>
       <div id="dpsApp"></div>
+      <section class="tool-seo" aria-labelledby="ts-dps">
+        <div class="ts-main">
+          <h2 id="ts-dps">TFT DPS-Rechner: Welcher Item-Build macht am meisten Schaden?</h2>
+          <p>Guinsoo's Rageblade und Kraken's Fury oder doch Infinity Edge und Striker's Flail? Manche Items brauchen Anlauf, andere wirken sofort. Der DPS-Rechner lässt einen Champion 30 Sekunden auf Trainingspuppen schlagen und zeigt dir im Graph, wie sich der Schaden jedes Builds aufbaut.</p>
+          <h3>So benutzt du den DPS-Rechner</h3>
+          <ol class="ts-steps">
+            <li>Wähl einen Champion und seine Sterne.</li>
+            <li>Stell bis zu vier Item-Builds zusammen. Die Builds aus unserer Tierlist sind schon vorausgefüllt.</li>
+            <li>Wähl das Ziel – Backline, Frontline oder Tank – und wie viele Puppen nebeneinanderstehen.</li>
+            <li>Stell unten die Sekunde ein, bis zu der du vergleichen willst, und lies den Schaden in der Tabelle ab.</li>
+          </ol>
+          <h3>Gesamtschaden oder Schaden pro Sekunde?</h3>
+          <p>„Gesamtschaden“ zeigt den aufsummierten Schaden – damit siehst du, welcher Build bis zur entscheidenden Sekunde vorne liegt. „Schaden pro Sekunde“ zeigt, wie stark ein Build gerade zuschlägt: Anlauf-Items wie Guinsoo's Rageblade oder Kraken's Fury steigen über die Zeit, Items wie Deathblade wirken ab der ersten Sekunde.</p>
+        </div>
+        <aside class="ts-side">
+          <h3>Häufige Fragen</h3>
+          <details><summary>Wie genau ist der DPS-Rechner?</summary><p>Er rechnet mit der Engine unseres Kampf-Simulators: Grundwerte und Items kommen von Riot, die Stärke der Fähigkeiten wird geschätzt, wo Riot keine Zahlen liefert. Für den Vergleich von Builds ist das gut geeignet, die absoluten Zahlen sind Richtwerte.</p></details>
+          <details><summary>Warum zählen Traits und Augments nicht mit?</summary><p>Der Rechner vergleicht nur die Items eines einzelnen Champions. So siehst du klar, was der Build selbst bringt – unabhängig von deinem restlichen Board.</p></details>
+          <details><summary>Warum ist das Ergebnis ein Mittelwert?</summary><p>Krits sind Zufall. Deshalb rechnet der DPS-Rechner jeden Build 24-mal und zeigt den Durchschnitt.</p></details>
+          <h3>Weitere Tools</h3>
+          <ul class="ts-links"><li><a href="/tools/simulator">Kampf-Simulator</a></li><li><a href="/tierlist/items">Item-Tierlist</a></li><li><a href="/tools/drops">Item-Drop-Rechner</a></li><li><a href="/tools/rolldown">Rolldown-Rechner</a></li></ul>
+        </aside>
+      </section>
     </div>
   </div>
 </div>
@@ -882,7 +1046,7 @@
       <p>Bilder von Champions, Items, Augments, Traits und Rängen sowie die Titelbilder der Patches werden direkt von den Servern von Riot Games (ddragon.leagueoflegends.com und cmsassets.rgpub.io, Riot Games, Inc., USA) und des Community-Projekts CommunityDragon (raw.communitydragon.org) geladen. Dabei wird deine IP-Adresse an diese Server übertragen – technisch lässt sich ein Bild anders nicht abrufen. Rechtsgrundlage ist unser berechtigtes Interesse an einer vollständigen und aktuellen Darstellung der Spieldaten (Art. 6 Abs. 1 lit. f DSGVO).</p>
 
       <h2>5. Speicherung im Browser</h2>
-      <p>Einige Funktionen speichern Einstellungen im lokalen Speicher deines Browsers (localStorage): das gewählte Set, die gewählte Sprache, dein Board im Team Builder und Entwürfe in der Redaktion. Diese Daten bleiben auf deinem Gerät und werden nicht an uns übertragen. Die Speicherung ist für die von dir genutzte Funktion erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG). Du kannst sie jederzeit über die Einstellungen deines Browsers löschen.</p>
+      <p>Einige Funktionen speichern Einstellungen im lokalen Speicher deines Browsers (localStorage): das gewählte Set, die gewählte Sprache, dein Board im Team Builder, deine Tierlist im Tierlist-Maker und Entwürfe in der Redaktion. Diese Daten bleiben auf deinem Gerät und werden nicht an uns übertragen. Die Speicherung ist für die von dir genutzte Funktion erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG). Du kannst sie jederzeit über die Einstellungen deines Browsers löschen.</p>
 
       <h2>6. Bewerbungsformular</h2>
       <p>Das Bewerbungsformular ist derzeit noch nicht angeschlossen: Eingegebene Daten werden weder übertragen noch gespeichert. Sobald sich das ändert, ergänzen wir hier, wie die Daten verarbeitet werden.</p>

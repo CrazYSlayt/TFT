@@ -555,7 +555,7 @@ function bSetMode(mode){
   const sim = mode==='sim';
   $('#page-builder').classList.toggle('sim-mode', sim);
   $('#bCrumb').innerHTML = sim ? '<a href="/tools">Tools</a> / Kampf-Simulator' : '<a href="/">Home</a> / Team Builder';
-  $('#bTitle').innerHTML = sim ? `Kampf-<em class="serif">Simulator</em> <span class="pill gold wip-pill" title="Der Simulator wird noch verbessert – Ergebnisse sind Näherungen">In Arbeit</span>` :`Team Builder <em class="serif">Set <span data-setno>${TFT_DATA.set}</span></em>`;
+  $('#bTitle').innerHTML = sim ? `<span class="th-key">TFT Kampf-Simulator:</span> Welches Team gewinnt? <span class="pill gold wip-pill" title="Der Simulator wird noch verbessert – Ergebnisse sind Näherungen">In Arbeit</span>` : `<span class="th-key">TFT Team Builder:</span> Board planen für Set <span data-setno>${TFT_DATA.set}</span>`;
   $('#bIntro').textContent = sim ? 'Stell dein Team und den Gegner auf – mit Items, Sternen und Augments – und starte den Kampf. Du siehst, wohin jede Unit läuft, wen sie angreift, wann sie ihre Fähigkeit wirkt und wohin sie springt. Der Simulator ist noch in Arbeit: Die Ergebnisse sind Näherungen.'
     : 'Zieh Units aufs Brett, verteil Items und sieh sofort, welche Traits aktiv sind. Auf dem Handy: erst antippen, dann aufs Feld tippen.';
 }
@@ -2495,7 +2495,7 @@ function pageMeta(page, sub){
     case 'ranks':
       if(rk) return [`TFT Rang ${rk.n} – Spielerverteilung`, `Wie viele Spieler sind in TFT ${rk.n}? Verteilung nach Divisionen und Vergleich mit den anderen Rängen.`];
       return ['TFT Ränge & Spielerverteilung', 'Alle TFT Ränge von Eisen bis Challenger mit Divisionen – und wie viel Prozent der Spieler in jedem Rang stehen.'];
-    case 'builder': return [`TFT Team Builder ${S}`, `Stell dein TFT Team für ${S} zusammen: Units platzieren, Items verteilen, Traits prüfen und das Board als Link teilen.`];
+    case 'builder': return [`TFT Team Builder ${S} – Board planen & teilen`, `Kostenloser TFT Team Builder für ${S}: Units platzieren, Items verteilen, aktive Traits prüfen und dein Board als Link oder Team-Code teilen.`];
     case 'coaching': return ['TFT Coaching von Challenger-Spielern', 'TFT Coaching auf Deutsch und Englisch: Fundamentals und VOD-Review mit Challenger-Coaches. Kostenloses Kennenlernen, Einzelstunde 30 €.'];
     case 'about':
       if(sub==='crazyslayt') return ['CrazYSlayt – TFT Challenger & Founder', 'Claudio „CrazYSlayt“: Challenger seit Set 15, Founder von TFT Freaks und Coach seit Set 17.'];
@@ -2511,12 +2511,12 @@ function pageMeta(page, sub){
     case 'datenschutz': return ['Datenschutzerklärung', 'Datenschutzerklärung von TFT Freaks.'];
     case 'guides': return ['TFT Guides', '', true];
     case 'tools':
-      if(sub==='tierlist') return [`TFT Tierlist-Maker ${S} – eigene Tierlist erstellen`, `Erstell deine eigene TFT Tierlist für ${S}: Champions, Items, Artefakte, Embleme und Augments per Drag & Drop ranken und als Link teilen.`];
-      if(sub==='rolldown') return [`TFT Rolldown-Rechner ${S} – Chancen auf deine Units`, `Wie wahrscheinlich triffst du deine Units beim Rollen? Rolldown-Rechner für TFT ${S} mit Shop-Chancen pro Level, Pool-Größen und Level-Vergleich.`];
-      if(sub==='drops') return [`TFT Item-Drop-Rechner ${S} – welche Komponente kommt als Nächstes?`, `Trag deine Item-Drops aus den Creep-Runden ein und sieh die Chancen für die nächsten Komponenten in TFT ${S} – mit Gold- und Prismatic-Orb-Chancen pro Stage.`];
-      if(sub==='dps') return [`TFT DPS-Rechner ${S} – Item-Builds vergleichen`, `Wie viel Schaden macht dein Champion mit welchen Items? DPS-Rechner für TFT ${S}: bis zu vier Item-Builds über 30 Sekunden im Graph vergleichen.`];
+      if(sub==='tierlist') return [`TFT Tierlist-Maker ${S} – eigene Tierlist erstellen & teilen`, `Kostenloser TFT Tierlist-Maker für ${S}: Champions, Items, Artefakte, Embleme und Augments per Drag & Drop ranken und deine Tierlist als Link teilen.`];
+      if(sub==='rolldown') return [`TFT Rolldown-Rechner ${S} – Odds & Chancen pro Level`, `Wie wahrscheinlich triffst du deine Units? TFT Rolldown-Rechner für ${S} mit Shop-Odds pro Level, Pool-Größen und dem Vergleich: jetzt rollen oder erst leveln.`];
+      if(sub==='drops') return [`TFT Item-Drop-Rechner ${S} – nächste Komponente berechnen`, `Trag deine Item-Drops aus den Creep-Runden ein und sieh die Chancen für die nächsten Komponenten in TFT ${S} – mit Gold- und Prismatic-Orb-Chancen pro Stage.`];
+      if(sub==='dps') return [`TFT DPS-Rechner ${S} – Item-Builds & Schaden vergleichen`, `Welcher Item-Build macht am meisten Schaden? Kostenloser TFT DPS-Rechner für ${S}: bis zu vier Builds eines Champions über 30 Sekunden im Graph vergleichen.`];
       if(sub==='simulator') return [`TFT Kampf-Simulator ${S} – Teams gegeneinander testen`, `Lass zwei TFT Teams für ${S} gegeneinander kämpfen: Laufwege, Ziele, Fähigkeiten und Sprünge Schritt für Schritt – mit Items, Sternen, Traits und Augments.`];
-      return ['TFT Tools', `Rechner und Werkzeuge für TFT ${S}: Rolldown-Rechner, Kampf-Simulator, Tierlist-Maker und mehr.`];
+      return [`TFT Tools ${S} – Rolldown-Rechner, DPS-Rechner & Tierlist-Maker`, `Kostenlose TFT Tools für ${S}: Rolldown-Rechner mit Shop-Odds, DPS-Rechner für Item-Builds, Item-Drop-Rechner, Tierlist-Maker und Kampf-Simulator.`];
     case 'news': return ['TFT News', '', true];
     case 'admin': return ['Redaktion', '', true];
     default: return ['Seite nicht gefunden', '', true];
@@ -2537,6 +2537,34 @@ function setMeta(page, sub){
   headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + withLang(path);
   // beide Sprachfassungen für Suchmaschinen verknüpfen
   [['de', path], ['en', '/en' + path], ['x-default', path]].forEach(([l, p])=>{ headTag(`link[rel="alternate"][hreflang="${l}"]`, ()=>Object.assign(document.createElement('link'), {rel:'alternate', hreflang:l})).href = location.origin + p; });
+  // Vorschau beim Teilen (Discord, WhatsApp, X …)
+  const url = location.origin + withLang(path), tool = page==='tools' ? (sub && keep.includes(sub) ? sub : 'overview') : page==='builder' ? 'builder' : '';
+  const img = location.origin + '/' + ({tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
+  const og = (k, v) => { headTag(`meta[property="${k}"]`, ()=>{ const m = document.createElement('meta'); m.setAttribute('property', k); return m; }).content = v; };
+  og('og:title', document.title); og('og:description', desc || ''); og('og:url', url); og('og:type', 'website'); og('og:site_name', 'TFT Freaks'); og('og:locale', EN ? 'en_GB' : 'de_DE'); og('og:image', img);
+  headTag('meta[name="twitter:card"]', ()=>Object.assign(document.createElement('meta'), {name:'twitter:card'})).content = 'summary';
+  setLd(page, sub, tool, title, desc, url, path);
+}
+// Strukturierte Daten für Google: Brotkrumen, bei Tools zusätzlich Web-App und die Fragen aus dem Textblock
+const LD_SECTION = {tierlist:'Tierlist', tools:'Tools', bibliothek:'Bibliothek', ranks:'Ranks', patches:'Patches', about:'Meet the Team', builder:'Team Builder', coaching:'Coaching', apply:'Coaching', impressum:'Impressum', datenschutz:'Datenschutz'};
+function setLd(page, sub, tool, title, desc, url, path){
+  const org = {'@type':'Organization', name:'TFT Freaks', url:location.origin + withLang('/'), logo:location.origin + '/assets/img/tft-logo.png'};
+  const graph = [{'@type':'WebSite', name:'TFT Freaks', url:location.origin + withLang('/'), inLanguage:EN ? 'en' : 'de', publisher:org}];
+  if(page!=='home'){
+    const items = [['Home', '/']], sec = LD_SECTION[page];
+    if(sec) items.push([tr(sec), '/' + page]);
+    if(path !== '/' + page) items.push([title.split(' – ')[0], path]);
+    graph.push({'@type':'BreadcrumbList', itemListElement:items.map(([n, p], i)=>({'@type':'ListItem', position:i + 1, name:n, item:location.origin + withLang(p)}))});
+  }
+  if(tool){
+    graph.push({'@type':'WebApplication', name:title.split(' – ')[0], url, description:desc, applicationCategory:'GameApplication', operatingSystem:'Web', browserRequirements:'JavaScript', inLanguage:EN ? 'en' : 'de', isAccessibleForFree:true, offers:{'@type':'Offer', price:'0', priceCurrency:'EUR'}, publisher:org});
+    const box = tool==='builder' ? $('#page-builder .tool-seo.b-only') : tool==='simulator' ? $('#page-builder .tool-seo.b-simonly') : $(`#page-tools .tool-view[data-tool="${tool==='overview' ? '' : tool}"] .tool-seo`);
+    const qa = box ? [...box.querySelectorAll('details')].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}})) : [];
+    if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
+  }
+  let el = document.getElementById('ldPage');
+  if(!el){ el = document.createElement('script'); el.type = 'application/ld+json'; el.id = 'ldPage'; document.head.appendChild(el); }
+  el.textContent = JSON.stringify({'@context':'https://schema.org', '@graph':graph});
 }
 
 // Interne Links ohne Neuladen öffnen (Strg/Mittelklick öffnen weiterhin einen neuen Tab)
