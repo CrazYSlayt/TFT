@@ -60,7 +60,7 @@ function loadTierSource(){
 let tierSource = loadTierSource();
 // Item-/Augment-Bewertungen: aus dem Entwurf, sonst aus der veröffentlichten Datei
 const tlPart = k => tierSource.data[k] || (TL_FILE && TL_FILE[k]) || {};
-let ITEM_TL = tlPart('itemTL'), AUG_TL = tlPart('augTL');
+let ITEM_TL = tlPart('itemTL'), AUG_TL = tlPart('augTL'), HOLD_TL = tlPart('holdTL');
 const TL_PATCH = tierSource.data.patch || (TL_FILE && TL_FILE.patch) || '';
 // Eigene Ergänzungen zum Set (data/custom-<Set>.js): Pflanzen-Bilder, Icons für Platzhalter-Augments
 const TFT_CUSTOM_SET = window.TFT_CUSTOM && (!TFT_CUSTOM.set || TFT_CUSTOM.set===TFT_DATA.set) ? window.TFT_CUSTOM : {};
@@ -341,7 +341,9 @@ const AUG_CDN = 'https://raw.communitydragon.org/latest/game/assets/maps/tft/ico
 const augById = Object.fromEntries(AUGS.map(a=>[a.id,a]));
 const augImg = a => AUG_IMG[a.id] || a.icon;
 const AUG_LV = {1:'Silber',2:'Gold',3:'Prismatisch'};
-const tierRow = (t,inner) => `<div class="tier-block" style="margin-top:12px"><div class="tier-letter tier-${t}">${t}</div><div class="tl-grid">${inner}</div></div>`;
+// Eine Tier-Reihe im Comps-Design (Buchstabe links, Kacheln rechts) – auch für Items, Augments und Holds
+const tierRow = (t, inner, label) => `<div class="tl-tier" style="--tc:${TIER_COL[t] || '#6b7280'}"><div class="tl-row"><div class="tl-letter"><b>${t}</b><small>${label || t + ' TIER'}</small></div><div class="tl-tiles">${inner}</div></div></div>`;
+const icoTile = (attr, name, img) => `<button class="tl-ico" ${attr} data-name="${esc(name)}" aria-label="${esc(name)}"><img src="${img}" alt="" loading="lazy"></button>`;
 
 let itlCat = 'craftables';
 function renderItemTL(){
@@ -349,7 +351,7 @@ function renderItemTL(){
   const tl = ITEM_TL[itlCat] || {};
   $('#itemTiers').innerHTML = ['S','A','B','C'].filter(t=>(tl[t]||[]).length).map(t=>tierRow(t, tl[t].map(id=>{
     const it = findItem(id);
-    return it ? `<button class="tl-card" data-item="${it.id}"><img src="${it.img}" alt="" loading="lazy"><div><h4>${esc(it.en)}</h4><small>${esc(it.de)}</small></div></button>` : '';
+    return it ? icoTile(`data-item="${it.id}"`, it.en, it.img) : '';
   }).join(''))).join('');
 }
 $('#itemTlFilters').addEventListener('click', e=>{
@@ -359,7 +361,7 @@ $('#itemTlFilters').addEventListener('click', e=>{
 });
 
 let augLv = '1', augStage = 'All';
-const augCard = a => `<button class="tl-card" data-aug="${a.id}"><img src="${augImg(a)}" alt="" loading="lazy"><div><h4>${esc(a.en)}</h4>${a.de!==a.en?`<small>${esc(a.de)}</small>`:''}</div></button>`;
+const augCard = a => icoTile(`data-aug="${a.id}"`, a.en, augImg(a));
 function renderAugTL(){
   if(!Object.keys(AUG_TL).length){ $('#augTiers').innerHTML = ornnSays(`Für Set ${TFT_DATA.set} gibt es noch keine Augment-Tierlist. Kommt, sobald genug gespielt wurde.`); return; }
   const q = $('#augSearch').value.toLowerCase().trim();
@@ -379,6 +381,23 @@ function renderAugTL(){
 });
 $('#augSearch').addEventListener('input', renderAugTL);
 
+// Holds: welche 1-, 2- und 3-Kosten-Champions sich von 1-1 bis 1-3 zu halten lohnen (holdTL in tierlist-data-<Set>.js)
+let holdCost = '1';
+const holdTile = n => `<button class="tl-ico tl-champ" data-champ="${esc(n)}" data-name="${esc(n)}" aria-label="${esc(n)}">${hexHTML(n)}</button>`;
+function renderHoldTL(){
+  const tl = HOLD_TL[holdCost] || {}, pool = champions.filter(c=>c.c===+holdCost).map(c=>c.n);
+  const rated = new Set(['S','A','B','C'].flatMap(t=>tl[t]||[]));
+  const rows = ['S','A','B','C'].map(t=>{ const list = (tl[t]||[]).filter(n=>champBy[n]); return list.length ? tierRow(t, list.map(holdTile).join('')) : ''; }).join('');
+  const rest = pool.filter(n=>!rated.has(n)).sort((a,b)=>a.localeCompare(b));
+  $('#holdTiers').innerHTML = (rows || viSays(`Die Holds für ${holdCost}-Kosten-Champions werden gerade bewertet. Schau bald wieder rein!`))
+    + (rest.length ? tierRow('–', rest.map(holdTile).join(''), rows ? 'NICHT BEWERTET' : 'ALLE UNITS') : '');
+}
+$('#holdFilters').addEventListener('click', e=>{
+  const b=e.target.closest('.chip-btn'); if(!b) return;
+  $('#holdFilters').querySelectorAll('.chip-btn').forEach(x=>x.classList.toggle('active', x===b));
+  holdCost = b.dataset.hc; renderHoldTL();
+});
+
 function openAug(id){
   const a = augById[id]; if(!a) return;
   const desc = fmtDesc(a.desc, a.fx);
@@ -395,7 +414,7 @@ document.addEventListener('click', e=>{
 
 /* tierlist tabs */
 function setTab(tab){
-  ['comps','items','augments'].forEach(t=>{ $('#tl-'+t).hidden = t!==tab; });
+  ['comps','items','augments','holds'].forEach(t=>{ $('#tl-'+t).hidden = t!==tab; });
   $('#tlTabs').querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   if(tlTab!==tab){ tlTab = tab; buddyNext('tierlist', true); }
 }
@@ -872,7 +891,7 @@ const admBySlug = s => adm && adm.comps.find(c=>c.slug===s);
 function admEnsure(){
   if(adm) return;
   const d = tierSource.data;
-  adm = JSON.parse(JSON.stringify({version:1, set:TFT_DATA.set, patch:d.patch||TL_PATCH, updated:d.updated||'', source:d.source||'', basedOn:d.basedOn||'', comps:d.comps, itemTL:d.itemTL||ITEM_TL, augTL:d.augTL||AUG_TL}));
+  adm = JSON.parse(JSON.stringify({version:1, set:TFT_DATA.set, patch:d.patch||TL_PATCH, updated:d.updated||'', source:d.source||'', basedOn:d.basedOn||'', comps:d.comps, itemTL:d.itemTL||ITEM_TL, augTL:d.augTL||AUG_TL, holdTL:d.holdTL||HOLD_TL}));
 }
 function admStatus(t){ const el = $('#admStatus'); if(el) el.textContent = t; }
 function admSourceText(){ return tierSource.src==='draft' ? 'Entwurf in diesem Browser aktiv' : tierSource.src==='file' ? `Veröffentlichter Stand (tierlist-data-${TFT_DATA.set}.js${tierSource.data.source==='TFTAcademy'?', TFTAcademy-Ausgangsstand':''})` : `Set ${TFT_DATA.set}: noch keine Tierlist – leg mit „+ Neue Comp“ los`; }
@@ -1026,7 +1045,7 @@ document.addEventListener('click', e=>{
   }
   if(t.id==='admExport'){
     admEnsure();
-    const data = {version:1, set:TFT_DATA.set, patch:adm.patch, updated:adm.updated || new Date().toISOString().slice(0,10), source:adm.source || 'TFT Freaks', basedOn:adm.basedOn || '', comps:adm.comps, itemTL:adm.itemTL || ITEM_TL, augTL:adm.augTL || AUG_TL};
+    const data = {version:1, set:TFT_DATA.set, patch:adm.patch, updated:adm.updated || new Date().toISOString().slice(0,10), source:adm.source || 'TFT Freaks', basedOn:adm.basedOn || '', comps:adm.comps, itemTL:adm.itemTL || ITEM_TL, augTL:adm.augTL || AUG_TL, holdTL:adm.holdTL || HOLD_TL};
     const js = '// TFT Freaks – Tierlist-Daten, exportiert aus der Redaktion am ' + new Date().toLocaleString(LOC) + '\n// Datei neben die index.html legen, dann sehen alle Besucher diesen Stand.\nwindow.TIERLIST_DATA = ' + JSON.stringify(data) + ';\n';
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([js], {type:'text/javascript'})); a.download = `tierlist-data-${TFT_DATA.set}.js`;
     document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
@@ -1035,7 +1054,7 @@ document.addEventListener('click', e=>{
   if(t.id==='admReset'){
     if(!confirm('Entwurf verwerfen? Danach gilt wieder der veröffentlichte Stand (tierlist-data-' + TFT_DATA.set + '.js) bzw. der eingebaute Stand.')) return;
     try { localStorage.removeItem(TL_DRAFT_KEY); } catch(err){}
-    tierSource = loadTierSource(); ITEM_TL = tlPart('itemTL'); AUG_TL = tlPart('augTL'); adm = null; admSel = null; rebuildComps(tierSource.data.comps); filterComps(); renderItemTL(); renderAugTL(); updateTlNote(); renderAdmin(); return;
+    tierSource = loadTierSource(); ITEM_TL = tlPart('itemTL'); AUG_TL = tlPart('augTL'); HOLD_TL = tlPart('holdTL'); adm = null; admSel = null; rebuildComps(tierSource.data.comps); filterComps(); renderItemTL(); renderAugTL(); renderHoldTL(); updateTlNote(); renderAdmin(); return;
   }
 });
 // Drag & Drop zwischen den Tiers
@@ -1110,6 +1129,9 @@ const BUDDY_LINES = {
     if(tlTab==='items'){
       const s = ((ITEM_TL.craftables||{}).S||[]).map(findItem).filter(Boolean).slice(0,3).map(i=>i.en);
       return [`Meine S-Items gerade: ${s.join(', ')}.`, 'Klick auf ein Item – dann siehst du Rezept und Werte.', 'Embleme, Artefakte und Lichtversionen haben eigene Filter. Schau mal rein!', 'Komponenten früh slammen ist fast nie falsch. Leben ist auch eine Ressource!'];
+    }
+    if(tlTab==='holds'){
+      return ['Was du von 1-1 bis 1-3 hältst, entscheidet oft deine ersten Runden.', 'Oben 1-, 2- oder 3-Kosten wählen – dann siehst du, wen du behalten solltest.', 'Ein starkes Paar früh ist Gold wert. Na ja, eigentlich Leben!', 'Klick auf einen Champion – dann siehst du seine Traits und Fähigkeit.'];
     }
     if(tlTab==='augments'){
       return ['Silber, Gold oder Prismatisch? Wähl oben die Stufe aus.', 'Die Phase zählt: Auf 2-1 sind andere Augments stark als auf 4-2.', 'Klick ein Augment an – ich zeig dir, in welchen Comps es glänzt.', 'Ein starkes Augment kann eine ganze Comp tragen. Wähl mit Plan!'];
@@ -2207,6 +2229,7 @@ function pageMeta(page, sub){
     case 'tierlist':
       if(sub==='items') return [`TFT Item-Tierlist ${S}${P}`, `Welche Items sind in TFT ${S} am stärksten? Item-Tierlist mit kombinierten Items, Lichtversionen und Artefakten.`];
       if(sub==='augments') return [`TFT Augment-Tierlist ${S}${P}`, `Die besten Augments in TFT ${S} – sortiert nach Silber, Gold und Prismatisch.`];
+      if(sub==='holds') return [`TFT Holds ${S}${P} – welche Units du früh hältst`, `Welche 1-, 2- und 3-Kosten-Champions lohnen sich in TFT ${S} von 1-1 bis 1-3 zu halten? Holds-Tierlist von S bis C.`];
       return [`TFT Tierlist ${S}${P} – die besten Comps`, `Die besten TFT Comps für ${S}${P}: Tierlist mit Aufstellung, Items, Augments und Spielplan für jede Comp.`];
     case 'bibliothek':
       if(sub==='items') return [`TFT Items ${S} – Rezepte & Werte`, `Alle Items in TFT ${S}: Rezepte, Komponenten, Lichtversionen, Artefakte und Embleme mit ihren Werten.`];
@@ -2251,7 +2274,7 @@ function setMeta(page, sub){
   if(FILE_MODE) return;
   if(noindex){ const c = document.head.querySelector('link[rel="canonical"]'); if(c) c.remove(); return; }
   // kanonische Adresse: eine Adresse pro Inhalt (z. B. /bibliothek statt /bibliothek/champions, Builder ohne Team-Code)
-  const keep = {tierlist:['items','augments'], bibliothek:['items','traits'], tools:['rolldown','tierlist','simulator','drops'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
+  const keep = {tierlist:['items','augments','holds'], bibliothek:['items','traits'], tools:['rolldown','tierlist','simulator','drops'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
   const path = page==='home' ? '/' : '/' + page + (keep.includes(sub) ? '/' + sub : '');
   headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + withLang(path);
   // beide Sprachfassungen für Suchmaschinen verknüpfen
@@ -2289,7 +2312,7 @@ function route(){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+pageId));
   let navKey = page;
   if(!isSim) simPause();
-  if(page==='tierlist') setTab(['items','augments'].includes(sub)?sub:'comps');
+  if(page==='tierlist') setTab(['items','augments','holds'].includes(sub)?sub:'comps');
   if(page==='bibliothek') setLib(['items','traits'].includes(sub)?sub:'champions');
   if(page==='ranks') setRank(sub);
   if(page==='builder') builderRoute(sub, parts[2], 'builder');
@@ -2407,16 +2430,24 @@ function i18nStart(){
 window.i18nMissing = () => [...I18N_SEEN.entries()].map(([t, p])=>p + '\t' + t).join('\n');
 window.i18nKeys = () => [...I18N_SEEN.keys()].map(t=>{ const k = i18nKey(t, true); return k.key; });
 
-// Sprachumschalter oben rechts (merkt sich die Wahl)
-$('#openSearch').insertAdjacentHTML('beforebegin', `<a class="tb-lang" id="langBtn" href="${EN ? curPath() : '/en' + (curPath()==='/' ? '/' : curPath())}" hreflang="${EN ? 'de' : 'en'}" title="${EN ? 'Deutsche Version' : 'English version'}" data-noi18n>${EN ? '<b>EN</b><span>DE</span>' : '<b>DE</b><span>EN</span>'}</a>`);
+// Sprachumschalter oben rechts: Schieberegler DE (links) ↔ EN (rechts), merkt sich die Wahl
+const FLAG_DE = '<svg class="tl-flag" viewBox="0 0 5 3" aria-hidden="true"><path fill="#000" d="M0 0h5v1H0z"/><path fill="#D00" d="M0 1h5v1H0z"/><path fill="#FFCE00" d="M0 2h5v1H0z"/></svg>';
+const FLAG_US = '<svg class="tl-flag" viewBox="0 0 190 100" aria-hidden="true"><path fill="#fff" d="M0 0h190v100H0z"/>'
+  + [0,2,4,6,8,10,12].map(i=>`<path fill="#B22234" d="M0 ${(i*100/13).toFixed(2)}h190v${(100/13).toFixed(2)}H0z"/>`).join('')
+  + '<path fill="#3C3B6E" d="M0 0h76v53.85H0z"/><g fill="#fff">'
+  + [0,1,2,3].map(r=>[0,1,2,3,4].map(c=>`<circle cx="${9 + c*14.5 + (r%2)*7}" cy="${8 + r*12.5}" r="3"/>`).join('')).join('') + '</g></svg>';
+$('#openSearch').insertAdjacentHTML('beforebegin', `<a class="tb-lang${EN ? ' is-en' : ''}" id="langBtn" href="${EN ? curPath() : '/en' + (curPath()==='/' ? '/' : curPath())}" hreflang="${EN ? 'de' : 'en'}" role="switch" aria-checked="${EN}" title="${EN ? 'Deutsche Version' : 'English version'}" aria-label="Deutsch / English" data-noi18n><i class="tl-knob"></i><span class="tl-opt tl-de">${FLAG_DE}<b>DE</b></span><span class="tl-opt tl-en">${FLAG_US}<b>EN</b></span></a>`);
 $('#langBtn').addEventListener('click', e=>{
   e.preventDefault(); e.stopPropagation();
   try { localStorage.setItem('tftfreaks_lang', EN ? 'de' : 'en'); } catch(_){}
-  const p = curPath(); location.href = (EN ? p : '/en' + (p === '/' ? '/' : p)) + location.search;
+  const p = curPath(), to = (EN ? p : '/en' + (p === '/' ? '/' : p)) + location.search;
+  e.currentTarget.classList.toggle('is-en', !EN);   // Regler erst rüberschieben, dann wechseln
+  const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setTimeout(()=>{ location.href = to; }, still ? 0 : 220);
 }, true);
 i18nStart();
 
 /* init */
 renderSetSwitcher();
 document.querySelectorAll('.data-src').forEach(el=>{ el.textContent = L(`Offizielle Spieldaten: CommunityDragon ${TFT_DATA.version} · Set ${TFT_DATA.set} · aktualisiert am ${new Date(TFT_DATA.generated).toLocaleDateString(LOC)}. Werte können sich mit Patches ändern.`, `Official game data: CommunityDragon ${TFT_DATA.version} · Set ${TFT_DATA.set} · updated on ${new Date(TFT_DATA.generated).toLocaleDateString(LOC)}. Values may change with patches.`); });
-renderStatBar(); renderHome(); filterComps(); renderItemTL(); renderAugTL(); renderChamps(); renderTraits(); renderItems(); renderRecipes(); route();
+renderStatBar(); renderHome(); filterComps(); renderItemTL(); renderAugTL(); renderHoldTL(); renderChamps(); renderTraits(); renderItems(); renderRecipes(); route();

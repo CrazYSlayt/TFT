@@ -522,6 +522,14 @@ a.tab{display:inline-block}
 .ct-tr{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);z-index:3;display:flex;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
 .ct::after{content:attr(data-name);position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:.72rem;font-weight:600;color:#fff;background:rgba(0,0,0,.85);padding:3px 8px;border-radius:6px;opacity:0;pointer-events:none;transition:.15s;z-index:6}
 .ct:hover::after,.ct:focus-visible::after{opacity:1}
+/* Items, Augments und Holds im selben Reihen-Design wie die Comps */
+.tl-ico{position:relative;background:none;border:0;padding:0;cursor:pointer;flex-shrink:0;transition:transform .15s,filter .15s}
+.tl-ico:hover{transform:translateY(-3px);filter:drop-shadow(0 0 7px var(--tc))}
+.tl-ico img{display:block;width:60px;height:60px;border-radius:10px;border:2px solid color-mix(in srgb,var(--tc) 55%,#2a2a36);background:#15151d}
+.tl-ico.tl-champ{width:72px;height:83px}
+.tl-ico::after{content:attr(data-name);position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:.72rem;font-weight:600;color:#fff;background:rgba(0,0,0,.85);padding:3px 8px;border-radius:6px;opacity:0;pointer-events:none;transition:.15s;z-index:6}
+.tl-ico:hover::after,.tl-ico:focus-visible::after{opacity:1}
+#itemTiers .tl-letter,#augTiers .tl-letter,#holdTiers .tl-letter{min-height:92px}
 .tl-detail{margin-top:12px}
 .cp-tabs{display:flex;gap:6px;flex-wrap:wrap;padding-left:300px;margin-bottom:-1px;position:relative;z-index:1}
 .cp-tab{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:10px 10px 0 0;border:1px solid var(--line-2);border-bottom:0;background:#0d0d12;color:var(--muted);font:inherit;font-size:.82rem;font-weight:700;cursor:pointer}
@@ -1624,11 +1632,16 @@ details.card.dr-more{margin:0}
 @media (prefers-reduced-motion:reduce){ .su{transition:none} }
 
 /* ================= SPRACHUMSCHALTER ================= */
-.tb-lang{align-self:center;display:inline-flex;align-items:center;gap:2px;margin-right:6px;padding:3px;border-radius:99px;border:1px solid var(--line-2);background:var(--panel);color:var(--muted);font-weight:800;font-size:.72rem;letter-spacing:.04em;text-decoration:none;flex:none}
-.tb-lang b,.tb-lang span{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:22px;padding:0 6px;border-radius:99px}
-.tb-lang b{background:var(--accent);color:#fff}
+.tb-lang{position:relative;align-self:center;display:grid;grid-template-columns:1fr 1fr;margin-right:8px;padding:3px;border-radius:99px;border:1px solid var(--line-2);background:var(--panel);color:var(--muted);font-weight:800;font-size:.72rem;letter-spacing:.04em;text-decoration:none;flex:none;cursor:pointer}
+.tl-knob{position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 3px);border-radius:99px;background:var(--accent);box-shadow:0 2px 8px rgba(0,0,0,.35);transition:transform .22s cubic-bezier(.4,.1,.2,1)}
+.tb-lang.is-en .tl-knob{transform:translateX(100%)}
+.tl-opt{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:5px;height:24px;padding:0 9px;border-radius:99px;transition:color .22s}
+.tl-flag{width:18px;height:12px;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.35);opacity:.55;transition:opacity .22s}
+.tb-lang:not(.is-en) .tl-de,.tb-lang.is-en .tl-en{color:#fff}
+.tb-lang:not(.is-en) .tl-de .tl-flag,.tb-lang.is-en .tl-en .tl-flag{opacity:1}
 .tb-lang:hover{border-color:var(--accent-2)}
-.tb-lang:hover span{color:var(--text)}
+.tb-lang:hover .tl-flag{opacity:1}
+@media (prefers-reduced-motion:reduce){ .tl-knob,.tl-opt,.tl-flag{transition:none} }
 
 /* Schmale Handys: Kopfzeile mit Sprachumschalter und Statusleiste passen auf 360–390 px */
 @media (max-width:560px){
@@ -1637,8 +1650,12 @@ details.card.dr-more{margin:0}
   .tb-logo .tft-logo{width:28px;height:28px}
   .set-sw{padding:0 4px}
   .set-btn .set-st{display:none}
-  .tb-lang{margin-right:4px;font-size:.66rem}
-  .tb-lang b,.tb-lang span{min-width:22px;height:20px;padding:0 4px}
+  .tl-ico img{width:48px;height:48px;border-radius:8px}
+  .tl-ico.tl-champ{width:58px;height:67px}
+  #itemTiers .tl-tiles,#augTiers .tl-tiles,#holdTiers .tl-tiles{gap:10px 12px;padding:12px}
+  .tb-lang{margin-right:4px}
+  .tl-opt{height:22px;padding:0 6px}
+  .tl-opt b{display:none}
   .sb-in{justify-content:center;gap:10px}
   .sb-main{gap:8px;padding-left:4px}
   .sb-main img{width:32px;height:32px}

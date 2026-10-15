@@ -868,5 +868,16 @@ window.I18N_EN = {
   "{0} % Niederlage": "{0} % defeat",
   "Magieresistenz": "Magic resist",
   "Reichweite": "Range",
-  "Einige Funktionen speichern Einstellungen im lokalen Speicher deines Browsers (localStorage): das gewählte Set, die gewählte Sprache, dein Board im Team Builder und Entwürfe in der Redaktion. Diese Daten bleiben auf deinem Gerät und werden nicht an uns übertragen. Die Speicherung ist für die von dir genutzte Funktion erforderlich (§ {0} Abs. {1} Nr. {2} TDDDG). Du kannst sie jederzeit über die Einstellungen deines Browsers löschen.": "Some features save settings in your browser's local storage (localStorage): the selected set, your language, your board in the team builder and drafts in the editor. This data stays on your device and is not transmitted to us. Storage is required for the feature you use (§ {0} para. {1} no. {2} TDDDG). You can delete it at any time in your browser settings."
+  "Einige Funktionen speichern Einstellungen im lokalen Speicher deines Browsers (localStorage): das gewählte Set, die gewählte Sprache, dein Board im Team Builder und Entwürfe in der Redaktion. Diese Daten bleiben auf deinem Gerät und werden nicht an uns übertragen. Die Speicherung ist für die von dir genutzte Funktion erforderlich (§ {0} Abs. {1} Nr. {2} TDDDG). Du kannst sie jederzeit über die Einstellungen deines Browsers löschen.": "Some features save settings in your browser's local storage (localStorage): the selected set, your language, your board in the team builder and drafts in the editor. This data stays on your device and is not transmitted to us. Storage is required for the feature you use (§ {0} para. {1} no. {2} TDDDG). You can delete it at any time in your browser settings.",
+  "{0}-Kosten-Champions": "{0}-cost champions",
+  "ALLE UNITS": "ALL UNITS",
+  "NICHT BEWERTET": "NOT RATED",
+  "Die Holds für {0}-Kosten-Champions werden gerade bewertet. Schau bald wieder rein!": "The holds for {0}-cost champions are being rated right now. Check back soon!",
+  "Welche Champions lohnen sich von {0}-{1} bis {2}-{3} zu halten? Bewertet von S bis C. Klick auf einen Champion für seine Details.": "Which champions are worth holding from {0}-{1} to {2}-{3}? Rated from S to C. Click a champion for its details.",
+  "Was du von {0}-{1} bis {2}-{3} hältst, entscheidet oft deine ersten Runden.": "What you hold from {0}-{1} to {2}-{3} often decides your first rounds.",
+  "Oben {0}-, {1}- oder {2}-Kosten wählen – dann siehst du, wen du behalten solltest.": "Pick {0}, {1} or {2} cost at the top – then you'll see who to keep.",
+  "Ein starkes Paar früh ist {0} wert. Na ja, eigentlich Leben!": "An early strong pair is worth {0}. Well, actually health!",
+  "Klick auf einen Champion – dann siehst du seine Traits und Fähigkeit.": "Click a champion – then you'll see its traits and ability.",
+  "TFT Holds Set {0} (Patch {1}b) – welche Units du früh hältst": "TFT Holds Set {0} (Patch {1}b) – which units to hold early",
+  "Welche {0}-, {1}- und {2}-Kosten-Champions lohnen sich in TFT Set {3} von {4}-{5} bis {6}-{7} zu halten? Holds-Tierlist von S bis C.": "Which {0}, {1} and {2} cost champions are worth holding in TFT Set {3} from {4}-{5} to {6}-{7}? Holds tier list from S to C."
 };
