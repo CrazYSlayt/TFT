@@ -1258,7 +1258,8 @@ const BUDDY_LINES = {
       'Der Item-Drop-Rechner zählt mit, was noch im Item-Pool liegt. Reine Mathematik!',
       'Mit dem Tierlist-Maker baust du deine eigene Tierlist – und schickst sie als Link an deine Freunde.',
       'Der Kampf-Simulator steht noch auf meiner Werkbank. Ein paar Schrauben fehlen noch!',
-      'Ein Experiment ist kein Experiment ohne Wiederholung: Im Simulator rechnest du einen Kampf 100-mal.'].filter(Boolean);
+      'Ein Experiment ist kein Experiment ohne Wiederholung: Im Simulator rechnest du einen Kampf 100-mal.',
+      'Guinsoo oder Infinity Edge? Der DPS-Rechner zeigt es dir als Kurve. Wunderbar!'].filter(Boolean);
   },
   // Heimerdinger in den einzelnen Tools (erscheint nur, wenn assets/tools/<tool>.webp existiert)
   tlmaker(){ return ['S-Tier oder C-Tier? Hmm … eine Frage für die Wissenschaft – und für deine Meinung!',
@@ -1266,6 +1267,10 @@ const BUDDY_LINES = {
     'Klick auf ein Label, um die Reihe umzubenennen. Farbe und Reihenfolge änderst du direkt daneben.',
     'Bis zu 12 Reihen! Genug Platz für jede noch so verrückte Hypothese.',
     'Fertig? Mit „Teilen“ bekommst du einen Link. Perfekt für hitzige Diskussionen mit Freunden!']; },
+  dps(){ return ['Zwei Builds, eine Puppe, 30 Sekunden. So sieht saubere Wissenschaft aus!',
+    'Guinsoo und Kraken brauchen Anlauf – schau, wie die Kurve nach oben zieht.',
+    'Stell die Auswertung auf die Sekunde, in der dein Kampf meist entschieden ist.',
+    'Mehr Puppen zeigen, wie viel Flächenschaden in einer Fähigkeit steckt.']; },
   rolldown(){ return ['Rollen oder leveln? Lass uns das berechnen, bevor du dein Gold verbrennst!',
     'Je mehr Kopien schon weg sind, desto schlechter deine Chancen. Trag sie ein – Präzision ist alles!',
     'Der Vergleich zeigt dir, ob ein Level vor dem Rollen mehr bringt. Faszinierend!',
@@ -1740,12 +1745,183 @@ function rdGoldFor(q){   // kleinstes Gold, mit dem das Ziel mit Chance q erreic
   return hi;
 }
 
+/* ================= DPS-RECHNER ================= */
+// Ein Champion mit bis zu 4 Item-Builds schlägt 30 s auf Trainingspuppen (Engine des Kampf-Simulators, sim.js → simDps)
+const dpsN = v => Math.round(v).toLocaleString(LOC);
+const DPS_COL = ['#4f8cff','#ff8a1f','#2fe0d0','#e05cff'];
+const DPS_PROF = [['back','Backline', 800, 30, 30], ['mid','Frontline', 1600, 70, 70], ['tank','Tank', 3000, 150, 150]];
+const DPS_CATS = [['craft','Kombiniert'], ['radiant','Lichtversionen'], ['artifact','Artefakte']];
+const dps = {cost:4, champ:'', star:2, builds:[[], []], prof:'mid', n:1, at:25, dur:30, mode:'sum', pick:null, cat:'craft', q:'', res:null};
+let dpsMounted = false, dpsTimer = 0;
+// Builds aus der Tierlist als Startpunkt: Item-Sets, die der Champion in Comps und Alt Builds hält
+function dpsSuggest(n){
+  const seen = new Set(), out = [];
+  comps.forEach(c=>[...(c.board||[]), ...(c.alt||[])].forEach(b=>{
+    if(b.u!==n || (b.i||[]).length < 2) return;
+    const ids = b.i.map(findItem).filter(it=>it && ['craft','radiant','artifact'].includes(it.cat)).map(it=>it.id), k = ids.slice().sort().join('|');   // Embleme wirken hier nicht (keine Traits)
+    if(ids.length >= 2 && !seen.has(k)){ seen.add(k); out.push(ids.slice(0, 3)); }
+  }));
+  return out.slice(0, 3);
+}
+function dpsMount(){
+  if(dpsMounted) return; dpsMounted = true;
+  if(!dps.champ){ const c = mainComps.find(x=>champBy[x.carry] && champBy[x.carry].c===4) || mainComps[0]; if(c && champBy[c.carry]){ dps.champ = c.carry; dps.cost = champBy[c.carry].c; } }
+  if(dps.champ){ const s = dpsSuggest(dps.champ); if(s.length) dps.builds = s.length > 1 ? s : [s[0], []]; }
+  $('#dpsApp').innerHTML = `<div class="dps">
+    <div class="card dps-in">
+      <section><h3 class="rd-h"><b>1</b> Champion</h3>
+        <div class="rd-costs" id="dpsCosts">${[1,2,3,4,5].map(c=>`<button type="button" class="rd-cost" data-dcost="${c}"><i class="cdot c${c}"></i>${c} Gold</button>`).join('')}</div>
+        <div class="rd-champs" id="dpsChamps"></div>
+        <div class="dps-row"><span>Sterne</span><div class="rd-costs" id="dpsStars">${[1,2,3].map(s=>`<button type="button" class="rd-cost" data-dstar="${s}">${'★'.repeat(s)}</button>`).join('')}</div></div></section>
+      <section><h3 class="rd-h"><b>2</b> Item-Builds</h3>
+        <div id="dpsBuilds"></div>
+        <div id="dpsPicker"></div></section>
+      <section><h3 class="rd-h"><b>3</b> Ziel</h3>
+        <div class="rd-costs" id="dpsProf">${DPS_PROF.map(([k,l,hp,ar,mr])=>`<button type="button" class="rd-cost" data-dprof="${k}" title="${dpsN(hp)} Leben · ${ar} Rüstung · ${mr} Magieresistenz">${l}</button>`).join('')}</div>
+        <p class="rd-hint" id="dpsProfTxt"></p>
+        <div class="dps-row"><span>Puppen</span><div class="rd-costs" id="dpsN">${[1,2,3].map(n=>`<button type="button" class="rd-cost" data-dn="${n}">${n}</button>`).join('')}</div></div>
+        <p class="rd-hint">Mehr Puppen nebeneinander zeigen, wie viel Flächenschaden eine Fähigkeit macht.</p></section>
+    </div>
+    <div class="card dps-res">
+      <div class="dps-head"><h3 class="rd-h">Schaden über die Zeit</h3>
+        <div class="rd-costs" id="dpsMode"><button type="button" class="rd-cost" data-dmode="sum">Gesamtschaden</button><button type="button" class="rd-cost" data-dmode="dps">Schaden pro Sekunde</button></div></div>
+      <div id="dpsChart" class="dps-chart"></div>
+      <label class="rd-f dps-at"><span>Auswertung bis Sekunde</span><b id="dpsAtV"></b><input type="range" id="dpsAt" min="1" max="30" value="${dps.at}"></label>
+      <div class="dps-table-wrap"><table class="dps-table" id="dpsTable"></table></div>
+      <p class="note">Gerechnet mit der Engine des Kampf-Simulators: Grundwerte und Items nach Riot, die Stärke der Fähigkeiten ist geschätzt, wo Riot keine Zahlen liefert. Die Puppen greifen nicht an – Mana gibt es also nur über Angriffe und Items. Ohne Traits und Augments. Jeder Wert ist der Mittelwert aus 24 Kämpfen, weil Krits Zufall sind. Für den Vergleich von Builds gut geeignet, die absoluten Zahlen sind Richtwerte.</p>
+    </div>
+  </div>`;
+  const on = (sel, ev, f) => $(sel).addEventListener(ev, f);
+  on('#dpsCosts', 'click', e=>{ const b = e.target.closest('[data-dcost]'); if(!b) return; dps.cost = +b.dataset.dcost; dpsChamps(); });
+  on('#dpsChamps', 'click', e=>{ const b = e.target.closest('[data-dch]'); if(!b) return; dpsSetChamp(b.dataset.dch); });
+  on('#dpsStars', 'click', e=>{ const b = e.target.closest('[data-dstar]'); if(!b) return; dps.star = +b.dataset.dstar; dpsUpdate(); });
+  on('#dpsProf', 'click', e=>{ const b = e.target.closest('[data-dprof]'); if(!b) return; dps.prof = b.dataset.dprof; dpsUpdate(); });
+  on('#dpsN', 'click', e=>{ const b = e.target.closest('[data-dn]'); if(!b) return; dps.n = +b.dataset.dn; dpsUpdate(); });
+  on('#dpsMode', 'click', e=>{ const b = e.target.closest('[data-dmode]'); if(!b) return; dps.mode = b.dataset.dmode; dpsDraw(); });
+  on('#dpsAt', 'input', e=>{ dps.at = +e.target.value; dpsDraw(); });
+  let dpsW = 0; window.addEventListener('resize', ()=>{ const ch = $('#dpsChart'); if(ch && ch.offsetParent && Math.abs(ch.clientWidth - dpsW) > 30){ dpsW = ch.clientWidth; dpsDraw(); } });
+  on('#dpsBuilds', 'click', e=>{
+    const slot = e.target.closest('[data-dslot]'), del = e.target.closest('[data-ddel]'), add = e.target.closest('[data-dadd]'), clr = e.target.closest('[data-dclr]');
+    if(del){ dps.builds.splice(+del.dataset.ddel, 1); dps.pick = null; dpsUpdate(); return; }
+    if(add){ dps.builds.push([]); dps.pick = {b:dps.builds.length - 1, s:0}; dpsUpdate(); return; }
+    if(clr){ const [b, s] = clr.dataset.dclr.split(':').map(Number); dps.builds[b].splice(s, 1); dps.pick = null; dpsUpdate(); return; }
+    if(slot){ const [b, s] = slot.dataset.dslot.split(':').map(Number); dps.pick = dps.pick && dps.pick.b===b && dps.pick.s===s ? null : {b, s}; dpsBuilds(); }
+  });
+  on('#dpsPicker', 'click', e=>{
+    const c = e.target.closest('[data-dcat]'); if(c){ dps.cat = c.dataset.dcat; dpsPicker(); return; }
+    if(e.target.closest('[data-dclose]')){ dps.pick = null; dpsBuilds(); return; }
+    const it = e.target.closest('[data-ditem]'); if(!it || !dps.pick) return;
+    const b = dps.builds[dps.pick.b]; b[Math.min(dps.pick.s, b.length)] = it.dataset.ditem;
+    dps.pick = b.length < 3 ? {b:dps.pick.b, s:b.length} : null; dpsUpdate();
+  });
+  on('#dpsPicker', 'input', e=>{ if(e.target.id!=='dpsQ') return; dps.q = e.target.value; dpsPickerGrid(); });
+  const ch = $('#dpsChart');
+  ch.addEventListener('mousemove', e=>dpsHover(e)); ch.addEventListener('mouseleave', ()=>dpsHover(null));
+  dpsChamps(); dpsUpdate();
+}
+function dpsSetChamp(n){
+  if(!champBy[n]) return;
+  dps.champ = n; dps.cost = champBy[n].c; dps.pick = null;
+  const s = dpsSuggest(n); dps.builds = s.length ? (s.length > 1 ? s : [s[0], []]) : [[], []];
+  dpsChamps(); dpsUpdate();
+}
+function dpsChamps(){
+  $('#dpsCosts').querySelectorAll('[data-dcost]').forEach(b=>b.classList.toggle('on', +b.dataset.dcost===dps.cost));
+  $('#dpsChamps').innerHTML = champions.filter(c=>c.c===dps.cost).map(c=>`<button type="button" class="rd-ch${c.n===dps.champ?' on':''}" data-dch="${esc(c.n)}" title="${esc(c.n)}">${avatar(c.n, 44)}<span>${esc(c.n)}</span></button>`).join('');
+}
+const dpsItemImg = id => { const it = findItem(id); return it ? `<img src="${it.img}" alt="" title="${esc(it.en)}">` : ''; };
+function dpsBuilds(){
+  $('#dpsBuilds').innerHTML = dps.builds.map((b, i)=>`<div class="dps-build" style="--bc:${DPS_COL[i]}"><b class="dps-bn">${String.fromCharCode(65 + i)}</b>
+    <div class="dps-slots">${[0,1,2].map(s=>{ const id = b[s], open = dps.pick && dps.pick.b===i && dps.pick.s===s;
+      return `<div class="dps-slot${open?' on':''}${id?'':' empty'}"><button type="button" data-dslot="${i}:${s}" aria-label="${id ? esc((findItem(id)||{}).en || '') : 'Item wählen'}">${id ? dpsItemImg(id) : '+'}</button>${id?`<button type="button" class="dps-x" data-dclr="${i}:${s}" aria-label="Entfernen">✕</button>`:''}</div>`; }).join('')}</div>
+    <span class="dps-bname">${b.length ? b.map(id=>esc((findItem(id)||{}).en || '')).join(' · ') : 'Keine Items'}</span>
+    ${dps.builds.length > 1 ? `<button type="button" class="dps-del" data-ddel="${i}" title="Build entfernen" aria-label="Build entfernen">✕</button>` : ''}</div>`).join('')
+    + (dps.builds.length < 4 ? `<button type="button" class="btn btn-ghost b-btn dps-add" data-dadd>+ Build vergleichen</button>` : '');
+  dpsPicker();
+}
+function dpsPicker(){
+  const box = $('#dpsPicker');
+  if(!dps.pick){ box.innerHTML = ''; return; }
+  box.innerHTML = `<div class="dps-pick"><div class="dps-pickbar"><span>Item für Build ${String.fromCharCode(65 + dps.pick.b)}, Slot ${dps.pick.s + 1}</span><button type="button" class="dps-x2" data-dclose aria-label="Schließen">✕</button></div>
+    <div class="dps-pickbar">${DPS_CATS.map(([k,l])=>`<button type="button" class="chip-btn${dps.cat===k?' active':''}" data-dcat="${k}">${l}</button>`).join('')}<input class="input" id="dpsQ" placeholder="Item suchen…" value="${esc(dps.q)}"></div>
+    <div class="dps-grid" id="dpsGrid"></div></div>`;
+  dpsPickerGrid();
+}
+function dpsPickerGrid(){
+  const q = dps.q.toLowerCase().trim();
+  const list = ITEMS.filter(i=>(q ? ['craft','radiant','artifact'].includes(i.cat) : i.cat===dps.cat) && (!q || i.en.toLowerCase().includes(q) || i.de.toLowerCase().includes(q))).sort((a,b)=>a.en.localeCompare(b.en));
+  $('#dpsGrid').innerHTML = list.map(i=>`<button type="button" data-ditem="${i.id}" title="${esc(i.en)}"><img src="${i.img}" alt="" loading="lazy"><span>${esc(i.en)}</span></button>`).join('') || '<p class="note">Kein Item gefunden.</p>';
+}
+function dpsUpdate(){
+  $('#dpsStars').querySelectorAll('[data-dstar]').forEach(b=>b.classList.toggle('on', +b.dataset.dstar===dps.star));
+  $('#dpsProf').querySelectorAll('[data-dprof]').forEach(b=>b.classList.toggle('on', b.dataset.dprof===dps.prof));
+  $('#dpsN').querySelectorAll('[data-dn]').forEach(b=>b.classList.toggle('on', +b.dataset.dn===dps.n));
+  const p = DPS_PROF.find(x=>x[0]===dps.prof);
+  $('#dpsProfTxt').textContent = `${dpsN(p[2])} Leben · ${p[3]} Rüstung · ${p[4]} Magieresistenz`;
+  dpsBuilds();
+  clearTimeout(dpsTimer);
+  dpsTimer = setTimeout(()=>{   // kurz warten, damit schnelle Klicks nicht jedes Mal neu rechnen
+    if(!dps.champ){ dps.res = null; dpsDraw(); return; }
+    dps.res = dps.builds.map(items=>simDps({champ:dps.champ, star:dps.star, items, hp:p[2], ar:p[3], mr:p[4], n:dps.n, dur:dps.dur}));
+    dpsDraw();
+  }, 30);
+}
+const dpsAtIdx = (r, t) => Math.min(r.tot.length - 1, Math.round(t / SIM_DPS_STEP));
+// Schaden pro Sekunde: gleitendes Fenster (±2 s um den Zeitpunkt), damit einzelne Angriffe und Fähigkeiten nicht als Zacken stehen
+const dpsRate = r => { const k = Math.round(2 / SIM_DPS_STEP), n = r.tot.length - 1;
+  return r.tot.map((_, i)=>{ const a = Math.max(0, i - k), b = Math.min(n, i + k); return b > a ? (r.tot[b] - r.tot[a]) / ((b - a) * SIM_DPS_STEP) : 0; }); };
+function dpsDraw(){
+  $('#dpsMode').querySelectorAll('[data-dmode]').forEach(b=>b.classList.toggle('on', b.dataset.dmode===dps.mode));
+  $('#dpsAtV').textContent = dps.at + ' s';
+  const R = dps.res, chart = $('#dpsChart');
+  if(!R || !R.length){ chart.innerHTML = viSays('Wähl oben einen Champion – dann rechne ich los.'); $('#dpsTable').innerHTML = ''; return; }
+  // Zeichenfläche in echter Breite, damit die Beschriftung auf dem Handy lesbar bleibt
+  const W = Math.round(Math.max(320, Math.min(640, chart.clientWidth || 640))), H = Math.round(W * (W < 480 ? 0.62 : 0.45)), L0 = 54, R0 = 14, T0 = 14, B0 = 30, w = W - L0 - R0, h = H - T0 - B0;
+  const ser = R.map(r=>dps.mode==='dps' ? dpsRate(r) : r.tot);
+  const max = Math.max(1, ...ser.map(s=>Math.max(...s)));
+  const step = [50,100,200,250,500,1000,2000,2500,5000,10000,20000,25000,50000,100000].find(s=>max / s <= 5) || 200000, top = Math.ceil(max / step) * step;
+  const X = t => L0 + t / dps.dur * w, Y = v => T0 + h - v / top * h;
+  let g = '';
+  for(let v = 0; v <= top + 1e-6; v += step) g += `<line x1="${L0}" x2="${W - R0}" y1="${Y(v)}" y2="${Y(v)}" class="dps-grid-l"/><text x="${L0 - 8}" y="${Y(v) + 4}" text-anchor="end">${dpsN(v)}</text>`;
+  for(let t = 0; t <= dps.dur; t += 5) g += `<line x1="${X(t)}" x2="${X(t)}" y1="${T0}" y2="${T0 + h}" class="dps-grid-l v"/><text x="${X(t)}" y="${H - 10}" text-anchor="middle">${t} s</text>`;
+  const lines = ser.map((s, i)=>`<polyline fill="none" stroke="${DPS_COL[i]}" stroke-width="2.6" stroke-linejoin="round" points="${s.map((v, k)=>`${X(R[i].t[k]).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}"/>`).join('');
+  const dots = ser.map((s, i)=>`<circle cx="${X(dps.at)}" cy="${Y(s[dpsAtIdx(R[i], dps.at)])}" r="4.5" fill="${DPS_COL[i]}" stroke="#0d0d12" stroke-width="2"/>`).join('');
+  chart.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Schaden über die Zeit">${g}<line x1="${X(dps.at)}" x2="${X(dps.at)}" y1="${T0}" y2="${T0 + h}" class="dps-at-l"/>${lines}${dots}<g id="dpsHov"></g></svg><div class="dps-tip" id="dpsTip" hidden></div>`;
+  chart.dataset.geo = JSON.stringify({W, L0, w, top, T0, h});
+  // Tabelle: Schaden bis zur gewählten Sekunde, sortiert nach Build
+  const vals = R.map(r=>r.tot[dpsAtIdx(r, dps.at)]), best = Math.max(...vals);
+  const split = r => { const i = dpsAtIdx(r, dps.at), t = r.tot[i] || 1; return [r.ph[i]/t, r.mg[i]/t, r.tr[i]/t]; };
+  $('#dpsTable').innerHTML = `<thead><tr><th>Build</th><th>Schaden bis ${dps.at} s</th><th>DPS</th><th>Aufteilung</th><th>Fähigkeiten</th><th>Gesamt ${dps.dur} s</th></tr></thead><tbody>${R.map((r, i)=>{
+    const v = vals[i], sp = split(r), diff = best ? Math.round((v / best - 1) * 100) : 0, casts = r.casts * dps.at / dps.dur;
+    return `<tr><td><span class="dps-tb" style="--bc:${DPS_COL[i]}"><b>${String.fromCharCode(65 + i)}</b>${dps.builds[i].map(dpsItemImg).join('') || '<small>ohne Items</small>'}</span></td>
+      <td><b class="dps-big">${dpsN(v)}</b>${v===best && R.length > 1 ? '<span class="dps-best">Bester</span>' : R.length > 1 ? `<small class="dps-minus">${diff} %</small>` : ''}</td>
+      <td>${dpsN(v / dps.at)}</td>
+      <td><div class="dps-split" title="Physisch ${Math.round(sp[0]*100)} % · Magisch ${Math.round(sp[1]*100)} % · Absolut ${Math.round(sp[2]*100)} %"><i class="ph" style="flex:${sp[0]}"></i><i class="mg" style="flex:${sp[1]}"></i><i class="tr" style="flex:${sp[2]}"></i></div></td>
+      <td>${fmtNum(Math.round(casts * 10) / 10)}×</td>
+      <td>${dpsN(r.tot[r.tot.length - 1])}</td></tr>`; }).join('')}</tbody>`;
+}
+function dpsHover(e){
+  const tip = $('#dpsTip'), hov = $('#dpsHov'), ch = $('#dpsChart'); if(!tip || !hov || !dps.res) return;
+  if(!e){ tip.hidden = true; hov.innerHTML = ''; return; }
+  const g = JSON.parse(ch.dataset.geo || '{}'), svg = ch.querySelector('svg'), r = svg.getBoundingClientRect();
+  const x = (e.clientX - r.left) / r.width * g.W, t = Math.max(0, Math.min(dps.dur, (x - g.L0) / g.w * dps.dur));
+  if(x < g.L0 - 10){ tip.hidden = true; hov.innerHTML = ''; return; }
+  const ts = Math.round(t / SIM_DPS_STEP) * SIM_DPS_STEP, X = g.L0 + ts / dps.dur * g.w;
+  const vals = dps.res.map(rr=>(dps.mode==='dps' ? dpsRate(rr) : rr.tot)[dpsAtIdx(rr, ts)]);
+  hov.innerHTML = `<line x1="${X}" x2="${X}" y1="${g.T0}" y2="${g.T0 + g.h}" class="dps-hov-l"/>`;
+  tip.hidden = false;
+  tip.innerHTML = `<b>${fmtNum(ts)} s</b>${vals.map((v, i)=>`<span><i style="background:${DPS_COL[i]}"></i>${String.fromCharCode(65 + i)}: ${dpsN(v)}${dps.mode==='dps' ? '/s' : ''}</span>`).join('')}`;
+  const px = (X / g.W) * r.width;
+  tip.style.left = Math.min(r.width - tip.offsetWidth - 4, px + 12) + 'px';
+}
+
 function renderTools(sub, a, b){
-  const key = ['rolldown','tierlist','drops'].includes(sub) ? sub : '';
+  const key = ['rolldown','tierlist','drops','dps'].includes(sub) ? sub : '';
   document.querySelectorAll('#page-tools .tool-view').forEach(v=>v.hidden = v.dataset.tool!==key);
   if(key==='rolldown') rdMount();
   if(key==='tierlist') tmRoute(a, b);
   if(key==='drops') drRender();
+  if(key==='dps') dpsMount();
 }
 let rdMounted = false;
 function rdMount(){
@@ -2338,6 +2514,7 @@ function pageMeta(page, sub){
       if(sub==='tierlist') return [`TFT Tierlist-Maker ${S} – eigene Tierlist erstellen`, `Erstell deine eigene TFT Tierlist für ${S}: Champions, Items, Artefakte, Embleme und Augments per Drag & Drop ranken und als Link teilen.`];
       if(sub==='rolldown') return [`TFT Rolldown-Rechner ${S} – Chancen auf deine Units`, `Wie wahrscheinlich triffst du deine Units beim Rollen? Rolldown-Rechner für TFT ${S} mit Shop-Chancen pro Level, Pool-Größen und Level-Vergleich.`];
       if(sub==='drops') return [`TFT Item-Drop-Rechner ${S} – welche Komponente kommt als Nächstes?`, `Trag deine Item-Drops aus den Creep-Runden ein und sieh die Chancen für die nächsten Komponenten in TFT ${S} – mit Gold- und Prismatic-Orb-Chancen pro Stage.`];
+      if(sub==='dps') return [`TFT DPS-Rechner ${S} – Item-Builds vergleichen`, `Wie viel Schaden macht dein Champion mit welchen Items? DPS-Rechner für TFT ${S}: bis zu vier Item-Builds über 30 Sekunden im Graph vergleichen.`];
       if(sub==='simulator') return [`TFT Kampf-Simulator ${S} – Teams gegeneinander testen`, `Lass zwei TFT Teams für ${S} gegeneinander kämpfen: Laufwege, Ziele, Fähigkeiten und Sprünge Schritt für Schritt – mit Items, Sternen, Traits und Augments.`];
       return ['TFT Tools', `Rechner und Werkzeuge für TFT ${S}: Rolldown-Rechner, Kampf-Simulator, Tierlist-Maker und mehr.`];
     case 'news': return ['TFT News', '', true];
@@ -2355,7 +2532,7 @@ function setMeta(page, sub){
   if(FILE_MODE) return;
   if(noindex){ const c = document.head.querySelector('link[rel="canonical"]'); if(c) c.remove(); return; }
   // kanonische Adresse: eine Adresse pro Inhalt (z. B. /bibliothek statt /bibliothek/champions, Builder ohne Team-Code)
-  const keep = {tierlist:['items','augments','holds'], bibliothek:['items','traits'], tools:['rolldown','tierlist','simulator','drops'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
+  const keep = {tierlist:['items','augments','holds'], bibliothek:['items','traits'], tools:['rolldown','tierlist','simulator','drops','dps'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
   const path = page==='home' ? '/' : '/' + page + (keep.includes(sub) ? '/' + sub : '');
   headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + withLang(path);
   // beide Sprachfassungen für Suchmaschinen verknüpfen

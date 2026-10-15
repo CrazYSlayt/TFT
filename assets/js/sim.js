@@ -641,6 +641,48 @@ function simRun(boards, seed, quiet){
   SS = null;
   return S;
 }
+/* ---------- DPS-Rechner: ein Champion schlägt auf Trainingspuppen ---------- */
+// Die Puppen greifen nicht an und fallen nicht um (Leben/Rüstung/MR nach Profil). Ohne Traits und Augments.
+const SIM_DPS_STEP = 0.25;
+function simDpsRun(o, seed){
+  const S = SS = {t:0, rng:simRng(seed), units:[], occ:new Int16Array(56).fill(-1), ev:[], frames:[], quiet:true, team:[{enemyDeath:[]}, {enemyDeath:[]}], info:[], dots:[], seed};
+  const u = sNewUnit(S, {u:o.champ, s:o.star, i:o.items}, 0, 3);
+  // Hauptziel direkt vor dem Champion, weitere Puppen daneben (für Flächenschaden)
+  const dummies = [3, 4, 2].slice(0, o.n).map(h=>sNewUnit(S, {u:'Dummy'}, 1, h, 'Dummy'));
+  u.items.forEach(it=>{
+    sItemStats(u, it.fx);
+    const base = it.cat==='radiant' ? (radiantBase(it) || it) : it, f = SIM_ITEMS[normN(base.en)];
+    if(f) f(u, it.fx || {});
+  });
+  u.maxHp = (u.hp0 + u.hpF) * (1 + u.hpP); u.hp = u.maxHp; if(u.maxMana > 5) u.mana = Math.min(u.mana, u.maxMana); u.atkCD = 0.2 + S.rng()*0.1;
+  dummies.forEach(d=>{ d.maxHp = o.hp; d.hp = 1e12; d.ar = o.ar; d.mr = o.mr; });
+  u.on.start.forEach(f=>f());
+  const per = Math.round(SIM_DPS_STEP / SIM_DT), rec = {ph:[0], mg:[0], tr:[0]};
+  for(let step = 1; ; step++){
+    S.t = Math.round(step * SIM_DT * 1000) / 1000;
+    if(step % 10===0) sTickDots();
+    sTick(u);
+    if(step % per===0){ rec.ph.push(u.dealt.phys); rec.mg.push(u.dealt.magic); rec.tr.push(u.dealt.true); }
+    if(S.t >= o.dur - 1e-9) break;
+  }
+  rec.atk = u.attacks; rec.casts = u.casts;
+  SS = null;
+  return rec;
+}
+// Mittelwert aus mehreren Durchläufen (Krits sind Zufall) → kumulierter Schaden alle 0,25 s
+function simDps(o, runs){
+  runs = runs || 24;
+  const acc = {ph:null, mg:null, tr:null, atk:0, casts:0};
+  for(let r = 0; r < runs; r++){
+    const x = simDpsRun(o, 1000 + r * 7919);
+    ['ph','mg','tr'].forEach(k=>{ if(!acc[k]) acc[k] = new Array(x[k].length).fill(0); x[k].forEach((v, i)=>{ acc[k][i] += v / runs; }); });
+    acc.atk += x.atk / runs; acc.casts += x.casts / runs;
+  }
+  acc.tot = acc.ph.map((v, i)=>v + acc.mg[i] + acc.tr[i]);
+  acc.t = acc.tot.map((_, i)=>i * SIM_DPS_STEP);
+  return acc;
+}
+
 function sPos(u){
   const P = SIM_GRID.P;
   if(u.alive && u.mvT1 > SS.t && u.from !== null){
