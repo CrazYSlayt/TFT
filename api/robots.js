@@ -1,4 +1,4 @@
-// TFT Freaks – robots.txt für Suchmaschinen unter /robots.txt (Weiterleitung in vercel.json).
+// Climb TFT – robots.txt für Suchmaschinen unter /robots.txt (Weiterleitung in vercel.json).
 // Die Redaktion wird nicht indexiert, die Sitemap liegt unter der aktuell aufgerufenen Domain.
 module.exports = (req, res) => {
   const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';

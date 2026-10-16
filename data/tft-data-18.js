@@ -1,4 +1,4 @@
-// TFT Freaks – offizielle Spieldaten (automatisch erzeugt mit tools\update-data.ps1, nicht von Hand bearbeiten)
+// Climb TFT – offizielle Spieldaten (automatisch erzeugt mit tools\update-data.ps1, nicht von Hand bearbeiten)
 // Quelle: CommunityDragon 16.20 (live) · Set 18 · erzeugt am 2026-10-15
 window.TFT_DATA = {
 set:18, channel:"live", version:"16.20", generated:"2026-10-15", cdn:"https://raw.communitydragon.org/16.20/game/",

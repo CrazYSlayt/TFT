@@ -649,6 +649,13 @@ function simDpsRun(o, seed){
   const u = sNewUnit(S, {u:o.champ, s:o.star, i:o.items}, 0, 3);
   // Hauptziel direkt vor dem Champion, weitere Puppen daneben (für Flächenschaden)
   const dummies = [3, 4, 2].slice(0, o.n).map(h=>sNewUnit(S, {u:'Dummy'}, 1, h, 'Dummy'));
+  // Traits auf der gewählten Stufe (o.traits = [{n, k}]) – wie im Kampf-Simulator, nur mit dem einen Champion als Träger
+  const tctx = {sac:null, side:0, info:{traits:[], augs:[], items:[], sac:null}};
+  (o.traits || []).forEach(t=>{
+    if(!t.k || SIM_NOCOMBAT.includes(t.n)) return;
+    const v = simTraitVals(t.n, t.k);
+    if(SIM_TRAITS[t.n]) SIM_TRAITS[t.n](v, [u], [u], t.k, tctx); else simTraitGeneric(v, [u]);
+  });
   u.items.forEach(it=>{
     sItemStats(u, it.fx);
     const base = it.cat==='radiant' ? (radiantBase(it) || it) : it, f = SIM_ITEMS[normN(base.en)];

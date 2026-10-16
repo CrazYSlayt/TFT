@@ -1,4 +1,4 @@
-/* TFT Freaks – Seitenlogik (früher direkt in index.html). Braucht vorher: data/sets.js + Set-Daten (siehe Lader in index.html) */
+/* Climb TFT – Seitenlogik (früher direkt in index.html). Braucht vorher: data/sets.js + Set-Daten (siehe Lader in index.html) */
 /* ================= ADRESSEN ================= */
 // Online echte Pfade (/tierlist/items), lokal per Doppelklick (file://) wie bisher #/tierlist/items
 const FILE_MODE = location.protocol === 'file:';
@@ -16,6 +16,7 @@ function go(path){
   history.pushState(null, '', path);
   route();
 }
+const qParam = k => new URLSearchParams(FILE_MODE ? (location.hash.split('?')[1] || '') : location.search).get(k);
 const siteUrl = path => FILE_MODE ? location.href.split('#')[0] + '#' + withLang(path) : location.origin + withLang(path);
 // alte Links mit #/… (vor der Umstellung geteilt) auf echte Pfade umleiten
 if(!FILE_MODE && location.hash.startsWith('#/')) history.replaceState(null, '', location.hash.slice(1));
@@ -60,7 +61,7 @@ function loadTierSource(){
 let tierSource = loadTierSource();
 // Item-/Augment-Bewertungen: aus dem Entwurf, sonst aus der veröffentlichten Datei
 const tlPart = k => tierSource.data[k] || (TL_FILE && TL_FILE[k]) || {};
-let ITEM_TL = tlPart('itemTL'), AUG_TL = tlPart('augTL'), HOLD_TL = tlPart('holdTL');
+let ITEM_TL = tlPart('itemTL'), AUG_TL = tlPart('augTL'), HOLD_TL = tlPart('holdTL'), ENC_TL = tlPart('encTL');
 const TL_PATCH = tierSource.data.patch || (TL_FILE && TL_FILE.patch) || '';
 // Eigene Ergänzungen zum Set (data/custom-<Set>.js): Pflanzen-Bilder, Icons für Platzhalter-Augments
 const TFT_CUSTOM_SET = window.TFT_CUSTOM && (!TFT_CUSTOM.set || TFT_CUSTOM.set===TFT_DATA.set) ? window.TFT_CUSTOM : {};
@@ -101,6 +102,7 @@ const testimonials = [
 ];
 
 const guides = [
+  {t:'TFT Encounters',s:'Neu · Set 18',col:'linear-gradient(160deg,#8b5cf6,#3b0764)',href:'/guides/encounters',d:'Alle Encounters mit Chance pro Spiel – und welche Comp du auf Ambosse, Gold- und Prismatic-Augments oder besondere Start-Units spielst.',x:'Mit Einschätzung von Challenger-Spielern.'},
   {t:'Wisp-Guide',s:'Kostenlos · 5 Kapitel',col:'linear-gradient(160deg,#f2c14e,#b7791f)',d:'Wann du Wisps kaufst, welche Upgrades sich lohnen und wie du sie mit deiner Econ verbindest.',x:'Mit Checkliste für die nächsten drei Partien.'},
   {t:'Rank-Up-Training',s:'Kostenlos · Übungen',col:'linear-gradient(160deg,#3b82f6,#1e3a8a)',d:'Finde eine Gewohnheit, an der du arbeiten willst: Rollen, Leveln oder Positionieren — mit einer klaren Mission pro Partie.',x:'Klein anfangen. Autopilot hat schon genug Partien gespielt.'},
 ];
@@ -396,6 +398,42 @@ $('#holdFilters').addEventListener('click', e=>{
   const b=e.target.closest('.chip-btn'); if(!b) return;
   $('#holdFilters').querySelectorAll('.chip-btn').forEach(x=>x.classList.toggle('active', x===b));
   holdCost = b.dataset.hc; renderHoldTL();
+});
+
+// Encounters: Liste aus data/custom-<Set>.js (Chance = Gewicht / Summe), Einschätzung (passende Comps, egal, Tipp) aus encTL in tierlist-data-<Set>.js
+const ENCS = TFT_CUSTOM_SET.encounters || [];
+const ENC_W = ENCS.reduce((s, e)=>s + (e.w||0), 0) || 1;
+const ENC_CAT = {items:'Items', augments:'Augments', units:'Start-Units', econ:'Gold & Shop', other:'Sonstiges'};
+const encPct = list => list.reduce((s, e)=>s + (e.w||0), 0) / ENC_W * 100;
+const encPctTxt = p => fmtNum(Math.round(p * 10) / 10) + L(' %', '%');
+const encEvery = p => p > 0 ? `≈ jedes ${Math.round(100 / p)}. Spiel` : '';
+const encIcon = (e, size) => champBy[e.ch] ? avatar(e.ch, size) : `<span class="enc-noicon" style="width:${size}px;height:${size}px">?</span>`;
+let encCat = 'all';
+function renderEncTL(){
+  const box = $('#encList'); if(!box) return;
+  if(!ENCS.length){ box.innerHTML = ornnSays(`Für Set ${TFT_DATA.set} sind noch keine Encounters eingetragen.`); $('#encSum').innerHTML = ''; return; }
+  const grp = (label, ids, cat) => { const list = ENCS.filter(e=>cat ? e.cat===cat : ids.includes(e.id)), p = encPct(list);
+    return `<div class="enc-card"><b>${encPctTxt(p)}</b><span>${label}</span><small>${encEvery(p)}</small></div>`; };
+  $('#encSum').innerHTML = grp('Ambosse am Start', ['completed-item-anvil','component-anvils','item-forge'])
+    + grp('Augment-Encounters', [], 'augments') + grp('Prismatisches Augment garantiert', ['prismatic-opener','prismatic-finisher','prismatic-party']) + grp('Besondere Start-Units', [], 'units');
+  const list = ENCS.filter(e=>encCat==='all' || e.cat===encCat).slice().sort((a,b)=>b.w - a.w || a.n.localeCompare(b.n));
+  const max = Math.max(...ENCS.map(e=>e.w));
+  box.innerHTML = list.map(e=>{
+    const p = encPct([e]), r = ENC_TL[e.id] || {}, cs = (r.comps||[]).map(s=>compBySlug[s]).filter(Boolean);
+    const rec = cs.length ? `<div class="enc-comps">${cs.map(c=>`<button class="enc-comp" data-comp="${c.slug}" style="--tc:${TIER_COL[c.tier]}"><b>${c.tier}</b><span class="enc-chx">${hexHTML(c.carry)}</span>${esc(c.name)}</button>`).join('')}</div>`
+      : r.egal ? '<span class="enc-egal">Egal – spiel, was kommt</span>' : '<span class="enc-none">Noch keine Einschätzung</span>';
+    return `<div class="enc-row">
+      <div class="enc-who">${encIcon(e, 46)}<div><b>${esc(e.n)}</b><small>${esc(ENC_CAT[e.cat] || '')}${e.ch ? ' · ' + esc(e.ch) : ''}</small></div></div>
+      <p class="enc-fx">${esc(EN ? e.en : e.de)}</p>
+      <div class="enc-odds"><b>${encPctTxt(p)}</b><i><em style="width:${Math.round(e.w / max * 100)}%"></em></i><small>${encEvery(p)}</small></div>
+      <div class="enc-rec">${rec}${r.note ? `<p>${esc(r.note)}</p>` : ''}</div>
+    </div>`;
+  }).join('');
+}
+$('#encFilters').addEventListener('click', e=>{
+  const b=e.target.closest('.chip-btn'); if(!b) return;
+  $('#encFilters').querySelectorAll('.chip-btn').forEach(x=>x.classList.toggle('active', x===b));
+  encCat = b.dataset.ecat; renderEncTL();
 });
 
 function openAug(id){
@@ -891,18 +929,18 @@ const admBySlug = s => adm && adm.comps.find(c=>c.slug===s);
 function admEnsure(){
   if(adm) return;
   const d = tierSource.data;
-  adm = JSON.parse(JSON.stringify({version:1, set:TFT_DATA.set, patch:d.patch||TL_PATCH, updated:d.updated||'', source:d.source||'', basedOn:d.basedOn||'', comps:d.comps, itemTL:d.itemTL||ITEM_TL, augTL:d.augTL||AUG_TL, holdTL:d.holdTL||HOLD_TL}));
+  adm = JSON.parse(JSON.stringify({version:1, set:TFT_DATA.set, patch:d.patch||TL_PATCH, updated:d.updated||'', source:d.source||'', basedOn:d.basedOn||'', comps:d.comps, itemTL:d.itemTL||ITEM_TL, augTL:d.augTL||AUG_TL, holdTL:d.holdTL||HOLD_TL, encTL:d.encTL||ENC_TL}));
 }
 function admStatus(t){ const el = $('#admStatus'); if(el) el.textContent = t; }
 function admSourceText(){ return tierSource.src==='draft' ? 'Entwurf in diesem Browser aktiv' : tierSource.src==='file' ? `Veröffentlichter Stand (tierlist-data-${TFT_DATA.set}.js${tierSource.data.source==='TFTAcademy'?', TFTAcademy-Ausgangsstand':''})` : `Set ${TFT_DATA.set}: noch keine Tierlist – leg mit „+ Neue Comp“ los`; }
 function admSave(msg){
   admEnsure();
   adm.updated = new Date().toISOString().slice(0,10);
-  if(adm.source && adm.source!=='TFT Freaks'){ adm.basedOn = adm.source; } adm.source = 'TFT Freaks';
+  if(adm.source && adm.source!=='Climb TFT'){ adm.basedOn = adm.source; } adm.source = 'Climb TFT';
   let ok = true; try { localStorage.setItem(TL_DRAFT_KEY, JSON.stringify(adm)); } catch(e){ ok = false; }
   tierSource = {src:'draft', data:adm};
-  ITEM_TL = adm.itemTL || {}; AUG_TL = adm.augTL || {}; HOLD_TL = adm.holdTL || {};
-  rebuildComps(adm.comps); filterComps(); renderItemTL(); renderAugTL(); renderHoldTL(); updateTlNote();
+  ITEM_TL = adm.itemTL || {}; AUG_TL = adm.augTL || {}; HOLD_TL = adm.holdTL || {}; ENC_TL = adm.encTL || {};
+  rebuildComps(adm.comps); filterComps(); renderItemTL(); renderAugTL(); renderHoldTL(); renderEncTL(); updateTlNote();
   admStatus(ok ? (msg || 'Entwurf gespeichert · ' + new Date().toLocaleTimeString(LOC,{hour:'2-digit',minute:'2-digit'})) : 'Speichern im Browser nicht möglich – bitte exportieren!');
 }
 function updateTlNote(){
@@ -911,7 +949,7 @@ function updateTlNote(){
   if(!(D.comps||[]).length){ el.textContent = `Für Set ${TFT_DATA.set} gibt es noch keine Tierlist.`; return; }
   if(D.source==='TFTAcademy'){ el.innerHTML = `Stand: Patch ${esc(D.patch||TL_PATCH)} · Bewertungen und Aufstellungen nach ${link}`; return; }
   const d = D.updated ? new Date(D.updated).toLocaleDateString(LOC) : '';
-  el.innerHTML = `Stand: Patch ${esc(D.patch||TL_PATCH)}${d?' · aktualisiert am '+d:''} · Bewertungen von TFT Freaks${D.basedOn==='TFTAcademy' || (TL_FILE && TL_FILE.source==='TFTAcademy') ? ' · Aufstellungen ursprünglich nach ' + link : ''}`;
+  el.innerHTML = `Stand: Patch ${esc(D.patch||TL_PATCH)}${d?' · aktualisiert am '+d:''} · Bewertungen von Climb TFT${D.basedOn==='TFTAcademy' || (TL_FILE && TL_FILE.source==='TFTAcademy') ? ' · Aufstellungen ursprünglich nach ' + link : ''}`;
 }
 function admCardHTML(c){
   const st = STICKER[c.sticker];
@@ -1046,8 +1084,8 @@ document.addEventListener('click', e=>{
   }
   if(t.id==='admExport'){
     admEnsure();
-    const data = {version:1, set:TFT_DATA.set, patch:adm.patch, updated:adm.updated || new Date().toISOString().slice(0,10), source:adm.source || 'TFT Freaks', basedOn:adm.basedOn || '', comps:adm.comps, itemTL:adm.itemTL || ITEM_TL, augTL:adm.augTL || AUG_TL, holdTL:adm.holdTL || HOLD_TL};
-    const js = '// TFT Freaks – Tierlist-Daten, exportiert aus der Redaktion am ' + new Date().toLocaleString(LOC) + '\n// Datei neben die index.html legen, dann sehen alle Besucher diesen Stand.\nwindow.TIERLIST_DATA = ' + JSON.stringify(data) + ';\n';
+    const data = {version:1, set:TFT_DATA.set, patch:adm.patch, updated:adm.updated || new Date().toISOString().slice(0,10), source:adm.source || 'Climb TFT', basedOn:adm.basedOn || '', comps:adm.comps, itemTL:adm.itemTL || ITEM_TL, augTL:adm.augTL || AUG_TL, holdTL:adm.holdTL || HOLD_TL, encTL:adm.encTL || ENC_TL};
+    const js = '// Climb TFT – Tierlist-Daten, exportiert aus der Redaktion am ' + new Date().toLocaleString(LOC) + '\n// Datei neben die index.html legen, dann sehen alle Besucher diesen Stand.\nwindow.TIERLIST_DATA = ' + JSON.stringify(data) + ';\n';
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([js], {type:'text/javascript'})); a.download = `tierlist-data-${TFT_DATA.set}.js`;
     document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
     admStatus(`Exportiert: tierlist-data-${TFT_DATA.set}.js – neben die index.html legen.`); return;
@@ -1055,7 +1093,7 @@ document.addEventListener('click', e=>{
   if(t.id==='admReset'){
     if(!confirm('Entwurf verwerfen? Danach gilt wieder der veröffentlichte Stand (tierlist-data-' + TFT_DATA.set + '.js) bzw. der eingebaute Stand.')) return;
     try { localStorage.removeItem(TL_DRAFT_KEY); } catch(err){}
-    tierSource = loadTierSource(); ITEM_TL = tlPart('itemTL'); AUG_TL = tlPart('augTL'); HOLD_TL = tlPart('holdTL'); adm = null; admSel = null; rebuildComps(tierSource.data.comps); filterComps(); renderItemTL(); renderAugTL(); renderHoldTL(); updateTlNote(); renderAdmin(); return;
+    tierSource = loadTierSource(); ITEM_TL = tlPart('itemTL'); AUG_TL = tlPart('augTL'); HOLD_TL = tlPart('holdTL'); ENC_TL = tlPart('encTL'); adm = null; admSel = null; rebuildComps(tierSource.data.comps); filterComps(); renderItemTL(); renderAugTL(); renderHoldTL(); renderEncTL(); updateTlNote(); renderAdmin(); return;
   }
 });
 // Drag & Drop zwischen den Tiers
@@ -1112,6 +1150,7 @@ function renderAdminTL(){
   $('#admCompsView').hidden = !comps; box.hidden = comps; $('#admNew').hidden = !comps;
   $('#admTabs').querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.admTab===admTab));
   if(comps) return;
+  if(admTab==='encounters'){ renderAdmEnc(box); return; }
   const chip = (key, v, l) => `<button class="chip-btn${admTLf[key]===v?' active':''}" type="button" data-tlf="${key}:${v}">${l}</button>`;
   const filters = admTab==='items' ? ADM_ITEM_CATS.map(([v,l])=>chip('items', v, l)).join('')
     : admTab==='augments' ? `<div class="tag-row">${[['1','Silber'],['2','Gold'],['3','Prismatisch']].map(([v,l])=>chip('alv', v, l)).join('')}</div><div class="tag-row">${[['All','Alle Phasen'],['2-1','2-1'],['3-2','3-2'],['4-2','4-2']].map(([v,l])=>chip('ast', v, l)).join('')}</div>`
@@ -1125,6 +1164,39 @@ function renderAdminTL(){
     ${ADM_TL_ROWS.map(t=>row(t, t + '-Tier', (tl[t]||[]).filter(id=>admTLInfo(id)), TIER_COL[t])).join('')}
     ${row('–', 'Nicht bewertet', rest, '#4a4d63').replace('data-tlrow="–"', 'data-tlrow="none"')}`;
 }
+// Redaktion: Encounters einschätzen – passende Comps, „egal“ und ein Tipp pro Encounter (encTL)
+const admEncGet = id => { admEnsure(); adm.encTL = adm.encTL || {}; return adm.encTL[id] = adm.encTL[id] || {comps:[], egal:false, note:''}; };
+function renderAdmEnc(box){
+  admEnsure();
+  const pool = adm.comps.filter(c=>!c.hidden);
+  box.innerHTML = `<p class="note" style="margin:0 0 12px">Trag pro Encounter ein, welche Comps du darauf spielen würdest – oder hak „Egal“ an, wenn er die Comp-Wahl nicht ändert. Der Tipp erscheint unter der Empfehlung.</p>
+    <div class="adm-enc">${ENCS.slice().sort((a,b)=>b.w - a.w || a.n.localeCompare(b.n)).map(e=>{
+      const r = (adm.encTL || {})[e.id] || {}, cs = (r.comps||[]).map(s=>adm.comps.find(c=>c.slug===s)).filter(Boolean);
+      return `<div class="adm-enc-row">
+        <div class="enc-who">${encIcon(e, 40)}<div><b>${esc(e.n)}</b><small>${encPctTxt(encPct([e]))} · ${esc(e.de)}</small></div></div>
+        <div class="adm-enc-ed">
+          <div class="adm-chips">${cs.map(c=>`<span class="adm-chip" style="border-left:3px solid ${TIER_COL[c.tier] || '#666'}">${esc(c.tier)} · ${esc(c.name)}<button type="button" data-enc-del="${e.id}|${c.slug}" aria-label="Entfernen">✕</button></span>`).join('') || '<span class="note" style="margin:0">Noch keine Comps</span>'}</div>
+          <div class="adm-add"><input class="input" list="admEncList" placeholder="Comp hinzufügen…" data-enc-inp="${e.id}"><button class="btn btn-ghost b-btn" type="button" data-enc-add="${e.id}">+</button>
+            <label class="adm-enc-egal"><input type="checkbox" data-enc-egal="${e.id}"${r.egal ? ' checked' : ''}> Egal</label></div>
+          <textarea class="input" rows="2" data-enc-note="${e.id}" placeholder="Tipp (optional), z. B. „Früh Items slammen und Lose Streak vermeiden.“">${esc(r.note || '')}</textarea>
+        </div></div>`; }).join('')}</div>
+    <datalist id="admEncList">${pool.map(c=>`<option value="${esc(c.name)}">`).join('')}</datalist>`;
+}
+function admEncAdd(id){
+  const inp = document.querySelector(`[data-enc-inp="${id}"]`), v = inp ? inp.value.trim().toLowerCase() : ''; if(!v) return;
+  const pool = adm.comps.filter(c=>!c.hidden), c = pool.find(x=>x.name.toLowerCase()===v && x.main) || pool.find(x=>x.name.toLowerCase()===v);
+  if(!c){ admStatus('Comp nicht gefunden – bitte aus der Liste wählen.'); return; }
+  const r = admEncGet(id); if(!r.comps.includes(c.slug)) r.comps.push(c.slug); r.egal = false;
+  admSave(`${c.name} bei ${(ENCS.find(e=>e.id===id)||{}).n} eingetragen`); renderAdminTL();
+}
+document.addEventListener('click', e=>{
+  if(!e.target.closest || !e.target.closest('#admTL')) return;
+  const add = e.target.closest('[data-enc-add]'); if(add){ admEncAdd(add.dataset.encAdd); return; }
+  const del = e.target.closest('[data-enc-del]'); if(del){ const [id, slug] = del.dataset.encDel.split('|'); const r = admEncGet(id); r.comps = r.comps.filter(s=>s!==slug); admSave('Comp entfernt'); renderAdminTL(); }
+});
+document.addEventListener('change', e=>{ if(e.target.dataset && e.target.dataset.encEgal){ const r = admEncGet(e.target.dataset.encEgal); r.egal = e.target.checked; if(r.egal) r.comps = []; admSave(r.egal ? 'Als „egal“ markiert' : undefined); renderAdminTL(); } });
+document.addEventListener('input', e=>{ if(e.target.dataset && e.target.dataset.encNote){ admEncGet(e.target.dataset.encNote).note = e.target.value; admSave(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target.dataset && e.target.dataset.encInp){ e.preventDefault(); admEncAdd(e.target.dataset.encInp); } });
 function admTLMove(id, row, beforeId){
   const tl = admTLObj();
   ADM_TL_ROWS.forEach(t=>{ if(tl[t]){ tl[t] = tl[t].filter(x=>x!==id); if(!tl[t].length) delete tl[t]; } });
@@ -1283,7 +1355,7 @@ const BUDDY_LINES = {
     'Klick eine Unit an – dann siehst du ihr Ziel, ihren Laufweg und was sie als Nächstes vorhat.',
     'Ein Kampf ist Zufall, hundert Kämpfe sind Statistik. Probier „Siegchance“!',
     'Der Simulator steht noch auf meiner Werkbank. Die Ergebnisse sind Näherungen!']; },
-  guides(){ return ['Diese Guides glühen noch in der Esse.', 'Ein Guide ist wie eine Klinge: erst schmieden, dann schärfen.', 'Lesen, üben, wiederholen. So wird man Meister.']; },
+  guides(){ return ['Der Encounter-Guide ist fertig geschmiedet. Lies ihn, bevor die nächste Partie startet!', 'Diese Guides glühen noch in der Esse.', 'Ein Guide ist wie eine Klinge: erst schmieden, dann schärfen.', 'Lesen, üben, wiederholen. So wird man Meister.']; },
   notfound(){ return ['Hier ist nichts. Nicht mal Erz.', 'Diesen Pfad habe ich nie geschmiedet. Zurück zur Tierlist!', 'Hmph. Falsch abgebogen, Wanderer.']; },
 };
 const DIFF_LINE = {EASY:'Gute Wahl – die ist leicht zu spielen.', MEDIUM:'Solide! Achte auf die Item-Priorität.', HARD:'Mutig! Die ist schwer, also Leben schonen.', CONDITIONAL:'Nur spielen, wenn die Bedingungen passen!'};
@@ -1351,7 +1423,8 @@ function renderChamps(){
   const q = $('#champSearch').value.toLowerCase().trim();
   const list = champions.filter(c=>(costF==='all'||String(c.c)===costF) && (!q || c.n.toLowerCase().includes(q) || c.t.some(t=>t.toLowerCase().includes(q))));
   $('#champCount').textContent = `${list.length} von ${champions.length} Champions`;
-  $('#champGrid').innerHTML = list.map(c=>`<button class="champ" data-champ="${esc(c.n)}">${avatar(c.n,56)}<div><h4>${esc(c.n)}</h4><div class="cost"><span class="coin"></span>${c.c} Gold${champRange(c.n) ? `<span class="ch-rng sm ${isMelee(c.n) ? 'melee' : 'ranged'}" title="${rangeLabel(c.n)}">${isMelee(c.n) ? 'Nahkampf' : 'Fernkampf'}</span>` : ''}</div><div class="trait-mini">${c.t.map(t=>`<span style="display:inline-flex;align-items:center;gap:4px"><img src="${traitImg(t)}" alt="" width="12" height="12" style="width:12px;height:12px;filter:brightness(1.6)" onerror="this.remove()">${esc(t)}</span>`).join('')}</div></div></button>`).join('');
+  // echte Links auf die Champion-Seiten (für Google), Klick öffnet die Seite ohne Neuladen
+  $('#champGrid').innerHTML = list.map(c=>`<a class="champ" href="${champHref(c.n)}">${avatar(c.n,56)}<div><h4>${esc(c.n)}</h4><div class="cost"><span class="coin"></span>${c.c} Gold${champRange(c.n) ? `<span class="ch-rng sm ${isMelee(c.n) ? 'melee' : 'ranged'}" title="${rangeLabel(c.n)}">${isMelee(c.n) ? 'Nahkampf' : 'Fernkampf'}</span>` : ''}</div><div class="trait-mini">${c.t.map(t=>`<span style="display:inline-flex;align-items:center;gap:4px"><img src="${traitImg(t)}" alt="" width="12" height="12" style="width:12px;height:12px;filter:brightness(1.6)" onerror="this.remove()">${esc(t)}</span>`).join('')}</div></div></a>`).join('');
 }
 $('#costFilters').addEventListener('click', e=>{
   const b=e.target.closest('.chip-btn'); if(!b) return;
@@ -1371,7 +1444,8 @@ function abilityHTML(n){
   const ab = (CH_DATA[n] || {}).ab; if(!ab || !ab.d) return '';
   const vals = Object.assign({}, ab.v || {}, (TFT_CUSTOM_SET.abilities || {})[n] || {}), vl = {};
   Object.keys(vals).forEach(k=>{ vl[k.toLowerCase()] = vals[k]; });
-  let s = ab.d.replace(/%i:scale([A-Za-z]+)%/g, (m,k)=>`\u0002${k}\u0003`)
+  // Zeilenumbrüche in Riots Text (CR + \\n) als echte Umbrüche
+  let s = ab.d.replace(/\r/g, '').replace(/(\\n)+/g, '\u0007').replace(/%i:scale([A-Za-z]+)%/g, (m,k)=>`\u0002${k}\u0003`)
     .replace(/@([A-Za-z0-9_]+)(\*100)?@/g, (m,k,mul)=>{
       const v = vl[k.toLowerCase()]; if(v === undefined) return '\u0006';
       const arr = (Array.isArray(v) ? v : [v]).map(x=>x * (mul ? 100 : 1));
@@ -1380,7 +1454,8 @@ function abilityHTML(n){
   return fmtDesc(s, {})
     .replace(/\u0002([A-Za-z]+)\u0003/g, (m,k)=>`<span class="ab-sc">${esc(SCALE_LBL[k] || k)}</span>`)
     .replace(/\u0004([^\u0005]*)\u0005/g, '<b class="ab-val">$1</b>')
-    .replace(/\u0006/g, '<span class="ab-q" title="Diesen Wert liefert Riot in den offiziellen Set-Daten nicht mit">?</span>');
+    .replace(/\u0006/g, '<span class="ab-q" title="Diesen Wert liefert Riot in den offiziellen Set-Daten nicht mit">?</span>')
+    .replace(/\s*\u0007\s*/g, '<br>');
 }
 const traitMore = n => { const h = traitTiersHTML(n); return h ? `<details class="tt-more"><summary>Stufen &amp; Werte</summary>${h}</details>` : ''; };
 function champStatsHTML(n){
@@ -1414,7 +1489,7 @@ function openChamp(name){
   const best = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([id])=>itLink(itemById[id])).join('');
   const ab = (CH_DATA[c.n] || {}).ab, st = (CH_DATA[c.n] || {}).st;
   const abHTML = abilityHTML(c.n);
-  $('#modalBody').innerHTML = `<div style="display:flex;gap:16px;align-items:center;margin-bottom:6px">${avatar(c.n,64)}<div><h2 style="margin:0">${esc(c.n)}</h2><div class="cost"><span class="coin"></span> ${c.c} Gold${rangeLabel(c.n) ? ` <span class="ch-rng ${isMelee(c.n) ? 'melee' : 'ranged'}">${rangeLabel(c.n)}</span>` : ''}</div></div></div>
+  $('#modalBody').innerHTML = `<div style="display:flex;gap:16px;align-items:center;margin-bottom:6px">${avatar(c.n,64)}<div><h2 style="margin:0">${esc(c.n)}</h2><div class="cost"><span class="coin"></span> ${c.c} Gold${rangeLabel(c.n) ? ` <span class="ch-rng ${isMelee(c.n) ? 'melee' : 'ranged'}">${rangeLabel(c.n)}</span>` : ''}</div><a class="chp-open" href="${champHref(c.n)}">Zur Champion-Seite →</a></div></div>
     ${abHTML ? `<h4 style="margin-top:18px;font-size:.85rem;color:var(--faint)">FÄHIGKEIT</h4>
       <div class="ch-ab"><div class="ch-ab-head"><b>${esc(ab.n)}</b>${st ? `<span>Mana ${st.mana0} / ${st.mana}</span>` : ''}</div><p>${abHTML}</p>
       ${/ab-q/.test(abHTML) ? '<small class="ch-note">? = Wert, den Riot für dieses Set nicht in den offiziellen Daten mitliefert.</small>' : ''}${/ab-val/.test(abHTML) ? '<small class="ch-note">Werte für 1★ / 2★ / 3★.</small>' : ''}</div>` : ''}
@@ -1430,6 +1505,94 @@ function closeModal(){ $('#modal').classList.remove('open'); }
 $('#modalClose').onclick = closeModal;
 $('#modal').addEventListener('click', e=>{ if(e.target.id==='modal' || e.target.closest('[data-close]')) closeModal(); });
 document.addEventListener('click', e=>{ const b=e.target.closest('[data-champ]'); if(b) openChamp(b.dataset.champ); });
+
+/* ================= CHAMPION-SEITEN (/champions/<name>) ================= */
+// Eine eigene Seite pro Champion, damit Google sie findet („TFT Ahri Build“). In der Bibliothek verlinkt, sonst bleibt das Popup mit Link hierher.
+const champSlug = n => String(n).toLowerCase().replace(/['’.]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const champBySlug = Object.fromEntries(champions.map(c=>[champSlug(c.n), c]));
+const champHref = n => '/champions/' + champSlug(n);
+const TIER_ORDER = 'SABCX';
+// Items, die der Champion in den Tierlist-Comps (Board und Alt Builds) am häufigsten trägt, und der häufigste komplette Build
+function champBuilds(n){
+  const freq = {}, sets = {};
+  comps.forEach(x=>[...(x.board||[]), ...(x.alt||[])].forEach(b=>{
+    if(b.u!==n) return;
+    const ids = (b.i||[]).map(findItem).filter(it=>it && ['craft','radiant','artifact','emblem'].includes(it.cat)).map(it=>it.id);
+    ids.forEach(id=>{ freq[id] = (freq[id]||0) + 1; });
+    if(ids.length===3){ const k = ids.slice().sort().join('|'); sets[k] = (sets[k]||0) + 1; }
+  }));
+  const top = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0, 6).map(([id, k])=>({it:itemById[id], k})).filter(x=>x.it);
+  const bs = Object.entries(sets).sort((a,b)=>b[1]-a[1])[0];
+  return {top, best: bs ? bs[0].split('|').map(id=>itemById[id]).filter(Boolean) : []};
+}
+const champCompsOf = n => comps.filter(x=>!x.hidden && (x.board||[]).some(b=>b.u===n))
+  .sort((a,b)=>(b.main - a.main) || TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier) || (b.carry===n) - (a.carry===n));
+function renderChampPage(slug){
+  const box = $('#chPage'), c = champBySlug[slug];
+  if(!c){ box.innerHTML = ornnSays('Diesen Champion gibt es im aktuellen Set nicht.'); return; }
+  const n = c.n, d = CH_DATA[n] || {}, ab = d.ab, st = d.st, S = TFT_DATA.set;
+  const splash = champImg(n) || champFallback(n), abHTML = abilityHTML(n), {top, best} = champBuilds(n), cs = champCompsOf(n);
+  const carryN = cs.filter(x=>x.carry===n).length, patch = champPatchHTML(n);
+  const hold = c.c <= 3 ? Object.entries(HOLD_TL[String(c.c)] || {}).find(([, list])=>(list||[]).includes(n)) : null;
+  const sameCost = champions.filter(x=>x.c===c.c && x.n!==n);
+  const order = champions.slice().sort((a,b)=>a.c - b.c || a.n.localeCompare(b.n)), oi = order.findIndex(x=>x.n===n);
+  const prev = order[(oi - 1 + order.length) % order.length], next = order[(oi + 1) % order.length];
+  const chLink = (x, size) => `<a class="chp-av" href="${champHref(x.n)}" title="${esc(x.n)}">${avatar(x.n, size || 44)}<span>${esc(x.n)}</span></a>`;
+  const card = (title, body, cls) => `<section class="card chp-card ${cls||''}"><h2>${title}</h2>${body}</section>`;
+  const traitCards = c.t.map(tn=>{ const t = traits.find(x=>x.n===tn); if(!t) return '';
+    const mates = champions.filter(x=>x.n!==n && x.t.includes(tn));
+    return `<div class="chp-trait"><div class="trait-top">${traitHex(t.n, t.bp.length===1 ? 'unique' : 'base', 30)}<h3>${esc(t.n)}</h3><div class="bp">${t.bp.map(b=>`<span>${b}</span>`).join('')}</div></div>
+      <p>${esc(t.d)}</p>${traitMore(t.n)}${mates.length ? `<div class="chp-mates">${mates.map(x=>chLink(x, 34)).join('')}</div>` : ''}</div>`; }).join('');
+  box.innerHTML = `
+    <div class="crumb"><a href="/">Home</a> / <a href="/bibliothek">Bibliothek</a> / <a href="/bibliothek/champions">Champions</a> / ${esc(n)}</div>
+    <section class="chp-hero c${c.c}"${splash ? ` style="--splash:url('${splash}')"` : ''}>
+      <div class="chp-hero-in">
+        <div class="chp-portrait">${avatar(n, 112)}</div>
+        <div class="chp-head">
+          <h1 class="chp-h1"><span class="th-key">${esc(n)}</span> TFT Build: Items, Comps &amp; Fähigkeit</h1>
+          <div class="chp-tags"><span class="chp-cost"><span class="coin"></span>${c.c} Gold</span>${rangeLabel(n) ? `<span class="ch-rng ${isMelee(n) ? 'melee' : 'ranged'}">${rangeLabel(n)}</span>` : ''}${c.t.map(t=>`<span class="chp-tr">${traitHex(t, 'base', 20)}${esc(t)}</span>`).join('')}</div>
+          <p class="chp-lead">${esc(n)} ist ein ${c.c}-Kosten-Champion aus TFT Set ${S}.</p>
+          <div class="chp-acts">${dpsOk(n) ? `<a class="btn btn-primary" href="/tools/dps?c=${champSlug(n)}">Builds im DPS-Rechner vergleichen</a>` : ''}<a class="btn btn-ghost" href="/bibliothek/champions">Alle Champions</a></div>
+        </div>
+      </div>
+    </section>
+    <div class="chp-grid">
+      <div class="chp-main">
+        ${abHTML ? card('Fähigkeit', `<div class="ch-ab"><div class="ch-ab-head"><b>${esc(ab.n)}</b>${st ? `<span>Mana ${st.mana0} / ${st.mana}</span>` : ''}</div><p>${abHTML}</p>
+          ${/ab-q/.test(abHTML) ? '<small class="ch-note">? = Wert, den Riot für dieses Set nicht in den offiziellen Daten mitliefert.</small>' : ''}${/ab-val/.test(abHTML) ? '<small class="ch-note">Werte für 1★ / 2★ / 3★.</small>' : ''}</div>`) : ''}
+        ${top.length ? card('Beste Items', `${best.length ? `<div class="chp-best"><small>Beliebtester Build</small><div>${best.map(it=>`<button class="chp-bi" data-item="${it.id}" title="${esc(it.en)}"><img src="${it.img}" alt="" loading="lazy"><span>${esc(it.en)}</span></button>`).join('<i>+</i>')}</div></div>` : ''}
+          <div class="chp-items">${top.map(({it, k})=>`<button class="chp-it" data-item="${it.id}"><img src="${it.img}" alt="" loading="lazy"><span><b>${esc(it.en)}</b><small>${k === 1 ? 'in 1 Build' : `in ${k} Builds`}</small></span></button>`).join('')}</div>
+          <p class="note">Aus den Comps unserer Tierlist. Welcher Build am meisten Schaden macht, siehst du im DPS-Rechner.</p>`) : ''}
+        ${card('Comps mit ' + esc(n), cs.length ? `<div class="chp-comps">${cs.map(x=>`<button class="chp-comp" data-comp="${x.slug}" style="--tc:${TIER_COL[x.tier]}"><b class="chp-tier">${x.tier}</b><span><b>${esc(x.name)}</b><small>${esc(STYLE_DE[x.style] || x.style || '')}${x.carry===n ? ' · Carry' : ''}</small></span><span class="chp-chx">${hexHTML(x.carry)}</span></button>`).join('')}</div>`
+          : `<p class="note" style="margin:0">${esc(n)} ist gerade in keiner Comp unserer Tierlist.</p>`)}
+        ${st ? card('Werte', `${champStatsHTML(n)}<small class="ch-note">Leben und Angriffsschaden für 1★ / 2★ / 3★.</small>`) : ''}
+        ${patch ? card('Letzte Änderungen', `<div class="cp-list">${patch}</div>`) : ''}
+      </div>
+      <aside class="chp-side">
+        ${card('Traits', traitCards)}
+        ${hold ? card('Hold-Bewertung', `<a class="chp-hold" href="/tierlist/holds" style="--tc:${TIER_COL[hold[0]]}"><b>${hold[0]}</b><span>Tier für 1-1 bis 1-3 unter den ${c.c}-Kosten-Champions</span></a>`) : ''}
+        ${sameCost.length ? card(`Weitere ${c.c}-Kosten-Champions`, `<div class="chp-mates">${sameCost.map(x=>chLink(x, 40)).join('')}</div>`) : ''}
+      </aside>
+    </div>
+    <nav class="chp-nav" aria-label="Champions blättern"><a href="${champHref(prev.n)}">← ${esc(prev.n)}</a><a href="${champHref(next.n)}">${esc(next.n)} →</a></nav>
+    <section class="tool-seo" aria-labelledby="ts-champ">
+      <div class="ts-main">
+        <h2 id="ts-champ">${esc(n)} in TFT Set ${S}: So spielst du ihn</h2>
+        <p>${esc(n)} ist ein ${c.c}-Kosten-Champion. Für ★★ brauchst du 3 Kopien, für ★★★ 9 Kopien.</p>
+        <p>${cs.length ? (cs.length===1 ? `${esc(n)} spielt in einer Comp unserer Tierlist mit.` : `${esc(n)} spielt in ${cs.length} Comps unserer Tierlist mit.`) + (carryN ? (carryN===1 ? ' In einer davon ist er der Carry.' : ` In ${carryN} davon ist er der Carry.`) : ' Meist als Unterstützung für den Carry.') : `${esc(n)} ist gerade in keiner Comp unserer Tierlist – schau in die Traits, um zu sehen, mit wem er zusammenpasst.`}</p>
+        <p>Die Werte und die Fähigkeit oben kommen aus den offiziellen Spieldaten des aktuellen Sets, die Items und Comps aus unserer Tierlist. Nach jedem Patch wird beides aktualisiert.</p>
+      </div>
+      <aside class="ts-side">
+        <h3>Häufige Fragen</h3>
+        <details><summary>Welche Items sind die besten für ${esc(n)}?</summary><p>${best.length ? `Der beliebteste Build für ${esc(n)} in unserer Tierlist ist ${best.map(it=>esc(it.en)).join(', ')}.` : top.length ? `Am häufigsten bekommt ${esc(n)} in unserer Tierlist ${top.slice(0, 3).map(x=>esc(x.it.en)).join(', ')}.` : `Für ${esc(n)} gibt es in unserer Tierlist noch keine festen Items – vergleich Builds im DPS-Rechner.`}</p></details>
+        <details><summary>Welche Traits hat ${esc(n)}?</summary><p>${esc(n)}: ${c.t.map(esc).join(', ')}.</p></details>
+        <details><summary>Wie viel kostet ${esc(n)} in TFT?</summary><p>${esc(n)} kostet ${c.c} Gold. Für ★★ brauchst du 3 Kopien, für ★★★ 9 Kopien.</p></details>
+        <details><summary>In welchen Comps spielt man ${esc(n)}?</summary><p>${cs.length ? cs.slice(0, 4).map(x=>`${esc(x.name)} (${x.tier})`).join(', ') : `${esc(n)} ist gerade in keiner Comp unserer Tierlist.`}</p></details>
+        <h3>Weitere Tools</h3>
+        <ul class="ts-links">${dpsOk(n) ? `<li><a href="/tools/dps?c=${champSlug(n)}">DPS-Rechner</a></li>` : ''}<li><a href="/tools/rolldown">Rolldown-Rechner</a></li><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="/builder">Team Builder</a></li></ul>
+      </aside>
+    </section>`;
+}
 
 /* ================= RENDER: TRAITS ================= */
 let catF='all';
@@ -1586,8 +1749,15 @@ function testimonialHTML(t){
   if(!t.q) return `<div class="card co-quote soon"><span class="co-qm" aria-hidden="true">“</span><p>Feedback folgt</p><figcaption><b>${esc(t.n)}</b>${t.r?`<span>${esc(t.r)}</span>`:''}</figcaption></div>`;
   return `<figure class="card co-quote"><span class="co-qm" aria-hidden="true">“</span><blockquote>${esc(t.q)}</blockquote><figcaption><b>${esc(t.n)}</b>${t.r?`<span>${esc(t.r)}</span>`:''}</figcaption></figure>`;
 }
+// Guides: Übersicht oder ein einzelner Guide (/guides/encounters)
+function setGuide(sub){
+  const key = sub==='encounters' ? 'encounters' : '';
+  document.querySelectorAll('#page-guides .gd-view').forEach(v=>{ v.hidden = v.dataset.guide!==key; });
+  if(key==='encounters') renderEncTL();
+}
 function guideHTML(g){
-  return `<div class="card guide"><div class="guide-cover" style="background:${g.col}"><div>${esc(g.t)}<small>TFT Freaks</small></div></div><div><span class="pill">${esc(g.s)}</span><h3 style="margin-top:10px">${esc(g.t)}</h3><p>${esc(g.d)}</p><p style="color:var(--faint);font-size:.82rem">${esc(g.x)}</p><span class="link-arrow">Bald verfügbar</span></div></div>`;
+  if(g.href) return `<a class="card guide guide-on" href="${g.href}"><div class="guide-cover" style="background:${g.col}"><div>${esc(g.t)}<small>Climb TFT</small></div></div><div><span class="pill gold">${esc(g.s)}</span><h3 style="margin-top:10px">${esc(g.t)}</h3><p>${esc(g.d)}</p><p style="color:var(--faint);font-size:.82rem">${esc(g.x)}</p><span class="link-arrow">Zum Guide →</span></div></a>`;
+  return `<div class="card guide"><div class="guide-cover" style="background:${g.col}"><div>${esc(g.t)}<small>Climb TFT</small></div></div><div><span class="pill">${esc(g.s)}</span><h3 style="margin-top:10px">${esc(g.t)}</h3><p>${esc(g.d)}</p><p style="color:var(--faint);font-size:.82rem">${esc(g.x)}</p><span class="link-arrow">Bald verfügbar</span></div></div>`;
 }
 function renderHome(){
   $('#ranks').innerHTML = ranks.map(([n,c,f])=>`<a href="/ranks/${f.toLowerCase()}" class="rank"><div class="rank-gem"><img src="${DD}tft-regalia/TFT_Regalia_${f}.png" alt="TFT Rang ${n}" loading="lazy" onerror="this.outerHTML='<span style=&quot;font:900 1.4rem var(--ff-head);color:${c}&quot;>${n[0]}</span>'"></div>${n}</a>`).join('');
@@ -1606,7 +1776,7 @@ $('#applyForm').addEventListener('submit', e=>{ e.preventDefault(); $('#applyOk'
 
 /* ================= SEARCH ================= */
 const searchIndex = [
-  ...champions.map(c=>({label:c.n,type:'Champion',html:avatar(c.n,40),go:()=>{closeSearch();openChamp(c.n);}})),
+  ...champions.map(c=>({label:c.n,type:'Champion',html:avatar(c.n,40),go:()=>{closeSearch();go(champHref(c.n));}})),
   ...traits.map(t=>({label:t.n,type:t.cat==='origin'?'Ursprung':'Klasse',html:traitHex(t.n, t.bp.length===1?'unique':'base', 34),go:()=>{closeSearch();go('/bibliothek/traits');setTimeout(()=>{$('#traitSearch').value=t.n;renderTraits();},10);}})),
   ...ITEMS.map(it=>({label:it.en,alt:it.de,type:'Item · '+(ITEM_CATS.find(([k])=>k===it.cat)||[])[1],html:`<img src="${it.img}" alt="" width="40" height="40" loading="lazy" style="width:40px;height:40px;border-radius:8px">`,go:()=>{closeSearch();openItem(it.id);}})),
   ...AUGS.filter(a=>!AUG_DUP.has(a.id)).map(a=>({label:a.en,alt:a.de,type:'Augment'+(a.lv?' · '+AUG_LV[a.lv]:''),html:`<img src="${augImg(a)}" alt="" width="40" height="40" loading="lazy" style="width:40px;height:40px;border-radius:8px">`,go:()=>{closeSearch();openAug(a.id);}})),
@@ -1677,9 +1847,9 @@ const NAV = [
 $('#tbNav').innerHTML = NAV.filter(n=>!n.more).map(n=>`<a href="${n.h}" class="tb-item" data-route="${n.r}">${n.badge?`<span class="tb-badge">${n.badge}</span>`:''}${navIcon(n)}<span>${n.l}</span></a>`).join('')
   + '<button class="tb-item tb-more" id="moreBtn" aria-haspopup="true" aria-label="Mehr">···</button>';
 $('#moreMenu').innerHTML = NAV.filter(n=>n.more).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('');
-$('#drawerPanel').innerHTML = `<a href="/" class="tb-logo" style="border:0;padding:6px 10px 14px;font-size:1.7rem" aria-label="TFT Freaks Startseite"><span class="tft-logo" aria-hidden="true"></span><div><span>TFT</span> <b>Freaks</b></div></a>
+$('#drawerPanel').innerHTML = `<a href="/" class="tb-logo" style="border:0;padding:6px 10px 14px;font-size:1.7rem" aria-label="Climb TFT Startseite"><span class="tft-logo" aria-hidden="true"></span><div><span>Climb</span> <b>TFT</b></div></a>
   <h5>Tierlist & Daten</h5>${NAV.filter(n=>['tierlist','bibliothek','builder','ranks','tools','patches'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}
-  <h5>TFT Freaks</h5>${NAV.filter(n=>['home','coaching','guides','about','apply'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}`;
+  <h5>Climb TFT</h5>${NAV.filter(n=>['home','coaching','guides','about','apply'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}`;
 const moreMenu = $('#moreMenu');
 $('#moreBtn').onclick = e=>{ e.stopPropagation(); const r=e.currentTarget.getBoundingClientRect(); moreMenu.style.left=Math.min(r.left, innerWidth-240)+'px'; moreMenu.classList.toggle('open'); };
 document.addEventListener('click', e=>{ if(!e.target.closest('#moreMenu')) moreMenu.classList.remove('open'); });
@@ -1750,22 +1920,34 @@ function rdGoldFor(q){   // kleinstes Gold, mit dem das Ziel mit Chance q erreic
 const dpsN = v => Math.round(v).toLocaleString(LOC);
 const DPS_COL = ['#4f8cff','#ff8a1f','#2fe0d0','#e05cff'];
 const DPS_PROF = [['back','Backline', 800, 30, 30], ['mid','Frontline', 1600, 70, 70], ['tank','Tank', 3000, 150, 150]];
-const DPS_CATS = [['craft','Kombiniert'], ['radiant','Lichtversionen'], ['artifact','Artefakte']];
-const dps = {cost:4, champ:'', star:2, builds:[[], []], prof:'mid', n:1, at:25, dur:30, mode:'sum', pick:null, cat:'craft', q:'', res:null};
+const DPS_CATS = [['craft','Kombiniert'], ['radiant','Lichtversionen'], ['artifact','Artefakte'], ['emblem','Embleme']];
+const DPS_ITEM_CATS = DPS_CATS.map(c=>c[0]);
+// Tanks werden nicht auf Schaden gebaut – im DPS-Rechner nur Carrys und Schadens-Units
+// Units mit Tank-Trait bleiben nur drin, wenn sie in den Tierlist-Comps überwiegend Schadens-Items tragen (z. B. Elise, Morgana),
+// nicht aber Tanks mit Tank-Items (z. B. Malphite mit Gargoyle, Warmog's, Crownguard)
+const dpsDmgItem = it => { const f = it.fx || {}; return !!(f.AD || f.AP || f.AS || f.CritChance); };
+const dpsTankItem = it => { const f = it.fx || {}; return !dpsDmgItem(it) && !!(f.Health || f.Armor || f.MagicResist); };
+const dpsCarry = n => { let d = 0, t = 0;
+  comps.forEach(c=>(c.board||[]).forEach(b=>{ if(b.u!==n) return; (b.i||[]).map(findItem).filter(Boolean).forEach(it=>{ if(dpsDmgItem(it)) d++; else if(dpsTankItem(it)) t++; }); }));
+  return d > 0 && d >= t; };
+const dpsOk = n => !!champBy[n] && (simRole(n) !== 'tank' || dpsCarry(n));
+// Embleme: keine Taktiker-Kronen (die geben nur Teamgröße)
+const dpsItemOk = it => it && DPS_ITEM_CATS.includes(it.cat) && !(it.cat==='emblem' && /Tactician/i.test(it.id + ' ' + it.en));
+const dps = {cost:4, champ:'', star:2, builds:[[], []], tl:{}, prof:'mid', n:1, at:22, dur:30, mode:'sum', pick:null, cat:'craft', q:'', res:null};
 let dpsMounted = false, dpsTimer = 0;
 // Builds aus der Tierlist als Startpunkt: Item-Sets, die der Champion in Comps und Alt Builds hält
 function dpsSuggest(n){
   const seen = new Set(), out = [];
   comps.forEach(c=>[...(c.board||[]), ...(c.alt||[])].forEach(b=>{
     if(b.u!==n || (b.i||[]).length < 2) return;
-    const ids = b.i.map(findItem).filter(it=>it && ['craft','radiant','artifact'].includes(it.cat)).map(it=>it.id), k = ids.slice().sort().join('|');   // Embleme wirken hier nicht (keine Traits)
+    const ids = b.i.map(findItem).filter(dpsItemOk).map(it=>it.id), k = ids.slice().sort().join('|');
     if(ids.length >= 2 && !seen.has(k)){ seen.add(k); out.push(ids.slice(0, 3)); }
   }));
   return out.slice(0, 3);
 }
 function dpsMount(){
   if(dpsMounted) return; dpsMounted = true;
-  if(!dps.champ){ const c = mainComps.find(x=>champBy[x.carry] && champBy[x.carry].c===4) || mainComps[0]; if(c && champBy[c.carry]){ dps.champ = c.carry; dps.cost = champBy[c.carry].c; } }
+  if(!dps.champ){ const c = mainComps.find(x=>dpsOk(x.carry) && champBy[x.carry].c===4) || mainComps.find(x=>dpsOk(x.carry)); if(c){ dps.champ = c.carry; dps.cost = champBy[c.carry].c; } }
   if(dps.champ){ const s = dpsSuggest(dps.champ); if(s.length) dps.builds = s.length > 1 ? s : [s[0], []]; }
   $('#dpsApp').innerHTML = `<div class="dps">
     <div class="card dps-in">
@@ -1776,7 +1958,10 @@ function dpsMount(){
       <section><h3 class="rd-h"><b>2</b> Item-Builds</h3>
         <div id="dpsBuilds"></div>
         <div id="dpsPicker"></div></section>
-      <section><h3 class="rd-h"><b>3</b> Ziel</h3>
+      <section><h3 class="rd-h"><b>3</b> Traits</h3>
+        <div id="dpsTraits"></div>
+        <p class="rd-hint">Auf welcher Stufe ist der Trait in deinem Board aktiv? Embleme im Build bringen ihren Trait dazu.</p></section>
+      <section><h3 class="rd-h"><b>4</b> Ziel</h3>
         <div class="rd-costs" id="dpsProf">${DPS_PROF.map(([k,l,hp,ar,mr])=>`<button type="button" class="rd-cost" data-dprof="${k}" title="${dpsN(hp)} Leben · ${ar} Rüstung · ${mr} Magieresistenz">${l}</button>`).join('')}</div>
         <p class="rd-hint" id="dpsProfTxt"></p>
         <div class="dps-row"><span>Puppen</span><div class="rd-costs" id="dpsN">${[1,2,3].map(n=>`<button type="button" class="rd-cost" data-dn="${n}">${n}</button>`).join('')}</div></div>
@@ -1788,7 +1973,7 @@ function dpsMount(){
       <div id="dpsChart" class="dps-chart"></div>
       <label class="rd-f dps-at"><span>Auswertung bis Sekunde</span><b id="dpsAtV"></b><input type="range" id="dpsAt" min="1" max="30" value="${dps.at}"></label>
       <div class="dps-table-wrap"><table class="dps-table" id="dpsTable"></table></div>
-      <p class="note">Gerechnet mit der Engine des Kampf-Simulators: Grundwerte und Items nach Riot, die Stärke der Fähigkeiten ist geschätzt, wo Riot keine Zahlen liefert. Die Puppen greifen nicht an – Mana gibt es also nur über Angriffe und Items. Ohne Traits und Augments. Jeder Wert ist der Mittelwert aus 24 Kämpfen, weil Krits Zufall sind. Für den Vergleich von Builds gut geeignet, die absoluten Zahlen sind Richtwerte.</p>
+      <p class="note">Gerechnet mit der Engine des Kampf-Simulators: Grundwerte und Items nach Riot, die Stärke der Fähigkeiten ist geschätzt, wo Riot keine Zahlen liefert. Die Puppen greifen nicht an – Mana gibt es also nur über Angriffe und Items. Traits zählen auf der Stufe, die du oben einstellst, Augments nicht. Jeder Wert ist der Mittelwert aus 24 Kämpfen, weil Krits Zufall sind. Für den Vergleich von Builds gut geeignet, die absoluten Zahlen sind Richtwerte.</p>
     </div>
   </div>`;
   const on = (sel, ev, f) => $(sel).addEventListener(ev, f);
@@ -1797,6 +1982,7 @@ function dpsMount(){
   on('#dpsStars', 'click', e=>{ const b = e.target.closest('[data-dstar]'); if(!b) return; dps.star = +b.dataset.dstar; dpsUpdate(); });
   on('#dpsProf', 'click', e=>{ const b = e.target.closest('[data-dprof]'); if(!b) return; dps.prof = b.dataset.dprof; dpsUpdate(); });
   on('#dpsN', 'click', e=>{ const b = e.target.closest('[data-dn]'); if(!b) return; dps.n = +b.dataset.dn; dpsUpdate(); });
+  on('#dpsTraits', 'click', e=>{ const b = e.target.closest('[data-dtl]'); if(!b) return; const i = b.dataset.dtl.lastIndexOf(':'); dps.tl[b.dataset.dtl.slice(0, i)] = +b.dataset.dtl.slice(i + 1); dpsUpdate(); });
   on('#dpsMode', 'click', e=>{ const b = e.target.closest('[data-dmode]'); if(!b) return; dps.mode = b.dataset.dmode; dpsDraw(); });
   on('#dpsAt', 'input', e=>{ dps.at = +e.target.value; dpsDraw(); });
   let dpsW = 0; window.addEventListener('resize', ()=>{ const ch = $('#dpsChart'); if(ch && ch.offsetParent && Math.abs(ch.clientWidth - dpsW) > 30){ dpsW = ch.clientWidth; dpsDraw(); } });
@@ -1820,14 +2006,42 @@ function dpsMount(){
   dpsChamps(); dpsUpdate();
 }
 function dpsSetChamp(n){
-  if(!champBy[n]) return;
-  dps.champ = n; dps.cost = champBy[n].c; dps.pick = null;
+  if(!dpsOk(n)) return;
+  dps.champ = n; dps.cost = champBy[n].c; dps.pick = null; dps.tl = {};
   const s = dpsSuggest(n); dps.builds = s.length ? (s.length > 1 ? s : [s[0], []]) : [[], []];
   dpsChamps(); dpsUpdate();
 }
 function dpsChamps(){
   $('#dpsCosts').querySelectorAll('[data-dcost]').forEach(b=>b.classList.toggle('on', +b.dataset.dcost===dps.cost));
-  $('#dpsChamps').innerHTML = champions.filter(c=>c.c===dps.cost).map(c=>`<button type="button" class="rd-ch${c.n===dps.champ?' on':''}" data-dch="${esc(c.n)}" title="${esc(c.n)}">${avatar(c.n, 44)}<span>${esc(c.n)}</span></button>`).join('');
+  $('#dpsChamps').innerHTML = champions.filter(c=>c.c===dps.cost && dpsOk(c.n)).map(c=>`<button type="button" class="rd-ch${c.n===dps.champ?' on':''}" data-dch="${esc(c.n)}" title="${esc(c.n)}">${avatar(c.n, 44)}<span>${esc(c.n)}</span></button>`).join('');
+}
+// Traits im DPS-Rechner: die eigenen des Champions plus alles, was Embleme in den Builds dazubringen
+function dpsTraitList(){
+  const c = champBy[dps.champ]; if(!c) return [];
+  const list = c.t.map(n=>({n, own:true, from:[]}));
+  dps.builds.forEach((b, i)=>b.forEach(id=>{
+    const it = findItem(id), tn = it && it.cat==='emblem' ? emblemTrait(it) : null;
+    if(!tn || c.t.includes(tn)) return;
+    let e = list.find(x=>x.n===tn); if(!e){ e = {n:tn, own:false, from:[]}; list.push(e); }
+    const L1 = String.fromCharCode(65 + i); if(!e.from.includes(L1)) e.from.push(L1);
+  }));
+  return list.map(x=>Object.assign(x, {t:traits.find(t=>t.n===x.n)})).filter(x=>x.t);
+}
+// Stufe eines Traits: gewählt, sonst die erste Stufe (der Trait ist aktiv, so wie man den Champion meist spielt)
+const dpsTraitLv = x => dps.tl[x.n] !== undefined ? dps.tl[x.n] : (+x.t.bp[0] || 1);
+function dpsBuildTraits(items){
+  const em = items.map(findItem).filter(it=>it && it.cat==='emblem').map(emblemTrait);
+  return dpsTraitList().filter(x=>x.own || em.includes(x.n)).map(x=>({n:x.n, k:dpsTraitLv(x)})).filter(x=>x.k > 0);
+}
+function dpsTraits(){
+  const box = $('#dpsTraits'); if(!box) return;
+  const list = dpsTraitList();
+  box.innerHTML = list.length ? list.map(x=>{
+    const k = dpsTraitLv(x), dead = SIM_NOCOMBAT.includes(x.n);
+    return `<div class="dps-trait${x.own ? '' : ' em'}">${traitHex(x.n, x.t.bp.length===1 ? 'unique' : 'base', 26)}
+      <span class="dps-tn"><b>${esc(x.n)}</b>${x.own ? '' : `<small>Emblem in Build <b>${x.from.join(', ')}</b></small>`}${dead ? '<small>kein Kampfeffekt</small>' : ''}</span>
+      ${dead ? '' : `<div class="dps-tl"><button type="button" class="${k===0 ? 'on' : ''}" data-dtl="${esc(x.n)}:0">Aus</button>${x.t.bp.map(b=>`<button type="button" class="${k===+b ? 'on' : ''}" data-dtl="${esc(x.n)}:${b}">${b}</button>`).join('')}</div>`}</div>`;
+  }).join('') : '<p class="rd-hint" style="margin:0">Wähl zuerst einen Champion.</p>';
 }
 const dpsItemImg = id => { const it = findItem(id); return it ? `<img src="${it.img}" alt="" title="${esc(it.en)}">` : ''; };
 function dpsBuilds(){
@@ -1849,7 +2063,7 @@ function dpsPicker(){
 }
 function dpsPickerGrid(){
   const q = dps.q.toLowerCase().trim();
-  const list = ITEMS.filter(i=>(q ? ['craft','radiant','artifact'].includes(i.cat) : i.cat===dps.cat) && (!q || i.en.toLowerCase().includes(q) || i.de.toLowerCase().includes(q))).sort((a,b)=>a.en.localeCompare(b.en));
+  const list = ITEMS.filter(i=>dpsItemOk(i) && (q || i.cat===dps.cat) && (!q || i.en.toLowerCase().includes(q) || i.de.toLowerCase().includes(q))).sort((a,b)=>a.en.localeCompare(b.en));
   $('#dpsGrid').innerHTML = list.map(i=>`<button type="button" data-ditem="${i.id}" title="${esc(i.en)}"><img src="${i.img}" alt="" loading="lazy"><span>${esc(i.en)}</span></button>`).join('') || '<p class="note">Kein Item gefunden.</p>';
 }
 function dpsUpdate(){
@@ -1858,11 +2072,11 @@ function dpsUpdate(){
   $('#dpsN').querySelectorAll('[data-dn]').forEach(b=>b.classList.toggle('on', +b.dataset.dn===dps.n));
   const p = DPS_PROF.find(x=>x[0]===dps.prof);
   $('#dpsProfTxt').textContent = `${dpsN(p[2])} Leben · ${p[3]} Rüstung · ${p[4]} Magieresistenz`;
-  dpsBuilds();
+  dpsBuilds(); dpsTraits();
   clearTimeout(dpsTimer);
   dpsTimer = setTimeout(()=>{   // kurz warten, damit schnelle Klicks nicht jedes Mal neu rechnen
     if(!dps.champ){ dps.res = null; dpsDraw(); return; }
-    dps.res = dps.builds.map(items=>simDps({champ:dps.champ, star:dps.star, items, hp:p[2], ar:p[3], mr:p[4], n:dps.n, dur:dps.dur}));
+    dps.res = dps.builds.map(items=>simDps({champ:dps.champ, star:dps.star, items, traits:dpsBuildTraits(items), hp:p[2], ar:p[3], mr:p[4], n:dps.n, dur:dps.dur}));
     dpsDraw();
   }, 30);
 }
@@ -1921,7 +2135,11 @@ function renderTools(sub, a, b){
   if(key==='rolldown') rdMount();
   if(key==='tierlist') tmRoute(a, b);
   if(key==='drops') drRender();
-  if(key==='dps') dpsMount();
+  if(key==='dps'){   // ?c=<champion> (z. B. von der Champion-Seite) wählt den Champion vor
+    dpsMount();
+    const q = qParam('c'), c = q && champBySlug[q];
+    if(c && dps.champ !== c.n) dpsSetChamp(c.n);
+  }
 }
 let rdMounted = false;
 function rdMount(){
@@ -2097,7 +2315,7 @@ function tmBuild(){
       <div class="tm-rows" id="tmRows"></div>
       <aside class="tm-box" id="tmBox">
         <div class="tm-box-head"><h3>Toolbox</h3>
-          <div class="tm-acts"><button type="button" id="tmAddRow">+ Zeile</button><button type="button" id="tmClear">Alles leeren</button><button type="button" id="tmShare" class="hl">Teilen</button></div></div>
+          <div class="tm-acts"><button type="button" id="tmAddRow">+ Zeile</button><button type="button" id="tmClear">Alles leeren</button><button type="button" id="tmReset" title="Reihen wieder S, A, B, C, X mit den Standardfarben, ohne Einträge und Titel">Zurücksetzen</button><button type="button" id="tmShare" class="hl">Teilen</button></div></div>
         <div class="tm-tabs" id="tmTabs">${TM_TABS.map(([k,l])=>`<button type="button" data-tab="${k}">${l}</button>`).join('')}</div>
         <input class="input" id="tmSearch" placeholder="Suchen …" aria-label="Suchen">
         <div class="tm-sorts" id="tmSorts"></div>
@@ -2116,6 +2334,8 @@ function tmBuild(){
   $('#tmSearch').addEventListener('input', tmRenderPool);
   $('#tmAddRow').addEventListener('click', ()=>{ if(tm.rows.length >= 12) return tmToast('Maximal 12 Zeilen.'); const used = new Set(tm.rows.map(r=>r.l)); tm.rows.push({l:['D','E','F','?'].find(x=>!used.has(x)) || '?', c:(tm.rows.length) % TM_COLORS.length, items:[]}); tmChanged(); });
   $('#tmClear').addEventListener('click', ()=>{ if(!tm.rows.some(r=>r.items.length) || confirm('Alle Einträge aus der Tierlist entfernen?')){ tm.rows.forEach(r=>r.items = []); tmChanged(); } });
+  // Zurücksetzen: Ausgangszustand mit S, A, B, C, X und Standardfarben – auch Titel und Einträge sind danach weg
+  $('#tmReset').addEventListener('click', ()=>{ if(!confirm('Tierlist komplett zurücksetzen? Reihen, Farben, Titel und alle Einträge gehen auf den Anfang zurück.')) return; tm = TM_DEFAULT(); tmSel = null; tmChanged(); tmToast('Zurückgesetzt – wieder S, A, B, C und X.'); });
   $('#tmShare').addEventListener('click', ()=>{
     const url = siteUrl('/tools/tierlist/' + TFT_DATA.set + '/' + tmEncode(tm));
     const ok = ()=>tmToast('Link kopiert – wer ihn öffnet, sieht deine Tierlist.');
@@ -2405,7 +2625,7 @@ function renderPatches(sub){
       <small>${fmtDate(p.date)}${p===CURRENT_PATCH ? ' · <b>Aktueller Patch</b>' : ''}</small><h1>Patch <em class="serif">${esc(p.id)}</em></h1>
       ${p.teaser ? `<blockquote>${esc(p.teaser)}<cite>– Riot Games</cite></blockquote>` : ''}
       <a class="btn btn-primary" href="${esc(p.url)}" target="_blank" rel="noopener">Komplette Patchnotes bei Riot ↗</a></div></div>
-    ${note ? `<div class="card pd-note"><h3>Einschätzung von TFT Freaks</h3>${String(note).split(/\n{2,}/).map(t=>`<p>${esc(t).replace(/\n/g,'<br>')}</p>`).join('')}</div>` : ''}
+    ${note ? `<div class="card pd-note"><h3>Einschätzung von Climb TFT</h3>${String(note).split(/\n{2,}/).map(t=>`<p>${esc(t).replace(/\n/g,'<br>')}</p>`).join('')}</div>` : ''}
     ${grps.length ? `<input class="input pd-search" id="pdSearch" placeholder="Champion, Trait, Item oder Augment suchen …" aria-label="Änderungen durchsuchen">
     <div id="pdList">${grps.map(g=>`<section class="pd-grp">${g.g ? `<h2>${esc(grpLabel(g.g))}</h2>` : ''}${g.secs.map(s=>`<div class="card pd-sec"><h3>${esc(secLabel(s.sec))}</h3><ul>${s.ch.map(patchRowHTML).join('')}</ul></div>`).join('')}</section>`).join('')}</div>`
       : viSays('Für diesen Patch habe ich keine einzelnen Änderungen gefunden – schau direkt in die Patchnotes bei Riot.')}
@@ -2482,7 +2702,7 @@ setInterval(()=>document.querySelectorAll('[data-countdown]').forEach(e=>{ e.tex
 function pageMeta(page, sub){
   const S = `Set ${TFT_DATA.set}`, P = TL_PATCH ? ` (Patch ${TL_PATCH})` : '', rk = rankBy[sub];
   switch(page){
-    case 'home': return ['TFT Freaks – TFT Tierlist, Comps & Coaching', `Aktuelle TFT Tierlist für ${S}${P}: die besten Comps mit Items, Augments und Aufstellung – dazu Coaching von Challenger-Spielern.`];
+    case 'home': return ['Climb TFT – TFT Tierlist, Comps & Coaching', `Aktuelle TFT Tierlist für ${S}${P}: die besten Comps mit Items, Augments und Aufstellung – dazu Coaching von Challenger-Spielern.`];
     case 'tierlist':
       if(sub==='items') return [`TFT Item-Tierlist ${S}${P}`, `Welche Items sind in TFT ${S} am stärksten? Item-Tierlist mit kombinierten Items, Lichtversionen und Artefakten.`];
       if(sub==='augments') return [`TFT Augment-Tierlist ${S}${P}`, `Die besten Augments in TFT ${S} – sortiert nach Silber, Gold und Prismatisch.`];
@@ -2495,21 +2715,28 @@ function pageMeta(page, sub){
     case 'ranks':
       if(rk) return [`TFT Rang ${rk.n} – Spielerverteilung`, `Wie viele Spieler sind in TFT ${rk.n}? Verteilung nach Divisionen und Vergleich mit den anderen Rängen.`];
       return ['TFT Ränge & Spielerverteilung', 'Alle TFT Ränge von Eisen bis Challenger mit Divisionen – und wie viel Prozent der Spieler in jedem Rang stehen.'];
+    case 'champion': {
+      const c = champBySlug[sub];
+      if(!c) return ['Champion nicht gefunden', '', true];
+      return [`${c.n} TFT Build ${S} – Items, Comps & Fähigkeit`, `${c.n} in TFT ${S}: die besten Items, Comps und Traits, dazu Fähigkeit und Werte des ${c.c}-Kosten-Champions – mit Builds aus unserer Challenger-Tierlist.`];
+    }
     case 'builder': return [`TFT Team Builder ${S} – Board planen & teilen`, `Kostenloser TFT Team Builder für ${S}: Units platzieren, Items verteilen, aktive Traits prüfen und dein Board als Link oder Team-Code teilen.`];
     case 'coaching': return ['TFT Coaching von Challenger-Spielern', 'TFT Coaching auf Deutsch und Englisch: Fundamentals und VOD-Review mit Challenger-Coaches. Kostenloses Kennenlernen, Einzelstunde 30 €.'];
     case 'about':
-      if(sub==='crazyslayt') return ['CrazYSlayt – TFT Challenger & Founder', 'Claudio „CrazYSlayt“: Challenger seit Set 15, Founder von TFT Freaks und Coach seit Set 17.'];
-      if(sub==='humbadobo') return ['humbadobo – TFT Challenger & Coach', 'Romano „humbadobo“: Challenger seit Set 15, Peak 1.447 LP und Coach bei TFT Freaks.'];
-      return ['Meet the Team', 'Das Team hinter TFT Freaks: Challenger-Spieler, Coaches – und Vi.'];
+      if(sub==='crazyslayt') return ['CrazYSlayt – TFT Challenger & Founder', 'Claudio „CrazYSlayt“: Challenger seit Set 15, Founder von Climb TFT und Coach seit Set 17.'];
+      if(sub==='humbadobo') return ['humbadobo – TFT Challenger & Coach', 'Romano „humbadobo“: Challenger seit Set 15, Peak 1.447 LP und Coach bei Climb TFT.'];
+      return ['Meet the Team', 'Das Team hinter Climb TFT: Challenger-Spieler, Coaches – und Vi.'];
     case 'apply': return ['Coaching anfragen', 'Frag ein kostenloses Kennenlernen für dein TFT Coaching an.'];
     case 'patches': {
       const p = patchBySlug[sub];
       if(p) return [`TFT Patch ${p.id} – alle Änderungen`, L(`Alle Änderungen aus TFT Patch ${p.id} (${fmtDate(p.date)}) auf einen Blick: Champions, Traits, Items und Augments. ${p.teaser || ''}`, `All changes from TFT patch ${p.id} (${fmtDate(p.date)}) at a glance: champions, traits, items and augments. ${p.teaser || ''}`).trim()];
       return ['TFT Patch Notes – alle Änderungen', 'Alle TFT Patches mit den offiziellen Änderungen von Riot: Champions, Traits, Items und Augments – automatisch aktuell.'];
     }
-    case 'impressum': return ['Impressum', 'Impressum von TFT Freaks.'];
-    case 'datenschutz': return ['Datenschutzerklärung', 'Datenschutzerklärung von TFT Freaks.'];
-    case 'guides': return ['TFT Guides', '', true];
+    case 'impressum': return ['Impressum', 'Impressum von Climb TFT.'];
+    case 'datenschutz': return ['Datenschutzerklärung', 'Datenschutzerklärung von Climb TFT.'];
+    case 'guides':
+      if(sub==='encounters') return [`TFT Encounters ${S} – welche Comp du spielen solltest`, `Alle TFT Encounters in ${S}: was sie machen, wie oft sie pro Spiel kommen und welche Comps du darauf spielst – Ambosse, Gold- und Prismatic-Augments, Start-Units.`];
+      return ['TFT Guides', '', true];
     case 'tools':
       if(sub==='tierlist') return [`TFT Tierlist-Maker ${S} – eigene Tierlist erstellen & teilen`, `Kostenloser TFT Tierlist-Maker für ${S}: Champions, Items, Artefakte, Embleme und Augments per Drag & Drop ranken und deine Tierlist als Link teilen.`];
       if(sub==='rolldown') return [`TFT Rolldown-Rechner ${S} – Odds & Chancen pro Level`, `Wie wahrscheinlich triffst du deine Units? TFT Rolldown-Rechner für ${S} mit Shop-Odds pro Level, Pool-Größen und dem Vergleich: jetzt rollen oder erst leveln.`];
@@ -2526,40 +2753,48 @@ function headTag(sel, make){ let el = document.head.querySelector(sel); if(!el){
 function setMeta(page, sub){
   let [title, desc, noindex] = pageMeta(page, sub);
   title = tr(title); if(desc) desc = tr(desc);   // englische Seite: über das Wörterbuch
-  document.title = page==='home' ? title : title + ' | TFT Freaks';
+  document.title = page==='home' ? title : title + ' | Climb TFT';
   if(desc) headTag('meta[name="description"]', ()=>Object.assign(document.createElement('meta'), {name:'description'})).content = desc;
   headTag('meta[name="robots"]', ()=>Object.assign(document.createElement('meta'), {name:'robots'})).content = noindex ? 'noindex' : 'index, follow';
   if(FILE_MODE) return;
   if(noindex){ const c = document.head.querySelector('link[rel="canonical"]'); if(c) c.remove(); return; }
   // kanonische Adresse: eine Adresse pro Inhalt (z. B. /bibliothek statt /bibliothek/champions, Builder ohne Team-Code)
-  const keep = {tierlist:['items','augments','holds'], bibliothek:['items','traits'], tools:['rolldown','tierlist','simulator','drops','dps'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
-  const path = page==='home' ? '/' : '/' + page + (keep.includes(sub) ? '/' + sub : '');
+  const keep = {guides:['encounters'], tierlist:['items','augments','holds'], bibliothek:['items','traits'], tools:['rolldown','tierlist','simulator','drops','dps'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
+  const path = page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : '/' + page + (keep.includes(sub) ? '/' + sub : '');
   headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + withLang(path);
   // beide Sprachfassungen für Suchmaschinen verknüpfen
   [['de', path], ['en', '/en' + path], ['x-default', path]].forEach(([l, p])=>{ headTag(`link[rel="alternate"][hreflang="${l}"]`, ()=>Object.assign(document.createElement('link'), {rel:'alternate', hreflang:l})).href = location.origin + p; });
   // Vorschau beim Teilen (Discord, WhatsApp, X …)
   const url = location.origin + withLang(path), tool = page==='tools' ? (sub && keep.includes(sub) ? sub : 'overview') : page==='builder' ? 'builder' : '';
-  const img = location.origin + '/' + ({tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
+  const chImg = page==='champion' && (champImg(champBySlug[sub].n) || champFallback(champBySlug[sub].n));
+  const img = chImg || location.origin + '/' + ({tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
   const og = (k, v) => { headTag(`meta[property="${k}"]`, ()=>{ const m = document.createElement('meta'); m.setAttribute('property', k); return m; }).content = v; };
-  og('og:title', document.title); og('og:description', desc || ''); og('og:url', url); og('og:type', 'website'); og('og:site_name', 'TFT Freaks'); og('og:locale', EN ? 'en_GB' : 'de_DE'); og('og:image', img);
+  og('og:title', document.title); og('og:description', desc || ''); og('og:url', url); og('og:type', 'website'); og('og:site_name', 'Climb TFT'); og('og:locale', EN ? 'en_GB' : 'de_DE'); og('og:image', img);
   headTag('meta[name="twitter:card"]', ()=>Object.assign(document.createElement('meta'), {name:'twitter:card'})).content = 'summary';
   setLd(page, sub, tool, title, desc, url, path);
 }
 // Strukturierte Daten für Google: Brotkrumen, bei Tools zusätzlich Web-App und die Fragen aus dem Textblock
-const LD_SECTION = {tierlist:'Tierlist', tools:'Tools', bibliothek:'Bibliothek', ranks:'Ranks', patches:'Patches', about:'Meet the Team', builder:'Team Builder', coaching:'Coaching', apply:'Coaching', impressum:'Impressum', datenschutz:'Datenschutz'};
+const LD_SECTION = {guides:'Guides', tierlist:'Tierlist', tools:'Tools', bibliothek:'Bibliothek', ranks:'Ranks', patches:'Patches', about:'Meet the Team', builder:'Team Builder', coaching:'Coaching', apply:'Coaching', impressum:'Impressum', datenschutz:'Datenschutz'};
 function setLd(page, sub, tool, title, desc, url, path){
-  const org = {'@type':'Organization', name:'TFT Freaks', url:location.origin + withLang('/'), logo:location.origin + '/assets/img/tft-logo.png'};
-  const graph = [{'@type':'WebSite', name:'TFT Freaks', url:location.origin + withLang('/'), inLanguage:EN ? 'en' : 'de', publisher:org}];
+  const org = {'@type':'Organization', name:'Climb TFT', url:location.origin + withLang('/'), logo:location.origin + '/assets/img/tft-logo.png'};
+  const graph = [{'@type':'WebSite', name:'Climb TFT', url:location.origin + withLang('/'), inLanguage:EN ? 'en' : 'de', publisher:org}];
   if(page!=='home'){
     const items = [['Home', '/']], sec = LD_SECTION[page];
-    if(sec) items.push([tr(sec), '/' + page]);
-    if(path !== '/' + page) items.push([title.split(' – ')[0], path]);
+    if(page==='champion') items.push([tr('Bibliothek'), '/bibliothek'], ['Champions', '/bibliothek/champions'], [champBySlug[sub].n, path]);
+    else {
+      if(sec) items.push([tr(sec), '/' + page]);
+      if(path !== '/' + page) items.push([title.split(' – ')[0], path]);
+    }
     graph.push({'@type':'BreadcrumbList', itemListElement:items.map(([n, p], i)=>({'@type':'ListItem', position:i + 1, name:n, item:location.origin + withLang(p)}))});
   }
   if(tool){
     graph.push({'@type':'WebApplication', name:title.split(' – ')[0], url, description:desc, applicationCategory:'GameApplication', operatingSystem:'Web', browserRequirements:'JavaScript', inLanguage:EN ? 'en' : 'de', isAccessibleForFree:true, offers:{'@type':'Offer', price:'0', priceCurrency:'EUR'}, publisher:org});
     const box = tool==='builder' ? $('#page-builder .tool-seo.b-only') : tool==='simulator' ? $('#page-builder .tool-seo.b-simonly') : $(`#page-tools .tool-view[data-tool="${tool==='overview' ? '' : tool}"] .tool-seo`);
     const qa = box ? [...box.querySelectorAll('details')].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}})) : [];
+    if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
+  }
+  if(page==='champion' || (page==='guides' && sub)){   // Fragen aus dem Textblock der Champion-Seite bzw. des Guides
+    const qa = [...document.querySelectorAll(page==='champion' ? '#chPage .tool-seo details' : `#page-guides .gd-view[data-guide="${sub}"] .tool-seo details`)].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}}));
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
   }
   let el = document.getElementById('ldPage');
@@ -2586,19 +2821,23 @@ document.addEventListener('click', e=>{
 function route(){
   // lokal: normale Sprunganker (z. B. #main) nicht als Seite behandeln
   if(FILE_MODE && location.hash && !location.hash.startsWith('#/') && document.querySelector('.page.active')) return;
-  const parts = curPath().replace(/^\/+/,'').split('/');
+  const parts = curPath().split('?')[0].replace(/^\/+/,'').split('/');
   let page = parts[0] || 'home', sub = parts[1];
+  // Champion-Seiten: /champions/<name>
+  if(page==='champions' && sub){ page = 'champion'; }
   // alte Adressen weiter unterstützen
   if(['champions','items','traits'].includes(page)){ sub = page; page = 'bibliothek'; }
   if(page==='augments'){ sub = 'augments'; page = 'tierlist'; }
-  const valid = ['home','tierlist','bibliothek','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches'];
+  const valid = ['home','tierlist','bibliothek','champion','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches'];
   if(!valid.includes(page)) page='notfound';
   const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche
   const pageId = page==='bibliothek' ? 'library' : isSim ? 'builder' : page;
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+pageId));
-  let navKey = page;
+  let navKey = page==='champion' ? 'bibliothek' : page;
+  $('#statBar').classList.toggle('sb-off', page!=='home');   // LP-Grenzen und Patch-Countdown nur auf der Startseite
   if(!isSim) simPause();
   if(page==='tierlist') setTab(['items','augments','holds'].includes(sub)?sub:'comps');
+  if(page==='guides') setGuide(sub);
   if(page==='bibliothek') setLib(['items','traits'].includes(sub)?sub:'champions');
   if(page==='ranks') setRank(sub);
   if(page==='builder') builderRoute(sub, parts[2], 'builder');
@@ -2607,6 +2846,7 @@ function route(){
   if(isSim) builderRoute(parts[2], parts[3], 'sim');
   else if(page==='tools') renderTools(sub, parts[2], parts[3]);
   if(page==='patches') renderPatches(sub);
+  if(page==='champion') renderChampPage(sub);
   document.querySelectorAll('[data-route]').forEach(a=>a.classList.toggle('active', a.dataset.route===navKey));
   if(['guides','about','apply','patches'].includes(navKey)) $('#moreBtn').classList.add('active');
   else $('#moreBtn').classList.remove('active');
@@ -2736,4 +2976,4 @@ i18nStart();
 /* init */
 renderSetSwitcher();
 document.querySelectorAll('.data-src').forEach(el=>{ el.textContent = L(`Offizielle Spieldaten: CommunityDragon ${TFT_DATA.version} · Set ${TFT_DATA.set} · aktualisiert am ${new Date(TFT_DATA.generated).toLocaleDateString(LOC)}. Werte können sich mit Patches ändern.`, `Official game data: CommunityDragon ${TFT_DATA.version} · Set ${TFT_DATA.set} · updated on ${new Date(TFT_DATA.generated).toLocaleDateString(LOC)}. Values may change with patches.`); });
-renderStatBar(); renderHome(); filterComps(); renderItemTL(); renderAugTL(); renderHoldTL(); renderChamps(); renderTraits(); renderItems(); renderRecipes(); route();
+renderStatBar(); renderHome(); filterComps(); renderItemTL(); renderAugTL(); renderHoldTL(); renderEncTL(); renderChamps(); renderTraits(); renderItems(); renderRecipes(); route();

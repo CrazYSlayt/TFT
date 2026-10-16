@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/sitemap.js": { "includeFiles": "data/patches.js" }
+    "api/sitemap.js": { "includeFiles": "data/*.js" }
   },
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },

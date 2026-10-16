@@ -1,4 +1,4 @@
-// TFT Freaks – Sitemap für Suchmaschinen unter /sitemap.xml (Weiterleitung in vercel.json).
+// Climb TFT – Sitemap für Suchmaschinen unter /sitemap.xml (Weiterleitung in vercel.json).
 // Nimmt die Domain, unter der die Seite gerade aufgerufen wird, und listet jede Seite auf Deutsch und Englisch.
 const fs = require('fs');
 const path = require('path');
@@ -12,6 +12,7 @@ const PAGES = [
   ['/ranks', 0.6, 'monthly'],
   ...['iron', 'bronze', 'silver', 'gold', 'platinum', 'emerald', 'diamond', 'master', 'grandmaster', 'challenger'].map(k => ['/ranks/' + k, 0.4, 'monthly']),
   ['/patches', 0.7, 'weekly'],
+  ['/guides/encounters', 0.7, 'weekly'],
   ['/coaching', 0.7, 'monthly'], ['/apply', 0.5, 'yearly'],
   ['/about', 0.4, 'monthly'], ['/about/crazyslayt', 0.4, 'monthly'], ['/about/humbadobo', 0.4, 'monthly'],
   ['/impressum', 0.1, 'yearly'], ['/datenschutz', 0.1, 'yearly'],
@@ -26,12 +27,28 @@ function patches(){
   } catch (e) { return []; }
 }
 
+// Champion-Seiten des Live-Sets (data/sets.js → data/tft-data-<Set>.js), Adresse wie in app.js (champSlug)
+function champions(){
+  try {
+    const dir = path.join(process.cwd(), 'data');
+    const sets = fs.readFileSync(path.join(dir, 'sets.js'), 'utf8');
+    const list = JSON.parse(sets.slice(sets.indexOf('['), sets.lastIndexOf(']') + 1));
+    const live = list.find(s => s.status === 'live') || list[0];
+    const all = fs.readFileSync(path.join(dir, live.file), 'utf8');
+    const start = all.indexOf('champions:['), end = all.indexOf('traits:[', start);
+    const txt = all.slice(start, end > start ? end : undefined);   // nur der Champion-Abschnitt (danach kommen die Traits)
+    const names = [...txt.matchAll(/^\{"api":"[^"]*","n":"([^"]+)"/gm)].map(m => m[1]);
+    const slug = n => n.toLowerCase().replace(/['’.]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    return [...new Set(names.map(slug))].map(s => ['/champions/' + s, 0.6, 'weekly', live.generated]);
+  } catch (e) { return []; }
+}
+
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
 module.exports = (req, res) => {
   const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
   const base = (req.headers['x-forwarded-proto'] || 'https') + '://' + host;
-  const urls = [...PAGES, ...patches()].map(([p, prio, freq, date]) => {
+  const urls = [...PAGES, ...champions(), ...patches()].map(([p, prio, freq, date]) => {
     const de = base + p, en = base + (p === '/' ? '/en/' : '/en' + p);
     const alt = `<xhtml:link rel="alternate" hreflang="de" href="${esc(de)}"/><xhtml:link rel="alternate" hreflang="en" href="${esc(en)}"/><xhtml:link rel="alternate" hreflang="x-default" href="${esc(de)}"/>`;
     const meta = `${date ? `<lastmod>${date}</lastmod>` : ''}<changefreq>${freq}</changefreq>`;

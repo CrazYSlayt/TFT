@@ -1,4 +1,4 @@
-// TFT Freaks – eigene Ergänzungen zu Set 18 (von Hand gepflegt, das Update-Skript überschreibt diese Datei NICHT)
+// Climb TFT – eigene Ergänzungen zu Set 18 (von Hand gepflegt, das Update-Skript überschreibt diese Datei NICHT)
 // Für ein neues Set einfach eine Kopie als custom-<Set>.js anlegen und anpassen.
 window.TFT_CUSTOM = {
   set: 18,
@@ -93,6 +93,30 @@ window.TFT_CUSTOM = {
     'Ahri':'ap', 'Amumu':'tank', 'Aphelios':'ad', 'Brambleback':'ad', 'Ezreal':'ad', 'Lillia':'tank', 'Malphite':'tank', 'Morgana':'tank', 'Nidalee':'ap', 'Sentinel':'tank', 'Sett':'tank', 'Sivir':'ad', 'Soraka':'ap', 'Zyra':'ap',
     'Alune':'ap', 'Ashe':'ad', 'Draven':'ad', 'Elder Dragon':'ad', 'Gnar':'ad', 'Ivern':'ap', 'Kennen':'ap', 'Lux':'ap', 'Maokai':'tank', 'Taric':'tank'
   },
+  // Encounters (Beginn jeder Partie, genau einer pro Spiel). w = Gewicht: Chance = w / Summe aller Gewichte (88 = 100 %).
+  // Quelle: TFT Flow / TFTips, Stand Patch 18.1, bis 18.4 laut Riots Patchnotes unverändert. Einschätzungen (passende Comps) pflegst du in der Redaktion.
+  encounters: [
+    {id:'completed-item-anvil', n:'Completed Item Anvil', ch:'Yunara', cat:'items', w:6, de:'Du startest mit einem Amboss für ein fertiges Item.', en:'You start with a completed item anvil.'},
+    {id:'component-anvils', n:'Component Anvils', ch:'Sivir', cat:'items', w:6, de:'Du startest mit 2 Komponenten-Ambossen.', en:'You start with 2 component anvils.'},
+    {id:'item-forge', n:'Item Forge', ch:'Ornn', cat:'items', w:3, de:'Alle Spieler starten mit 2 Ambossen für fertige Items.', en:'All players start with 2 completed item anvils.'},
+    {id:'emblem-ensemble', n:'Emblem Ensemble', ch:'Lux', cat:'items', w:2, de:'Du startest mit 3 zufälligen Emblemen.', en:'You start with 3 random emblems.'},
+    {id:'golden-gala', n:'Golden Gala', ch:'Leona', cat:'augments', w:6, de:'Alle angebotenen Augments sind Gold.', en:'All augments offered are gold.'},
+    {id:'golden-prelude', n:'Golden Prelude', ch:'Amumu', cat:'augments', w:4, de:'Das erste Augment ist Gold.', en:'The first augment is gold.'},
+    {id:'golden-finale', n:'Golden Finale', ch:'Ivern', cat:'augments', w:4, de:'Das letzte Augment ist Gold.', en:'The last augment is gold.'},
+    {id:'prismatic-opener', n:'Prismatic Opener', ch:'Morgana', cat:'augments', w:4, de:'Das erste Augment ist Prismatisch.', en:'The first augment is prismatic.'},
+    {id:'prismatic-finisher', n:'Prismatic Finisher', ch:'Karma', cat:'augments', w:4, de:'Das letzte Augment ist Prismatisch.', en:'The last augment is prismatic.'},
+    {id:'scouting-party', n:'Scouting Party', ch:'Teemo', cat:'augments', w:4, de:'Du bekommst +1 Augment-Reroll.', en:'You get +1 augment reroll.'},
+    {id:'prismatic-party', n:'Prismatic Party', ch:'Elder Dragon', cat:'augments', w:2, de:'Alle angebotenen Augments sind Prismatisch.', en:'All augments offered are prismatic.'},
+    {id:'2-cost-start', n:'2 Cost Start', ch:'Warwick', cat:'units', w:6, de:'Du startest mit einem zufälligen 2-Kosten-Champion.', en:'You start with a random 2-cost champion.'},
+    {id:'upgraded-start', n:'Upgraded Start', ch:'LeBlanc', cat:'units', w:6, de:'Dein Start-Champion ist schon ★★.', en:'Your starting champion is already ★★.'},
+    {id:'howling-abyss', n:'Howling Abyss', ch:'Azir', cat:'units', w:6, de:'Du startest mit 5 zufälligen 1-Kosten-Champions.', en:'You start with 5 random 1-cost champions.'},
+    {id:'3-cost-start', n:'3 Cost Start', ch:'Tristana', cat:'units', w:5, de:'Du startest mit einem zufälligen 3-Kosten-Champion.', en:'You start with a random 3-cost champion.'},
+    {id:'cheaper-levels', n:'Cheaper Levels', ch:'Ashe', cat:'econ', w:4, de:'Jedes Level kostet 2 XP weniger.', en:'Every level costs 2 less XP.'},
+    {id:'gold-subscription', n:'Gold Subscription', ch:'Kobuko', cat:'econ', w:4, de:'Zu Beginn jeder Stage bekommen alle Spieler gleich viel Gold.', en:'At the start of every stage, all players get the same amount of gold.'},
+    {id:'reroll-subscription', n:'Reroll Subscription', ch:'Kayle', cat:'econ', w:3, de:'Zu Beginn jeder Stage bekommst du kostenlose Shop-Rerolls.', en:'At the start of every stage you get free shop rerolls.'},
+    {id:'final-showdown', n:'Final Showdown', ch:'Draven', cat:'other', w:6, de:'Die letzten zwei Spieler bekommen 70 Gold für das Finale.', en:'The final two players get 70 gold for the last fight.'},
+    {id:'no-encounter', n:'No Encounter', ch:'', cat:'other', w:3, de:'In diesem Spiel gibt es keinen Encounter.', en:'There is no encounter this game.'}
+  ],
   // Elderwood-Pflanzen (platzierbare Einheiten ohne Champion-Daten). Reihenfolge nicht ändern – Builder-Links hängen davon ab.
   plants: {
     'Lifebloom': 'assets/plants/lifebloom.webp',
