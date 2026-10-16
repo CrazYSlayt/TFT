@@ -1871,3 +1871,37 @@ a.champ{text-decoration:none}
 .guide-on:hover{border-color:var(--accent);transform:translateY(-2px)}
 .guide-on .link-arrow{color:var(--accent-2)}
 #page-guides .gd-view[data-guide="encounters"] .page-head{margin-bottom:18px}
+/* Team-Karten auf der Startseite: Rang · Peak · Aus einheitlich */
+.tcard-facts.f3{grid-template-columns:minmax(0,1fr);gap:4px}
+.tcard-facts.f3 div{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;min-width:0}
+.tcard-facts.f3 b{font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm-sorts[hidden]{display:none}
+
+/* ================= SIMULATOR: ein Feld ================= */
+/* Aufstellung: Gegner-Brett direkt über deinem Brett, wie ein Spielfeld */
+.sim-mode #bRows{display:grid;grid-template-columns:230px minmax(0,1fr) 160px;column-gap:12px;row-gap:0}
+.sim-mode #bRows > .b-layout{display:contents}
+.sim-mode #bRows > .b-layout[hidden]{display:none}
+.sim-mode #bRowE .b-left,.sim-mode #bRowE .b-right{margin-bottom:12px}
+.sim-mode #bRowE .b-center{border-bottom:0;border-radius:16px 16px 0 0}
+.sim-mode #bRowM .b-center{border-top:2px dashed rgba(255,255,255,.14);border-radius:0 0 16px 16px}
+.sim-mode #bRowE .b-boardwrap{padding-bottom:4px}
+.sim-mode #bRowM .b-boardwrap{padding-top:22px}
+/* Kampf läuft: nur das Kampffeld, die Aufstellung ist ausgeblendet */
+.sim-mode.sim-fight #bRows,.sim-mode.sim-fight #bPool{display:none}
+.sim-view{margin-left:4px}
+@media (max-width:1100px){
+  .sim-mode #bRows{grid-template-columns:minmax(0,1fr)}
+  /* die beiden Bretter zuerst und direkt untereinander, Traits und Augments danach */
+  .sim-mode #bRowE .b-center{order:1} .sim-mode #bRowM .b-center{order:2}
+  .sim-mode #bRowM .b-right{order:3} .sim-mode #bRowE .b-right{order:4} .sim-mode #bRowM .b-left{order:5} .sim-mode #bRowE .b-left{order:6}
+  .sim-mode #bRows .b-left,.sim-mode #bRows .b-right{height:auto;min-height:0;margin:12px 0 0}
+  .sim-mode #bRows .b-left{max-height:300px}
+  .sim-mode #bRows .b-right{flex-direction:row;flex-wrap:wrap} .sim-mode #bRows .b-right .b-mini{flex:1 1 140px}
+}
+
+/* Kosten-Knöpfe überall einheitlich in den Kostenfarben der Units (1 grau · 2 grün · 3 blau · 4 lila · 5 gold) */
+.cb{--cc:var(--c1)}.cb.c2{--cc:var(--c2)}.cb.c3{--cc:var(--c3)}.cb.c4{--cc:var(--c4)}.cb.c5{--cc:var(--c5)}
+.cb,.cb:hover{border:1px solid color-mix(in srgb,var(--cc) 60%,transparent)!important;background:color-mix(in srgb,var(--cc) 14%,transparent)!important;color:var(--text)!important}
+.cb:hover{background:color-mix(in srgb,var(--cc) 26%,transparent)!important}
+.cb.on,.cb.active{background:var(--cc)!important;border-color:var(--cc)!important;color:#0b0d14!important}

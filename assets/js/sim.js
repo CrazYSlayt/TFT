@@ -296,6 +296,7 @@ function sCast(u, tg){
       const dest = SIM_GRID.D[u.cell][pick.cell]===1 ? u.cell : sFreeNear(pick.cell, u.cell);
       if(dest >= 0 && dest !== u.cell){
         const from = u.cell; sMoveTo(u, dest, 0.35, true);
+        u.taunt = null; u.tauntEnd = 0;   // wer per Fähigkeit wegspringt, ist dem Spott entkommen und bleibt beim Sprungziel
         const why = sp.dash==='lowest' ? L(' (wenigstes Leben)', ' (lowest health)') : sp.dash==='farthest' ? L(' (am weitesten weg)', ' (farthest away)') : sp.dash==='cluster' ? L(' (größte Gruppe)', ' (largest group)') : '';
         sLog('jump', {s:u.id, from, to:dest, d:pick.id, txt:L(`${sName(u)} springt zu ${sName(pick)}${why}`, `${sName(u)} jumps to ${sName(pick)}${why}`)});
       }
@@ -335,7 +336,8 @@ function sCast(u, tg){
     if(sp.slow) sDebuff(e, 'slow', 0.3, 2, u);
   });
   if(sp.stun) (sp.r > 0 ? targets : [main]).forEach(e=>sStun(u, e, SIM_STUN[u.star-1]));
-  if(sp.taunt) sEnemiesNear(u, u.cell, 3).forEach(e=>{ e.taunt = u; e.tauntEnd = t + 2; e.tgt = u; });
+  // Spott: Gegner im Umkreis von 2 Feldern – wer gerade springt (z. B. Kha'Zix auf die Backline), wird nicht zurückgezogen
+  if(sp.taunt) sEnemiesNear(u, u.cell, 2).filter(e=>!(e.jump && e.mvT1 > t)).forEach(e=>{ e.taunt = u; e.tauntEnd = t + 2; e.tgt = u; });
   if(sp.self.shield) sShield(u, u, simShieldVal(u), 4);
   if(sp.self.heal) sHeal(u, u, simShieldVal(u) * 0.8);
   if(sp.ally.shield || sp.ally.heal){
@@ -710,6 +712,7 @@ function sFrame(S, step){
 }
 
 /* ================= ANSICHT ================= */
+let simView = 'edit';   // 'edit' = Aufstellung (ein gemeinsames Brett), 'fight' = Kampf-Ansicht – nie beides gleichzeitig
 let simRes = null, simT = 0, simPlaying = false, simSpeedV = 1, simRaf = 0, simSel = null, simSeed = 7, simLastFrame = -1, simMC = null, simMeterTab = 'd', simLogAtk = false, simPrevTs = 0, simW = 60;
 const simFmt = v => fmtNum(Math.round(v*10)/10);
 function simBoards(){ return [{board:bBoard, augs:bAugs}, {board:eBoard, augs:eAugs}]; }
@@ -724,6 +727,7 @@ function simMount(){
           <label class="sim-pick s1"><span>Gegner</span><select class="input" id="simPickE">${simCompOptions()}</select></label>
         </div>
         <button class="btn btn-primary sim-go" id="simRun" type="button">⚔ Kampf starten</button>
+        <button class="b-tbtn sim-view" id="simView" type="button" hidden></button>
         <div class="sim-ctrl" id="simCtrl" hidden>
           <button class="sim-ib" id="simBack" type="button" title="1 s zurück" aria-label="1 Sekunde zurück">«</button>
           <button class="sim-ib sim-play" id="simPlay" type="button" title="Abspielen / Pause (Leertaste)" aria-label="Abspielen oder Pause">❚❚</button>
@@ -794,6 +798,7 @@ function simLoadPick(side, val){
     label = `„${c.name}“ geladen`;
   }
   if(side==='e'){ eBoard = board; eAugs = augs; } else { bBoard = board; bAugs = augs; }
+  simView = 'edit'; simPause();   // neues Team: erst die Aufstellung zeigen
   bSel = null; renderBuilder();
   bHint(`${side==='e' ? 'Gegner' : 'Dein Team'}: ${label}.`);
 }
@@ -801,6 +806,11 @@ function simSyncHead(){
   const has = !!simRes;
   $('#simCtrl').hidden = !has; $('#simExtra').hidden = !has; $('#simBody').hidden = !has; $('#simLower').hidden = !has;
   $('#simRun').textContent = has ? '⚔ Neu starten' : '⚔ Kampf starten';
+  // nur ein Feld sichtbar: Aufstellung oder Kampf
+  const fight = has && simView==='fight';
+  $('#page-builder').classList.toggle('sim-fight', fight);
+  $('#simView').hidden = !has; $('#simView').textContent = fight ? '✎ Aufstellung bearbeiten' : '▶ Zum Kampf';
+  if(!fight){ $('#simBody').hidden = true; $('#simLower').hidden = true; $('#simCtrl').hidden = true; $('#simExtra').hidden = true; }
   const n0 = Object.keys(bBoard).length, n1 = Object.keys(eBoard).length;
   const stale = has && simRes.code !== bEncode();
   $('#simHint').textContent = !has ? (n0 && n1 ? `${n0} gegen ${n1} Units – bereit.` : 'Stell unten dein Team und das Gegner-Team auf.') : stale ? 'Teams geändert – „Neu starten“ für den neuen Stand.' : '';
@@ -810,6 +820,7 @@ function simOnEdit(){ if($('#simPanel') && $('#simPanel').dataset.built) simSync
 function simStart(reroll){
   if(!Object.keys(bBoard).length || !Object.keys(eBoard).length){ simSyncHead(); bHint('Für einen Kampf brauchen beide Seiten mindestens eine Unit.'); return; }
   if(reroll) simSeed = (Math.random() * 1e9) >>> 0;
+  simView = 'fight';
   simRes = simRun(simBoards(), simSeed, false);
   simRes.code = bEncode();
   simT = 0; simSel = null; simLastFrame = -1; simMC = null;
@@ -1033,6 +1044,7 @@ document.addEventListener('click', e=>{
   if(!e.target.closest || !e.target.closest('#simPanel')) return;
   const t = e.target, id = (t.closest('button') || {}).id;
   if(id==='simRun'){ simStart(false); return; }
+  if(id==='simView'){ simView = simView==='fight' ? 'edit' : 'fight'; if(simView==='edit') simPause(); simSyncHead(); if(simView==='fight'){ simLayout(); } scrollTo({top:$('#simPanel').getBoundingClientRect().top + scrollY - 70, behavior:'smooth'}); return; }
   if(!simRes) return;
   if(id==='simPlay'){ simPlay(); return; }
   if(id==='simBack'){ simPause(); simSeek(simT - 1); return; }

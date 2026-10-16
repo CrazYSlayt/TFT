@@ -98,7 +98,7 @@ const testimonials = [
   {n:'Doki', r:'Meister → Großmeister · 3 Sessions', q:'Habe das erste Mal Grandmaster erreicht. Augments und Opener waren am hilfreichsten.'},
   {n:'AgentZero', r:'Gold I → Platin I · 2 Sessions', q:'Am meisten hat mir gebracht, wie ich mein Early Game besser spielen kann und wann ich welche Augmente auswählen sollte. Auch dass ich mehr scouten muss, war hilfreich.'},
   {n:'бессмертный', r:'Diamant II → Meister · 2 Sessions', q:'Ich treffe jetzt nicht mehr so voreilige Entscheidungen, spiele generell safer und fühle mich mehr comfortable.'},
-  {n:'Fist of Shadow', r:'Smaragd → Meister', q:''},
+  {n:'Janny', r:'Smaragd → Meister · 5 Sessions', q:'Ich konnte im Coaching richtig viel lernen – vor allem bei Holds und Openern, wie man zu einem starken Board kommt und welche Augments man wann priorisieren sollte. Claudio ist sehr geduldig und erklärt alles gut und ausführlich. Manchmal muss man ihn sogar bremsen, weil er so viel zu einem Thema erzählen will.'},
 ];
 
 const guides = [
@@ -1952,7 +1952,7 @@ function dpsMount(){
   $('#dpsApp').innerHTML = `<div class="dps">
     <div class="card dps-in">
       <section><h3 class="rd-h"><b>1</b> Champion</h3>
-        <div class="rd-costs" id="dpsCosts">${[1,2,3,4,5].map(c=>`<button type="button" class="rd-cost" data-dcost="${c}"><i class="cdot c${c}"></i>${c} Gold</button>`).join('')}</div>
+        <div class="rd-costs" id="dpsCosts">${[1,2,3,4,5].map(c=>`<button type="button" class="rd-cost cb c${c}" data-dcost="${c}">${c} Gold</button>`).join('')}</div>
         <div class="rd-champs" id="dpsChamps"></div>
         <div class="dps-row"><span>Sterne</span><div class="rd-costs" id="dpsStars">${[1,2,3].map(s=>`<button type="button" class="rd-cost" data-dstar="${s}">${'★'.repeat(s)}</button>`).join('')}</div></div></section>
       <section><h3 class="rd-h"><b>2</b> Item-Builds</h3>
@@ -2040,7 +2040,7 @@ function dpsTraits(){
     const k = dpsTraitLv(x), dead = SIM_NOCOMBAT.includes(x.n);
     return `<div class="dps-trait${x.own ? '' : ' em'}">${traitHex(x.n, x.t.bp.length===1 ? 'unique' : 'base', 26)}
       <span class="dps-tn"><b>${esc(x.n)}</b>${x.own ? '' : `<small>Emblem in Build <b>${x.from.join(', ')}</b></small>`}${dead ? '<small>kein Kampfeffekt</small>' : ''}</span>
-      ${dead ? '' : `<div class="dps-tl"><button type="button" class="${k===0 ? 'on' : ''}" data-dtl="${esc(x.n)}:0">Aus</button>${x.t.bp.map(b=>`<button type="button" class="${k===+b ? 'on' : ''}" data-dtl="${esc(x.n)}:${b}">${b}</button>`).join('')}</div>`}</div>`;
+      ${dead ? '' : `<div class="dps-tl"><button type="button" class="${k===0 ? 'on' : ''}" data-dtl="${esc(x.n)}:0" data-noi18n>${L('Aus', 'Off')}</button>${x.t.bp.map(b=>`<button type="button" class="${k===+b ? 'on' : ''}" data-dtl="${esc(x.n)}:${b}">${b}</button>`).join('')}</div>`}</div>`;
   }).join('') : '<p class="rd-hint" style="margin:0">Wähl zuerst einen Champion.</p>';
 }
 const dpsItemImg = id => { const it = findItem(id); return it ? `<img src="${it.img}" alt="" title="${esc(it.en)}">` : ''; };
@@ -2149,7 +2149,7 @@ function rdMount(){
   app.innerHTML = `<div class="rd">
     <div class="card rd-in">
       <section><h3 class="rd-h"><b>1</b> Champion</h3>
-        <div class="rd-costs" id="rdCosts">${[1,2,3,4,5].map(c=>`<button type="button" class="rd-cost" data-cost="${c}"><i class="cdot c${c}"></i>${c} Gold</button>`).join('')}</div>
+        <div class="rd-costs" id="rdCosts">${[1,2,3,4,5].map(c=>`<button type="button" class="rd-cost cb c${c}" data-cost="${c}">${c} Gold</button>`).join('')}</div>
         <div class="rd-champs" id="rdChamps"></div></section>
       <section><h3 class="rd-h"><b>2</b> Level &amp; Gold</h3>
         <label class="rd-f"><span>Level</span><b id="rdLvlV"></b><input type="range" id="rdLvl" min="1" max="11" value="${rd.lvl}"></label>
@@ -2254,14 +2254,16 @@ const TM_DEFAULT = () => ({title:'', rows:[['S',0],['A',1],['B',2],['C',3],['X',
 const TM_TABS = [['c','Champions'],['i','Items'],['r','Artefakte'],['e','Embleme'],['a','Augments']];
 const TM_ITEM_TABS = {i:['craft','radiant','component'], r:['artifact'], e:['emblem']};
 // Augments: statt Sortierung eine Auswahl nach Stufe (Silber / Gold / Prismatisch)
-const TM_SORTS = {c:[['cost','Kosten'],['name','Name'],['origin','Ursprung'],['class','Klasse']], t:[['type','Typ'],['name','Name']], a:[['1','Silber'],['2','Gold'],['3','Prismatisch']], i:[['cat','Kategorie'],['name','Name']], r:[['name','Name']], e:[['name','Name']]};
+// Knöpfe über dem Pool: Champions nach Kosten filtern, Items nach Art, Augments nach Stufe
+const TM_SORTS = {c:[['all','Alle'],['1','1 Gold'],['2','2 Gold'],['3','3 Gold'],['4','4 Gold'],['5','5 Gold']],
+  t:[['type','Typ'],['name','Name']], a:[['1','Silber'],['2','Gold'],['3','Prismatisch']], i:[['craft','Items'],['radiant','Lichtversionen'],['component','Komponenten']], r:[['name','Name']], e:[['name','Name']]};
 // Taktiker-Krone, -Umhang und -Schild geben nur +1 Teamgröße – keine Embleme
 const tmIsTactician = it => /Tactician/i.test(it.id + ' ' + it.en);
 const AUG_BY = Object.fromEntries(AUGS.map(x=>[x.id, x])), ITEM_BY = Object.fromEntries(ITEMS.map(x=>[x.id, x])), TRAIT_BY = Object.fromEntries(traits.map(x=>[x.n, x]));
 // feste Reihenfolge für Teilen-Links (Index statt langer IDs)
 const TM_ORDER = {c:champions.map(x=>x.n).sort(), t:traits.map(x=>x.n).sort(), a:AUGS.map(x=>x.id).sort(), i:ITEMS.map(x=>x.id).sort()};
 const TM_IDX = Object.fromEntries(Object.entries(TM_ORDER).map(([k, arr])=>[k, Object.fromEntries(arr.map((v,i)=>[v,i]))]));
-let tm = null, tmMode = 'build', tmTab = 'c', tmSort = {c:'cost', t:'type', a:'1', i:'cat', r:'name', e:'name'}, tmSel = null, tmShared = false, tmBuilt = false, tmDrag = null;
+let tm = null, tmMode = 'build', tmTab = 'c', tmSort = {c:'all', t:'type', a:'1', i:'craft', r:'name', e:'name'}, tmSel = null, tmShared = false, tmBuilt = false, tmDrag = null;
 
 function tmInfo(key){
   const ty = key[0], id = key.slice(2);
@@ -2397,20 +2399,22 @@ function tmRender(){
 function tmRenderPool(){
   if(tmMode!=='build') return;
   $('#tmTabs').querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on', b.dataset.tab===tmTab));
-  $('#tmSorts').innerHTML = TM_SORTS[tmTab].map(([k,l])=>`<button type="button" data-sort="${k}" class="${tmSort[tmTab]===k?'on':''}">${l}</button>`).join('');
+  $('#tmSorts').hidden = TM_SORTS[tmTab].length < 2;   // nur eine Sortierung: keine Knöpfe nötig
+  // Kosten-Knöpfe mit den Standard-Kostenfarben der Units (wie im Rolldown- und DPS-Rechner)
+  $('#tmSorts').innerHTML = TM_SORTS[tmTab].map(([k,l])=>`<button type="button" data-sort="${k}" class="${tmSort[tmTab]===k?'on':''}${tmTab==='c' && /^\d$/.test(k) ? ' cb c' + k : ''}">${l}</button>`).join('');
   const q = $('#tmSearch').value.toLowerCase().trim(), used = tmUsed(), s = tmSort[tmTab];
-  const firstOf = (c, cat) => c.t.map(t=>TRAIT_BY[t]).filter(t=>t && t.cat===cat).map(t=>t.n)[0] || '~';
   let list;
   if(tmTab==='c'){
-    list = champions.filter(c=>!q || c.n.toLowerCase().includes(q) || c.t.some(t=>t.toLowerCase().includes(q)));
-    list.sort(s==='name' ? (a,b)=>a.n.localeCompare(b.n) : s==='origin' ? (a,b)=>firstOf(a,'origin').localeCompare(firstOf(b,'origin')) || a.c-b.c : s==='class' ? (a,b)=>firstOf(a,'class').localeCompare(firstOf(b,'class')) || a.c-b.c : (a,b)=>a.c-b.c || a.n.localeCompare(b.n));
+    list = champions.filter(c=>(s==='all' || c.c===+s) && (!q || c.n.toLowerCase().includes(q) || c.t.some(t=>t.toLowerCase().includes(q))));
+    list.sort((a,b)=>a.c-b.c || a.n.localeCompare(b.n));
     list = list.map(c=>'c:'+c.n);
   } else if(tmTab==='t'){
     list = traits.filter(t=>!q || t.n.toLowerCase().includes(q)).sort(s==='name' ? (a,b)=>a.n.localeCompare(b.n) : (a,b)=>(a.cat===b.cat ? 0 : a.cat==='origin' ? -1 : 1) || a.n.localeCompare(b.n)).map(t=>'t:'+t.n);
   } else if(tmTab==='a'){
     list = AUGS.filter(a=>String(a.lv||1)===s && !AUG_DUP.has(a.id) && (!q || a.en.toLowerCase().includes(q) || (a.de||'').toLowerCase().includes(q))).sort((a,b)=>a.en.localeCompare(b.en)).map(a=>'a:'+a.id);
   } else {
-    const cats = TM_ITEM_TABS[tmTab] || TM_ITEM_TABS.i, ord = Object.fromEntries(cats.map((k,i)=>[k,i]));
+    // Items-Tab: nur die gewählte Art (Items, Lichtversionen oder Komponenten); Artefakte und Embleme haben eigene Tabs
+    const cats = tmTab==='i' ? (TM_ITEM_TABS.i.includes(s) ? [s] : ['craft']) : (TM_ITEM_TABS[tmTab] || TM_ITEM_TABS.i), ord = Object.fromEntries(cats.map((k,i)=>[k,i]));
     list = ITEMS.filter(i=>cats.includes(itemCat(i)) && !(tmTab==='e' && tmIsTactician(i)) && (!q || i.en.toLowerCase().includes(q) || (i.de||'').toLowerCase().includes(q)))
       .sort(s==='cat' ? (a,b)=>(ord[itemCat(a)]??9)-(ord[itemCat(b)]??9) || a.en.localeCompare(b.en) : (a,b)=>a.en.localeCompare(b.en)).map(i=>'i:'+i.id);
   }
