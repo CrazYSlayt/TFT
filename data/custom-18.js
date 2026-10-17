@@ -117,6 +117,40 @@ window.TFT_CUSTOM = {
     {id:'final-showdown', n:'Final Showdown', ch:'Draven', cat:'other', w:6, de:'Die letzten zwei Spieler bekommen 70 Gold für das Finale.', en:'The final two players get 70 gold for the last fight.'},
     {id:'no-encounter', n:'No Encounter', ch:'', cat:'other', w:3, de:'In diesem Spiel gibt es keinen Encounter.', en:'There is no encounter this game.'}
   ],
+  // Cheatsheet (/cheatsheet): Systemwerte des Sets. Shop, Loot und Encounters stehen oben, hier nur der Rest.
+  cheats: {
+    // Augment-Stufen pro Partie (2-1, 3-2, 4-2): S = Silber, G = Gold, P = Prismatisch, w = Gewicht (Summe 109). Quelle: TFT Flow, Patch 18.1
+    augments: {src:'TFT Flow · Patch 18.1', seq:[
+      ['GGG',22],['GSG',18],['SGG',12],['GGP',12],['GPG',10],['GPS',6],['SSG',5],['SSP',5],['SGP',5],
+      ['PSG',4],['GSP',2],['PGG',2],['PPP',1],['PSP',1],['SPP',1],['GPP',1],['PGP',1],['PPG',1]
+    ]},
+    // Spielerschaden nach einer Niederlage = Stage-Schaden + 1 pro überlebender gegnerischer Unit. Quelle: TFT Flow, Patch 18.1
+    damage: {src:'TFT Flow · Patch 18.1', stage:[[2,2],[3,6],[4,7],[5,10],[6,12],[7,17],['8+',150]]},
+    // Karussell pro Stage: Größe, Champion-Auswahl, Item-Auswahl jeweils [Bezeichnung DE, EN, Chance %]. Quelle: TFT Flow, Patch 18.1
+    carousel: {src:'TFT Flow · Patch 18.1', stages:[
+      {st:'2', size:[[9,85],[11,12],[13,3]],
+        ch:[['Normal (1–3 Kosten)','Normal (1–3 cost)',87],['Nur 2-Kosten','All 2-costs',5],['2- und 3-Kosten','2- and 3-costs',5],['Nur 3-Kosten','All 3-costs',3]],
+        it:[['Komponenten','Components',82],['Je eine von allen','One of each',15],['Pfannenwender & zufällig','Spatulas & random',3]]},
+      {st:'3', size:[[9,60],[11,37],[13,3]],
+        ch:[['Normal (1–4 Kosten)','Normal (1–4 cost)',92],['Nur 3-Kosten','All 3-costs',5],['3- und 4-Kosten','3- and 4-costs',3]],
+        it:[['Komponenten','Components',82],['Je eine von allen','One of each',15],['Pfannenwender & zufällig','Spatulas & random',3]]},
+      {st:'4', size:[[9,85],[11,12],[13,3]],
+        ch:[['Normal (1–5 Kosten)','Normal (1–5 cost)',85],['Mehr 5-Kosten','More 5-costs',5],['4- und 5-Kosten','4- and 5-costs',5],['Nur 4-Kosten','All 4-costs',5]],
+        it:[['Komponenten','Components',82],['Je eine von allen','One of each',15],['Pfannenwender & zufällig','Spatulas & random',3]]},
+      {st:'5', size:[[9,95],[13,5]],
+        ch:[['Normal (3–5 Kosten)','Normal (3–5 cost)',75],['Mehr 5-Kosten','More 5-costs',15],['4- und 5-Kosten','4- and 5-costs',5],['Nur 4-Kosten','All 4-costs',5]],
+        it:[['Zufällige fertige Items','Random completed items',35.4],['Fertige Items als Komponenten','Completed items, unbuilt',35],['Fertige Items + 2 Embleme','Completed + 2 emblems',17],['Fertige Items + 3 Embleme','Completed + 3 emblems',12],['Taktiker-Items','Tactician items',0.6]]},
+      {st:'6–7', size:[[9,95],[13,5]],
+        ch:[['Normal (3–5 Kosten)','Normal (3–5 cost)',75],['Mehr 5-Kosten','More 5-costs',15],['4- und 5-Kosten','4- and 5-costs',5],['Nur 4-Kosten','All 4-costs',5]],
+        it:[['Halb fertig, halb Komponenten','Half completed, half unbuilt',50],['Fertige Items als Komponenten','Completed items, unbuilt',25],['Fertige Items + 2 Embleme','Completed + 2 emblems',15],['Fertige Items + 3 Embleme','Completed + 3 emblems',10]]}
+    ]},
+    // Encounter Gold Subscription (Kobuko): eine Zeile wird pro Partie ausgelost, Gold zu Beginn von Stage 1–8. Quelle: TFT Flow, Patch 18.1
+    goldSub: {src:'TFT Flow · Patch 18.1', rows:[[15,[0,1,1,2,2,3,3,4]],[35,[1,2,3,4,5,6,7,8]],[25,[2,4,6,8,10,12,14,16]],[23,[3,6,9,12,15,18,21,24]],[2,[8,16,24,32,40,48,56,64]]]},
+    // Encounter Reroll Subscription (Kayle): kostenlose Shop-Rerolls zu Beginn jeder Stage [Stage, Rerolls]. Quelle: Little Buddy Bot, Patch 18.4 (05.09.2026)
+    rerollSub: {src:'Little Buddy Bot · Patch 18.4', rows:[[2,4],[3,5],[4,6],[5,7],[6,8],[7,9]]},
+    // 1-Kosten-Champions, die eine Stage-1-PvE-Runde allein schaffen (Position egal). Quelle: Little Buddy Bot, Patch 18.4 (16.09.2026)
+    solo: {src:'Little Buddy Bot · Patch 18.4', rounds:[['1-3',['Akali','Camille',"Rek'Sai",'Yorick']],['1-4',['Camille']]]}
+  },
   // Elderwood-Pflanzen (platzierbare Einheiten ohne Champion-Daten). Reihenfolge nicht ändern – Builder-Links hängen davon ab.
   plants: {
     'Lifebloom': 'assets/plants/lifebloom.webp',
