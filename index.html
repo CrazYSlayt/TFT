@@ -751,6 +751,28 @@
     <!-- Pakete -->
     <div class="section-head co-sec"><h2>Pakete &amp; Preise</h2><p>Jede Session dauert eine Stunde. Bezahlt wird per PayPal – erst nach dem kostenlosen Kennenlernen.</p></div>
     <div class="pkg-grid" id="coachPkgs"></div>
+    <div class="card pkg-vip">
+      <div class="vip-main">
+        <div class="vip-top"><span class="vip-badge">VIP-Mentoring</span><span class="vip-seats">Nur 4 Plätze pro Set</span></div>
+        <h3>Ein ganzes Set mit deinem Coach</h3>
+        <p>Für alle, die es ernst meinen: Dein Coach begleitet dich durch das komplette Set – mit festen Sessions jede Woche, direktem Draht dazwischen und einem Plan für jeden Patch.</p>
+        <ul>
+          <li>Bis zu 3 Stunden 1:1 Coaching pro Woche, das ganze Set lang</li>
+          <li>Direkter Draht auf Discord – Antwort innerhalb von 24 Stunden</li>
+          <li>VOD-Reviews ohne Termin: Spiel schicken, Analyse zurückbekommen</li>
+          <li>Persönlicher Patch-Plan nach jedem Patch</li>
+          <li>Wunschtermine zuerst – VIP bucht vor allen anderen</li>
+          <li>Auf Wunsch Live-Coaching in deinen Ranked-Partien</li>
+        </ul>
+      </div>
+      <div class="vip-side">
+        <div class="vip-price">2.500 €</div>
+        <small>für das ganze Set</small>
+        <p class="vip-rate">oder 4 × 625 € in Raten</p>
+        <a href="/apply?paket=vip" class="btn vip-btn">VIP-Platz anfragen</a>
+        <small class="vip-note">Wir nehmen pro Coach höchstens 2 VIPs pro Set, damit jeder genug Zeit bekommt. 14 Tage Widerrufsrecht.</small>
+      </div>
+    </div>
 
     <!-- Eine Stunde -->
     <div class="section-head co-sec"><h2>So läuft eine Stunde ab</h2></div>
@@ -795,7 +817,11 @@
       <details><summary>Was kostet das Kennenlernen?</summary><p>Nichts. Im Kennenlernen stimmen wir deine Ziele ab, schauen, ob Coaching für dich Sinn macht, und welcher Coach zu dir passt.</p></details>
       <details><summary>Wie bezahle ich?</summary><p>Per PayPal, nach dem kostenlosen Kennenlernen.</p></details>
       <details><summary>Kann ich absagen oder verschieben?</summary><p>Ja, jederzeit. Sag uns einfach kurz Bescheid.</p></details>
-      <details><summary>Wie lange gilt das 3er-Paket?</summary><p>Die drei Stunden kannst du im laufenden Set nutzen.</p></details>
+      <details><summary>Wie funktioniert der Set-Pass?</summary><p>Du bekommst 8 Stunden 1:1 Coaching und kannst bis zu 2 Stunden pro Woche einlösen – im laufenden Set, wann du willst.</p></details>
+      <details><summary>Was ist im VIP-Mentoring enthalten?</summary><p>Bis zu 3 Stunden 1:1 Coaching pro Woche für das ganze Set, ein direkter Draht auf Discord mit Antwort innerhalb von 24 Stunden, VOD-Reviews ohne Termin, ein persönlicher Patch-Plan nach jedem Patch und feste Wunschtermine. Es gibt nur 4 Plätze pro Set.</p></details>
+      <details><summary>Kann ich das VIP-Mentoring in Raten zahlen?</summary><p>Ja, in 4 Raten zu je 625 €. Die Details klären wir im kostenlosen Kennenlernen.</p></details>
+      <details><summary>Was passiert, wenn ich das VIP-Mentoring abbreche?</summary><p>Du bekommst den nicht verbrauchten Teil zurück. Wir vergleichen den Anteil der vergangenen Wochen mit deinen genutzten Stunden (40 € pro Stunde) und ziehen den höheren Wert ab. Offene Raten entfallen. Alle Details stehen unter Widerruf &amp; Bedingungen.</p></details>
+      <details><summary>Kann ich das VIP-Mentoring widerrufen?</summary><p>Ja, innerhalb von 14 Tagen nach der Buchung. Hast du in dieser Zeit auf deinen Wunsch schon Sessions genutzt, wird der genutzte Anteil verrechnet.</p></details>
       <details><summary>Wie viele Leute können an einer Team-Session teilnehmen?</summary><p>2 bis 5 Personen. Die Session dauert wie immer eine Stunde und kostet 20 € pro Person.</p></details>
       <details><summary>Wie nehme ich meine Spiele auf?</summary><p>Mit einem Aufnahmeprogramm wie TFT Academy oder Outplayed – oder einem anderen Programm deiner Wahl. Wichtig ist nur, dass du es vor der Session installierst und ein paar Partien aufnimmst.</p></details>
       <details><summary>Geht auch Live-Coaching?</summary><p>Ja, wir empfehlen es aber nicht. Im VOD-Review können wir pausieren und Entscheidungen in Ruhe durchgehen – das bringt dir mehr.</p></details>
@@ -1041,10 +1067,11 @@
       <div class="field"><label for="fDiscord">Discord</label><input class="input" id="fDiscord" placeholder="dein_name"></div>
       <div class="field"><label for="fRank">Aktueller Rang</label><select class="input" id="fRank"></select></div>
       <div class="field"><label for="fGoal">Rang-Ziel</label><select class="input" id="fGoal"></select></div>
-      <div class="field"><label for="fPkg">Interessiert an</label><select class="input" id="fPkg"><option>Einzelstunde (30 €)</option><option>3er-Paket (80 €)</option><option>Team-Session (20 € pro Person, 2–5 Personen)</option><option>Noch unsicher</option></select></div>
+      <div class="field"><label for="fPkg">Interessiert an</label><select class="input" id="fPkg"><option>Einzelstunde (30 €)</option><option value="setpass">Set-Pass (200 € für 8 Stunden)</option><option value="vip">VIP-Mentoring (2.500 € für das ganze Set)</option><option>Team-Session (20 € pro Person, 2–5 Personen)</option><option>Noch unsicher</option></select></div>
       <div class="field"><label for="fLang">Sprache</label><select class="input" id="fLang"><option>Deutsch</option><option>Englisch</option><option>Egal</option></select></div>
       <div class="field full"><label for="fTime">Verfügbare Zeiten</label><input class="input" id="fTime" placeholder="z. B. abends unter der Woche"></div>
       <div class="field full"><label for="fMsg">Was möchtest du verbessern?</label><textarea class="input" id="fMsg" placeholder="Wisp-Timing, Positionierung, Econ, bestimmte Comps…"></textarea></div>
+      <p class="field full form-legal">Die Anfrage ist unverbindlich. Für eine Buchung gelten unsere <a href="/bedingungen">Widerrufsbelehrung &amp; Bedingungen</a>.</p>
       <div class="field full"><button class="btn btn-primary" type="submit" style="justify-content:center">Bewerbung senden</button></div>
       <div class="ornn-empty" style="grid-column:1/-1;max-width:none"><span class="m-ornn" role="img" aria-label="Ornn"></span><p class="ornn-say"><b class="say-name">Ornn</b>Hmph. Der Versand ist noch nicht angeschlossen – ich schmiede noch daran. Deine Angaben kommen also noch nicht an. Melde dich solange direkt bei CrazYSlayt.</p></div>
       <div class="ok" id="applyOk">Danke! Deine Angaben wurden erfasst. Sobald der Versand eingerichtet ist, kommen sie direkt bei mir an.</div>
@@ -1077,6 +1104,58 @@
       <h2>Riot Games</h2>
       <p>Climb TFT isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
       <p class="lg-sub">Climb TFT ist eine Fan-Seite und steht in keiner Verbindung zu Riot Games. Teamfight Tactics, Spielgrafiken und Spieldaten sind Eigentum von Riot Games, Inc.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= WIDERRUF & BEDINGUNGEN (Coaching) ================= -->
+<div class="page" id="page-bedingungen">
+  <div class="wrap">
+    <div class="page-head"><div class="crumb">Home / Widerruf &amp; Bedingungen</div><h1>Widerruf &amp; Bedingungen</h1><p>Alles, was für ein gebuchtes Coaching gilt: dein Widerrufsrecht, die Bedingungen für Einzelstunde, Set-Pass und VIP-Mentoring und was bei einem Abbruch passiert.</p></div>
+    <div class="card lg">
+      <h2>Widerrufsbelehrung</h2>
+      <h3>Widerrufsrecht</h3>
+      <p>Sie haben das Recht, binnen vierzehn Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen.</p>
+      <p>Die Widerrufsfrist beträgt vierzehn Tage ab dem Tag des Vertragsabschlusses.</p>
+      <p>Um Ihr Widerrufsrecht auszuüben, müssen Sie uns (Claudio Vecchione, Am Markt 15, 65795 Hattersheim, Deutschland, E-Mail: <span class="lg-todo">wird in Kürze ergänzt</span>) mittels einer eindeutigen Erklärung (z. B. ein mit der Post versandter Brief oder eine E-Mail) über Ihren Entschluss, diesen Vertrag zu widerrufen, informieren. Sie können dafür das beigefügte Muster-Widerrufsformular verwenden, das jedoch nicht vorgeschrieben ist.</p>
+      <p>Zur Wahrung der Widerrufsfrist reicht es aus, dass Sie die Mitteilung über die Ausübung des Widerrufsrechts vor Ablauf der Widerrufsfrist absenden.</p>
+      <h3>Folgen des Widerrufs</h3>
+      <p>Wenn Sie diesen Vertrag widerrufen, haben wir Ihnen alle Zahlungen, die wir von Ihnen erhalten haben, unverzüglich und spätestens binnen vierzehn Tagen ab dem Tag zurückzuzahlen, an dem die Mitteilung über Ihren Widerruf dieses Vertrags bei uns eingegangen ist. Für diese Rückzahlung verwenden wir dasselbe Zahlungsmittel, das Sie bei der ursprünglichen Transaktion eingesetzt haben, es sei denn, mit Ihnen wurde ausdrücklich etwas anderes vereinbart; in keinem Fall werden Ihnen wegen dieser Rückzahlung Entgelte berechnet.</p>
+      <p>Haben Sie verlangt, dass die Dienstleistungen während der Widerrufsfrist beginnen sollen, so haben Sie uns einen angemessenen Betrag zu zahlen, der dem Anteil der bis zu dem Zeitpunkt, zu dem Sie uns von der Ausübung des Widerrufsrechts hinsichtlich dieses Vertrags unterrichten, bereits erbrachten Dienstleistungen im Vergleich zum Gesamtumfang der im Vertrag vorgesehenen Dienstleistungen entspricht.</p>
+
+      <h2>Muster-Widerrufsformular</h2>
+      <p>(Wenn Sie den Vertrag widerrufen wollen, dann füllen Sie bitte dieses Formular aus und senden Sie es zurück.)</p>
+      <div class="lg-form">
+        <p>An: Claudio Vecchione, Am Markt 15, 65795 Hattersheim, Deutschland, E-Mail: <span class="lg-todo">wird in Kürze ergänzt</span></p>
+        <p>Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag über die Erbringung der folgenden Dienstleistung (*)</p>
+        <p>Bestellt am (*) / erhalten am (*)</p>
+        <p>Name des/der Verbraucher(s)</p>
+        <p>Anschrift des/der Verbraucher(s)</p>
+        <p>Unterschrift des/der Verbraucher(s) (nur bei Mitteilung auf Papier)</p>
+        <p>Datum</p>
+        <p class="lg-sub">(*) Unzutreffendes streichen.</p>
+      </div>
+
+      <h2>Bedingungen für das Coaching</h2>
+      <h3>Buchung und Bezahlung</h3>
+      <p>Nach deiner Anfrage findet ein kostenloses Kennenlernen auf Discord statt. Erst wenn du danach ein Paket buchst, kommt ein Vertrag zustande. Bezahlt wird per PayPal. Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.</p>
+      <h3>Einzelstunde und Team-Session</h3>
+      <p>Eine Session dauert eine Stunde. Termine stimmen wir mit dir ab; verschieben ist jederzeit möglich, sag uns einfach vorher Bescheid.</p>
+      <h3>Set-Pass</h3>
+      <p>Der Set-Pass umfasst 8 Stunden 1:1 Coaching. Du kannst bis zu 2 Stunden pro Woche einlösen. Der Set-Pass gilt bis zum Ende des laufenden TFT-Sets; nicht genutzte Stunden verfallen danach.</p>
+      <h3>VIP-Mentoring</h3>
+      <p>Das VIP-Mentoring läuft vom Tag der Buchung bis zum Ende des laufenden TFT-Sets. Es umfasst bis zu 3 Stunden 1:1 Coaching pro Woche, einen direkten Draht auf Discord mit Antwort innerhalb von 24 Stunden, VOD-Reviews ohne Termin, einen persönlichen Patch-Plan nach jedem Patch und bevorzugte Termine. Der Preis beträgt 2.500 €, auf Wunsch zahlbar in 4 Raten zu je 625 €.</p>
+      <h3>Abbruch des VIP-Mentorings nach der Widerrufsfrist</h3>
+      <p>Du kannst das VIP-Mentoring jederzeit beenden – eine kurze Nachricht auf Discord oder per E-Mail reicht. Wir erstatten dir dann den nicht verbrauchten Teil. Dafür vergleichen wir zwei Werte und ziehen den höheren ab:</p>
+      <ul>
+        <li><b>Zeitanteil:</b> der Anteil der bereits vergangenen Wochen an der gesamten Laufzeit, mal 2.500 €.</li>
+        <li><b>Genutzte Stunden:</b> die bereits genutzten Coaching-Stunden mal 40 €.</li>
+      </ul>
+      <p>Beispiel bei 16 Wochen Laufzeit: Du beendest nach 6 Wochen und hast 10 Stunden genutzt. Zeitanteil: 6/16 × 2.500 € = 937,50 €. Genutzte Stunden: 10 × 40 € = 400 €. Abgezogen wird der höhere Wert, du bekommst 1.562,50 € zurück.</p>
+      <p>Zahlst du in Raten, entfallen die noch offenen Raten. Wir verrechnen das bereits Gezahlte mit dem Verbrauch: Ist mehr gezahlt, erstatten wir die Differenz; ist mehr verbraucht, wird die Differenz fällig.</p>
+      <h3>Wenn wir nicht liefern können</h3>
+      <p>Fällt dein Coach längere Zeit aus und können wir keinen gleichwertigen Ersatz stellen, oder endet das Set früher als geplant, erstatten wir dir die nicht genutzten Wochen voll – ohne Abzug.</p>
+      <p class="lg-sub">Stand: 17. Oktober 2026</p>
     </div>
   </div>
 </div>
@@ -1139,7 +1218,7 @@
       <div><h5>Bibliothek</h5><a href="/bibliothek/champions">Champions</a><a href="/bibliothek/items">Items</a><a href="/bibliothek/traits">Traits</a></div>
       <div><h5>Climb TFT</h5><a href="/coaching">Coaching</a><a href="/about">Meet the Team</a><a href="/apply">Bewerbung</a><a href="/admin">Redaktion</a></div>
     </div>
-    <div class="legal">© 2026 Climb TFT · Teamfight Tactics ist eine Marke von Riot Games, Inc. Diese Fan-Seite steht in keiner Verbindung zu Riot Games und wird nicht von Riot Games unterstützt. Spielgrafiken © Riot Games. · <a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a></div>
+    <div class="legal">© 2026 Climb TFT · Teamfight Tactics ist eine Marke von Riot Games, Inc. Diese Fan-Seite steht in keiner Verbindung zu Riot Games und wird nicht von Riot Games unterstützt. Spielgrafiken © Riot Games. · <a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a> · <a href="/bedingungen">Widerruf &amp; Bedingungen</a></div>
   </div>
 </footer>
 

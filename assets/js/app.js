@@ -87,18 +87,18 @@ const AUG_DUP = (()=>{ const by = {}, dup = new Set();
 
 
 const packages = [
-  {n:'Einzelstunde',p:'30 €',u:'/ Stunde',f:false,l:['1 Stunde 1:1 Coaching auf Discord','10–15 Min. Fundamentals auffrischen','ca. 45 Min. VOD-Review oder dein Thema','Auf Deutsch oder Englisch']},
-  {n:'3er-Paket',p:'80 €',u:'/ 3 Stunden',f:true,b:'Spar 10 €',l:['3 × 1 Stunde 1:1 Coaching','Fundamentals + VOD-Review in jeder Stunde','Sessions bauen aufeinander auf','Gültig für das laufende Set']},
-  {n:'Team-Session',p:'20 €',u:'/ Person',f:false,l:['1 Stunde für 2–5 Personen','Fundamentals für die ganze Gruppe','Gemeinsames VOD-Review','Für dich und deine Freunde']},
+  {n:'Einzelstunde',p:'30 €',u:'/ Stunde',h:'30 € pro Stunde',f:false,l:['1 Stunde 1:1 Coaching auf Discord','10–15 Min. Fundamentals auffrischen','ca. 45 Min. VOD-Review oder dein Thema','Auf Deutsch oder Englisch']},
+  {n:'Set-Pass',p:'200 €',u:'/ 8 Stunden',h:'25 € pro Stunde',f:true,b:'Bester Deal · Spar 40 €',l:['8 × 1 Stunde 1:1 Coaching','Bis zu 2 Stunden pro Woche','Fundamentals + VOD-Review in jeder Stunde','Gültig für das laufende Set']},
+  {n:'Team-Session',p:'20 €',u:'/ Person',h:'für 2–5 Personen',f:false,l:['1 Stunde für 2–5 Personen','Fundamentals für die ganze Gruppe','Gemeinsames VOD-Review','Für dich und deine Freunde']},
 ];
 
 // Stimmen gecoachter Spieler: q = Zitat, r = Fortschritt (z. B. 'Platin → Diamant'). Ohne Zitat erscheint ein Platzhalter.
 const testimonials = [
-  {n:'FreezeBomb', r:'Platin → Smaragd · 2 Sessions', q:'Eigenes Wissen mit den erklärten Konzepten vergleichen und im VOD-Review die eigenen Entscheidungen daran hinterfragen zu können – und Grundkonzepte zu lernen, die man vorher vielleicht gar nicht auf dem Schirm hatte.'},
+  {n:'Janny', r:'Smaragd → Meister · 5 Sessions', q:'Ich konnte im Coaching richtig viel lernen – vor allem bei Holds und Openern, wie man zu einem starken Board kommt und welche Augments man wann priorisieren sollte. Claudio ist sehr geduldig und erklärt alles gut und ausführlich. Manchmal muss man ihn sogar bremsen, weil er so viel zu einem Thema erzählen will.'},
   {n:'Doki', r:'Meister → Großmeister · 3 Sessions', q:'Habe das erste Mal Grandmaster erreicht. Augments und Opener waren am hilfreichsten.'},
+  {n:'FreezeBomb', r:'Platin → Smaragd · 2 Sessions', q:'Eigenes Wissen mit den erklärten Konzepten vergleichen und im VOD-Review die eigenen Entscheidungen daran hinterfragen zu können – und Grundkonzepte zu lernen, die man vorher vielleicht gar nicht auf dem Schirm hatte.'},
   {n:'AgentZero', r:'Gold I → Platin I · 2 Sessions', q:'Am meisten hat mir gebracht, wie ich mein Early Game besser spielen kann und wann ich welche Augmente auswählen sollte. Auch dass ich mehr scouten muss, war hilfreich.'},
   {n:'бессмертный', r:'Diamant II → Meister · 2 Sessions', q:'Ich treffe jetzt nicht mehr so voreilige Entscheidungen, spiele generell safer und fühle mich mehr comfortable.'},
-  {n:'Janny', r:'Smaragd → Meister · 5 Sessions', q:'Ich konnte im Coaching richtig viel lernen – vor allem bei Holds und Openern, wie man zu einem starken Board kommt und welche Augments man wann priorisieren sollte. Claudio ist sehr geduldig und erklärt alles gut und ausführlich. Manchmal muss man ihn sogar bremsen, weil er so viel zu einem Thema erzählen will.'},
 ];
 
 const guides = [
@@ -1318,7 +1318,7 @@ const BUDDY_LINES = {
       'Du willst höher? Schau mal beim Coaching vorbei!',
     ];
   },
-  coaching(){ return ['Das Kennenlernen ist kostenlos – trau dich!', 'Nimm vorher ein paar Spiele auf, sonst gibt es nichts zum Anschauen!', 'Claudio und Romano sind beide Challenger. Ich bin nur fürs Zuschlagen zuständig.', 'VOD-Review heißt: pausieren, zurückspulen, verstehen. Ganz ohne Stress.', 'Mit dem 3er-Paket sparst du 10 €. Ich würde zuschlagen!', 'Deutsch oder Englisch? Geht beides!']; },
+  coaching(){ return ['Das Kennenlernen ist kostenlos – trau dich!', 'Nimm vorher ein paar Spiele auf, sonst gibt es nichts zum Anschauen!', 'Claudio und Romano sind beide Challenger. Ich bin nur fürs Zuschlagen zuständig.', 'VOD-Review heißt: pausieren, zurückspulen, verstehen. Ganz ohne Stress.', 'Mit dem Set-Pass sparst du 50 €. Ich würde zuschlagen!', 'VIP heißt: ein ganzes Set mit deinem Coach. Nur 4 Plätze – schnell sein lohnt sich!', 'Deutsch oder Englisch? Geht beides!']; },
   // Ornn: alles, was noch im Bau ist oder nicht läuft
   news(){ return ['Hmph. Die Neuigkeiten liegen noch auf dem Amboss.', 'Gut Ding will Weile haben. Gute Patch-Notes auch.', 'Ich schmiede hier gerade. Komm später wieder.', 'Erst wenn das Eisen heiß ist, wird geschrieben. Bis dahin: Tierlist.']; },
   tools(){
@@ -1743,7 +1743,7 @@ document.addEventListener('click', e=>{
 
 /* ================= HOME ================= */
 function pkgHTML(p){
-  return `<div class="card pkg ${p.f?'featured':''}">${p.f||p.b?`<span class="pill${p.b?' gold':''}" style="align-self:flex-start;margin-bottom:8px">${esc(p.b||'Beliebt')}</span>`:''}<h3 style="margin:0">${esc(p.n)}</h3><div class="price">${p.p} <small>${p.u}</small></div><ul>${p.l.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><a href="/apply" class="btn ${p.f?'btn-primary':'btn-ghost'}" style="justify-content:center">Kennenlernen anfragen</a></div>`;
+  return `<div class="card pkg ${p.f?'featured':''}">${p.f||p.b?`<span class="pill${p.b?' gold':''}" style="align-self:flex-start;margin-bottom:8px">${esc(p.b||'Beliebt')}</span>`:''}<h3 style="margin:0">${esc(p.n)}</h3><div class="price">${p.p} <small>${p.u}</small></div>${p.h ? `<div class="pkg-h">${esc(p.h)}</div>` : ''}<ul>${p.l.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><a href="/apply" class="btn ${p.f?'btn-primary':'btn-ghost'}" style="justify-content:center">Kennenlernen anfragen</a></div>`;
 }
 function testimonialHTML(t){
   if(!t.q) return `<div class="card co-quote soon"><span class="co-qm" aria-hidden="true">“</span><p>Feedback folgt</p><figcaption><b>${esc(t.n)}</b>${t.r?`<span>${esc(t.r)}</span>`:''}</figcaption></div>`;
@@ -2725,7 +2725,7 @@ function pageMeta(page, sub){
       return [`${c.n} TFT Build ${S} – Items, Comps & Fähigkeit`, `${c.n} in TFT ${S}: die besten Items, Comps und Traits, dazu Fähigkeit und Werte des ${c.c}-Kosten-Champions – mit Builds aus unserer Challenger-Tierlist.`];
     }
     case 'builder': return [`TFT Team Builder ${S} – Board planen & teilen`, `Kostenloser TFT Team Builder für ${S}: Units platzieren, Items verteilen, aktive Traits prüfen und dein Board als Link oder Team-Code teilen.`];
-    case 'coaching': return ['TFT Coaching von Challenger-Spielern', 'TFT Coaching auf Deutsch und Englisch: Fundamentals und VOD-Review mit Challenger-Coaches. Kostenloses Kennenlernen, Einzelstunde 30 €.'];
+    case 'coaching': return ['TFT Coaching von Challenger-Spielern', 'TFT Coaching auf Deutsch und Englisch: Fundamentals und VOD-Review mit Challenger-Coaches. Kostenloses Kennenlernen, Einzelstunde 30 €, Set-Pass und VIP-Mentoring für das ganze Set.'];
     case 'about':
       if(sub==='crazyslayt') return ['CrazYSlayt – TFT Challenger & Founder', 'Claudio „CrazYSlayt“: Challenger seit Set 15, Founder von Climb TFT und Coach seit Set 17.'];
       if(sub==='humbadobo') return ['humbadobo – TFT Challenger & Coach', 'Romano „humbadobo“: Challenger seit Set 15, Peak 1.447 LP und Coach bei Climb TFT.'];
@@ -2738,6 +2738,7 @@ function pageMeta(page, sub){
     }
     case 'impressum': return ['Impressum', 'Impressum von Climb TFT.'];
     case 'datenschutz': return ['Datenschutzerklärung', 'Datenschutzerklärung von Climb TFT.'];
+    case 'bedingungen': return ['Widerruf & Bedingungen', 'Widerrufsbelehrung, Muster-Widerrufsformular und Bedingungen für das TFT Coaching bei Climb TFT – Einzelstunde, Set-Pass und VIP-Mentoring.'];
     case 'guides':
       if(sub==='encounters') return [`TFT Encounters ${S} – welche Comp du spielen solltest`, `Alle TFT Encounters in ${S}: was sie machen, wie oft sie pro Spiel kommen und welche Comps du darauf spielst – Ambosse, Gold- und Prismatic-Augments, Start-Units.`];
       return ['TFT Guides', '', true];
@@ -2832,7 +2833,7 @@ function route(){
   // alte Adressen weiter unterstützen
   if(['champions','items','traits'].includes(page)){ sub = page; page = 'bibliothek'; }
   if(page==='augments'){ sub = 'augments'; page = 'tierlist'; }
-  const valid = ['home','tierlist','bibliothek','champion','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches'];
+  const valid = ['home','tierlist','bibliothek','champion','bedingungen','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches'];
   if(!valid.includes(page)) page='notfound';
   const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche
   const pageId = page==='bibliothek' ? 'library' : isSim ? 'builder' : page;
@@ -2851,6 +2852,7 @@ function route(){
   else if(page==='tools') renderTools(sub, parts[2], parts[3]);
   if(page==='patches') renderPatches(sub);
   if(page==='champion') renderChampPage(sub);
+  if(page==='apply'){ const pk = qParam('paket'), sel = $('#fPkg'); if(pk && sel && [...sel.options].some(o=>o.value===pk)) sel.value = pk; }   // z. B. /apply?paket=vip
   document.querySelectorAll('[data-route]').forEach(a=>a.classList.toggle('active', a.dataset.route===navKey));
   if(['guides','about','apply','patches'].includes(navKey)) $('#moreBtn').classList.add('active');
   else $('#moreBtn').classList.remove('active');

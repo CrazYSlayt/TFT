@@ -15,7 +15,7 @@ const PAGES = [
   ['/guides/encounters', 0.7, 'weekly'],
   ['/coaching', 0.7, 'monthly'], ['/apply', 0.5, 'yearly'],
   ['/about', 0.4, 'monthly'], ['/about/crazyslayt', 0.4, 'monthly'], ['/about/humbadobo', 0.4, 'monthly'],
-  ['/impressum', 0.1, 'yearly'], ['/datenschutz', 0.1, 'yearly'],
+  ['/impressum', 0.1, 'yearly'], ['/datenschutz', 0.1, 'yearly'], ['/bedingungen', 0.1, 'yearly'],
 ];
 
 // Patch-Seiten aus data/patches.js (wird vom Update-Skript gepflegt)
