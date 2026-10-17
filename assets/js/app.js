@@ -2687,16 +2687,34 @@ const stNextLabel = () => { const n = stNextPatch(); if(!n) return ''; return n.
 let ST_CUT = window.TFT_CUTOFFS && window.TFT_CUTOFFS.regions ? window.TFT_CUTOFFS : null, ST_CUT_LIVE = false;
 const stCut = r => ST_CUT && ST_CUT.regions[r];
 if(!FILE_MODE) fetch('/api/cutoffs').then(r=>r.ok ? r.json() : null).then(d=>{
-  if(d && d.regions && Object.keys(d.regions).length){ ST_CUT = d; ST_CUT_LIVE = true; renderStatBar(); }
+  if(d && d.regions && Object.keys(d.regions).length){ ST_CUT = d; ST_CUT_LIVE = true; renderStatBar(); sbCount(false); }
 }).catch(()=>{});
 const fmtLP = v => v.toLocaleString(LOC) + ' LP';
+// LP-Zahlen hochzählen lassen: beim Öffnen der Startseite von 0, bei neuen Live-Daten vom alten zum neuen Wert
+const sbShown = {};
+function sbCount(fromZero){
+  const els = [...document.querySelectorAll('#statBar [data-lp]')];
+  if(!els.length || !$('#statBar').offsetParent) return;
+  const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const jobs = els.map(el=>({el, key:el.dataset.key, to:+el.dataset.lp, from:fromZero ? 0 : (sbShown[el.dataset.key] ?? +el.dataset.lp)}));
+  jobs.forEach(j=>{ sbShown[j.key] = j.to; });
+  if(still){ jobs.forEach(j=>{ j.el.textContent = fmtLP(j.to); }); return; }
+  const t0 = performance.now(), dur = 1400, ease = x => 1 - Math.pow(1 - x, 3);
+  clearInterval(sbCount.timer);
+  jobs.forEach(j=>{ j.el.textContent = fmtLP(j.from); });
+  sbCount.timer = setInterval(()=>{
+    const k = Math.max(0, Math.min(1, (performance.now() - t0) / dur));   // Fortschritt 0 … 1 (nie negativ)
+    jobs.forEach(j=>{ j.el.textContent = fmtLP(Math.round(j.from + (j.to - j.from) * ease(k))); });
+    if(k >= 1) clearInterval(sbCount.timer);
+  }, 16);
+}
 // Leiste oben: LP-Grenzen für Challenger und Großmeister (EUW) und der nächste Patch
 function renderStatBar(){
   const el = $('#statBar'); if(!el) return;
   const cut = stCut('euw'), dot = `<i class="sb-dot${ST_CUT_LIVE ? ' live' : ''}" title="${ST_CUT_LIVE ? 'Live' : 'Gespeicherter Stand'}"></i>`;
   el.innerHTML = `<div class="wrap sb-in">
-    ${cut ? `<a class="sb-main" href="/ranks/challenger"><img src="${rankImg(rankBy.challenger)}" alt="" width="40" height="40"><span class="sb-num"><b>${fmtLP(cut.ch)}</b><small>${dot}Challenger · EUW</small></span></a>
-    <a class="sb-main" href="/ranks/grandmaster"><img src="${rankImg(rankBy.grandmaster)}" alt="" width="40" height="40"><span class="sb-num"><b>${fmtLP(cut.gm)}</b><small>${dot}Großmeister · EUW</small></span></a>` : ''}
+    ${cut ? `<a class="sb-main" href="/ranks/challenger"><img src="${rankImg(rankBy.challenger)}" alt="" width="40" height="40"><span class="sb-num"><b data-lp="${cut.ch}" data-key="ch" data-noi18n>${fmtLP(sbShown.ch ?? cut.ch)}</b><small>${dot}Challenger · EUW</small></span></a>
+    <a class="sb-main" href="/ranks/grandmaster"><img src="${rankImg(rankBy.grandmaster)}" alt="" width="40" height="40"><span class="sb-num"><b data-lp="${cut.gm}" data-key="gm" data-noi18n>${fmtLP(sbShown.gm ?? cut.gm)}</b><small>${dot}Großmeister · EUW</small></span></a>` : ''}
     ${ST_PATCH ? `<a class="sb-item sb-hide" href="/patches" title="${L('Nächster Patch', 'Next patch')}: ${esc(stNextLabel())}"><span class="sb-patch">${esc(ST_PATCH)}</span><span><small>Nächster Patch in</small><b data-countdown>${stCountdown()}</b></span></a>` : ''}</div>`;
   el.hidden = !cut && !ST_PATCH;
 }
@@ -2840,6 +2858,7 @@ function route(){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+pageId));
   let navKey = page==='champion' ? 'bibliothek' : page;
   $('#statBar').classList.toggle('sb-off', page!=='home');   // LP-Grenzen und Patch-Countdown nur auf der Startseite
+  if(page==='home') requestAnimationFrame(()=>sbCount(true));   // beim Öffnen der Startseite die LP hochzählen
   if(!isSim) simPause();
   if(page==='tierlist') setTab(['items','augments','holds'].includes(sub)?sub:'comps');
   if(page==='guides') setGuide(sub);

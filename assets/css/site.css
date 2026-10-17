@@ -1347,7 +1347,7 @@ a.mt-card:hover{transform:translateY(-2px);border-color:var(--accent)}
 .sb-in{display:flex;align-items:center;justify-content:flex-end;gap:30px;min-height:52px;padding-top:16px;padding-bottom:0}
 .sb-main{display:flex;align-items:center;gap:10px}
 .sb-main .tft-logo{width:40px;height:40px}
-.sb-num b{display:block;font-family:var(--ff-head);font-size:1.75rem;font-weight:900;line-height:1}
+.sb-num b{display:block;font-family:var(--ff-head);font-size:1.75rem;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;min-width:4.6ch}
 .sb-num small{display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:var(--muted);margin-top:2px}
 .sb-num small img{width:20px;height:20px}
 .sb-dot{position:relative;width:8px;height:8px;border-radius:50%;background:var(--faint)}
