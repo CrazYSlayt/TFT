@@ -5,6 +5,6 @@
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/robots.txt", "destination": "/api/robots" },
-    { "source": "/((?!api/|assets/|data/|tools/[^/]*\\.|tierlist-data-|robots\\.txt|sitemap\\.xml|TFT\\.html).*)", "destination": "/index.html" }
+    { "source": "/((?!api/|assets/|data/|tools/[^/]*\\.|tierlist-data-|robots\\.txt|riot\\.txt|sitemap\\.xml|TFT\\.html).*)", "destination": "/index.html" }
   ]
 }
