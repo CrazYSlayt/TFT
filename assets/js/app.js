@@ -5,6 +5,7 @@ const FILE_MODE = location.protocol === 'file:';
 // Sprache: Englisch unter /en/… (festgelegt im Kopf von index.html), sonst Deutsch. Intern arbeiten alle Pfade ohne /en.
 const LANG = window.TFT_LANG === 'en' ? 'en' : 'de', EN = LANG === 'en', LOC = EN ? 'en-GB' : 'de-DE';
 const L = (de, en) => EN ? en : de;   // kurze Texte direkt im Code übersetzen
+const ND = document.documentElement.classList.contains('nd');   // Vorschau neues Design (?design=neu, siehe index.html)
 const rawPath = () => (FILE_MODE ? location.hash.replace(/^#/, '') : location.pathname) || '/';
 const curPath = () => { const p = rawPath(); return EN ? (p.replace(/^\/en(?=\/|$)/, '') || '/') : p; };
 const withLang = p => EN && /^\/(?!en(\/|$)|api\/|assets\/|data\/)/.test(p) ? '/en' + p : (EN && p === '/' ? '/en/' : p);
@@ -1416,6 +1417,13 @@ function setLib(tab){
   Object.keys(LIB_LABEL).forEach(t=>{ $('#lib-'+t).hidden = t!==tab; });
   $('#libTabs').querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.lib===tab));
   $('#libCrumb').textContent = LIB_LABEL[tab];
+  // Neues Design: derselbe Kopf wie bei den Champions (Pfad, Titel, Unterzeile), damit die Reiter darunter an derselben Stelle stehen
+  if(ND){
+    let h = $('#ndLibHead');
+    if(!h){ $('#page-library>.wrap').insertAdjacentHTML('afterbegin', '<div class="cv-head" id="ndLibHead"></div>'); h = $('#ndLibHead'); }
+    const all = {items:L('Alle Items', 'All items'), traits:L('Alle Traits', 'All traits')}[tab] || '';
+    h.innerHTML = `<div class="cv-crumb">Home / ${L('Bibliothek', 'Library')} / ${LIB_LABEL[tab]}</div><div class="cv-h1" role="heading" aria-level="2"><span>TFT</span> ${LIB_LABEL[tab]}</div><p class="cv-sub">${all} · Set ${TFT_DATA.set}</p>`;
+  }
   if(libTab!==tab){ libTab = tab; buddyNext('bibliothek', true); }
 }
 
@@ -1431,9 +1439,9 @@ function renderChampV2(){
     box.innerHTML = `<div class="cv-stage">
       <div class="cv-head">
         <div class="cv-crumb">Home / ${L('Bibliothek', 'Library')} / Champions</div>
-        <nav class="cv-tabs" aria-label="${L('Bibliothek', 'Library')}"><a class="on" href="/bibliothek/champions">Champions</a><a href="/bibliothek/items">Items</a><a href="/bibliothek/traits">Traits</a></nav>
         <h1 class="cv-h1"><span>TFT</span> Champions</h1>
         <p class="cv-sub">${L('Alle Champions', 'All champions')} · Set ${TFT_DATA.set}</p>
+        <nav class="cv-tabs" aria-label="${L('Bibliothek', 'Library')}"><a class="on" href="/bibliothek/champions">Champions</a><a href="/bibliothek/items">Items</a><a href="/bibliothek/traits">Traits</a></nav>
       </div>
       <div class="cv-filters">
         <button type="button" class="cv-chip on" data-cvcost="all">${L('Alle', 'All')}</button>
@@ -1750,13 +1758,14 @@ $('#traitSearch').addEventListener('input', renderTraits);
 /* ================= RENDER: ITEMS ================= */
 const ITEM_CATS = [
   ['craft','Kombinierte Items'],['component','Komponenten'],['radiant','Lichtversionen'],
-  ['artifact','Artefakte'],['emblem','Embleme & Spatula-Items'],['other','Verbrauchsgegenstände & Sonstiges'],
+  ['artifact','Artefakte'],['emblem','Embleme'],['other','Verbrauchsgegenstände & Sonstiges'],
 ];
 function itemCat(it){
-  if(it.cat) return it.cat; // vom Update-Skript gesetzt (gilt für jedes Set)
   const id = it.id;
+  if(/Tacticians/.test(id)) return 'other';   // Taktiker-Krone, -Umhang, -Schild: keine Trait-Embleme → Sonstiges
+  if(it.cat) return it.cat; // vom Update-Skript gesetzt (gilt für jedes Set)
   if(id.startsWith('DA_Component_')) return 'component';
-  if(id.includes('Emblem') || id.startsWith('DA_Tacticians')) return 'emblem';
+  if(id.includes('Emblem')) return 'emblem';
   if(id.includes('Artifact')) return 'artifact';
   if(id.includes('Radiant') && !/Potion|Chest/.test(id)) return 'radiant';
   if(it.comp.length===2) return 'craft';
@@ -2824,7 +2833,8 @@ const stNextLabel = () => { const n = stNextPatch(); if(!n) return ''; return n.
 let ST_CUT = window.TFT_CUTOFFS && window.TFT_CUTOFFS.regions ? window.TFT_CUTOFFS : null, ST_CUT_LIVE = false;
 const stCut = r => ST_CUT && ST_CUT.regions[r];
 if(!FILE_MODE) fetch('/api/cutoffs').then(r=>r.ok ? r.json() : null).then(d=>{
-  if(d && d.regions && Object.keys(d.regions).length){ ST_CUT = d; ST_CUT_LIVE = true; renderStatBar(); sbCount(false); }
+  if(d && d.regions && Object.keys(d.regions).length){ ST_CUT = d; ST_CUT_LIVE = true; renderStatBar(); sbCount(false);
+    if(ND){ document.querySelectorAll('#dshApp .dsh-lp .sb-dot').forEach(e=>{ e.classList.add('live'); e.title = L('Live-Daten', 'Live data'); }); dshCount(false); } }
 }).catch(()=>{});
 const fmtLP = v => v.toLocaleString(LOC) + ' LP';
 // LP-Zahlen hochzählen lassen: beim Öffnen der Startseite von 0, bei neuen Live-Daten vom alten zum neuen Wert
@@ -2926,7 +2936,7 @@ function csSections(){
     out.push(['reroll-subscription', 'Reroll Subscription', `<p class="cs-note">${L('Encounter von Kayle: Zu Beginn jeder Stage bekommst du kostenlose Shop-Rerolls.', 'Kayle encounter: you get free shop rerolls at the start of every stage.')}</p>` + csTable(['Stage', ...r.map(x=>x[0])], [[L('Kostenlose Rerolls', 'Free rerolls'), ...r.map(x=>x[1])]]) + csSrc(CS.rerollSub.src)]);
   }
   // Emblem-Rezepte: Pfannenwender bzw. Bratpfanne + Komponente (aus den offiziellen Item-Daten)
-  const em = ITEMS.filter(i=>i.cat==='emblem'), byComp = {};
+  const em = ITEMS.filter(i=>i.cat==='emblem' || /Tacticians/.test(i.id)), byComp = {};   // Taktiker-Items gehören ins Rezept-Raster
   em.forEach(i=>{ if(i.comp && i.comp.length===2) byComp[[...i.comp].sort().join('+')] = i; });
   const ORD = ['BFSword','RecurveBow','NeedlesslyLargeRod','TearOfTheGoddess','ChainVest','NegatronCloak','GiantsBelt','SparringGloves','Spatula','FryingPan'], ord = i => { const k = ORD.indexOf(i.id.replace('DA_Component_', '')); return k < 0 ? 99 : k; };
   const comps = ITEMS.filter(i=>i.cat==='component').sort((a,b)=>ord(a) - ord(b)), base = ['DA_Component_Spatula', 'DA_Component_FryingPan'].map(id=>itemById[id]).filter(Boolean);
@@ -3209,7 +3219,7 @@ function route(){
   if(!valid.includes(page)) page='notfound';
   const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche
   const isCv = page==='bibliothek' && !['items','traits'].includes(sub);   // Champions: Wabenansicht (auch alte Adresse /bibliothek/v2)
-  const pageId = isCv ? 'champv2' : page==='bibliothek' ? 'library' : isSim ? 'builder' : page;
+  const pageId = isCv ? 'champv2' : page==='bibliothek' ? 'library' : isSim ? 'builder' : ND && page==='home' ? 'dash' : page;
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+pageId));
   let navKey = page==='champion' ? 'bibliothek' : page;
   $('#statBar').classList.toggle('sb-off', page!=='home');   // LP-Grenzen und Patch-Countdown nur auf der Startseite
@@ -3234,6 +3244,7 @@ function route(){
   else $('#moreBtn').classList.remove('active');
   moreMenu.classList.remove('open'); drawer.classList.remove('open');
   closeModal(); window.scrollTo(0,0);
+  if(ND) ndRoute(page, navKey);
   setMeta(page, sub);
 }
 window.addEventListener(FILE_MODE ? 'hashchange' : 'popstate', route);
@@ -3354,6 +3365,156 @@ $('#langBtn').addEventListener('click', e=>{
   setTimeout(()=>{ location.href = to; }, still ? 0 : 220);
 }, true);
 i18nStart();
+
+/* ================= NEUES DESIGN (Vorschau mit ?design=neu) ================= */
+// Topbar mit den drei Hauptpunkten, links eine einklappbare Seitenleiste mit den übrigen Seiten, Dashboard als Startseite.
+// Die alte Kopfzeile bleibt im HTML und wird per CSS (assets/css/design-neu.css) ausgeblendet; Set- und Sprachschalter ziehen um.
+const ND_IC = {
+  tools:'<path d="M14.5 6.5a4 4 0 0 0-5.4 5.1L4 16.7 7.3 20l5.1-5.1a4 4 0 0 0 5.1-5.4l-2.4 2.4-2.4-.6-.6-2.4z"/>',
+  cheat:'<rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M4 9h16M4 14.5h16M10 3.5v17"/>',
+  guides:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M8 8h7M8 12h5"/>',
+  patches:'<path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/>',
+  ranks:'<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 11l2 2 4-4"/>',
+  coaching:'<path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11v5c3 2 7 2 10 0v-5"/>',
+  about:'<circle cx="9" cy="8" r="3"/><path d="M3 20c.6-3.4 3-5.5 6-5.5s5.4 2.1 6 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.6c2.6.2 4.5 2.2 5 5.4"/>',
+  col:'<path d="M15 6l-6 6 6 6"/>'
+};
+const ndSvg = (k, w=1.8) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ND_IC[k]}</svg>`;
+function ndInit(){
+  const S = TFT_DATA.set;
+  document.body.insertAdjacentHTML('afterbegin', `
+    <header class="nd-top" id="ndTop">
+      <button class="nd-burger" type="button" aria-label="${L('Menü', 'Menu')}" onclick="document.body.classList.toggle('nd-drawer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <a class="nd-brand" href="/" aria-label="TFTClimb ${L('Startseite', 'home')}"><img src="assets/brand/logo-tftclimb.webp" alt="TFTClimb"></a>
+      <nav class="nd-tabs" aria-label="${L('Hauptnavigation', 'Main navigation')}"><a href="/" data-nd="home">Dashboard</a><a href="/tierlist" data-nd="tierlist">Tierlist</a><a href="/bibliothek" data-nd="bibliothek">${L('Bibliothek', 'Library')}</a></nav>
+      <div class="nd-r">
+        <span id="ndSlot"></span>
+      </div>
+    </header>
+    <aside class="nd-side" id="ndSide" aria-label="${L('Weitere Seiten', 'More pages')}">
+      <div class="nds-cap">${L('Werkzeuge', 'Tools')}</div>
+      ${ndLink('tools', 'Tools', '/tools')}
+      <div class="nds-cap">${L('Wissen', 'Knowledge')}</div>
+      ${ndLink('cheatsheet', 'Cheatsheet', '/cheatsheet', 'cheat')}${ndLink('guides', 'Guides', '/guides')}${ndLink('patches', 'Patches', '/patches')}${ndLink('ranks', 'Ranks', '/ranks')}
+      <div class="nds-cap">TFTClimb</div>
+      ${ndLink('coaching', 'Coaching', '/coaching')}${ndLink('about', 'Meet the Team', '/about')}
+      <img class="nds-vi" src="assets/img/mascot-vi-fight.webp" alt="" loading="lazy">
+      <div class="nds-foot"><b>${L('Bereit für den Climb?', 'Ready to climb?')}</b><small>${L('Kostenloses Kennenlernen', 'Free intro call')}</small><a href="/apply">${L('Anfragen', 'Apply')}</a></div>
+      <button class="nds-link nds-col" type="button" onclick="document.body.classList.toggle('nd-mini');try{localStorage.setItem('tftfreaks_side',document.body.classList.contains('nd-mini')?'mini':'')}catch(e){}">${ndSvg('col', 2)}<span>${L('Einklappen', 'Collapse')}</span></button>
+    </aside>
+    <div class="nd-scrim" onclick="document.body.classList.remove('nd-drawer')"></div>`);
+  // Set- und Sprachschalter aus der alten Kopfzeile übernehmen (Funktionen bleiben erhalten)
+  // Sprache: nur die Flagge, ein Klick öffnet ein kleines Menü
+  const p0 = curPath(), deHref = p0, enHref = '/en' + (p0 === '/' ? '/' : p0);
+  const lang = `<div class="nd-lang" id="ndLang"><button type="button" class="nd-lang-btn" aria-haspopup="true" aria-expanded="false" aria-label="${L('Sprache', 'Language')}" title="${L('Sprache', 'Language')}">${EN ? FLAG_US : FLAG_DE}<svg class="nd-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></button>
+    <div class="nd-lang-menu" role="menu"><a role="menuitemradio" aria-checked="${!EN}" href="${deHref}" hreflang="de" data-lang="de" data-noi18n>${FLAG_DE}Deutsch</a><a role="menuitemradio" aria-checked="${EN}" href="${enHref}" hreflang="en" data-lang="en" data-noi18n>${FLAG_US}English</a></div></div>`;
+  const slot = $('#ndSlot'); slot.insertAdjacentHTML('afterend', lang); slot.replaceWith($('#setSw'));
+  const nl = $('#ndLang');
+  nl.querySelector('.nd-lang-btn').addEventListener('click', e=>{ e.stopPropagation(); const o = nl.classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded', o); });
+  document.addEventListener('click', e=>{ if(!e.target.closest('#ndLang')) nl.classList.remove('open'); });
+  nl.querySelectorAll('[data-lang]').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); const l = a.dataset.lang;
+    try { localStorage.setItem('tftfreaks_lang', l); } catch(_){}
+    if((l === 'en') === EN){ nl.classList.remove('open'); return; }
+    const cp = curPath(); location.href = (l === 'en' ? '/en' + (cp === '/' ? '/' : cp) : cp) + location.search; }, true));
+  try { if(localStorage.getItem('tftfreaks_side')==='mini') document.body.classList.add('nd-mini'); } catch(e){}
+  $('#ndSide').addEventListener('click', e=>{ if(e.target.closest('a')) document.body.classList.remove('nd-drawer'); });
+  $('#ndTop').addEventListener('click', e=>{ if(e.target.closest('.nd-tabs a')) document.body.classList.remove('nd-drawer'); });
+}
+function ndLink(key, label, href, ic){ return `<a class="nds-link" href="${href}" data-nd="${key}" title="${label}">${ndSvg(ic || key)}<span>${label}</span></a>`; }
+function ndRoute(page, navKey){
+  const key = page==='champion' ? 'bibliothek' : page==='apply' ? 'coaching' : navKey;
+  document.querySelectorAll('#ndTop [data-nd], #ndSide [data-nd]').forEach(a=>a.classList.toggle('on', a.dataset.nd===key));
+  document.body.classList.remove('nd-drawer');
+  if(page==='home'){ renderDash(); requestAnimationFrame(()=>dshCount(true)); }
+}
+
+// Dashboard: Profil-Header, Top Comps, aktueller Patch, Tierlist im Kleinformat, Shop-Chancen, Coaching
+const dshHex = (n, cls='') => { const c = champBy[n] || CH_DATA[n]; if(!c) return ''; return `<span class="dsh-hx c${c.c} ${cls}" title="${esc(n)}"><i style="background-image:url('${champImg(n) || champFallback(n)}')"></i></span>`; };
+function renderDash(){
+  const box = $('#dshApp'); if(!box || box.dataset.done) return;
+  const P = CURRENT_PATCH || PATCHES[0], cut = (ST_CUT && ST_CUT.regions && ST_CUT.regions.euw) || {};
+  const ORDER = 'SABCX', top = mainComps.filter(c=>c.tier!=='X').sort((a,b)=>ORDER.indexOf(a.tier) - ORDER.indexOf(b.tier)).slice(0, 5);
+  const fmt = n => n == null ? '–' : Number(n).toLocaleString(LOC);
+  const stat = (v, l, e) => `<div class="dsh-st"><b>${v}</b><small>${l}</small>${e ? `<em>${e}</em>` : ''}</div>`;
+  const tierBadge = t => `<span class="dsh-tier" style="background:${TIER_COL[t]}">${t}</span>`;
+  const sCount = mainComps.filter(c=>c.tier==='S').length;
+  // Patch: ein paar Champion-Änderungen
+  const rows = [];
+  (P && P.notes || []).forEach(s=>(s.ch || []).forEach(r=>{ const m = r[0] && NAME_IDX[nameKey(r[0])]; if(m && m.ty==='c' && !rows.some(x=>x[4]===m.k)) rows.push([r[0], r[1], r[2], r[3], m.k]); }));
+  const total = P ? (P.notes || []).reduce((n, s)=>n + (s.ch || []).length, 0) : 0;
+  const coach = (href, img, name, peak) => `<a class="dsh-coach-pf" href="${href}"><span class="dsh-av"><img src="${img}" alt="${esc(name)}"></span><span class="dsh-c3"><b>${esc(name)}<i>#EUW</i></b><span>Coach</span><small><em>Challenger</em><i class="dsh-sep"> · </i>Peak ${peak}</small></span></a>`;
+  // Player Card: Bild mit Challenger-Emblem, Name, Rolle, darunter Rang / Peak / Aus
+  const pcard = (href, img, name, role, peak, from) => `<a class="dsh-pcard" href="${href}"><span class="dsh-pav"><img src="${img}" alt="${esc(name)}"><img class="dsh-pemb" src="${rankImg(rankBy.challenger)}" alt="Challenger"></span><b>${esc(name)}<i>#EUW</i></b><span class="dsh-prole">${esc(role)}</span><span class="dsh-pfacts"><span><small>${L('Rang', 'Rank')}</small><em>Challenger</em></span><span><small>Peak</small><em>${peak}</em></span><span><small>${L('Aus', 'From')}</small><em>${esc(from)}</em></span></span></a>`;
+  const live = `<i class="sb-dot${ST_CUT_LIVE ? ' live' : ''}" title="${ST_CUT_LIVE ? L('Live-Daten', 'Live data') : L('Gespeicherter Stand', 'Saved data')}"></i>`;
+  const lpStat = (key, v, tier, label) => `<a class="dsh-lp" href="/ranks/${tier.k}"><img src="${rankImg(tier)}" alt=""><span><b data-dlp="${v || 0}" data-key="${key}">${v ? fmt(v) + ' LP' : '–'}</b><small>${live}${label}</small></span></a>`;
+  box.innerHTML = `
+    <section class="dsh-card dsh-hero dsh-bar">
+      <div class="dsh-hi"><img class="dsh-vihi" src="assets/img/mascot-vi-hallo.webp" alt="Vi"><div class="dsh-bubble"><b>${L('Willkommen bei TFTClimb!', 'Welcome to TFTClimb!')}</b><span>${L('Viel Spaß beim Climb – ich drück dir die Daumen.', 'Have fun on your climb – fingers crossed!')}</span></div></div>
+      <div class="dsh-stats">
+        ${cut.ch ? lpStat('ch', cut.ch, rankBy.challenger, L('Challenger · EUW', 'Challenger · EUW')) : ''}
+        ${cut.gm ? lpStat('gm', cut.gm, rankBy.grandmaster, L('Großmeister · EUW', 'Grandmaster · EUW')) : ''}
+        ${ST_PATCH ? `<a class="dsh-np" href="/patches" title="${esc(stNextLabel())}"><span class="dsh-pbadge">${esc(ST_PATCH)}</span><span><small>${L('Nächster Patch in', 'Next patch in')}</small><b data-countdown>${stCountdown()}</b></span></a>` : ''}
+      </div>
+    </section>
+    <div class="dsh-row2">
+      <section class="dsh-card"><div class="dsh-h"><h2>Top Comps</h2><a href="/tierlist">${L('Ganze Tierlist', 'Full tier list')} →</a></div>
+        ${top.length ? top.map(c=>{
+          const units = c.board.map(b=>b.u).filter(u=>champBy[u]).sort((a,b)=>(b===c.carry) - (a===c.carry) || costOf(b) - costOf(a)).slice(0, 7);
+          return `<a class="dsh-comp" href="/tierlist" data-dshcomp="${esc(c.slug)}">${tierBadge(c.tier)}<span class="dsh-cn"><b>${esc(c.name)}</b><small>${esc(L(STYLE_DE[c.style] || c.style, c.style))} · ${esc(L(DIFF_DE[c.diff] || '', (c.diff || '').toLowerCase()))}</small></span><span class="dsh-units">${units.map(u=>dshHex(u)).join('')}</span><span class="dsh-pill">Carry: ${esc(c.carry)}</span></a>`; }).join('')
+          : `<p class="dsh-empty">${L('Die Tierlist wird gerade neu aufgebaut.', 'The tier list is being rebuilt.')}</p>`}
+      </section>
+      <section class="dsh-card dsh-coach">
+        <p>${L('Fundamentals und VOD-Review mit uns – auf Deutsch oder Englisch.', 'Fundamentals and VOD reviews with us – in German or English.')}</p>
+        <div class="dsh-pcards">${pcard('/about/crazyslayt', 'assets/img/team-claudio.jpg', 'CrazYSlayt', 'Founder & Coach', '1.002 LP', 'Frankfurt')}${pcard('/about/humbadobo', 'assets/img/team-romano.jpg', 'humbadobo', 'Coach', '1.447 LP', L('Irland', 'Ireland'))}</div>
+        ${(()=>{ const tl = testimonials.map(dshTst).filter(Boolean); return tl.length ? `<div class="dsh-tst" aria-live="polite" title="${L('Erfolge nach dem Coaching', 'Results after coaching')}">${tl.join('')}</div>` : ''; })()}
+        <a class="dsh-btn" href="/coaching">${L('Coaching buchen', 'Book coaching')} →</a>
+      </section>
+    </div>
+    <div class="dsh-row3">
+      <a class="dsh-card dsh-lib" href="/bibliothek"><div class="dsh-h"><h2>${L('Bibliothek', 'Library')}</h2><span class="dsh-more">${L('Entdecken', 'Explore')} →</span></div>
+        <div class="dsh-comb">${(()=>{ const pick = champions.slice().sort((a,b)=>b.c - a.c || a.n.localeCompare(b.n)).slice(0, 16), rows = [5, 6, 5]; let i = 0;
+          return rows.map(m=>`<div>${pick.slice(i, i += m).map(c=>`<span class="dsh-cb c${c.c}" title="${esc(c.n)}"><i style="background-image:url('${champImg(c.n) || champFallback(c.n)}')"></i></span>`).join('')}</div>`).join(''); })()}</div>
+        <div class="dsh-libstats"><span><b>${champions.length}</b> Champions</span><span><b>${ITEMS.length}</b> Items</span><span><b>${traits.length}</b> Traits</span></div></a>
+      <section class="dsh-card dsh-tools"><img class="dsh-heimer" src="assets/img/mascot-heimer-wave.webp" alt="">
+        <div class="dsh-h"><h2>Tools</h2><a href="/tools">${L('Alle Tools', 'All tools')} →</a></div>
+        <div class="dsh-tlist">${[
+          ['/tools/rolldown', 'rolldown', L('Rolldown-Rechner', 'Rolldown calculator'), L('Rollen oder leveln?', 'Roll or level?')],
+          ['/tools/dps', 'dps', L('DPS-Rechner', 'DPS calculator'), L('Item-Builds vergleichen', 'Compare item builds')],
+          ['/tools/drops', 'drops', L('Item-Drop-Rechner', 'Item drop calculator'), L('Was droppt als Nächstes?', 'What drops next?')],
+          ['/tools/tierlist', 'tierlist', 'Tierlist-Maker', L('Eigene Tierlist bauen', 'Build your own tier list')],
+          ['/builder', 'simulator', 'Team Builder', L('Board planen & teilen', 'Plan & share boards')]
+        ].map(([h, img, t, d])=>`<a href="${h}"><img src="assets/tools/${img}.webp" alt="" loading="lazy"><span><b>${t}</b><small>${d}</small></span></a>`).join('')}</div></section>
+    </div>`;
+  const f = box.querySelector('.dsh-ts'); if(f) f.classList.add('on');
+  box.dataset.done = '1';
+}
+// Erfolge gecoachter Spieler als Rang-Sprung mit Emblemen (aus testimonials, r = 'Smaragd → Meister · 5 Sessions')
+const DSH_RANK_DE = {eisen:'iron', bronze:'bronze', silber:'silver', gold:'gold', platin:'platinum', smaragd:'emerald', diamant:'diamond', meister:'master', 'großmeister':'grandmaster', challenger:'challenger'};
+function dshTst(x){
+  const m = String(x.r || '').match(/^\s*([^\s→]+)\s*([IV]*)\s*→\s*([^\s·]+)\s*([IV]*)\s*(?:·\s*(\d+))?/); if(!m) return '';
+  const a = rankBy[DSH_RANK_DE[m[1].toLowerCase()]], b = rankBy[DSH_RANK_DE[m[3].toLowerCase()]]; if(!a || !b) return '';
+  const side = (t, div) => `<span class="dsh-tr"><img src="${rankImg(t)}" alt=""><b>${esc(t.n)}${div ? ' ' + div : ''}</b></span>`;
+  return `<div class="dsh-ts"><span class="dsh-tn"><b>${esc(x.n)}</b>${m[5] ? `<small>${m[5]} Sessions</small>` : ''}</span><span class="dsh-tj">${side(a, m[2])}<i class="dsh-tarr" aria-label="${L('nach', 'to')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i>${side(b, m[4])}</span></div>`;
+}
+// nacheinander einblenden
+setInterval(()=>{ const box = document.querySelector('#page-dash.active .dsh-tst'); if(!box || document.hidden) return;
+  const s = [...box.querySelectorAll('.dsh-ts')], i =s.findIndex(e=>e.classList.contains('on')); s.forEach(e=>e.classList.remove('on')); s[(i + 1) % s.length].classList.add('on'); }, 3600);
+// LP-Grenzen im Dashboard hochzählen (wie die Leiste auf der alten Startseite)
+const dshShown = {};
+function dshCount(fromZero){
+  const cut = stCut('euw') || {};
+  const els = [...document.querySelectorAll('#dshApp [data-dlp]')]; if(!els.length) return;
+  const jobs = els.map(el=>{ const to = cut[el.dataset.key] || +el.dataset.dlp; return {el, key:el.dataset.key, to, from:fromZero ? 0 : (dshShown[el.dataset.key] ?? to)}; });
+  jobs.forEach(j=>{ dshShown[j.key] = j.to; });
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches){ jobs.forEach(j=>{ j.el.textContent = fmtLP(j.to); }); return; }
+  const t0 = performance.now(), dur = 1400, ease = x => 1 - Math.pow(1 - x, 3);
+  clearInterval(dshCount.timer);
+  dshCount.timer = setInterval(()=>{ const k = Math.max(0, Math.min(1, (performance.now() - t0) / dur));
+    jobs.forEach(j=>{ j.el.textContent = fmtLP(Math.round(j.from + (j.to - j.from) * ease(k))); }); if(k >= 1) clearInterval(dshCount.timer); }, 16);
+}
+// Klick auf eine Top Comp: Tierlist öffnen und die Comp aufklappen
+document.addEventListener('click', e=>{ const a = e.target.closest('[data-dshcomp]'); if(!a || e.ctrlKey || e.metaKey) return; e.preventDefault(); go('/tierlist'); const slug = a.dataset.dshcomp; setTimeout(()=>{ const t = document.querySelector(`#tierRows .ct[data-slug="${CSS.escape(slug)}"]`); if(t){ t.click(); t.scrollIntoView({block:'center'}); } }, 60); }, true);
+if(ND) ndInit();
 
 /* init */
 renderSetSwitcher();

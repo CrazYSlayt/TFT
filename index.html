@@ -31,6 +31,20 @@
 <link rel="icon" type="image/png" href="assets/img/tft-logo.png">
 <link rel="stylesheet" href="assets/css/fonts.css">
 <link rel="stylesheet" href="assets/css/site.css">
+<script>
+// Design: das neue TFTClimb-Design gilt für alle. Nur zum Vergleich lässt sich mit ?design=alt das alte Design ansehen
+// (der Browser merkt sich die Wahl), ?design=neu schaltet zurück.
+(function(){
+  var alt = false;
+  try {
+    var q = new URLSearchParams(location.search).get('design');
+    if(q === 'alt') localStorage.setItem('tftfreaks_design', 'alt');
+    if(q === 'neu') localStorage.removeItem('tftfreaks_design');
+    alt = localStorage.getItem('tftfreaks_design') === 'alt';
+  } catch(e){}
+  if(!alt){ document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css">'); }
+})();
+</script>
 </head>
 <body>
 <a class="skip" href="#main">Zum Inhalt springen</a>
@@ -132,6 +146,9 @@
       <div class="team-actions"><a href="/about" class="btn btn-primary">Meet the Team</a><a href="/apply" class="btn btn-ghost">Kontakt</a></div>
     </div>
   </section></div>
+
+<!-- ================= DASHBOARD (nur neues Design, Inhalt aus app.js: renderDash) ================= -->
+<div class="page" id="page-dash"><div class="dsh" id="dshApp" data-noi18n></div></div>
 
 <!-- ================= TIERLIST ================= -->
 <div class="page" id="page-tierlist">
