@@ -1419,6 +1419,135 @@ function setLib(tab){
   if(libTab!==tab){ libTab = tab; buddyNext('bibliothek', true); }
 }
 
+/* ================= CHAMPIONS V2 (/bibliothek/v2): Wabenraster mit Wellen-Hover ================= */
+// Alle Champions als große Sechsecke, sortiert nach Kosten und Name. Die Positionen rechnet cvLayout() aus (versetzte Reihen),
+// der Hover hebt die Wabe unter der Maus stark an und zieht die Nachbarn je nach Abstand mit (Welle).
+const cv = {cost:'all', trait:'', q:'', tiles:[], raf:0, mx:0, my:0, inside:false, base:120};   // base = feste Wabengröße im CSS, skaliert wird per Transform
+const CV_CLASSES = () => TFT_DATA.traits.filter(t=>((TFT_CUSTOM_SET.traits || {})[t.n] || {}).cat==='class').map(t=>t.n);
+function renderChampV2(){
+  const box = $('#cvApp'); if(!box) return;
+  if(!box.dataset.done){
+    const list = champions.slice().sort((a,b)=>a.c - b.c || a.n.localeCompare(b.n));
+    box.innerHTML = `<div class="cv-stage">
+      <div class="cv-head">
+        <div class="cv-crumb">Home / ${L('Bibliothek', 'Library')} / Champions</div>
+        <nav class="cv-tabs" aria-label="${L('Bibliothek', 'Library')}"><a class="on" href="/bibliothek/champions">Champions</a><a href="/bibliothek/items">Items</a><a href="/bibliothek/traits">Traits</a></nav>
+        <h1 class="cv-h1"><span>TFT</span> Champions</h1>
+        <p class="cv-sub">${L('Alle Champions', 'All champions')} · Set ${TFT_DATA.set}</p>
+      </div>
+      <div class="cv-filters">
+        <button type="button" class="cv-chip on" data-cvcost="all">${L('Alle', 'All')}</button>
+        ${[1,2,3,4,5].map(c=>`<button type="button" class="cv-chip cv-cost c${c}" data-cvcost="${c}" title="${c} Gold"><i></i>${c}</button>`).join('')}
+        <span class="cv-sep"></span>
+        ${CV_CLASSES().map(n=>`<button type="button" class="cv-chip cv-trait" data-cvtrait="${esc(n)}" title="${esc(n)}" aria-label="${esc(n)}"><img src="${traitImg(n)}" alt="" loading="lazy"></button>`).join('')}
+        <input class="cv-search" id="cvSearch" type="search" placeholder="${L('Champion oder Trait suchen …', 'Search champion or trait …')}" autocomplete="off">
+      </div>
+      <div class="cv-count" id="cvCount"></div>
+      <div class="cv-grid" id="cvGrid">${list.map(c=>`<a class="cv-tile c${c.c}" href="${champHref(c.n)}" data-n="${esc(c.n)}" data-c="${c.c}" data-t="${esc(c.t.join('|'))}" aria-label="${esc(c.n)}">
+        <span class="cv-hx"><span class="cv-in" style="background-image:url('${champImg(c.n) || champFallback(c.n)}')"></span></span>
+        ${c.t[0] ? `<span class="cv-tr">${traitHex(c.t[0], 'base', 26)}</span>` : ''}
+        <span class="cv-label"><b>${esc(c.n)}</b><small><i class="cdot c${c.c}"></i>${c.c} Gold · ${c.t.map(esc).join(' · ')}</small></span>
+      </a>`).join('')}</div>
+    </div>`;
+    cv.tiles = [...box.querySelectorAll('.cv-tile')];
+    box.dataset.done = '1';
+    const grid = $('#cvGrid'); grid.classList.add('noanim');   // erstes Anordnen ohne Flug-Animation
+    cvFilter(); requestAnimationFrame(()=>requestAnimationFrame(()=>grid.classList.remove('noanim')));
+    return;
+  }
+  cvFilter();
+}
+function cvFilter(){
+  const q = cv.q.toLowerCase().trim(); let n = 0;
+  cv.tiles.forEach(t=>{
+    const ok = (cv.cost==='all' || t.dataset.c===cv.cost) && (!cv.trait || t.dataset.t.split('|').includes(cv.trait)) && (!q || t.dataset.n.toLowerCase().includes(q) || t.dataset.t.toLowerCase().includes(q));
+    t.classList.toggle('off', !ok); if(ok) n++;
+  });
+  $('#cvCount').textContent = n + ' ' + L(n === 1 ? 'Champion' : 'Champions', n === 1 ? 'champion' : 'champions');
+  cvLayout();
+}
+// Wabe (Spitze oben): Breite s, Höhe s·1,1547, Reihenabstand ¾ Höhe. Die Reihen wechseln zwischen k und k−1 Waben und sind
+// mittig ausgerichtet – so greifen sie ineinander. Je weniger Champions sichtbar sind, desto größer die Waben und desto runder die Form.
+function cvLayout(){
+  const grid = $('#cvGrid'); if(!grid || !grid.offsetParent) return;
+  const vis = cv.tiles.filter(t=>!t.classList.contains('off')), n = vis.length;
+  const W = grid.clientWidth, base = W < 560 ? 74 : W < 900 ? 100 : W < 1250 ? 112 : 118, g = W < 560 ? 6 : 8;
+  const grow = n <= 4 ? 1.6 : n <= 8 ? 1.45 : n <= 14 ? 1.3 : n <= 24 ? 1.15 : 1;
+  let s = base * grow, step = s + g;
+  const maxCols = () => Math.max(2, Math.floor((W + g) / step));
+  while(grow > 1 && maxCols() < Math.min(n, 3) && s > base){ s -= 4; step = s + g; }   // auf schmalen Bildschirmen nicht zu groß
+  const h = s * 1.1547, rowStep = h * 0.75 + g * 0.6, top = 34;
+  // Reihenlängen: kleine Mengen mit fester, kompakter Form (4 = 2+2), sonst runde Wabe: erste Reihe eine Wabe weniger als die zweite,
+  // dann abwechselnd (k−1, k, k−1, k …). Die letzte Reihe bekommt einfach die restlichen Champions.
+  const SMALL = {1:[1], 2:[2], 3:[2,1], 4:[2,2], 5:[2,3], 6:[3,3], 7:[2,3,2], 8:[3,2,3], 9:[3,3,3]};
+  let rows;
+  if(SMALL[n] && Math.max(...SMALL[n]) <= maxCols()) rows = SMALL[n];
+  else {
+    const mc = maxCols(), target = Math.max(3, Math.min(mc, n < 30 ? Math.round(Math.sqrt(n * 1.7)) : mc));
+    const build = k => {
+      const r = []; let left = n, len = k - 1, L = len;
+      while(left > 0){ const m = Math.min(len, left); r.push(m); L = len; left -= m; len = len === k ? k - 1 : k; }
+      const last = r[r.length - 1], lonely = r.length > 1 && ((last <= 2 && L >= 4) || last < Math.ceil(L / 2));
+      return {r, k, bad: last === L ? 0 : lonely ? 1.2 : (L - last) / L * 0.6};
+    };
+    // ein paar Breiten probieren: möglichst volle letzte Reihe, keine verwaisten Reste, nah an der Wunschbreite
+    const cands = [target, target - 1, target - 2, n < 30 ? target + 1 : 0].filter(k=>k >= 3 && k <= mc).map(build);
+    rows = (cands.sort((x, y)=>(x.bad + Math.abs(target - x.k) * 0.8) - (y.bad + Math.abs(target - y.k) * 0.8))[0] || {r:[n]}).r;
+  }
+  // Wabenraster ab der ersten Reihe: ungerade Reihen um eine halbe Wabe versetzt. Mittig ausgerichtete Reihen mit k−1 und k Waben
+  // liegen damit exakt auf dem Raster; nur eine Rest-Reihe wird auf den nächsten Rasterplatz gerundet.
+  const pos = [], origin = (W - (rows[0] * step - g)) / 2;
+  let prevX = origin;
+  rows.forEach((m, r)=>{
+    const lat = origin + (r % 2) * step / 2, ideal = (W - (m * step - g)) / 2;
+    // letzte Reihe (wenn sie kürzer ist): linksbündig unter der Reihe darüber – eine halbe Wabe eingerückt, damit sie ineinandergreift
+    const isRest = r > 0 && r === rows.length - 1 && m < rows[r - 1];
+    const x = isRest ? prevX + (lat > prevX ? 1 : -1) * step / 2 + (lat > prevX ? 0 : step) : lat + Math.round((ideal - lat) / step) * step;
+    for(let c = 0; c < m; c++) pos.push([x + c * step, top + r * rowStep]);
+    prevX = x;
+  });
+  const minX = Math.min(...pos.map(p=>p[0])), maxX = Math.max(...pos.map(p=>p[0])) + s, shift = (W - (maxX - minX)) / 2 - minX;
+  // Position und Größe per Transform (GPU) statt left/top/width – das bleibt beim Filtern flüssig
+  const B = cv.base, Hb = B * 1.1547, k2 = s / B;
+  vis.forEach((t, j)=>{ const [x, y] = pos[j];
+    t._cx = x + shift + s / 2; t._cy = y + h / 2;
+    t.style.setProperty('--x', (t._cx - B / 2).toFixed(1) + 'px'); t.style.setProperty('--y', (t._cy - Hb / 2).toFixed(1) + 'px'); t.style.setProperty('--k', k2.toFixed(4)); });
+  grid.style.height = (top + (rows.length ? (rows.length - 1) * rowStep + h : 0) + 60) + 'px';
+  grid.style.setProperty('--hs', (1 + 0.34 * Math.min(1, base / s)).toFixed(3));   // große Waben beim Hover nicht noch riesiger
+  cv.size = s;
+}
+// Welle: Einfluss nimmt mit dem Abstand zur Maus ab; die Wabe direkt unter der Maus wird groß
+function cvWave(){
+  cv.raf = 0;
+  if(!$('#cvGrid')) return;
+  const R = cv.size * 2.6;
+  let hot = null, best = Infinity;
+  cv.tiles.forEach(t=>{
+    if(t.classList.contains('off')){ return; }
+    const d = cv.inside ? Math.hypot(t._cx - cv.mx, t._cy - cv.my) : Infinity;
+    const f = d < R ? Math.pow(1 - d / R, 1.6) : 0;
+    t.style.setProperty('--lift', f.toFixed(3));
+    if(d < best){ best = d; hot = t; }
+  });
+  cv.tiles.forEach(t=>t.classList.toggle('hot', cv.inside && t===hot && best < cv.size * 0.62));
+  $('#cvGrid').classList.toggle('waving', cv.inside);
+}
+document.addEventListener('pointermove', e=>{
+  const grid = e.target.closest && e.target.closest('#cvGrid'); if(e.pointerType==='touch') return;
+  if(!grid){ if(cv.inside){ cv.inside = false; if(!cv.raf) cv.raf = requestAnimationFrame(cvWave); } return; }
+  const r = grid.getBoundingClientRect(); cv.mx = e.clientX - r.left; cv.my = e.clientY - r.top; cv.inside = true;
+  if(!cv.raf) cv.raf = requestAnimationFrame(cvWave);
+});
+document.addEventListener('click', e=>{
+  const c = e.target.closest('[data-cvcost]');
+  if(c){ const v = c.dataset.cvcost; cv.cost = v !== 'all' && cv.cost === v ? 'all' : v;   // zweiter Klick auf einen aktiven Filter schaltet ihn aus
+    document.querySelectorAll('[data-cvcost]').forEach(b=>b.classList.toggle('on', b.dataset.cvcost===cv.cost)); cvFilter(); return; }
+  const t = e.target.closest('[data-cvtrait]'); if(t){ cv.trait = cv.trait===t.dataset.cvtrait ? '' : t.dataset.cvtrait; document.querySelectorAll('[data-cvtrait]').forEach(b=>b.classList.toggle('on', b.dataset.cvtrait===cv.trait)); cvFilter(); }
+});
+document.addEventListener('input', e=>{ if(e.target.id==='cvSearch'){ cv.q = e.target.value; cvFilter(); } });
+document.addEventListener('focusin', e=>{ const t = e.target.closest && e.target.closest('.cv-tile'); if(t){ cv.inside = true; cv.mx = t._cx; cv.my = t._cy; cvWave(); } });
+window.addEventListener('resize', ()=>{ if($('#page-champv2') && $('#page-champv2').classList.contains('active')) cvLayout(); });
+
 /* ================= RENDER: CHAMPIONS ================= */
 let costF='all';
 function renderChamps(){
@@ -3079,7 +3208,8 @@ function route(){
   const valid = ['home','tierlist','bibliothek','champion','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches'];
   if(!valid.includes(page)) page='notfound';
   const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche
-  const pageId = page==='bibliothek' ? 'library' : isSim ? 'builder' : page;
+  const isCv = page==='bibliothek' && !['items','traits'].includes(sub);   // Champions: Wabenansicht (auch alte Adresse /bibliothek/v2)
+  const pageId = isCv ? 'champv2' : page==='bibliothek' ? 'library' : isSim ? 'builder' : page;
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+pageId));
   let navKey = page==='champion' ? 'bibliothek' : page;
   $('#statBar').classList.toggle('sb-off', page!=='home');   // LP-Grenzen und Patch-Countdown nur auf der Startseite
@@ -3087,7 +3217,8 @@ function route(){
   if(!isSim) simPause();
   if(page==='tierlist') setTab(['items','augments','holds'].includes(sub)?sub:'comps');
   if(page==='guides') setGuide(sub);
-  if(page==='bibliothek') setLib(['items','traits'].includes(sub)?sub:'champions');
+  if(isCv) requestAnimationFrame(renderChampV2);
+  else if(page==='bibliothek') setLib(['items','traits'].includes(sub)?sub:'champions');
   if(page==='ranks') setRank(sub);
   if(page==='builder') builderRoute(sub, parts[2], 'builder');
   if(page==='admin') renderAdmin();

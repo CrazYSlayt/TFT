@@ -1011,6 +1011,7 @@ window.I18N_EN = {
   "Stand: Patch {0}b · aktualisiert am {1}/{2}/{3} · Bewertungen von Climb TFT": "As of patch {0}b · updated on {1}/{2}/{3} · ratings by Climb TFT",
   "Stand: Patch {0}b · Bewertungen von Climb TFT": "As of patch {0}b · ratings by Climb TFT",
   "Für Set {0} gibt es noch keine Tierlist.": "There is no tier list for Set {0} yet.",
+  "Neue Ansicht (Beta) →": "New view (beta) →",
   "Comps per Drag & Drop zwischen den Tiers verschieben und anklicken zum Bearbeiten. Items, Augments und Holds bewertest du in ihren Tabs genauso. Änderungen speichern automatisch in diesem Browser. Für die Live-Seite: „Exportieren“ und die Datei": "Drag & drop comps between the tiers and click them to edit. Items, augments and holds are rated the same way in their tabs. Changes save automatically in this browser. For the live site: \"Export\" and put the file",
   "Veröffentlichter Stand (tierlist-data-{0}.js)": "Published version (tierlist-data-{0}.js)",
   "Dein Team · greift an": "Your team · attacking",
