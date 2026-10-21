@@ -14,6 +14,7 @@ window.TFT_PATCH_SCHEDULE = {
 // Bildausschnitt im Patch-Banner: Wo sitzt das Wichtigste (meist das Gesicht)? 'links% oben%' im Originalbild.
 // 0% 0% = ganz oben links, 50% 50% = Mitte. Ohne Eintrag gilt '50% 30%'. Neue Patches einfach ergänzen.
 window.TFT_PATCH_FOCUS = {
+  '18.5': '42% 14%',   // Azir
   '18.4': '52% 0%',    // Kayle
   '18.3': '60% 12%',   // Akali
   '18.2': '66% 20%',
