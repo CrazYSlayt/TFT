@@ -73,13 +73,13 @@ window.TFT_CUSTOM = {
   },
   // Schwarzdorn (Blackthorn): Die Unit auf dem Opferfeld wird vor dem Kampf geopfert.
   // Alle Champions erhalten das Leben der Trait-Stufe (175/350/600), Schwarzdorn-Champions zusätzlich Werte je nach Rolle des Opfers:
-  // Grundwert × Faktor (Kosten/Sterne des Opfers) × Stufe (1 / 1,3 / 1,6). Quelle: tftips.app/tables/blackthorn-sacrifice (Patch 18.4)
+  // Grundwert × Faktor (Kosten/Sterne des Opfers) × Stufe (1 / 1,3 / 1,6). Quelle: tftips.app/tables/blackthorn-sacrifice (Patch 18.4), AP-Schadenssteigerung laut Patch 18.5 von 12 % auf 10 %
   blackthorn: {
     hex: 17,                            // Brett-Feld 0–27, Reihe 0 = vorne → 3. Reihe von vorne, Mitte
     role: {
       tank: {hpP: 0.17, res: 12},       // % max. Leben, Rüstung und Magieresistenz
       ad:   {adP: 0.24, asP: 0.14},     // % Angriffsschaden, % Angriffstempo
-      ap:   {regen: 2, amp: 0.12}       // Manaregeneration, Schadenssteigerung
+      ap:   {regen: 2, amp: 0.10}       // Manaregeneration, Schadenssteigerung
     },
     mult: [                             // Kosten 1–5 × Sterne 1–4
       [0.6, 1, 1.75, 2.5], [0.7, 1.4, 2.8, 5], [0.8, 1.75, 3.3, 8], [1.1, 2.1, 50, 500], [1.4, 3, 100, 999]

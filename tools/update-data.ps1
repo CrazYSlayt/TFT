@@ -1,26 +1,26 @@
-<#
-  Climb TFT - offizielle Spieldaten aktualisieren
+ï»¿<#
+  Climb TFT â€“ offizielle Spieldaten aktualisieren
   ------------------------------------------------
-  Lädt Champions, Traits, Items und Augments von CommunityDragon:
-    . Live-Server  -> data\tft-data-<Set>.js   (Version fest, z. B. 16.20, damit Bild-Links stabil bleiben)
-    . PBE-Server   -> data\tft-data-<Set>.js   nur wenn dort ein NEUERES Set als live läuft (z. B. Set 19)
-  Ältere Sets werden nie gelöscht - sie bleiben als Archiv auf der Seite wählbar.
-  Am Ende wird data\sets.js (Übersicht aller Sets für den Set-Umschalter) neu geschrieben.
-  Außerdem: Rangverteilung (Ranks-Seite) von EsportsTales -> data\ranks.js
-  Die Tierlist (Comps, Item-/Augment-Bewertungen) wird NICHT verändert - die pflegst du selbst.
+  LÃ¤dt Champions, Traits, Items und Augments von CommunityDragon:
+    â€¢ Live-Server  -> data\tft-data-<Set>.js   (Version fest, z. B. 16.20, damit Bild-Links stabil bleiben)
+    â€¢ PBE-Server   -> data\tft-data-<Set>.js   nur wenn dort ein NEUERES Set als live lÃ¤uft (z. B. Set 19)
+  Ã„ltere Sets werden nie gelÃ¶scht â€“ sie bleiben als Archiv auf der Seite wÃ¤hlbar.
+  Am Ende wird data\sets.js (Ãœbersicht aller Sets fÃ¼r den Set-Umschalter) neu geschrieben.
+  AuÃŸerdem: Rangverteilung (Ranks-Seite) von EsportsTales -> data\ranks.js
+  Die Tierlist (Comps, Item-/Augment-Bewertungen) wird NICHT verÃ¤ndert â€“ die pflegst du selbst.
 
   Aufruf (oder einfach "Daten aktualisieren.cmd" doppelklicken):
     powershell -ExecutionPolicy Bypass -File tools\update-data.ps1
   Optionen:
-    -NoPbe             PBE-Server nicht prüfen
+    -NoPbe             PBE-Server nicht prÃ¼fen
     -Set 18            bestimmtes Live-Set statt des neuesten
     -Version 16.20     bestimmte CommunityDragon-Version statt der neuesten
-    -ItemPrefix DA     Präfix der Set-Items, falls die automatische Erkennung danebenliegt
+    -ItemPrefix DA     PrÃ¤fix der Set-Items, falls die automatische Erkennung danebenliegt
     -OnlyRanks         nur die Rangverteilung aktualisieren (dauert ein paar Sekunden)
-    -Publish           danach den Ordner data automatisch committen und zu GitHub hochladen (für die geplante Aufgabe)
+    -Publish           danach den Ordner data automatisch committen und zu GitHub hochladen (fÃ¼r die geplante Aufgabe)
   Patches: Die Patch-Liste kommt von Riot (teamfighttactics.leagueoflegends.com). Pro Patch wird ein Datenstand in
-  data\history\ abgelegt; fehlende Patches des Sets werden aus älteren CommunityDragon-Versionen nachgeholt.
-  Daraus entsteht data\patches.js mit allen erkannten Änderungen. Eigene Kommentare: data\patch-kommentare.js.
+  data\history\ abgelegt; fehlende Patches des Sets werden aus Ã¤lteren CommunityDragon-Versionen nachgeholt.
+  Daraus entsteht data\patches.js mit allen erkannten Ã„nderungen. Eigene Kommentare: data\patch-kommentare.js.
 #>
 param(
   [switch]$NoPbe,
@@ -42,12 +42,12 @@ $ser.MaxJsonLength = [int]::MaxValue
 $tmp = Join-Path $env:TEMP 'tftfreaks-update'; New-Item -ItemType Directory -Force $tmp | Out-Null
 $today = Get-Date -Format 'yyyy-MM-dd'
 
-function Step($msg) { Write-Host "» $msg" -ForegroundColor Cyan }
+function Step($msg) { Write-Host "Â» $msg" -ForegroundColor Cyan }
 function Warn($msg) { Write-Host "  ! $msg" -ForegroundColor Yellow }
 function NewObj { return New-Object 'System.Collections.Generic.Dictionary[string,object]' }
 function Png($p) { if (-not $p -or ([string]$p).StartsWith('{')) { return $null }; return (([string]$p).ToLower() -replace '\.(tex|dds)$', '.png') }
 # Riot speichert manche Wert-Namen nur als Hash ({7a9d7f0e} = FNV-1a des kleingeschriebenen Namens).
-# Die Klarnamen stehen als Platzhalter im Beschreibungstext (@EssencePerDeath@) - daraus bauen wir die Rückübersetzung.
+# Die Klarnamen stehen als Platzhalter im Beschreibungstext (@EssencePerDeath@) â€“ daraus bauen wir die RÃ¼ckÃ¼bersetzung.
 function Fnv([string]$s) { [uint32]$h = 2166136261; foreach ($b in [Text.Encoding]::UTF8.GetBytes($s.ToLower())) { $h = $h -bxor $b; $h = [uint32](([uint64]$h * 16777619) % 4294967296) }; return '{' + $h.ToString('x8') + '}' }
 function HashNames([string[]]$texts) {
   $m = @{}
@@ -83,7 +83,7 @@ function J($x) {
 }
 function Load($base, $tag, $lang) {
   $f = Join-Path $tmp "$tag-$lang.json"
-  Step "Lade $tag $lang.json (ca. 25 MB) ."
+  Step "Lade $tag $lang.json (ca. 25 MB) â€¦"
   Invoke-WebRequest "$base/cdragon/tft/$lang.json" -UseBasicParsing -OutFile $f
   return $ser.DeserializeObject([IO.File]::ReadAllText($f, [Text.Encoding]::UTF8))
 }
@@ -96,14 +96,14 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
   $sdEN = @($EN['setData']) | Where-Object { $_['mutator'] -eq "TFTSet$SetNo" } | Select-Object -First 1
   $sdDE = @($DE['setData']) | Where-Object { $_['mutator'] -eq "TFTSet$SetNo" } | Select-Object -First 1
   if (-not $sdEN) { throw "Set $SetNo nicht in den Daten gefunden." }
-  Write-Host "  Set $SetNo · $Channel · Version $Ver"
+  Write-Host "  Set $SetNo Â· $Channel Â· Version $Ver"
   $enItem = @{}; foreach ($i in $EN['items']) { $enItem[$i['apiName']] = $i }
   $deItem = @{}; foreach ($i in $DE['items']) { $deItem[$i['apiName']] = $i }
 
-  # --- Champions (inkl. Werte, Reichweite und Fähigkeit - Texte auf Deutsch) ---
+  # --- Champions (inkl. Werte, Reichweite und FÃ¤higkeit â€“ Texte auf Deutsch) ---
   $deChamp = @{}; foreach ($c in $sdDE['champions']) { $deChamp[[string]$c['apiName']] = $c }
   $champs = New-Object 'System.Collections.Generic.List[object]'; $prefixCount = @{}
-  # Englische Texte für die englische Seite (eigene Datei tft-data-<Set>-en.js)
+  # Englische Texte fÃ¼r die englische Seite (eigene Datei tft-data-<Set>-en.js)
   $enChamps = NewObj; $enTraits = NewObj; $enItems = NewObj; $enAugs = NewObj
   foreach ($c in $sdEN['champions']) {
     $tr = @($c['traits']); $cost = [int]$c['cost']
@@ -126,7 +126,7 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
       $a = NewObj
       $a['n'] = $(if ($abDE -and $abDE['name']) { [string]$abDE['name'] } else { [string]$ab['name'] })
       $a['d'] = $(if ($abDE -and $abDE['desc']) { [string]$abDE['desc'] } else { [string]$ab['desc'] })
-      # Werte pro Sternestufe (nur wenn Riot sie mitliefert - in Set 18 fast nie)
+      # Werte pro Sternestufe (nur wenn Riot sie mitliefert â€“ in Set 18 fast nie)
       $v = NewObj
       foreach ($x in @($ab['variables'])) { if ($x -and $x['name'] -and $x['value']) { $vals = @($x['value']); if ($vals.Count -ge 4) { $v[[string]$x['name']] = [double[]]@($vals[1], $vals[2], $vals[3] | ForEach-Object { [Math]::Round([double]$_, 3) }) } } }
       if ($v.Count) { $a['v'] = $v }
@@ -152,22 +152,22 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
     $o['bp'] = [int[]]$bp; $o['icon'] = Png $t['icon']
     $o['desc'] = $(if ($d -and $d['desc']) { [string]$d['desc'] } else { [string]$t['desc'] })
     if ($t['desc']) { $enTraits[$o['api']] = [string]$t['desc'] }
-    # Werte je Stufe (z. B. 3/5/7 Units) mit entschlüsselten Namen
+    # Werte je Stufe (z. B. 3/5/7 Units) mit entschlÃ¼sselten Namen
     $names = HashNames @([string]$t['desc'], $(if ($d) { [string]$d['desc'] } else { '' }))
     $o['fx'] = [object[]]@(@($t['effects']) | Where-Object { $_ -and [int]$_['minUnits'] -gt 0 } | ForEach-Object { $e = NewObj; $e['min'] = [int]$_['minUnits']; $e['max'] = [int]$_['maxUnits']; $e['v'] = Fx $_['variables'] $names; $e })
     $traits.Add($o)
   }
 
-  # --- Items (Fallback-Texte: klassische TFT_Item_*-Einträge mit gleichem Icon bzw. Namen) ---
+  # --- Items (Fallback-Texte: klassische TFT_Item_*-EintrÃ¤ge mit gleichem Icon bzw. Namen) ---
   $byIcon = @{}; $byName = @{}
   foreach ($i in $DE['items']) {
     if (-not $i['desc']) { continue }
     if ($i['icon'] -and ([string]$i['apiName']) -like 'TFT_Item_*' -and -not $byIcon.ContainsKey(([string]$i['icon']).ToLower())) { $byIcon[([string]$i['icon']).ToLower()] = $i }
     if ($i['name']) { $byName[([string]$i['name']).ToLower()] = $i }
   }
-  # Welche Items gehören zum Set?
+  # Welche Items gehÃ¶ren zum Set?
   #  a) Set-eigene Items (z. B. Set 18: alle mit "DA_"), wenn das Set eigene Komponenten/Rezepte hat
-  #  b) sonst nach Kategorie aus der Set-Liste (z. B. Set 16/17: allgemeine "TFT_Item_." + set-eigene Embleme/Artefakte)
+  #  b) sonst nach Kategorie aus der Set-Liste (z. B. Set 16/17: allgemeine "TFT_Item_â€¦" + set-eigene Embleme/Artefakte)
   $setApis = @($sdEN['items'] | ForEach-Object { [string]$_ } | Where-Object { $enItem[$_] -and $enItem[$_]['name'] -and (Png $enItem[$_]['icon']) -and (Png $enItem[$_]['icon']) -notlike '*/zaps/*' -and $_ -notlike '*Augment' })
   $isComp = { param($a) @($enItem[$a]['tags']) -contains 'component' }
   $ownComps = @($setApis | Where-Object { $_.StartsWith("${Prefix}_") -and (& $isComp $_) })
@@ -187,13 +187,13 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
             ($tags -contains 'Consumable' -and $a -notmatch 'Assist|Armory|Cypher')
       if ($ok) { $pick.Add($a) }
     }
-    # gleichnamige Items nur einmal - die set-eigene Version gewinnt
+    # gleichnamige Items nur einmal â€“ die set-eigene Version gewinnt
     $byN = [ordered]@{}
     foreach ($a in ($pick | Sort-Object { -not $_.StartsWith("${Prefix}_") })) { $n = [string]$enItem[$a]['name']; if (-not $byN.Contains($n)) { $byN[$n] = $a } }
     $pick = New-Object 'System.Collections.Generic.List[string]'; foreach ($v in $byN.Values) { $pick.Add($v) }
   }
-  Write-Host "  Item-Erkennung: $(if ($mode -eq 'eigen') { "set-eigene Items ($Prefix`_.)" } else { 'nach Kategorie (allgemeine Items + Set-Items)' })"
-  # Kategorien für die Seite: Komponente, Rezept-Item, Lichtversion (mit Basis-Item), Artefakt, Emblem, Sonstiges
+  Write-Host "  Item-Erkennung: $(if ($mode -eq 'eigen') { "set-eigene Items ($Prefix`_â€¦)" } else { 'nach Kategorie (allgemeine Items + Set-Items)' })"
+  # Kategorien fÃ¼r die Seite: Komponente, Rezept-Item, Lichtversion (mit Basis-Item), Artefakt, Emblem, Sonstiges
   $compIds = @{}; foreach ($a in $pick) { if (& $isComp $a) { $compIds[$a] = 1 } }
   $craftByName = @{}
   foreach ($a in $pick) { $cc = @($enItem[$a]['composition']); if ($cc.Count -eq 2 -and $compIds[[string]$cc[0]] -and $compIds[[string]$cc[1]]) { $craftByName[[string]$enItem[$a]['name']] = $a } }
@@ -207,7 +207,7 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
       $cand = $null
       if ($e['icon'] -and $byIcon.ContainsKey(([string]$e['icon']).ToLower())) { $cand = $byIcon[([string]$e['icon']).ToLower()] }
       if (-not $cand -and $d -and $byName.ContainsKey(([string]$d['name']).ToLower())) { $cand = $byName[([string]$d['name']).ToLower()] }
-      # Lichtversionen nur mit Lichtversions-Texten ergänzen (sonst stimmen die Werte nicht)
+      # Lichtversionen nur mit Lichtversions-Texten ergÃ¤nzen (sonst stimmen die Werte nicht)
       if ($cand -and ($isRadiant -eq ([string]$cand['apiName'] -like '*Radiant*'))) { $src = $cand }
     }
     $o = NewObj
@@ -230,7 +230,7 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
   $cat = [ordered]@{}
   foreach ($k in @(@('component','Komponenten'),@('craft','Kombiniert'),@('radiant','Lichtversionen'),@('artifact','Artefakte'),@('emblem','Embleme'),@('other','Sonstige'))) { $cat[$k[1]] = @($items | Where-Object { $_['cat'] -eq $k[0] }).Count }
 
-  # --- Augments (Stufe aus dem Icon-Namen; die Tierlist kann sie überschreiben) ---
+  # --- Augments (Stufe aus dem Icon-Namen; die Tierlist kann sie Ã¼berschreiben) ---
   $augs = New-Object 'System.Collections.Generic.List[object]'
   foreach ($api in $sdEN['augments']) {
     $e = $enItem[$api]; if (-not $e -or -not $e['name']) { continue }
@@ -247,16 +247,16 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
   }
   $augs = @($augs | Sort-Object { $_['id'] })
 
-  Write-Host ("  {0} Champions · {1} Traits · {2} Augments · Item-Präfix {3}" -f $champs.Count, $traits.Count, $augs.Count, $Prefix)
+  Write-Host ("  {0} Champions Â· {1} Traits Â· {2} Augments Â· Item-PrÃ¤fix {3}" -f $champs.Count, $traits.Count, $augs.Count, $Prefix)
   Write-Host ("  {0} Items ({1})" -f $items.Count, (($cat.GetEnumerator() | ForEach-Object { "$($_.Name) $($_.Value)" }) -join ', '))
-  foreach ($k in 'Komponenten','Kombiniert') { if ($cat[$k] -eq 0) { Warn "Keine $k gefunden - evtl. -ItemPrefix angeben." } }
+  foreach ($k in 'Komponenten','Kombiniert') { if ($cat[$k] -eq 0) { Warn "Keine $k gefunden â€“ evtl. -ItemPrefix angeben." } }
   $ph = @($augs | Where-Object { $_['icon'] -like '*missing-t*' })
-  if ($ph.Count) { Warn "$($ph.Count) Augments haben in Riots Daten nur ein Platzhalter-Icon - die Seite nutzt dafür eigene Icons (augmentIcons in data\custom-$SetNo.js), falls vorhanden." }
+  if ($ph.Count) { Warn "$($ph.Count) Augments haben in Riots Daten nur ein Platzhalter-Icon â€“ die Seite nutzt dafÃ¼r eigene Icons (augmentIcons in data\custom-$SetNo.js), falls vorhanden." }
 
   $out = Join-Path $dataDir "tft-data-$SetNo.js"
   $sb = New-Object Text.StringBuilder
-  [void]$sb.AppendLine("// Climb TFT - offizielle Spieldaten (automatisch erzeugt mit tools\update-data.ps1, nicht von Hand bearbeiten)")
-  [void]$sb.AppendLine("// Quelle: CommunityDragon $Ver ($Channel) · Set $SetNo · erzeugt am $today")
+  [void]$sb.AppendLine("// Climb TFT â€“ offizielle Spieldaten (automatisch erzeugt mit tools\update-data.ps1, nicht von Hand bearbeiten)")
+  [void]$sb.AppendLine("// Quelle: CommunityDragon $Ver ($Channel) Â· Set $SetNo Â· erzeugt am $today")
   [void]$sb.AppendLine("window.TFT_DATA = {")
   [void]$sb.AppendLine("set:$SetNo, channel:$(J $Channel), version:$(J $Ver), generated:$(J $today), cdn:$(J "$Base/game/"),")
   [void]$sb.AppendLine("champions:[`n" + (($champs | ForEach-Object { J $_ }) -join ",`n") + "],")
@@ -268,12 +268,12 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
   Write-Host ("  geschrieben: {0} ({1:N0} KB)" -f $out, ((Get-Item $out).Length / 1KB)) -ForegroundColor Green
   $en = NewObj; $en['champions'] = $enChamps; $en['traits'] = $enTraits; $en['items'] = $enItems; $en['augments'] = $enAugs
   $outEn = Join-Path $dataDir "tft-data-$SetNo-en.js"
-  [IO.File]::WriteAllText($outEn, "// Climb TFT - englische Texte zu Set $SetNo für die englische Seite (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_DATA_EN = $(J $en);`n", $utf8)
+  [IO.File]::WriteAllText($outEn, "// Climb TFT â€“ englische Texte zu Set $SetNo fÃ¼r die englische Seite (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_DATA_EN = $(J $en);`n", $utf8)
   Write-Host ("  geschrieben: {0} ({1:N0} KB)" -f $outEn, ((Get-Item $outEn).Length / 1KB)) -ForegroundColor Green
 }
 
 # ======================= Rangverteilung (EsportsTales) =======================
-# Eine Monatstabelle von EsportsTales lesen ? @{div; apex} oder $null, wenn Werte fehlen (z. B. Sets vor Smaragd)
+# Eine Monatstabelle von EsportsTales lesen â†’ @{div; apex} oder $null, wenn Werte fehlen (z. B. Sets vor Smaragd)
 function ParseRankTable([string]$tb) {
   $vals = @{}
   # Zellen ohne innere Tags lesen, dann Rang + Prozentwert paarweise zuordnen
@@ -285,7 +285,7 @@ function ParseRankTable([string]$tb) {
   }
   $div = NewObj; $apex = NewObj; $sum = 0.0; $missing = @()
   foreach ($t in 'iron','bronze','silver','gold','platinum','emerald','diamond') {
-    # Smaragd gab es nicht in jedem Set - dann bleibt die Liste leer
+    # Smaragd gab es nicht in jedem Set â€“ dann bleibt die Liste leer
     if ($t -eq 'emerald' -and -not ($vals.Keys | Where-Object { $_ -like 'emerald*' })) { $div[$t] = [double[]]@(); continue }
     $arr = @(); foreach ($d in 'iv','iii','ii','i') { $k = "$t $d"; if ($vals.ContainsKey($k)) { $arr += $vals[$k]; $sum += $vals[$k] } else { $missing += $k } }
     $div[$t] = [double[]]$arr
@@ -296,16 +296,16 @@ function ParseRankTable([string]$tb) {
 }
 
 function UpdateRanks {
-  Step 'Rangverteilung von EsportsTales laden .'
+  Step 'Rangverteilung von EsportsTales laden â€¦'
   $url = 'https://www.esportstales.com/teamfight-tactics/seasonal-rank-system-and-player-distribution'
   $out = Join-Path $dataDir 'ranks.js'
   try {
     $html = (Invoke-WebRequest $url -UseBasicParsing -UserAgent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ClimbTFT-Update' -TimeoutSec 60).Content
     $months = 'January','February','March','April','May','June','July','August','September','October','November','December'
-    $deMonth = @{ January='Januar'; February='Februar'; March='März'; April='April'; May='Mai'; June='Juni'; July='Juli'; August='August'; September='September'; October='Oktober'; November='November'; December='Dezember' }
-    # Alle Sets der Seite (neuestes oben), darin alle Monatsüberschriften mit ihrer Tabelle
+    $deMonth = @{ January='Januar'; February='Februar'; March='MÃ¤rz'; April='April'; May='Mai'; June='Juni'; July='Juli'; August='August'; September='September'; October='Oktober'; November='November'; December='Dezember' }
+    # Alle Sets der Seite (neuestes oben), darin alle MonatsÃ¼berschriften mit ihrer Tabelle
     $sets = @([regex]::Matches($html, '(?i)<h[1-4][^>]*>\s*Set\s+(\d+(?:\.\d+)?)\s*[-:]\s*([^<]+?)\s*</h[1-4]>'))
-    if (-not $sets.Count) { throw 'Set-Überschrift nicht gefunden' }
+    if (-not $sets.Count) { throw 'Set-Ãœberschrift nicht gefunden' }
     $history = New-Object System.Collections.ArrayList
     for ($i = 0; $i -lt $sets.Count; $i++) {
       $from = $sets[$i].Index; $to = $(if ($i + 1 -lt $sets.Count) { $sets[$i + 1].Index } else { $html.Length })
@@ -314,7 +314,7 @@ function UpdateRanks {
         $t0 = $part.IndexOf('<table', $mm.Index); if ($t0 -lt 0) { continue }
         $t1 = $part.IndexOf('</table>', $t0); if ($t1 -lt 0) { continue }
         $r = ParseRankTable $part.Substring($t0, $t1 - $t0)
-        if (-not $r.ok) { continue }   # ältere Sets ohne Smaragd o. Ä.
+        if (-not $r.ok) { continue }   # Ã¤ltere Sets ohne Smaragd o. Ã„.
         $mEn = (Get-Culture).TextInfo.ToTitleCase($mm.Groups[1].Value.ToLower())
         $h = NewObj
         $h['set'] = $sets[$i].Groups[1].Value; $h['setName'] = [Net.WebUtility]::HtmlDecode($sets[$i].Groups[2].Value)
@@ -323,27 +323,27 @@ function UpdateRanks {
         [void]$history.Add($h)
       }
     }
-    if (-not $history.Count) { throw 'keine vollständige Monatstabelle gefunden' }
+    if (-not $history.Count) { throw 'keine vollstÃ¤ndige Monatstabelle gefunden' }
     $cur = $history[0]
     $o = NewObj
     $o['source'] = 'EsportsTales'; $o['url'] = $url
     $o['set'] = $cur['set']; $o['setName'] = $cur['setName']
     $o['month'] = $cur['month']; $o['checked'] = $today; $o['div'] = $cur['div']; $o['apex'] = $cur['apex']
-    # Verlauf für die Stats-Seite (neuester Stand zuerst)
+    # Verlauf fÃ¼r die Stats-Seite (neuester Stand zuerst)
     $hist = New-Object System.Collections.ArrayList
     foreach ($h in $history) { $x = NewObj; foreach ($k in 'set','setName','month','ym','div','apex') { $x[$k] = $h[$k] }; [void]$hist.Add($x) }
     $o['history'] = $hist.ToArray()
     $old = $(if (Test-Path $out) { [IO.File]::ReadAllText($out, $utf8) } else { '' })
     $same = $old -match ('"month":"' + [regex]::Escape($o['month']) + '"') -and $old -match ('"set":"' + [regex]::Escape($o['set']) + '"') -and $old -match '"history"'
-    [IO.File]::WriteAllText($out, "// Climb TFT - Rangverteilung für die Ranks- und Stats-Seite (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_RANKS = $(J $o);`n", $utf8)
-    if ($same) { Write-Host "  Keine neuen Zahlen - EsportsTales steht weiter bei Set $($o['set']), $($o['month'])." }
-    else { Write-Host "  Neuer Stand: Set $($o['set']), $($o['month']) · Verlauf: $($hist.Count) Monate" -ForegroundColor Green }
-  } catch { Warn "Rangverteilung nicht aktualisiert ($($_.Exception.Message)) - die bisherigen Zahlen bleiben." }
+    [IO.File]::WriteAllText($out, "// Climb TFT â€“ Rangverteilung fÃ¼r die Ranks- und Stats-Seite (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_RANKS = $(J $o);`n", $utf8)
+    if ($same) { Write-Host "  Keine neuen Zahlen â€“ EsportsTales steht weiter bei Set $($o['set']), $($o['month'])." }
+    else { Write-Host "  Neuer Stand: Set $($o['set']), $($o['month']) Â· Verlauf: $($hist.Count) Monate" -ForegroundColor Green }
+  } catch { Warn "Rangverteilung nicht aktualisiert ($($_.Exception.Message)) â€“ die bisherigen Zahlen bleiben." }
 }
 
-# LP-Grenzen für Challenger und Großmeister pro Server (tactics.tools-Bestenliste). Rückfall für die Live-Abfrage unter /api/cutoffs.
+# LP-Grenzen fÃ¼r Challenger und GroÃŸmeister pro Server (tactics.tools-Bestenliste). RÃ¼ckfall fÃ¼r die Live-Abfrage unter /api/cutoffs.
 function UpdateCutoffs {
-  Step 'LP-Grenzen (Challenger/Großmeister) von tactics.tools laden .'
+  Step 'LP-Grenzen (Challenger/GroÃŸmeister) von tactics.tools laden â€¦'
   $out = Join-Path $dataDir 'cutoffs.js'
   $ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36'
   $regions = NewObj
@@ -356,17 +356,17 @@ function UpdateCutoffs {
       $regions[$r] = $x
     } catch { Warn "LP-Grenzen $r nicht geladen ($($_.Exception.Message))" }
   }
-  if (-not $regions.Count) { Warn 'Keine LP-Grenzen - die bisherigen bleiben.'; return }
+  if (-not $regions.Count) { Warn 'Keine LP-Grenzen â€“ die bisherigen bleiben.'; return }
   $o = NewObj; $o['source'] = 'tactics.tools'; $o['url'] = 'https://tactics.tools/leaderboards/euw'; $o['checked'] = (Get-Date).ToString('yyyy-MM-ddTHH:mm'); $o['regions'] = $regions
-  [IO.File]::WriteAllText($out, "// Climb TFT - LP-Grenzen für Challenger/Großmeister (automatisch erzeugt mit tools\update-data.ps1; live über /api/cutoffs)`nwindow.TFT_CUTOFFS = $(J $o);`n", $utf8)
-  Write-Host ("  " + (($regions.Keys | ForEach-Object { "$($_.ToUpper()) $($regions[$_]['ch'])/$($regions[$_]['gm']) LP" }) -join ' · ')) -ForegroundColor Green
+  [IO.File]::WriteAllText($out, "// Climb TFT â€“ LP-Grenzen fÃ¼r Challenger/GroÃŸmeister (automatisch erzeugt mit tools\update-data.ps1; live Ã¼ber /api/cutoffs)`nwindow.TFT_CUTOFFS = $(J $o);`n", $utf8)
+  Write-Host ("  " + (($regions.Keys | ForEach-Object { "$($_.ToUpper()) $($regions[$_]['ch'])/$($regions[$_]['gm']) LP" }) -join ' Â· ')) -ForegroundColor Green
 }
 if ($OnlyRanks) { UpdateRanks; UpdateCutoffs; Write-Host 'Fertig.' -ForegroundColor Green; return }
 
 # ======================= Patches =======================
 $histDir = Join-Path $dataDir 'history'
 $UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'
-# Patch-Artikel aus Riots News-Übersicht (eingebettete Seitendaten) lesen
+# Patch-Artikel aus Riots News-Ãœbersicht (eingebettete Seitendaten) lesen
 function RiotPatches([string]$loc = 'de-de') {
   $html = (Invoke-WebRequest "https://teamfighttactics.leagueoflegends.com/$loc/news/game-updates/" -UseBasicParsing -UserAgent $UA -TimeoutSec 60).Content
   $json = [regex]::Match($html, '<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)</script>').Groups[1].Value
@@ -394,9 +394,12 @@ function RiotPatches([string]$loc = 'de-de') {
   }
   return $out
 }
-# Änderungszeilen aus einem Patch-Artikel lesen: Abschnitt (z. B. "1-GOLD-EINHEIT") und Zeilen "Name - Wert: alt ? neu".
-# Unterpunkte ohne eigenen Namen ("Angriffstempo: 0,7 ? 0,75") gehören zum übergeordneten Punkt.
+# Ã„nderungszeilen aus einem Patch-Artikel lesen: Abschnitt (z. B. "1-GOLD-EINHEIT") und Zeilen "Name â€“ Wert: alt â‡’ neu".
+# Unterpunkte ohne eigenen Namen ("Angriffstempo: 0,7 â‡’ 0,75") gehÃ¶ren zum Ã¼bergeordneten Punkt.
 function CleanTxt([string]$s) { return ([Net.WebUtility]::HtmlDecode(($s -replace '<[^>]+>', ' ')) -replace '\s+', ' ').Trim() }
+# Champion-Namen des Live-Sets (klein, ohne Apostroph) â€“ damit verschachtelte Champions in den Patchnotes erkannt werden
+function NormName([string]$s) { return ($s -replace "['â€™`]", '').Trim().ToLowerInvariant() }
+$script:PatchChamps = @()
 function PatchChanges([string]$url) {
   $html = (Invoke-WebRequest $url -UseBasicParsing -UserAgent $UA -TimeoutSec 60).Content
   $secs = New-Object 'System.Collections.Generic.List[object]'; $cur = $null
@@ -410,9 +413,9 @@ function PatchChanges([string]$url) {
       if (-not $close) { $inHead = $true; $head = '' }
       else {
         $inHead = $false; $name = CleanTxt $head
-        # h2 = Gruppe (z. B. "PATCH-AKTUALISIERUNG" = B-Patch, "GROSSE ÄNDERUNGEN"); ein Datum als h4 gehört zur Gruppe
+        # h2 = Gruppe (z. B. "PATCH-AKTUALISIERUNG" = B-Patch, "GROSSE Ã„NDERUNGEN"); ein Datum als h4 gehÃ¶rt zur Gruppe
         if ($tag -eq 'h2') { $grp = $name; $cur = $null }
-        elseif ($name -match '^\d{1,2}\.\s+\S+$' -or $name -match '^(?i)(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(st|nd|rd|th)?$') { $grp = ($grp + ' · ' + $name).Trim(' ·') }
+        elseif ($name -match '^\d{1,2}\.\s+\S+$' -or $name -match '^(?i)(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(st|nd|rd|th)?$') { $grp = ($grp + ' Â· ' + $name).Trim(' Â·') }
         elseif ($name) { $cur = NewObj; $cur['sec'] = $name; $cur['grp'] = $grp; $cur['ch'] = New-Object 'System.Collections.Generic.List[object]'; $secs.Add($cur) }
       }
       continue
@@ -422,15 +425,20 @@ function PatchChanges([string]$url) {
     if (-not $stack.Count) { continue }
     $it = $stack[$stack.Count-1]; $stack.RemoveAt($stack.Count-1)
     $line = $(if ($it.lead) { $it.lead } else { CleanTxt $it.t.ToString() })
-    if (-not $cur -or $line -notmatch '?') { continue }
-    # Oberpunkte (z. B. "Camille" > "Schaden - Angriffsschaden: ."): oberster Punkt = Name, die übrigen gehören zur Bezeichnung
-    $anc = @($stack | ForEach-Object { ($_.lead -replace '\s*[-:].*$', '').Trim() } | Where-Object { $_ })
-    $mm = [regex]::Match($line, '^(?<s>.+?) - (?<l>.+?):\s*(?<o>.*?)\s*?\s*(?<n>.+)$')
-    if (-not $mm.Success) { $mm = [regex]::Match($line, '^(?<l>[^:]+):\s*(?<o>.*?)\s*?\s*(?<n>.+)$') }
+    if (-not $cur -or $line -notmatch 'â‡’') { continue }
+    # Oberpunkte (z. B. "Camille" > "Schaden â€“ Angriffsschaden: â€¦"): oberster Punkt = Name, die Ã¼brigen gehÃ¶ren zur Bezeichnung
+    $anc = @($stack | ForEach-Object { ($_.lead -replace '\s*[â€“:].*$', '').Trim() } | Where-Object { $_ })
+    # Riot verschachtelt manchmal eigene Champions unter einen anderen (z. B. Master Yi und Tristana unter Mama Beak): der tiefste Champion wird zum Namen
+    for ($k = $anc.Count - 1; $k -gt 0; $k--) { if ($script:PatchChamps -contains (NormName $anc[$k])) { $anc = @($anc[$k..($anc.Count-1)]); break } }
+    $mm = [regex]::Match($line, '^(?<s>.+?) â€“ (?<l>.+?):\s*(?<o>.*?)\s*â‡’\s*(?<n>.+)$')
+    if (-not $mm.Success) { $mm = [regex]::Match($line, '^(?<l>[^:]+):\s*(?<o>.*?)\s*â‡’\s*(?<n>.+)$') }
     if ($mm.Success) {
       $parts = @(@($anc) + @($(if ($mm.Groups['s'].Success) { $mm.Groups['s'].Value.Trim() })) + @($mm.Groups['l'].Value.Trim()) | Where-Object { $_ })
-      $s = $(if ($parts.Count -gt 1) { $parts[0] } else { '' }); $l = $(if ($parts.Count -gt 1) { ($parts[1..($parts.Count-1)]) -join ' - ' } else { $parts[0] })
-      $cur['ch'].Add([object[]]@($s, $l, $mm.Groups['o'].Value.Trim(), $mm.Groups['n'].Value.Trim()))
+      $s = $(if ($parts.Count -gt 1) { $parts[0] } else { '' }); $l = $(if ($parts.Count -gt 1) { ($parts[1..($parts.Count-1)]) -join ' â€“ ' } else { $parts[0] })
+      $o = $mm.Groups['o'].Value.Trim()
+      # "AD Form: Starting Attack Damage: 60 â‡’ 63": der Teil vor dem zweiten Doppelpunkt gehÃ¶rt noch zur Bezeichnung
+      $om = [regex]::Match($o, '^(?<x>[^:â‡’]*\p{L}[^:â‡’]*):\s+(?<y>.+)$'); if ($om.Success) { $l = $l + ': ' + $om.Groups['x'].Value.Trim(); $o = $om.Groups['y'].Value.Trim() }
+      $cur['ch'].Add([object[]]@($s, $l, $o, $mm.Groups['n'].Value.Trim()))
     } else { $cur['ch'].Add([object[]]@($(if ($anc.Count) { $anc[0] } else { '' }), '', '', $line)) }
   }
   $res = New-Object 'System.Collections.Generic.List[object]'
@@ -439,7 +447,12 @@ function PatchChanges([string]$url) {
 }
 function ReadJson($f) { return $ser.DeserializeObject([IO.File]::ReadAllText($f, [Text.Encoding]::UTF8)) }
 function UpdatePatches([int]$liveSet) {
-  Step 'Patches: Liste von Riot laden .'
+  try {
+    $raw = [IO.File]::ReadAllText((Join-Path $dataDir "tft-data-$liveSet.js"), [Text.Encoding]::UTF8)
+    $a = $raw.IndexOf('champions:['); $b = $raw.IndexOf('traits:[', $a)
+    $script:PatchChamps = @([regex]::Matches($raw.Substring($a, $b - $a), '(?m)^\{"api":"[^"]*","n":"([^"]+)"') | ForEach-Object { NormName $_.Groups[1].Value })
+  } catch { $script:PatchChamps = @() }
+  Step 'Patches: Liste von Riot laden â€¦'
   New-Item -ItemType Directory -Force $histDir | Out-Null
   $listFile = Join-Path $histDir 'patches.json'
   $all = @{}
@@ -447,22 +460,27 @@ function UpdatePatches([int]$liveSet) {
   $new = @()
   try {
     $riot = RiotPatches
-    foreach ($id in $riot.Keys) { if ($all.ContainsKey($id)) { foreach ($k in $riot[$id].Keys) { $all[$id][$k] = $riot[$id][$k] } } else { $all[$id] = $riot[$id]; $new += $id } }
-    Write-Host "  $($riot.Count) Patch-Artikel bei Riot gefunden$(if ($new.Count) { ' - neu: ' + ($new -join ', ') })."
-  } catch { Warn "Riot-Patchliste nicht erreichbar ($($_.Exception.Message)) - nutze die gespeicherte Liste." }
-  # Änderungen aus den Artikeln des aktuellen und vorherigen Sets lesen (der neueste wird immer neu gelesen - wegen B-Patches)
+    foreach ($id in $riot.Keys) { if ($all.ContainsKey($id)) { if ($all[$id].ContainsKey('lang')) { [void]$all[$id].Remove('lang'); [void]$all[$id].Remove('notes') }; foreach ($k in $riot[$id].Keys) { $all[$id][$k] = $riot[$id][$k] } } else { $all[$id] = $riot[$id]; $new += $id } }
+    Write-Host "  $($riot.Count) Patch-Artikel bei Riot gefunden$(if ($new.Count) { ' â€“ neu: ' + ($new -join ', ') })."
+  } catch { Warn "Riot-Patchliste nicht erreichbar ($($_.Exception.Message)) â€“ nutze die gespeicherte Liste." }
+  # Neuer Patch, den Riot bisher nur auf Englisch verÃ¶ffentlicht hat: vorerst die englische Fassung Ã¼bernehmen (lang = en).
+  # Sobald es ihn auf Deutsch gibt, ersetzt ihn beim nÃ¤chsten Lauf die deutsche Fassung.
+  try {
+    foreach ($e in @((RiotPatches 'en-gb').Values)) { $id = [string]$e['id']; if (-not $all.ContainsKey($id) -and [int]$e['set'] -ge ($liveSet - 1)) { $e['lang'] = 'en'; $all[$id] = $e; Write-Host "  Patch $id gibt es bisher nur auf Englisch â€“ vorerst die englische Fassung." -ForegroundColor Yellow } }
+  } catch { Warn "Englische Patchliste nicht erreichbar ($($_.Exception.Message))." }
+  # Ã„nderungen aus den Artikeln des aktuellen und vorherigen Sets lesen (der neueste wird immer neu gelesen â€“ wegen B-Patches)
   $newest = @($all.Values | Sort-Object { [string]$_['date'] } -Descending)[0]
   foreach ($p in @($all.Values | Where-Object { [int]$_['set'] -ge ($liveSet - 1) })) {
     if ($p.ContainsKey('notes') -and $p -ne $newest) { continue }
-    try { $p['notes'] = PatchChanges ([string]$p['url']); $n = 0; foreach ($s in $p['notes']) { $n += @($s['ch']).Count }; Write-Host "  Patch $($p['id']): $n Änderungen gelesen." }
+    try { $p['notes'] = PatchChanges ([string]$p['url']); $n = 0; foreach ($s in $p['notes']) { $n += @($s['ch']).Count }; Write-Host "  Patch $($p['id']): $n Ã„nderungen gelesen." }
     catch { Warn "Patch $($p['id']) nicht lesbar: $($_.Exception.Message)" }
   }
   $sorted = @($all.Values | Sort-Object { [string]$_['date'] } -Descending)
   [IO.File]::WriteAllText($listFile, (J $sorted), $utf8)
   $show = @($sorted | Where-Object { [int]$_['set'] -ge ($liveSet - 1) })
-  [IO.File]::WriteAllText((Join-Path $dataDir 'patches.js'), "// Climb TFT - Patches (automatisch erzeugt mit tools\update-data.ps1 aus Riots Patchnotes, nicht von Hand bearbeiten)`n// Eigene Kommentare zu Patches gehören in data\patch-kommentare.js`nwindow.TFT_PATCHES = $(J $show);`n", $utf8)
+  [IO.File]::WriteAllText((Join-Path $dataDir 'patches.js'), "// Climb TFT â€“ Patches (automatisch erzeugt mit tools\update-data.ps1 aus Riots Patchnotes, nicht von Hand bearbeiten)`n// Eigene Kommentare zu Patches gehÃ¶ren in data\patch-kommentare.js`nwindow.TFT_PATCHES = $(J $show);`n", $utf8)
   Write-Host ("  geschrieben: data\patches.js ({0} Patches)" -f $show.Count) -ForegroundColor Green
-  # Englische Fassung derselben Patches (Riots en-gb-Seite) für die englische Seite ? data\patches-en.js
+  # Englische Fassung derselben Patches (Riots en-gb-Seite) fÃ¼r die englische Seite â†’ data\patches-en.js
   try {
     $enFile = Join-Path $histDir 'patches-en.json'
     $en = @{}; if (Test-Path $enFile) { foreach ($p in @(ReadJson $enFile)) { $en[[string]$p['id']] = $p } }
@@ -476,27 +494,27 @@ function UpdatePatches([int]$liveSet) {
     $outEn = NewObj
     foreach ($p in $show) { $e = $en[[string]$p['id']]; if ($e) { $x = NewObj; foreach ($k in 'url','teaser','notes') { if ($e.ContainsKey($k)) { $x[$k] = $e[$k] } }; $outEn[[string]$p['id']] = $x } }
     [IO.File]::WriteAllText($enFile, (J @($en.Values)), $utf8)
-    [IO.File]::WriteAllText((Join-Path $dataDir 'patches-en.js'), "// Climb TFT - Patches auf Englisch für die englische Seite (automatisch erzeugt mit tools\update-data.ps1 aus Riots englischen Patchnotes)`nwindow.TFT_PATCHES_EN = $(J $outEn);`n", $utf8)
+    [IO.File]::WriteAllText((Join-Path $dataDir 'patches-en.js'), "// Climb TFT â€“ Patches auf Englisch fÃ¼r die englische Seite (automatisch erzeugt mit tools\update-data.ps1 aus Riots englischen Patchnotes)`nwindow.TFT_PATCHES_EN = $(J $outEn);`n", $utf8)
     Write-Host ("  geschrieben: data\patches-en.js ({0} Patches auf Englisch)" -f $outEn.Count) -ForegroundColor Green
-  } catch { Warn "Englische Patchnotes nicht aktualisiert ($($_.Exception.Message)) - die bisherigen bleiben." }
+  } catch { Warn "Englische Patchnotes nicht aktualisiert ($($_.Exception.Message)) â€“ die bisherigen bleiben." }
 }
 
 # ======================= 1. Live-Server =======================
 if (-not $Version) {
-  Step 'Neueste Live-Version ermitteln .'
+  Step 'Neueste Live-Version ermitteln â€¦'
   $meta = $ser.DeserializeObject((Invoke-WebRequest 'https://raw.communitydragon.org/latest/content-metadata.json' -UseBasicParsing).Content)
   $Version = (([string]$meta['version']) -split '\.')[0..1] -join '.'
 }
 $liveBase = "https://raw.communitydragon.org/$Version"
 try { $null = Invoke-WebRequest "$liveBase/cdragon/tft/en_us.json" -Method Head -UseBasicParsing }
-catch { Warn "Version $Version nicht gefunden - nutze 'latest'."; $Version = 'latest'; $liveBase = 'https://raw.communitydragon.org/latest' }
+catch { Warn "Version $Version nicht gefunden â€“ nutze 'latest'."; $Version = 'latest'; $liveBase = 'https://raw.communitydragon.org/latest' }
 $EN = Load $liveBase 'live' 'en_us'; $DE = Load $liveBase 'live' 'de_de'
 $liveSet = $(if ($Set) { $Set } else { NewestSet $EN })
-Step "Live-Set $liveSet aufbereiten ."
+Step "Live-Set $liveSet aufbereiten â€¦"
 Build $EN $DE $liveSet 'live' $Version $liveBase $ItemPrefix
 $EN = $null; $DE = $null; [GC]::Collect()
 
-# ======================= 2. PBE-Server (nur wenn dort ein neueres Set läuft) =======================
+# ======================= 2. PBE-Server (nur wenn dort ein neueres Set lÃ¤uft) =======================
 $pbeSet = 0
 if (-not $NoPbe) {
   try {
@@ -505,16 +523,16 @@ if (-not $NoPbe) {
     $EN = Load 'https://raw.communitydragon.org/pbe' 'pbe' 'en_us'
     $pbeSet = NewestSet $EN
     if ($pbeSet -gt $liveSet) {
-      Step "PBE: neues Set $pbeSet gefunden - aufbereiten ."
+      Step "PBE: neues Set $pbeSet gefunden â€“ aufbereiten â€¦"
       $DE = Load 'https://raw.communitydragon.org/pbe' 'pbe' 'de_de'
       Build $EN $DE $pbeSet 'pbe' $pbeVer 'https://raw.communitydragon.org/pbe' ''
-    } else { Step "PBE: kein neues Set (dort läuft ebenfalls Set $pbeSet)." }
-  } catch { Warn "PBE konnte nicht geprüft werden: $($_.Exception.Message)" }
+    } else { Step "PBE: kein neues Set (dort lÃ¤uft ebenfalls Set $pbeSet)." }
+  } catch { Warn "PBE konnte nicht geprÃ¼ft werden: $($_.Exception.Message)" }
   $EN = $null; $DE = $null; [GC]::Collect()
 }
 
-# ======================= 3. Übersicht aller Sets (data\sets.js) =======================
-Step 'Set-Übersicht schreiben .'
+# ======================= 3. Ãœbersicht aller Sets (data\sets.js) =======================
+Step 'Set-Ãœbersicht schreiben â€¦'
 $legacy = Join-Path $dataDir 'tft-data.js'; if (Test-Path $legacy) { Remove-Item $legacy }   # alte Einzeldatei (vor dem Set-Umschalter)
 $list = New-Object 'System.Collections.Generic.List[object]'
 foreach ($f in (Get-ChildItem $dataDir -Filter 'tft-data-*.js' | Where-Object { $_.Name -notlike '*-en.js' })) {
@@ -522,28 +540,28 @@ foreach ($f in (Get-ChildItem $dataDir -Filter 'tft-data-*.js' | Where-Object { 
   $m = [regex]::Match($head, 'set:(\d+), channel:"(\w+)", version:"([^"]*)", generated:"([^"]*)"')
   if (-not $m.Success) { Warn "Unbekanntes Format: $($f.Name)"; continue }
   $no = [int]$m.Groups[1].Value; $ch = $m.Groups[2].Value
-  # Status: das aktuelle Live-Set ist "live", ein neueres PBE-Set "pbe", alles Ältere "archiv"
+  # Status: das aktuelle Live-Set ist "live", ein neueres PBE-Set "pbe", alles Ã„ltere "archiv"
   $status = $(if ($no -eq $liveSet) { 'live' } elseif ($no -gt $liveSet -and $ch -eq 'pbe') { 'pbe' } else { 'archiv' })
   $o = NewObj
   $o['set'] = $no; $o['status'] = $status; $o['version'] = $m.Groups[3].Value; $o['generated'] = $m.Groups[4].Value; $o['file'] = $f.Name
   $list.Add($o)
 }
 $list = @($list | Sort-Object { $_['set'] } -Descending)
-$manifest = "// Climb TFT - verfügbare Sets (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_SETS = [`n" + (($list | ForEach-Object { J $_ }) -join ",`n") + "`n];`n"
+$manifest = "// Climb TFT â€“ verfÃ¼gbare Sets (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_SETS = [`n" + (($list | ForEach-Object { J $_ }) -join ",`n") + "`n];`n"
 [IO.File]::WriteAllText((Join-Path $dataDir 'sets.js'), $manifest, $utf8)
 foreach ($s in $list) { Write-Host ("  Set {0,-3} {1,-7} {2,-12} {3}" -f $s['set'], $s['status'], $s['version'], $s['generated']) }
 
 # ======================= 4. Rangverteilung =======================
 UpdateRanks
 UpdateCutoffs
-# ======================= 5. Patches: Liste von Riot, Archiv pro Patch, erkannte Änderungen =======================
+# ======================= 5. Patches: Liste von Riot, Archiv pro Patch, erkannte Ã„nderungen =======================
 UpdatePatches $liveSet
 
-# ======================= 6. Optional: automatisch veröffentlichen (nur der Ordner data) =======================
+# ======================= 6. Optional: automatisch verÃ¶ffentlichen (nur der Ordner data) =======================
 if ($Publish) {
-  Step 'Veröffentlichen .'
+  Step 'VerÃ¶ffentlichen â€¦'
   $git = Join-Path $env:LOCALAPPDATA 'PortableGit\cmd\git.exe'
-  if (-not (Test-Path $git)) { Warn 'Git nicht gefunden - nicht veröffentlicht.' }
+  if (-not (Test-Path $git)) { Warn 'Git nicht gefunden â€“ nicht verÃ¶ffentlicht.' }
   else {
     Push-Location $root
     & $git add -- data
@@ -551,8 +569,8 @@ if ($Publish) {
     if ($LASTEXITCODE -ne 0) {
       & $git commit -q -m "Automatisches Daten-Update $today" -- data
       $env:GCM_INTERACTIVE = 'never'; & $git push -q
-      if ($LASTEXITCODE -eq 0) { Write-Host '  Neue Daten veröffentlicht.' -ForegroundColor Green } else { Warn 'Hochladen fehlgeschlagen (Anmeldung?) - beim nächsten Mal "veröffentlichen" sagen.' }
-    } else { Write-Host '  Keine neuen Daten - nichts zu veröffentlichen.' }
+      if ($LASTEXITCODE -eq 0) { Write-Host '  Neue Daten verÃ¶ffentlicht.' -ForegroundColor Green } else { Warn 'Hochladen fehlgeschlagen (Anmeldung?) â€“ beim nÃ¤chsten Mal "verÃ¶ffentlichen" sagen.' }
+    } else { Write-Host '  Keine neuen Daten â€“ nichts zu verÃ¶ffentlichen.' }
     Pop-Location
   }
 }

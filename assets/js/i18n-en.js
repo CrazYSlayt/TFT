@@ -1263,5 +1263,18 @@ window.I18N_EN = {
   "Zu Beginn jeder Partie kommt genau ein Encounter. Schau, was er dir bringt!": "Every game starts with exactly one encounter. See what it gives you!",
   "Ambosse am Start? Dann kannst du dein erstes Item früh slammen.": "Anvils at the start? Then you can slam your first item early.",
   "Golden Gala heißt: nur {0}-Augments. Plan deine Comp danach!": "Golden Gala means: gold augments only. Plan your comp around it!",
-  "Bei Prismatic Party ist alles Prismatisch – das gibt es nur in etwa jedem {0}. Spiel.": "With Prismatic Party everything is prismatic – that only happens in about 1 in {0} games."
+  "Bei Prismatic Party ist alles Prismatisch – das gibt es nur in etwa jedem {0}. Spiel.": "With Prismatic Party everything is prismatic – that only happens in about 1 in {0} games.",
+  "Comps, Items und Augments für Patch {0}, bewertet von S bis C, dazu situative Comps (X). Klick auf eine Comp für {1}, Items und Augments.": "Comps, items and augments for patch {0}, rated from S to C, plus situational comps (X). Click a comp for {1}, items and augments.",
+  "Stand: Patch {0} · Bewertungen und Aufstellungen nach": "As of patch {0} · ratings and boards based on",
+  "-Items. Bewertung von Climb TFT (Patch {0}). Klick auf ein Item für Werte und Rezept.": " items. Ratings by Climb TFT (patch {0}). Click an item for stats and recipe.",
+  "-Augments mit deutschen Spieltexten (CommunityDragon). Bewertung von Climb TFT (Patch {0}), je nach Phase, in der du das Augment wählst.": " augments with official game texts (CommunityDragon). Ratings by Climb TFT (patch {0}), depending on the stage in which you pick the augment.",
+  "Aktuelle TFT Tierlist für Set {0} (Patch {1}): die besten Comps mit Items, Augments und {2} – dazu Coaching von {3}-Spielern.": "Current TFT tier list for Set {0} (patch {1}): the best comps with items, augments and {2} – plus coaching from {3} players.",
+  "TFT Tierlist Set {0} (Patch {1}) – die besten Comps": "TFT tier list Set {0} (patch {1}) – the best comps",
+  "Die besten TFT Comps für Set {0} (Patch {1}): Tierlist mit {2}, Items, Augments und Spielplan für jede Comp.": "The best TFT comps for Set {0} (patch {1}): tier list with {2}, items, augments and game plan for every comp.",
+  "TFT Item-Tierlist Set {0} (Patch {1})": "TFT item tier list Set {0} (patch {1})",
+  "TFT Augment-Tierlist Set {0} (Patch {1})": "TFT augment tier list Set {0} (patch {1})",
+  "TFT Holds Set {0} (Patch {1}) – welche Units du früh hältst": "TFT Holds Set {0} (Patch {1}) – which units to hold early",
+  "Stand: Patch {0} · aktualisiert am {1}/{2}/{3} · Bewertungen von Climb TFT · Aufstellungen ursprünglich nach": "As of patch {0} · updated on {1}/{2}/{3} · ratings by Climb TFT · boards originally from",
+  "Stand: Patch {0} · aktualisiert am {1}/{2}/{3} · Bewertungen von Climb TFT": "As of patch {0} · updated on {1}/{2}/{3} · ratings by Climb TFT",
+  "Stand: Patch {0} · Bewertungen von Climb TFT": "As of patch {0} · ratings by Climb TFT"
 };

@@ -507,13 +507,13 @@ a.tab{display:inline-block}
 .tl-letter::before,.tl-letter::after{content:"";position:absolute;width:9px;height:9px;border:3px solid #111}
 .tl-letter::before{top:6px;left:6px;border-right:0;border-bottom:0}
 .tl-letter::after{bottom:6px;right:6px;border-left:0;border-top:0}
-.tl-tiles{border:2px solid var(--tc);border-radius:16px;background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 9%,transparent),transparent 55%),#0d0d12;display:flex;flex-wrap:wrap;align-items:center;gap:14px 24px;padding:14px 20px;min-width:0}
-.ct{position:relative;width:72px;height:83px;background:none;border:0;padding:0;cursor:pointer;transition:transform .15s,filter .15s;flex-shrink:0}
+.tl-tiles{border:2px solid var(--tc);border-radius:16px;background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 9%,transparent),transparent 55%),#0d0d12;display:flex;flex-wrap:wrap;align-items:center;gap:24px 26px;padding:14px 20px;min-width:0}
+.ct{position:relative;width:80px;height:92px;background:none;border:0;padding:0;cursor:pointer;transition:transform .15s,filter .15s;flex-shrink:0}
 .ct:hover{transform:translateY(-3px)}
 .ct.sel{filter:drop-shadow(0 0 7px var(--tc))}
 .ct .ct-main{position:relative;z-index:1}
-.ct-back{position:absolute;left:18px;top:-3px;width:72px;height:83px;opacity:.25;z-index:0}
-.ct-st{position:absolute;top:-8px;left:50%;transform:translateX(-50%);z-index:3;width:22px;height:25px;clip-path:var(--hexp);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:#111}
+.ct-back{position:absolute;left:24px;top:-10px;width:64px;height:74px;opacity:.35;z-index:0}
+.ct-st{position:absolute;top:-9px;left:50%;transform:translateX(-50%);z-index:3;width:24px;height:27px;clip-path:var(--hexp);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:#111}
 .ct-st.sub{font-size:.68rem;color:#111}
 .tl-tiles{position:relative}
 .tl-label{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--tc);color:#062320;font-size:.66rem;font-weight:800;letter-spacing:.08em;padding:2px 14px;border-radius:99px;cursor:help;z-index:2}
@@ -521,6 +521,7 @@ a.tab{display:inline-block}
 .ct-st.up{background:#9be32d}.ct-st.down{background:#ff4655;color:#fff}.ct-st.new{background:#ffd23f;font-size:.9rem}
 .ct-tr{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);z-index:3;display:flex;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
 .ct::after{content:attr(data-name);position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:.72rem;font-weight:600;color:#fff;background:rgba(0,0,0,.85);padding:3px 8px;border-radius:6px;opacity:0;pointer-events:none;transition:.15s;z-index:6}
+.ct:not(:hover):not(:focus-visible)::after{display:none}   /* unsichtbarer Tooltip soll am Rand keinen Platz belegen */
 .ct:hover::after,.ct:focus-visible::after{opacity:1}
 /* Items, Augments und Holds im selben Reihen-Design wie die Comps */
 .tl-ico{position:relative;background:none;border:0;padding:0;cursor:pointer;flex-shrink:0;transition:transform .15s,filter .15s}
@@ -1271,8 +1272,8 @@ a.mt-card:hover{transform:translateY(-2px);border-color:var(--accent)}
   .board,.cp .board{--hx:min(58px,calc((100vw - 90px) / 7.6))}
   .tl-row{grid-template-columns:52px 1fr;gap:8px}
   .tl-letter{min-height:80px}.tl-letter b{font-size:2.2rem}.tl-letter small{display:none}
-  .tl-tiles{padding:10px 12px;gap:10px}
-  .ct,.ct-back{width:56px;height:65px}.ct-back{left:12px}
+  .tl-tiles{padding:12px;gap:22px 16px}
+  .ct{width:60px;height:69px}.ct-back{width:48px;height:55px;left:18px;top:-8px}
   .cp-mid,.cp-bottom{grid-template-columns:1fr}
   .has-buddy{padding-right:0;min-height:0}  .buddy{position:relative;right:auto;bottom:auto;width:100%;height:200px;margin:4px 0 -6px}
   .buddy-img{width:132px;height:196px}
@@ -2054,3 +2055,5 @@ a.champ{text-decoration:none}
   .hero-emblem{width:440px;height:440px;right:50%;margin-right:-220px;top:-10px;animation:none}
   .hero-visual .mascot-glow.emb{right:50%;margin-right:-150px;top:60px;width:300px}
 }
+/* Patch nur auf Englisch verfügbar */
+.pd-lang{margin:0 0 14px;padding:8px 12px;border-radius:8px;background:rgba(242,193,78,.12);border:1px solid rgba(242,193,78,.35);color:var(--gold);font-size:.86rem;max-width:620px}

@@ -226,11 +226,13 @@ function boardHTML(c){
 
 /* --- Übersicht: eine Kachel pro Comp --- */
 function tileHTML(c){
-  const second = c.board.filter(b=>b.u!==c.carry && !PLANTS[b.u] && (b.i||[]).length>=2).sort((a,b)=>b.i.length-a.i.length || costOf(b.u)-costOf(a.u))[0];
+  // Karte dahinter nur, wenn es echte Varianten gibt (Comps mit demselben Carry, in der Redaktion als Variante angelegt)
+  const vars = comps.filter(x=>x!==c && !x.main && x.carry===c.carry);
   const st = STICKER[c.sticker];
   const tr = tileTrait(c);
-  return `<button class="ct" data-slug="${c.slug}" data-name="${esc(c.name)}" aria-label="${esc(c.name)}">
-    ${second?`<span class="ct-back">${hexHTML(second.u)}</span>`:''}${hexHTML(c.carry,'ct-main')}
+  const label = c.name + (vars.length ? ' · ' + L(`+${vars.length} ${vars.length > 1 ? 'Varianten' : 'Variante'}`, `+${vars.length} ${vars.length > 1 ? 'variants' : 'variant'}`) : '');
+  return `<button class="ct" data-slug="${c.slug}" data-name="${esc(label)}" aria-label="${esc(label)}">
+    ${vars.length?`<span class="ct-back">${hexHTML(vars[0].carry)}</span>`:''}${hexHTML(c.carry,'ct-main')}
     ${st?`<span class="ct-st ${st[0]}" title="${st[2]}">${st[1]}</span>`:''}
     ${c.sub?`<span class="ct-st sub" style="background:${TIER_COL[c.sub]}" title="Situativ – Bewertung ${c.sub}">${c.sub}</span>`:''}
     ${tr?`<span class="ct-tr">${traitHex(tr.n, traitCls(tr), 24)}</span>`:''}
@@ -1293,7 +1295,7 @@ const BUDDY_LINES = {
     if(!mainComps.length) return [L(`Die Tierlist für Set ${TFT_DATA.set} wird gerade neu aufgebaut – schau bald wieder vorbei!`, `The Set ${TFT_DATA.set} tier list is being rebuilt right now – check back soon!`), L('Schau dir solange die neuen Champions und Items in der Bibliothek an!', 'Meanwhile, check out the champions and items in the library!'), L('Im Team Builder kannst du schon erste Ideen basteln.', 'You can already try out first ideas in the team builder.')];
     const s = mainComps.filter(c=>c.tier==='S'), up = mainComps.filter(c=>c.sticker===2 && c.tier!=='S'), down = mainComps.filter(c=>c.sticker===3);
     return [
-      s.length ? `${s.length} Comps sind gerade S-Tier. Mein Favorit? ${s[0].name}!` : null,
+      s.length > 1 ? `${s.length} Comps sind gerade S-Tier. Mein Favorit? ${s[0].name}!` : s.length ? L(`Nur eine Comp ist gerade S-Tier: ${s[0].name}!`, `Only one comp is S-tier right now: ${s[0].name}!`) : null,
       'Klick auf eine Kachel – dann zeig ich dir, wo jeder Champion steht.',
       up.length ? `${pickOne(up).name} ist im Aufwind ▲ – behalt die im Auge!` : null,
       down.length ? `${pickOne(down).name} fällt gerade ▼. Nur spielen, wenn es offen ist.` : null,
@@ -2584,8 +2586,9 @@ const fmtDate = d => d ? new Date(d + 'T12:00:00').toLocaleDateString(LOC, {day:
 const patchCount = p => (p.notes || []).reduce((n,s)=>n + (s.ch||[]).length, 0);
 // Namen aus den (deutschen) Patchnotes den Einträgen der Seite zuordnen
 const NAME_IDX = {};
+const nameKey = s => String(s||'').toLowerCase().replace(/[’‘`´]/g, "'");   // Riot schreibt „Kha’Zix“, die Spieldaten „Kha'Zix“
 (()=>{
-  const add = (name, v) => { if(name) NAME_IDX[String(name).toLowerCase()] = NAME_IDX[String(name).toLowerCase()] || v; };
+  const add = (name, v) => { if(name) NAME_IDX[nameKey(name)] = NAME_IDX[nameKey(name)] || v; };
   TFT_DATA.champions.forEach(c=>{ add(c.n, {ty:'c', k:c.n}); add(c.de, {ty:'c', k:c.n}); });
   TFT_DATA.traits.forEach(t=>{ add(t.n, {ty:'t', k:t.n}); add(t.de, {ty:'t', k:t.n}); });
   ITEMS.forEach(i=>{ add(i.en, {ty:'i', k:i.id}); add(i.de, {ty:'i', k:i.id}); });
@@ -2593,9 +2596,9 @@ const NAME_IDX = {};
 })();
 // Englische Patchnotes schreiben „Camille Ability Damage: …“ ohne Trennstrich – den Namen vorne abtrennen
 if(EN) (()=>{ const names = Object.keys(NAME_IDX).sort((a,b)=>b.length - a.length);
-  PATCHES.forEach(p=>(p.notes||[]).forEach(s=>(s.ch||[]).forEach(r=>{ if(r[0] || !r[1]) return; const l = r[1].toLowerCase(), n = names.find(x=>l.startsWith(x + ' ')); if(n){ r[0] = r[1].slice(0, n.length); r[1] = r[1].slice(n.length).trim(); } }))); })();
+  PATCHES.forEach(p=>(p.notes||[]).forEach(s=>(s.ch||[]).forEach(r=>{ if(r[0] || !r[1]) return; const l = nameKey(r[1]), n = names.find(x=>l.startsWith(x + ' ')); if(n){ r[0] = r[1].slice(0, n.length); r[1] = r[1].slice(n.length).trim(); } }))); })();
 function patchIcon(subject){
-  const m = NAME_IDX[String(subject||'').toLowerCase()]; if(!m) return '';
+  const m = NAME_IDX[nameKey(subject)]; if(!m) return '';
   if(m.ty==='c') return `<button class="pn-ic" data-champ="${esc(m.k)}" type="button">${avatar(m.k, 34)}</button>`;
   if(m.ty==='t') return `<span class="pn-ic">${traitHex(m.k, 'base', 30)}</span>`;
   if(m.ty==='i'){ const it = itemById[m.k]; return it ? `<button class="pn-ic" data-item="${esc(it.id)}" type="button"><img src="${it.img}" alt="" loading="lazy"></button>` : ''; }
@@ -2620,7 +2623,7 @@ function renderPatches(sub){
         return `<a class="pt-card${cur?' cur':''}" href="/patches/${patchSlug(x.id)}">
           <div class="pt-img"${x.img ? ` style="background-image:url('${esc(x.img)}?w=640&fm=webp');background-position:${esc(patchFocus(x))}"` : ''}>${cur ? '<span class="pill">Aktuell</span>' : ''}</div>
           <div class="pt-body"><small>${fmtDate(x.date)}</small><h3>Patch ${esc(x.id)}</h3><p>${esc(x.teaser || '')}</p>
-          <div class="pt-meta">${cnt ? `<span>${cnt} Änderungen</span>` : ''}${note ? '<span class="hl">mit Einschätzung</span>' : ''}</div></div></a>`;
+          <div class="pt-meta">${cnt ? `<span>${cnt} Änderungen</span>` : ''}${note ? '<span class="hl">mit Einschätzung</span>' : ''}${x.lang==='en' && !EN ? '<span>vorerst auf Englisch</span>' : ''}</div></div></a>`;
       }).join('')}</div></div>`).join('')
       + `<p class="note">Quelle: offizielle Patchnotes von Riot Games. Die Änderungen werden automatisch übernommen – die vollständigen Texte findest du jeweils bei Riot.</p>`;
     return;
@@ -2632,6 +2635,7 @@ function renderPatches(sub){
     <div class="pd-hero"${p.img ? ` style="--img:url('${esc(p.img)}?w=1280&fm=webp');--pos:${esc(patchFocus(p))}"` : ''}><div>
       <small>${fmtDate(p.date)}${p===CURRENT_PATCH ? ' · <b>Aktueller Patch</b>' : ''}</small><h1>Patch <em class="serif">${esc(p.id)}</em></h1>
       ${p.teaser ? `<blockquote>${esc(p.teaser)}<cite>– Riot Games</cite></blockquote>` : ''}
+      ${p.lang==='en' && !EN ? '<p class="pd-lang">Riot hat die deutschen Patchnotes noch nicht veröffentlicht – bis dahin siehst du hier die englische Fassung.</p>' : ''}
       <a class="btn btn-primary" href="${esc(p.url)}" target="_blank" rel="noopener">Komplette Patchnotes bei Riot ↗</a></div></div>
     ${note ? `<div class="card pd-note"><h3>Einschätzung von Climb TFT</h3>${String(note).split(/\n{2,}/).map(t=>`<p>${esc(t).replace(/\n/g,'<br>')}</p>`).join('')}</div>` : ''}
     ${grps.length ? `<input class="input pd-search" id="pdSearch" placeholder="Champion, Trait, Item oder Augment suchen …" aria-label="Änderungen durchsuchen">
