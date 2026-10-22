@@ -347,6 +347,11 @@ a.co-card:hover{transform:translateY(-2px);border-color:var(--accent)}
 select.input{appearance:none}
 textarea.input{min-height:110px;resize:vertical}
 .ok{display:none;grid-column:1/-1;padding:12px 14px;border-radius:12px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.35);font-size:.9rem}
+.ok.err{background:rgba(255,90,106,.1);border-color:rgba(255,90,106,.4)}
+.ok a{color:inherit;font-weight:700}
+.field label small{color:var(--faint);font-weight:400}
+.hp-field{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}   /* Spam-Falle: für Menschen unsichtbar */
+.form button:disabled{opacity:.7;cursor:wait}
 
 /* ---------- Footer ---------- */
 footer{margin-top:80px;border-top:1px solid var(--line);background:var(--bg-2)}
@@ -1000,7 +1005,7 @@ a.tool-card:hover{transform:translateY(-3px);border-color:var(--accent)}
 .lg ul{margin:0 0 10px;padding-left:20px;color:var(--muted);line-height:1.6}
 .lg ul b{color:var(--text)}
 .lg-form{margin:8px 0 4px;padding:14px 18px;border-radius:12px;border:1px dashed var(--line-2);background:#13131b}
-.form-legal{margin:0;font-size:.82rem;color:var(--faint)}
+.form-legal{display:block;margin:0;font-size:.82rem;color:var(--faint)}
 .form-legal a{color:var(--accent-2)}
 .legal a{color:inherit;text-decoration:underline}
 .legal-riot{display:block;margin-top:8px;font-size:.7rem;line-height:1.5;opacity:.85}

@@ -1965,7 +1965,28 @@ function renderHome(){
 
 /* ================= APPLY ================= */
 ['fRank','fGoal'].forEach(id=>{ $('#'+id).innerHTML = ranks.map(([n])=>`<option>${n}</option>`).join(''); });
-$('#applyForm').addEventListener('submit', e=>{ e.preventDefault(); $('#applyOk').style.display='block'; });
+// Bewerbung über /api/apply als E-Mail an info@tftclimb.com schicken (Antwort: {ok} oder {ok:false, error})
+$('#applyForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const f = e.currentTarget, btn = f.querySelector('button[type="submit"]'), ok = $('#applyOk'), err = $('#applyErr');
+  const val = id => $('#'+id).value.trim(), opt = id => { const s = $('#'+id); return s.selectedIndex >= 0 ? s.options[s.selectedIndex].textContent.trim() : ''; };
+  const body = {name:val('fName'), discord:val('fDiscord'), email:val('fMail'), rank:opt('fRank'), goal:opt('fGoal'), pkg:opt('fPkg'), lang:opt('fLang'), time:val('fTime'), msg:val('fMsg'), website:val('fWeb'), site:EN ? 'en' : 'de'};
+  const label = btn.textContent;
+  ok.style.display = err.style.display = 'none';
+  btn.disabled = true; btn.textContent = L('Wird gesendet …', 'Sending …');
+  try {
+    const r = await fetch('/api/apply', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    const j = await r.json().catch(()=>({}));
+    if(!r.ok || !j.ok) throw new Error(j.error || 'http');
+    f.reset(); ok.style.display = 'block';
+  } catch(x){
+    const why = x.message==='rate' ? L('Du hast gerade schon mehrere Anfragen geschickt. Probier es in ein paar Minuten noch einmal oder schreib uns direkt an', 'You have just sent several requests. Try again in a few minutes or email us directly at')
+      : x.message==='email' ? L('Bitte prüf deine E-Mail-Adresse – oder lass das Feld leer. Du erreichst uns auch direkt unter', 'Please check your email address – or leave the field empty. You can also reach us directly at')
+      : L('Das hat leider nicht geklappt. Versuch es gleich noch einmal oder schreib uns direkt an', 'That didn’t work, sorry. Please try again or email us directly at');
+    err.innerHTML = `${why} <a href="mailto:info@tftclimb.com">info@tftclimb.com</a>.`;
+    err.style.display = 'block';
+  } finally { btn.disabled = false; btn.textContent = label; }
+});
 
 /* ================= SEARCH ================= */
 const searchIndex = [
@@ -3214,7 +3235,7 @@ function setMeta(page, sub){
 // Strukturierte Daten für Google: Brotkrumen, bei Tools zusätzlich Web-App und die Fragen aus dem Textblock
 const LD_SECTION = {cheatsheet:'Cheatsheet', guides:'Guides', tierlist:'Tierlist', tools:'Tools', bibliothek:'Bibliothek', ranks:'Ranks', patches:'Patches', about:'Meet the Team', builder:'Team Builder', coaching:'Coaching', apply:'Coaching', impressum:'Impressum', datenschutz:'Datenschutz'};
 function setLd(page, sub, tool, title, desc, url, path){
-  const org = {'@type':'Organization', name:'Climb TFT', url:location.origin + withLang('/'), logo:location.origin + '/assets/img/tft-logo.png'};
+  const org = {'@type':'Organization', name:'Climb TFT', url:location.origin + withLang('/'), logo:location.origin + '/assets/img/tft-logo.png', email:'info@tftclimb.com'};
   const graph = [{'@type':'WebSite', name:'Climb TFT', url:location.origin + withLang('/'), inLanguage:EN ? 'en' : 'de', publisher:org}];
   if(page!=='home'){
     const items = [['Home', '/']], sec = LD_SECTION[page];
@@ -3379,6 +3400,8 @@ function i18nNode(root){
       if(EN && n.tagName === 'A'){ const h = n.getAttribute('href'); if(h && h[0] === '/' && h[1] !== '/'){ const w = withLang(h); if(w !== h) n.setAttribute('href', w); } }
     }
   } while((n = tw.nextNode()));
+  // Textfelder überspringt der Walker samt Inhalt – ihre Platzhalter trotzdem übersetzen
+  root.querySelectorAll('textarea[placeholder]').forEach(t=>{ if(!t.closest('[data-noi18n]')){ const v = trStr(t.placeholder); if(v !== null) t.placeholder = v; } });
 }
 function i18nStart(){
   if(!EN && !I18N_HARVEST) return;

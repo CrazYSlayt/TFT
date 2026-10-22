@@ -1080,17 +1080,19 @@
     </div>
     <form class="card form" id="applyForm">
       <div class="field"><label for="fName">Name / Riot-ID</label><input class="input" id="fName" required placeholder="Name#EUW"></div>
-      <div class="field"><label for="fDiscord">Discord</label><input class="input" id="fDiscord" placeholder="dein_name"></div>
+      <div class="field"><label for="fDiscord">Discord</label><input class="input" id="fDiscord" required maxlength="60" placeholder="dein_name"></div>
       <div class="field"><label for="fRank">Aktueller Rang</label><select class="input" id="fRank"></select></div>
       <div class="field"><label for="fGoal">Rang-Ziel</label><select class="input" id="fGoal"></select></div>
       <div class="field"><label for="fPkg">Interessiert an</label><select class="input" id="fPkg"><option>Einzelstunde (30 €)</option><option value="setpass">Set-Pass (200 € für 8 Stunden)</option><option value="vip">VIP-Mentoring (2.500 € für das ganze Set)</option><option>Team-Session (20 € pro Person, 2–5 Personen)</option><option>Noch unsicher</option></select></div>
       <div class="field"><label for="fLang">Sprache</label><select class="input" id="fLang"><option>Deutsch</option><option>Englisch</option><option>Egal</option></select></div>
-      <div class="field full"><label for="fTime">Verfügbare Zeiten</label><input class="input" id="fTime" placeholder="z. B. abends unter der Woche"></div>
-      <div class="field full"><label for="fMsg">Was möchtest du verbessern?</label><textarea class="input" id="fMsg" placeholder="Wisp-Timing, Positionierung, Econ, bestimmte Comps…"></textarea></div>
-      <p class="field full form-legal">Die Anfrage ist unverbindlich. Für eine Buchung gelten unsere <a href="/bedingungen">Widerrufsbelehrung &amp; Bedingungen</a>.</p>
+      <div class="field"><label for="fMail">E-Mail <small>(optional)</small></label><input class="input" id="fMail" type="email" maxlength="120" autocomplete="email" placeholder="name@beispiel.de"></div>
+      <div class="field"><label for="fTime">Verfügbare Zeiten</label><input class="input" id="fTime" maxlength="200" placeholder="z. B. abends unter der Woche"></div>
+      <div class="field full"><label for="fMsg">Was möchtest du verbessern?</label><textarea class="input" id="fMsg" maxlength="2000" placeholder="Wisp-Timing, Positionierung, Econ, bestimmte Comps…"></textarea></div>
+      <div class="hp-field" aria-hidden="true"><label for="fWeb">Website</label><input id="fWeb" tabindex="-1" autocomplete="off"></div>
+      <p class="field full form-legal">Die Anfrage ist unverbindlich. Für eine Buchung gelten unsere <a href="/bedingungen">Widerrufsbelehrung &amp; Bedingungen</a>. Wie wir deine Angaben verarbeiten, steht in der <a href="/datenschutz">Datenschutzerklärung</a>.</p>
       <div class="field full"><button class="btn btn-primary" type="submit" style="justify-content:center">Bewerbung senden</button></div>
-      <div class="ornn-empty" style="grid-column:1/-1;max-width:none"><span class="m-ornn" role="img" aria-label="Ornn"></span><p class="ornn-say"><b class="say-name">Ornn</b>Hmph. Der Versand ist noch nicht angeschlossen – ich schmiede noch daran. Deine Angaben kommen also noch nicht an. Melde dich solange direkt bei CrazYSlayt.</p></div>
-      <div class="ok" id="applyOk">Danke! Deine Angaben wurden erfasst. Sobald der Versand eingerichtet ist, kommen sie direkt bei mir an.</div>
+      <div class="ok" id="applyOk" role="status">Danke! Deine Bewerbung ist angekommen. Claudio meldet sich in den nächsten Tagen bei dir auf Discord.</div>
+      <div class="ok err" id="applyErr" role="alert"></div>
     </form>
   </div>
 </div>
@@ -1108,7 +1110,7 @@
       <h2>Angaben gemäß § 5 DDG</h2>
       <p>Claudio Vecchione<br>Am Markt 15<br>65795 Hattersheim<br>Deutschland</p>
       <h2>Kontakt</h2>
-      <p>E-Mail: <span class="lg-todo">wird in Kürze ergänzt</span></p>
+      <p>E-Mail: <a href="mailto:info@tftclimb.com">info@tftclimb.com</a></p>
       <h2>Umsatzsteuer</h2>
       <p>Gemäß § 19 UStG wird keine Umsatzsteuer berechnet (Kleinunternehmerregelung).</p>
       <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
@@ -1143,7 +1145,7 @@
       <h3>Widerrufsrecht</h3>
       <p>Sie haben das Recht, binnen vierzehn Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen.</p>
       <p>Die Widerrufsfrist beträgt vierzehn Tage ab dem Tag des Vertragsabschlusses.</p>
-      <p>Um Ihr Widerrufsrecht auszuüben, müssen Sie uns (Claudio Vecchione, Am Markt 15, 65795 Hattersheim, Deutschland, E-Mail: <span class="lg-todo">wird in Kürze ergänzt</span>) mittels einer eindeutigen Erklärung (z. B. ein mit der Post versandter Brief oder eine E-Mail) über Ihren Entschluss, diesen Vertrag zu widerrufen, informieren. Sie können dafür das beigefügte Muster-Widerrufsformular verwenden, das jedoch nicht vorgeschrieben ist.</p>
+      <p>Um Ihr Widerrufsrecht auszuüben, müssen Sie uns (Claudio Vecchione, Am Markt 15, 65795 Hattersheim, Deutschland, E-Mail: <a href="mailto:info@tftclimb.com">info@tftclimb.com</a>) mittels einer eindeutigen Erklärung (z. B. ein mit der Post versandter Brief oder eine E-Mail) über Ihren Entschluss, diesen Vertrag zu widerrufen, informieren. Sie können dafür das beigefügte Muster-Widerrufsformular verwenden, das jedoch nicht vorgeschrieben ist.</p>
       <p>Zur Wahrung der Widerrufsfrist reicht es aus, dass Sie die Mitteilung über die Ausübung des Widerrufsrechts vor Ablauf der Widerrufsfrist absenden.</p>
       <h3>Folgen des Widerrufs</h3>
       <p>Wenn Sie diesen Vertrag widerrufen, haben wir Ihnen alle Zahlungen, die wir von Ihnen erhalten haben, unverzüglich und spätestens binnen vierzehn Tagen ab dem Tag zurückzuzahlen, an dem die Mitteilung über Ihren Widerruf dieses Vertrags bei uns eingegangen ist. Für diese Rückzahlung verwenden wir dasselbe Zahlungsmittel, das Sie bei der ursprünglichen Transaktion eingesetzt haben, es sei denn, mit Ihnen wurde ausdrücklich etwas anderes vereinbart; in keinem Fall werden Ihnen wegen dieser Rückzahlung Entgelte berechnet.</p>
@@ -1152,7 +1154,7 @@
       <h2>Muster-Widerrufsformular</h2>
       <p>(Wenn Sie den Vertrag widerrufen wollen, dann füllen Sie bitte dieses Formular aus und senden Sie es zurück.)</p>
       <div class="lg-form">
-        <p>An: Claudio Vecchione, Am Markt 15, 65795 Hattersheim, Deutschland, E-Mail: <span class="lg-todo">wird in Kürze ergänzt</span></p>
+        <p>An: Claudio Vecchione, Am Markt 15, 65795 Hattersheim, Deutschland, E-Mail: <a href="mailto:info@tftclimb.com">info@tftclimb.com</a></p>
         <p>Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag über die Erbringung der folgenden Dienstleistung (*)</p>
         <p>Bestellt am (*) / erhalten am (*)</p>
         <p>Name des/der Verbraucher(s)</p>
@@ -1192,7 +1194,7 @@
     <div class="page-head"><div class="crumb">Home / Datenschutz</div><h1>Datenschutzerklärung</h1><p>Kurz gesagt: Wir nutzen keine Tracking- oder Analyse-Tools, keine Werbung und keine Cookies. Hier steht im Detail, welche Daten trotzdem anfallen.</p></div>
     <div class="card lg">
       <h2>1. Verantwortlicher</h2>
-      <p>Claudio Vecchione, Am Markt 15, 65795 Hattersheim, Deutschland<br>E-Mail: <span class="lg-todo">wird in Kürze ergänzt</span></p>
+      <p>Claudio Vecchione, Am Markt 15, 65795 Hattersheim, Deutschland<br>E-Mail: <a href="mailto:info@tftclimb.com">info@tftclimb.com</a></p>
 
       <h2>2. Hosting und Server-Logfiles</h2>
       <p>Diese Website wird bei Vercel Inc. (USA) gehostet. Beim Aufruf jeder Seite verarbeitet der Server automatisch technisch notwendige Daten: IP-Adresse, Datum und Uhrzeit, aufgerufene Adresse, übertragene Datenmenge, Browser und Betriebssystem sowie die zuvor besuchte Seite. Das ist nötig, um die Seite auszuliefern und sicher zu betreiben (Art. 6 Abs. 1 lit. f DSGVO). Für Übermittlungen in die USA stützt sich Vercel auf geeignete Garantien nach Art. 44 ff. DSGVO (EU-US Data Privacy Framework bzw. EU-Standardvertragsklauseln). Mehr dazu in der <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener">Datenschutzerklärung von Vercel</a>.</p>
@@ -1207,7 +1209,7 @@
       <p>Einige Funktionen speichern Einstellungen im lokalen Speicher deines Browsers (localStorage): das gewählte Set, die gewählte Sprache, dein Board im Team Builder, deine Tierlist im Tierlist-Maker und Entwürfe in der Redaktion. Diese Daten bleiben auf deinem Gerät und werden nicht an uns übertragen. Die Speicherung ist für die von dir genutzte Funktion erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG). Du kannst sie jederzeit über die Einstellungen deines Browsers löschen.</p>
 
       <h2>6. Bewerbungsformular</h2>
-      <p>Das Bewerbungsformular ist derzeit noch nicht angeschlossen: Eingegebene Daten werden weder übertragen noch gespeichert. Sobald sich das ändert, ergänzen wir hier, wie die Daten verarbeitet werden.</p>
+      <p>Wenn du das Bewerbungsformular abschickst, schicken wir deine Angaben (Name bzw. Riot-ID, Discord-Name, freiwillig deine E-Mail-Adresse, Rang, Rang-Ziel, gewünschtes Paket, Sprache, Zeiten und deine Nachricht) über unseren Server bei Vercel per E-Mail an unser Postfach. Das Postfach liegt bei ALL-INKL.COM – Neue Medien Münnich, Hauptstraße 68, 02742 Friedersdorf, Deutschland. Wir nutzen die Angaben nur, um deine Anfrage zu beantworten und das Kennenlernen zu vereinbaren (Art. 6 Abs. 1 lit. b DSGVO). Kommt kein Coaching zustande, löschen wir die Anfrage spätestens nach sechs Monaten. Zum Schutz vor Spam wird deine IP-Adresse kurz im Arbeitsspeicher des Servers vorgehalten, um zu viele Anfragen in kurzer Zeit zu bremsen; dauerhaft gespeichert wird sie dabei nicht (Art. 6 Abs. 1 lit. f DSGVO).</p>
 
       <h2>7. Coaching über Discord und PayPal</h2>
       <p>Wenn du ein Coaching buchst, verarbeiten wir die Daten, die dafür nötig sind: deinen Namen bzw. Nickname, deinen Discord-Namen, deine Riot-ID, Termine sowie Zahlungsdaten (Art. 6 Abs. 1 lit. b DSGVO). Das Coaching findet auf Discord statt (Discord Inc., USA – <a href="https://discord.com/privacy" target="_blank" rel="noopener">Datenschutzerklärung</a>). Bezahlt wird über PayPal (PayPal (Europe) S.à r.l. et Cie, S.C.A., 22–24 Boulevard Royal, L-2449 Luxemburg – <a href="https://www.paypal.com/de/legalhub/privacy-full" target="_blank" rel="noopener">Datenschutzerklärung</a>). Zahlungsbelege bewahren wir im Rahmen der gesetzlichen Aufbewahrungsfristen auf.</p>
