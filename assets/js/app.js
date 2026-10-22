@@ -570,6 +570,57 @@ document.addEventListener('click', e=>{
 });
 renderRankTable();
 
+// Neues Design: Ränge als Waben (5 + 5 versetzt), darunter die Divisionen des gewählten Rangs; „Verteilung“ zeigt die bisherige Tabelle
+const RK_COL = {iron:'#8f8380', bronze:'#c98a72', silver:'#a6b6d4', gold:'#e3b15c', platinum:'#41b9d6', emerald:'#2fbf7a', diamond:'#5b8cff', master:'#b45ce8', grandmaster:'#e24a42', challenger:'#f2c14e'};
+function renderRankHex(){
+  const list = $('#rk-list'); if(!list) return;
+  if(!$('#rkx')){
+    $('#rkTable').insertAdjacentHTML('beforebegin', `<div class="rkx" id="rkx">
+      <div class="rkx-hex" id="rkxHex"></div></div>`);
+    list.classList.add('rkx-mode-hex');
+  }
+  // Details zum Rang: erscheinen beim Drüberfahren unter dem Sechseck
+  const tip = t => {
+    const es = RANK_ENTRIES.filter(e=>e.t===t);
+    const cols = t.div ? es.map(e=>`<span class="rkx-c" data-rkd="${e.d}"><span>${esc(t.n)} ${e.d}</span><b>${fmtPct(e.p)}</b><small>Top ${fmtPct(e.top)}</small></span>`).join('')
+      : `<span class="rkx-c"><span>${L('Anteil', 'Share')}</span><b>${fmtPct(t.total)}</b></span><span class="rkx-c"><span>${L('Gehört zu den', 'Among the')}</span><b>Top ${fmtPct(t.topTier)}</b></span>`;
+    return `<span class="rkx-tip"><span class="rkx-th"><img src="${rankImg(t)}" alt=""><span><b>${esc(t.n)}</b><small>${t.div ? L('Spielerverteilung nach Divisionen', 'Player distribution by division') : L('Spielerverteilung', 'Player distribution')}</small></span></span><span class="rkx-cols">${cols}</span><span class="rkx-more">${L('Klick für Details', 'Click for details')} →</span></span>`;
+  };
+  // Rahmen als SVG (Verlaufskante + feine Innenlinie), Inhalt darüber ohne Zuschnitt: das Emblem darf über den Rahmen ragen
+  // breiteres Sechseck (Höhe = Breite)
+  const H6 = (s, o=0) => [[50,0],[100,25],[100,75],[50,100],[0,75],[0,25]].map(([x, y])=>`${(50 + (x - 50) * s).toFixed(2)},${(50 + (y - 50) * s + o).toFixed(2)}`).join(' ');
+  // Rahmen-Verlauf in den Farben des jeweiligen Emblems: hell → Rangfarbe → dunkel → Rangfarbe
+  const RK_GRAD = {iron:['#e2d6d0','#8f8380','#3e3532'], bronze:['#f6c7a9','#c98a72','#5a3123'], silver:['#eef3ff','#a6b6d4','#4a5770'], gold:['#ffe7a3','#e3b15c','#6b4614'],
+    platinum:['#b8f3ff','#41b9d6','#0f4a5c'], emerald:['#b6f5d3','#2fbf7a','#0e4a30'], diamond:['#c9d8ff','#5b8cff','#1d2f7a'], master:['#ecc2ff','#b45ce8','#4a1a6a'],
+    grandmaster:['#ffc0a8','#e24a42','#5e1412'], challenger:['#fff0b8','#f2c14e','#1f5c9e']};
+  const frame = k => { const [l, m, d] = RK_GRAD[k]; return `<svg class="rkx-f" viewBox="-6 -6 112 112" aria-hidden="true"><defs>
+      <linearGradient id="rkg-${k}" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="${l}"/><stop offset=".35" stop-color="${m}"/><stop offset=".7" stop-color="${d}"/><stop offset="1" stop-color="${m}"/></linearGradient>
+      <radialGradient id="rkr-${k}" cx=".5" cy=".3" r=".75"><stop offset="0" stop-color="${m}" stop-opacity=".32"/><stop offset="1" stop-color="${m}" stop-opacity="0"/></radialGradient>
+      <pattern id="rkp-${k}" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(30)"><path d="M3.5 0L7 3.5 3.5 7 0 3.5z" fill="none" stroke="${m}" stroke-width=".35"/></pattern></defs>
+      <polygon points="${H6(1)}" fill="#070b14"/><polygon points="${H6(1)}" fill="url(#rkr-${k})"/>
+      <polygon points="${H6(.9)}" fill="url(#rkp-${k})" opacity=".14"/>
+      <polygon class="rkx-fi" points="${H6(.9)}" fill="none" stroke="${m}" stroke-opacity=".45" stroke-width=".6"/>
+      <polygon points="${H6(.95)}" fill="none" stroke="${l}" stroke-opacity=".38" stroke-width=".5" stroke-dasharray=".6 1.8" stroke-linecap="round"/>
+      <polygon points="${H6(1)}" fill="none" stroke="url(#rkg-${k})" stroke-width="1.7" stroke-linejoin="round"/>
+      ${[[50,0],[100,25],[100,75],[50,100],[0,75],[0,25]].map(([x, y])=>`<path d="M${x} ${y - 2.2}L${x + 1.6} ${y}L${x} ${y + 2.2}L${x - 1.6} ${y}z" fill="${l}" fill-opacity=".85"/>`).join('')}</svg>`; };
+  const cell = t => `<a class="rkx-cell" href="/ranks/${t.k}" style="--rc:${RK_COL[t.k]}" aria-label="${esc(t.n)}: ${fmtPct(t.total)}">
+      <span class="rkx-g">${frame(t.k)}<span class="rkx-in"><img src="${rankImg(t)}" alt="" loading="lazy"><b>${esc(t.n)}</b><small>${fmtPct(t.total)}</small>
+      ${t.div ? `<span class="rkx-divs">${DIVS.map(d=>`<i data-rkd="${d}">${d}</i>`).join('')}</span>` : ''}</span></span>${tip(t)}</a>`;
+  // Waben 3-4-3
+  $('#rkxHex').innerHTML = [RANK_TIERS.slice(0, 3), RANK_TIERS.slice(3, 7), RANK_TIERS.slice(7)].map(r=>`<div class="rkx-row">${r.map(cell).join('')}</div>`).join('');
+}
+document.addEventListener('click', e=>{
+  const tab = e.target.closest('[data-rkx]'); if(!tab) return;
+  document.querySelectorAll('[data-rkx]').forEach(b=>b.classList.toggle('on', b===tab)); $('#rk-list').classList.toggle('rkx-mode-hex', tab.dataset.rkx==='hex');
+});
+// Division im Sechseck berühren: dieselbe Division in den Details hervorheben
+document.addEventListener('mouseover', e=>{
+  const c = e.target.closest && e.target.closest('.rkx-cell'); if(!c) return;
+  const d = e.target.closest('.rkx-divs [data-rkd]');
+  c.querySelectorAll('.rkx-tip [data-rkd]').forEach(x=>x.classList.toggle('on', !!d && x.dataset.rkd===d.dataset.rkd));
+});
+if(ND) renderRankHex();
+
 /* ================= TEAM BUILDER ================= */
 const BUILDER_KEY = 'tftfreaks_builder_v1_' + TFT_DATA.set, BUILDER_ENEMY_KEY = 'tftfreaks_builder_enemy';
 const B_UNITS = [...champions.map(c=>c.n), ...Object.keys(PLANTS)]; // feste Reihenfolge für Teil-Links
@@ -3392,15 +3443,13 @@ function ndInit(){
       </div>
     </header>
     <aside class="nd-side" id="ndSide" aria-label="${L('Weitere Seiten', 'More pages')}">
-      <div class="nds-cap">${L('Werkzeuge', 'Tools')}</div>
-      ${ndLink('tools', 'Tools', '/tools')}
-      <div class="nds-cap">${L('Wissen', 'Knowledge')}</div>
-      ${ndLink('cheatsheet', 'Cheatsheet', '/cheatsheet', 'cheat')}${ndLink('guides', 'Guides', '/guides')}${ndLink('patches', 'Patches', '/patches')}${ndLink('ranks', 'Ranks', '/ranks')}
-      <div class="nds-cap">TFTClimb</div>
-      ${ndLink('coaching', 'Coaching', '/coaching')}${ndLink('about', 'Meet the Team', '/about')}
-      <img class="nds-vi" src="assets/img/mascot-vi-fight.webp" alt="" loading="lazy">
-      <div class="nds-foot"><b>${L('Bereit für den Climb?', 'Ready to climb?')}</b><small>${L('Kostenloses Kennenlernen', 'Free intro call')}</small><a href="/apply">${L('Anfragen', 'Apply')}</a></div>
+      ${ndLink('tools', 'Tools', '/tools')}${ndLink('cheatsheet', 'Cheatsheet', '/cheatsheet', 'cheat')}
+      <div class="nds-cap">${L('Daten', 'Data')}</div>
+      ${ndLink('ranks', 'Ranks', '/ranks')}${ndLink('patches', 'Patches', '/patches')}${ndLink('guides', 'Guides', '/guides')}
+      <div class="nds-gap"></div>
+      ${ndLink('coaching', 'Coaching', '/coaching').replace('class="nds-link"', 'class="nds-link nds-hot"')}${ndLink('about', 'Meet the Team', '/about')}
       <button class="nds-link nds-col" type="button" onclick="document.body.classList.toggle('nd-mini');try{localStorage.setItem('tftfreaks_side',document.body.classList.contains('nd-mini')?'mini':'')}catch(e){}">${ndSvg('col', 2)}<span>${L('Einklappen', 'Collapse')}</span></button>
+      <img class="nds-vi2" src="assets/img/mascot-vi-huh.webp" alt="" width="520" height="505" loading="lazy">
     </aside>
     <div class="nd-scrim" onclick="document.body.classList.remove('nd-drawer')"></div>`);
   // Set- und Sprachschalter aus der alten Kopfzeile übernehmen (Funktionen bleiben erhalten)
@@ -3417,15 +3466,43 @@ function ndInit(){
     if((l === 'en') === EN){ nl.classList.remove('open'); return; }
     const cp = curPath(); location.href = (l === 'en' ? '/en' + (cp === '/' ? '/' : cp) : cp) + location.search; }, true));
   try { if(localStorage.getItem('tftfreaks_side')==='mini') document.body.classList.add('nd-mini'); } catch(e){}
+  // Meet the Team: Player Cards nebeneinander (gleicher Stil wie im Dashboard, nur größer)
+  const ml = document.querySelector('#page-about .mt-list');
+  if(ml){
+    const card = (href, img, name, role, bio, facts, chall) => {
+      const tag = href ? 'a' : 'div';
+      return `<${tag} class="dsh-pcard mt-pcard${href ? '' : ' mt-later'}"${href ? ` href="${href}"` : ''}>
+        <span class="dsh-pav"><img src="${img}" alt="${esc(name)}">${chall ? `<img class="dsh-pemb" src="${rankImg(rankBy.challenger)}" alt="Challenger">` : ''}</span>
+        <b>${esc(name)}${chall ? '<i>#EUW</i>' : ''}</b><span class="dsh-prole">${role}</span><p class="mt-pbio">${bio}</p>
+        <span class="dsh-pfacts">${facts.map(([l, v])=>`<span><small>${l}</small><em>${v}</em></span>`).join('')}</span>
+        <span class="mt-pgo">${href ? L('Profil ansehen', 'View profile') + ' →' : L('Profil folgt', 'Profile coming soon')}</span></${tag}>`;
+    };
+    ml.insertAdjacentHTML('beforebegin', `<div class="mt-pcards">
+      ${card('/about/crazyslayt', 'assets/img/team-claudio.jpg', 'CrazYSlayt', 'TFT-Experte &amp; Founder · Coach', 'Hat die ersten beiden Sets gespielt, ist mit Set 12 zurückgekommen und seit Set 15 jedes Set im Challenger. Coacht seit Set 17.', [[L('Rang', 'Rank'), 'Challenger'], ['Peak', '1.002 LP'], [L('Aus', 'From'), 'Frankfurt']], true)}
+      ${card('/about/humbadobo', 'assets/img/team-romano.jpg', 'humbadobo', 'Coach', 'Kam beim Studium in Island zu TFT und ist seit Set 15 jedes Set im Challenger.', [[L('Rang', 'Rank'), 'Challenger'], ['Peak', '1.447 LP'], [L('Aus', 'From'), L('Irland', 'Ireland')]], true)}
+      ${card('', 'assets/img/team-kevin.jpg', 'Kevin10K', 'Partner &amp; Co-Founder', 'Partner und Co-Founder von Climb TFT.', [[L('Rang', 'Rank'), 'Unranked'], ['Peak', L('in Dota', 'in Dota')], [L('Aus', 'From'), 'Hamburg']], false)}
+    </div>`);
+  }
   $('#ndSide').addEventListener('click', e=>{ if(e.target.closest('a')) document.body.classList.remove('nd-drawer'); });
   $('#ndTop').addEventListener('click', e=>{ if(e.target.closest('.nd-tabs a')) document.body.classList.remove('nd-drawer'); });
 }
-function ndLink(key, label, href, ic){ return `<a class="nds-link" href="${href}" data-nd="${key}" title="${label}">${ndSvg(ic || key)}<span>${label}</span></a>`; }
+// Seitenleisten-Symbole (assets/icons/side-*.webp, aus dem Icon-Konzept); ohne Bild bleibt das Strich-Symbol
+const ND_IMG = {tools:'tools', cheatsheet:'cheat', guides:'guides', patches:'patches', ranks:'ranks', coaching:'coaching', about:'team'};
+function ndLink(key, label, href, ic){ const im = ND_IMG[key]; return `<a class="nds-link" href="${href}" data-nd="${key}" title="${label}">${im ? `<img class="nds-ic" src="assets/icons/side-${im}.webp" alt="" width="34" height="34">` : ndSvg(ic || key)}<span>${label}</span></a>`; }
 function ndRoute(page, navKey){
   const key = page==='champion' ? 'bibliothek' : page==='apply' ? 'coaching' : navKey;
   document.querySelectorAll('#ndTop [data-nd], #ndSide [data-nd]').forEach(a=>a.classList.toggle('on', a.dataset.nd===key));
   document.body.classList.remove('nd-drawer');
   if(page==='home'){ renderDash(); requestAnimationFrame(()=>dshCount(true)); }
+  setTimeout(ndColon, 0);   // erst nach der Übersetzung (läuft vorher als Microtask)
+}
+// Tool-Überschriften „TFT Rolldown-Rechner: Odds …“: der Doppelpunkt am Ende des großen Titels wird nur ausgeblendet (für Google bleibt er)
+function ndColon(){
+  document.querySelectorAll('.th-key').forEach(k=>{
+    if(k.querySelector('.th-c')) return;
+    const tn = [...k.childNodes].reverse().find(n=>n.nodeType===3 && n.textContent.trim());
+    if(tn && /:\s*$/.test(tn.textContent)){ tn.textContent = tn.textContent.replace(/:\s*$/, ''); k.insertAdjacentHTML('beforeend', '<span class="th-c">:</span>'); }
+  });
 }
 
 // Dashboard: Profil-Header, Top Comps, aktueller Patch, Tierlist im Kleinformat, Shop-Chancen, Coaching
@@ -3449,7 +3526,7 @@ function renderDash(){
   const lpStat = (key, v, tier, label) => `<a class="dsh-lp" href="/ranks/${tier.k}"><img src="${rankImg(tier)}" alt=""><span><b data-dlp="${v || 0}" data-key="${key}">${v ? fmt(v) + ' LP' : '–'}</b><small>${live}${label}</small></span></a>`;
   box.innerHTML = `
     <section class="dsh-card dsh-hero dsh-bar">
-      <div class="dsh-hi"><img class="dsh-vihi" src="assets/img/mascot-vi-hallo.webp" alt="Vi"><div class="dsh-bubble"><b>${L('Willkommen bei TFTClimb!', 'Welcome to TFTClimb!')}</b><span>${L('Viel Spaß beim Climb – ich drück dir die Daumen.', 'Have fun on your climb – fingers crossed!')}</span></div></div>
+      <div class="dsh-hi"><img class="dsh-vihi" src="assets/img/mascot-vi-look.webp" alt="Vi" width="520" height="624"><div class="dsh-bubble"><b>${L('BEREIT FÜR<br>DEN CLIMB?', 'READY FOR<br>THE CLIMB?')}</b></div></div>
       <div class="dsh-stats">
         ${cut.ch ? lpStat('ch', cut.ch, rankBy.challenger, L('Challenger · EUW', 'Challenger · EUW')) : ''}
         ${cut.gm ? lpStat('gm', cut.gm, rankBy.grandmaster, L('Großmeister · EUW', 'Grandmaster · EUW')) : ''}

@@ -442,3 +442,243 @@ body.nd-mini .nds-vi{display:none}
 @media (max-width:1200px){.dsh-bar[class]{flex-wrap:wrap}.dsh-bar .dsh-stats{margin-left:0;flex:1 1 100%;justify-content:flex-start}}
 @media (max-width:640px){.dsh-bar[class]{padding:10px 12px 10px 104px;min-height:120px}.dsh-vihi{left:4px;height:190px;bottom:-48px}.dsh-bubble{padding:8px 11px}.dsh-bubble b{font-size:.98rem}.dsh-bubble span{font-size:.74rem}.dsh-bar .dsh-stats{margin-left:-92px;width:calc(100% + 92px)}}
 @media (max-width:640px){.dsh-bar[class]{padding:10px 12px;min-height:0}.dsh-hi{position:relative;overflow:hidden;min-height:104px;padding-left:96px;flex:1 1 100%;margin:-10px 0 0 -12px}.dsh-hi .dsh-vihi{left:4px;top:-34px;bottom:auto;height:196px}.dsh-bar .dsh-stats{margin-left:0;width:100%}}
+
+/* ---------- Einheitliche Überschriften im Stil der Bibliothek (mittig, großer Verlaufs-Titel), ohne Pfad ---------- */
+.nd .crumb,.nd .cv-crumb,.nd .rk-back,.nd #csCrumb{display:none}
+.nd .page-head{text-align:center;padding:30px 0 22px}
+.nd .page-head:not(:has(h1)){display:none}
+.nd .page-head.has-buddy{padding-right:0;min-height:0}
+.nd .page-head .buddy{display:none}
+.nd .page-head h1,.nd .rk-hero h1,.nd .cs-h1,.nd h1.tool-h1 .th-key,.nd h1.chp-h1 .th-key{
+  font-family:var(--ff-head);font-style:italic;font-weight:900;font-size:clamp(2.4rem,5.4vw,4.4rem);text-transform:uppercase;line-height:1;letter-spacing:-.005em;
+  background:linear-gradient(90deg,#fff 0%,#fff 36%,#5eead4 64%,#38bdf8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 24px rgba(56,189,248,.35))}
+.nd .page-head h1,.nd .rk-hero h1,.nd .cs-h1{width:fit-content;max-width:100%;margin:0 auto 10px}
+.nd .page-head h1 em.serif,.nd .rk-hero h1 em.serif,.nd .cs-h1 em{color:inherit;font-style:inherit}
+.nd .page-head>p,.nd .rk-hero p,.nd .cs-head p{max-width:680px;margin:0 auto;color:#b9c3dd}
+.nd .page-head .updated{display:block;margin-top:8px}
+/* Tool-Titel: großer Teil = Name des Tools, Rest als gesperrte Unterzeile */
+.nd .page-head h1.tool-h1,.nd h1.chp-h1{width:auto;max-width:none;margin:0 auto 12px;font-family:var(--ff-body);font-style:normal;font-weight:600;font-size:.8rem;letter-spacing:.32em;text-transform:uppercase;line-height:1.6;
+  background:none;-webkit-background-clip:border-box;background-clip:border-box;color:#b9c3dd;filter:none}
+.nd h1.tool-h1 .th-key,.nd h1.chp-h1 .th-key{display:block;width:fit-content;max-width:100%;margin:0 auto 10px}
+.nd .th-c{display:none}
+.nd h1.tool-h1 .wip-pill{letter-spacing:normal;vertical-align:middle}
+.nd .rk-hero{padding:30px 0 22px;background:none}
+.nd .cs-head{justify-content:center;text-align:center}
+.nd .cs-head>div{display:flex;flex-direction:column;align-items:center}
+@media (max-width:640px){.nd .page-head{padding:18px 0 14px}.nd .page-head h1.tool-h1,.nd h1.chp-h1{letter-spacing:.16em}}
+
+/* ---------- Meet the Team: Player Cards nebeneinander, größer, zentriert ---------- */
+.nd #page-about .mt-list{display:none}
+.mt-pcards{display:grid;grid-template-columns:repeat(3,minmax(0,330px));justify-content:center;gap:24px;margin:8px auto 40px}
+.mt-pcard{padding:30px 22px 20px}
+.mt-pcard .dsh-pav{width:150px;height:150px;padding:4px;margin-bottom:18px;flex:none}
+.mt-pcard .dsh-pav>img:first-child{border-width:4px}
+.mt-pcard .dsh-pemb{width:70px;height:70px;bottom:-26px}
+.mt-pcard>b{font-size:1.75rem;margin-top:10px}
+.mt-pcard .dsh-prole{font-size:.85rem}
+.mt-pbio{flex:1;margin:10px 0 0;color:var(--muted);font-size:.88rem;line-height:1.45}
+.mt-pcard>b{min-height:1.2em;display:flex;align-items:baseline;justify-content:center}
+.mt-pcard .dsh-pfacts{margin-top:16px;padding-top:12px}
+.mt-pcard .dsh-pfacts small{font-size:.66rem}
+.mt-pcard .dsh-pfacts em{font-size:.95rem}
+.mt-pgo{margin-top:16px;font-weight:700;font-size:.86rem;color:var(--cy)}
+.mt-pcard:hover .mt-pgo{text-decoration:underline}
+.mt-pcard.mt-later{cursor:default;border-style:dashed}
+.mt-pcard.mt-later:hover{transform:none;box-shadow:none;border-color:rgba(247,22,110,.25)}
+.mt-pcard.mt-later .mt-pgo{color:var(--faint);text-decoration:none}
+.mt-pcard.mt-later .dsh-pfacts>span:first-child em{color:var(--muted)}
+@media (max-width:1100px){.mt-pcards{grid-template-columns:repeat(2,minmax(0,330px))}}
+@media (max-width:700px){.mt-pcards{grid-template-columns:minmax(0,380px)}}
+
+/* ---------- Coaching: Info-Chips unter der Überschrift mittig ---------- */
+.nd .co-chips{justify-content:center}
+.mt-pcards .mt-pcard .mt-pbio{flex:0 0 auto}
+.mt-pcards .mt-pcard .dsh-pfacts{margin-top:auto}.mt-pcards .mt-pcard .mt-pbio{margin-bottom:16px}.mt-pcards .mt-pcard .mt-pgo{margin-top:16px;flex:none}
+/* Champion-Seite: Titel im Banner linksbündig */
+.nd h1.chp-h1{text-align:left;margin:0 0 12px}.nd h1.chp-h1 .th-key{margin:0 0 8px}
+
+/* ---------- Ranks: Sechsecke als Wabe 3-4-3, Rahmen als SVG, Emblem ragt über den Rahmen, Details beim Drüberfahren ---------- */
+.nd #rk-list{padding-bottom:10px}
+.nd #rk-list .rk-table,.nd #rk-list .buddy-inline{display:none}
+.nd #rk-list:not(.rkx-mode-hex) .rk-table{display:grid}
+.nd #rk-list:not(.rkx-mode-hex) .rkx-hex{display:none}
+.nd .rk-hero p{display:none}
+.rkx{--w:clamp(150px,13vw,200px);--g:30px}
+.rkx-tabs{display:flex;width:fit-content;gap:4px;margin:0 auto 40px;padding:4px;border-radius:12px;background:rgba(15,20,35,.72);border:1px solid rgba(148,180,255,.18)}
+.rkx-tabs button{background:none;border:0;padding:7px 18px;border-radius:9px;color:#b9c3dd;font:inherit;font-weight:600;font-size:.88rem;cursor:pointer}
+.rkx-tabs button:hover{color:#fff}
+.rkx-tabs button.on{background:rgba(45,212,191,.14);color:#fff;box-shadow:inset 0 0 0 1px #2dd4bf}
+.rkx-hex{display:flex;flex-direction:column;align-items:center;padding:10px 0 34px}
+.rkx-row{display:flex;justify-content:center;gap:var(--g)}
+.rkx-row+.rkx-row{margin-top:calc(var(--w) * -.2887 + var(--g) * .866)}
+.rkx-cell{position:relative;display:block;width:var(--w);color:#fff;text-decoration:none;z-index:1}
+.rkx-cell:hover,.rkx-cell:focus-visible{z-index:20;outline:0}
+.rkx-g{position:relative;display:block;width:var(--w);height:calc(var(--w) * 1.1547);transition:transform .25s ease,filter .25s ease}
+.rkx-f{position:absolute;inset:0;width:100%;height:100%;overflow:visible;color:var(--rc);filter:drop-shadow(0 8px 16px rgba(0,0,0,.45))}
+.rkx-f .rkx-fi,.rkx-f .rkx-fa{transition:stroke-opacity .25s}
+.rkx-in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 0 13%}
+.rkx-in img{width:128%;max-width:none;height:auto;margin:-42% 0 -28%;pointer-events:none;filter:drop-shadow(0 8px 14px rgba(0,0,0,.65)) drop-shadow(0 0 16px color-mix(in srgb,var(--rc) 45%,transparent));transition:transform .25s}
+.rkx-in b{font-family:var(--ff-head);font-weight:800;font-size:clamp(.85rem,1.15vw,1.12rem);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;text-shadow:0 2px 8px rgba(0,0,0,.8)}
+.rkx-in small{color:#c9d3ea;font-size:.82rem;margin-top:1px}
+.rkx-divs{display:flex;gap:4px;margin-top:8px}
+.rkx-divs i{display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:.62rem;font-weight:800;line-height:1;width:22px;height:18px;padding:0;border-radius:5px;border:1px solid rgba(255,255,255,.3);background:rgba(7,11,20,.6);color:#e6ecf8;text-align:center;transition:background .15s,border-color .15s,color .15s}
+.rkx-divs i:hover{background:var(--rc);border-color:var(--rc);color:#0b1220}
+/* Hover: strahlt in der Rangfarbe, die anderen bleiben unverändert */
+.rkx-cell:hover .rkx-g,.rkx-cell:focus-visible .rkx-g{transform:translateY(-6px) scale(1.05);filter:drop-shadow(0 0 12px var(--rc)) drop-shadow(0 0 30px color-mix(in srgb,var(--rc) 70%,transparent))}
+.rkx-cell:hover .rkx-fi{stroke-opacity:.75}
+.rkx-cell:hover .rkx-in img{transform:translateY(-5px) scale(1.06)}
+/* Details unter der Maus */
+.rkx-tip{position:absolute;left:50%;top:calc(100% - 8px);transform:translate(-50%,8px);width:max-content;max-width:min(560px,92vw);display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-radius:14px;z-index:5;
+  background:linear-gradient(160deg,color-mix(in srgb,var(--rc) 14%,#08182a),#050d18 85%);border:1px solid var(--rc);box-shadow:0 0 26px color-mix(in srgb,var(--rc) 45%,transparent),0 18px 40px rgba(0,0,0,.55);
+  opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
+.rkx-tip::before{content:"";position:absolute;left:50%;top:-7px;width:12px;height:12px;transform:translateX(-50%) rotate(45deg);background:color-mix(in srgb,var(--rc) 14%,#08182a);border-left:1px solid var(--rc);border-top:1px solid var(--rc)}
+.rkx-cell:hover .rkx-tip,.rkx-cell:focus-visible .rkx-tip{opacity:1;transform:translate(-50%,16px)}
+.rkx-th{display:flex;align-items:center;gap:12px}
+.rkx-th img{width:62px;height:auto;margin:-10px -4px -10px -8px}
+.rkx-th b{display:block;font-family:var(--ff-head);font-style:italic;font-weight:900;font-size:1.5rem;text-transform:uppercase;line-height:1}
+.rkx-th small{display:block;margin-top:4px;font-size:.6rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+.rkx-cols{display:flex}
+.rkx-c{display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 12px;border-radius:9px;text-align:center}
+.rkx-c+.rkx-c{border-left:1px solid rgba(255,255,255,.08)}
+.rkx-c span{font-family:var(--ff-head);font-weight:700;font-size:.88rem;white-space:nowrap}
+.rkx-c b{font-family:var(--ff-head);font-weight:800;font-size:1.25rem;color:var(--rc)}
+.rkx-c small{font-size:.68rem;color:var(--faint);white-space:nowrap}
+.rkx-c.on{background:color-mix(in srgb,var(--rc) 18%,transparent);box-shadow:inset 0 0 0 1px var(--rc)}
+.rkx-more{font-size:.74rem;font-weight:700;color:var(--cy);text-align:right}
+@media (max-width:980px){.rkx{--w:clamp(120px,19vw,170px);--g:12px}}
+@media (max-width:640px){
+  .rkx{--w:calc((100vw - 100px) / 4);--g:12px}
+  .rkx-in b{font-size:.62rem}.rkx-in small{font-size:.6rem}.rkx-divs{display:none}
+  .rkx-tip{display:none}
+}
+.rkx-cell{z-index:auto}.rkx-row:nth-child(1) .rkx-cell{z-index:3}.rkx-row:nth-child(2) .rkx-cell{z-index:2}.rkx-row:nth-child(3) .rkx-cell{z-index:1}.rkx-row .rkx-cell:hover{z-index:20}
+/* Ranks v3: Emblem mittig im oberen Teil, Zacken nur leicht über den Rand, Abstand wie im Entwurf */
+.rkx{--w:clamp(150px,12.5vw,200px);--g:calc(var(--w) * .24)}
+.rkx-f{inset:calc(var(--w) * -.045);width:calc(100% + var(--w) * .09);height:calc(100% + var(--w) * .09)}
+.rkx-in{justify-content:flex-end;padding:0 0 calc(var(--w) * .1)}
+.rkx-in img{position:absolute;left:50%;top:calc(var(--w) * -.16);width:118%;margin:0;transform:translateX(-50%)}
+.rkx-cell:hover .rkx-in img{transform:translateX(-50%) translateY(-4px) scale(1.05)}
+.rkx-in b{margin-top:0}
+.rkx-divs{margin-top:7px}
+.rkx-cell:not(:has(.rkx-divs)) .rkx-in{padding-bottom:calc(var(--w) * .2)}
+.rkx-fa path{transition:fill .25s}
+@media (max-width:980px){.rkx{--w:clamp(110px,17vw,160px)}}
+@media (max-width:640px){.rkx{--w:calc((100vw - 60px) / 4.75)}.rkx-in{padding-bottom:calc(var(--w) * .14)}.rkx-cell:not(:has(.rkx-divs)) .rkx-in{padding-bottom:calc(var(--w) * .14)}}
+.rkx .rkx-row+.rkx-row{margin-top:calc(var(--w) * -.2887 + var(--g) * .866 + var(--w) * .07)}
+.rkx .rkx-in{padding-bottom:calc(var(--w) * .15)}.rkx .rkx-cell:not(:has(.rkx-divs)) .rkx-in{padding-bottom:calc(var(--w) * .24)}
+@media (max-width:640px){.rkx .rkx-in,.rkx .rkx-cell:not(:has(.rkx-divs)) .rkx-in{padding-bottom:calc(var(--w) * .17)}}
+.rkx .rkx-in img{top:calc(var(--w) * -.2);width:112%}.rkx .rkx-in>b,.rkx .rkx-in>small,.rkx .rkx-divs{position:relative;z-index:1}
+/* Ranks v4: Anordnung wie im Entwurf – großes Emblem oben, Flügel über die Seitenkanten, Name/Prozent/Divisionen darunter */
+.rkx .rkx-f{inset:calc(var(--w) * -.06);width:calc(100% + var(--w) * .12);height:calc(100% + var(--w) * .12);filter:drop-shadow(0 8px 18px rgba(0,0,0,.5)) drop-shadow(0 0 6px color-mix(in srgb,var(--rc) 25%,transparent))}
+.rkx .rkx-in img{top:calc(var(--w) * -.24);width:136%}
+.rkx .rkx-in{padding-bottom:calc(var(--w) * .16)}
+.rkx .rkx-cell:not(:has(.rkx-divs)) .rkx-in{padding-bottom:calc(var(--w) * .26)}
+.rkx .rkx-in>b{font-size:clamp(.9rem,1.2vw,1.15rem)}
+.rkx .rkx-in>small{font-size:.9rem}
+.rkx .rkx-divs i{width:24px;height:20px;border-radius:5px;border-color:rgba(255,255,255,.35);background:rgba(5,8,15,.75);font-size:.66rem}
+.rkx{--g:calc(var(--w) * .3)}
+.rkx .rkx-in img{top:calc(var(--w) * -.33);width:128%}
+.rkx .rkx-in{padding-bottom:calc(var(--w) * .11)}
+.rkx .rkx-cell:not(:has(.rkx-divs)) .rkx-in{padding-bottom:calc(var(--w) * .2)}
+@media (max-width:980px){.rkx{--w:clamp(100px,14vw,150px)}}
+@media (max-width:640px){.rkx{--w:calc((100vw - 64px) / 5.1)}.rkx .rkx-in,.rkx .rkx-cell:not(:has(.rkx-divs)) .rkx-in{padding-bottom:calc(var(--w) * .16)}}
+@media (max-width:980px){.rkx-tip{display:none}}
+.rkx-cell:not(:hover):not(:focus-visible) .rkx-tip{visibility:hidden}
+/* Details am Rand der Reihe bündig, damit nichts aus dem Bild ragt */
+.rkx-cell:first-child .rkx-tip{left:0;transform:translate(0,8px)}.rkx-cell:first-child:hover .rkx-tip{transform:translate(0,16px)}.rkx-cell:first-child .rkx-tip::before{left:calc(var(--w) / 2)}
+.rkx-cell:last-child .rkx-tip{left:auto;right:0;transform:translate(0,8px)}.rkx-cell:last-child:hover .rkx-tip{transform:translate(0,16px)}.rkx-cell:last-child .rkx-tip::before{left:auto;right:calc(var(--w) / 2 - 6px);transform:rotate(45deg)}
+.rkx .rkx-in img{top:calc(var(--w) * -.3);width:120%}.rkx .rkx-in{padding-bottom:calc(var(--w) * .22)}.rkx .rkx-cell:not(:has(.rkx-divs)) .rkx-in{padding-bottom:calc(var(--w) * .3)}.rkx .rkx-in>b{margin-top:2px}
+@media (max-width:640px){.rkx .rkx-in,.rkx .rkx-cell:not(:has(.rkx-divs)) .rkx-in{padding-bottom:calc(var(--w) * .22)}}
+@media (max-width:640px){.rkx .rkx-in>b{font-size:.6rem}.rkx .rkx-in>small{font-size:.58rem}}
+/* Ranks v5: breitere Sechsecke (Höhe = Breite), enger zusammen, Emblem tiefer */
+.rkx{--g:calc(var(--w) * .13)}
+.rkx .rkx-g{height:var(--w)}
+.rkx .rkx-row+.rkx-row{margin-top:calc(var(--w) * -.25 + var(--g) * .87 + var(--w) * .06)}
+.rkx .rkx-in img{top:calc(var(--w) * -.2);width:112%}
+.rkx .rkx-in{padding-bottom:calc(var(--w) * .1)}
+.rkx .rkx-cell:not(:has(.rkx-divs)) .rkx-in{padding-bottom:calc(var(--w) * .17)}
+@media (min-width:981px){.rkx{--w:clamp(160px,14vw,220px)}}
+@media (max-width:640px){.rkx{--w:calc((100vw - 60px) / 4.6)}.rkx .rkx-in,.rkx .rkx-cell:not(:has(.rkx-divs)) .rkx-in{padding-bottom:calc(var(--w) * .14)}}
+.rkx .rkx-hex{padding-top:40px}
+
+/* ---------- Seitenleiste: Symbole aus dem Icon-Konzept, leuchten beim Drüberfahren auf ---------- */
+.nds-link{padding:7px 12px}
+.nds-ic{width:34px;height:34px;flex:none;margin:-2px 0;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5)) saturate(.9) brightness(.92);transition:filter .2s ease,transform .2s ease}
+.nds-link:hover .nds-ic,.nds-link:focus-visible .nds-ic{transform:scale(1.12);filter:drop-shadow(0 0 6px rgba(46,230,214,.85)) drop-shadow(0 0 14px rgba(247,22,110,.45)) saturate(1.25) brightness(1.18)}
+.nds-link.on .nds-ic{filter:drop-shadow(0 0 6px rgba(46,230,214,.7)) saturate(1.15) brightness(1.08)}
+body.nd-mini .nds-ic{width:38px;height:38px}
+@media (prefers-reduced-motion:reduce){.nds-ic{transition:filter .2s}.nds-link:hover .nds-ic{transform:none}}
+
+/* ---------- Wabenmuster der Bibliothek in allen Boxen (eigene Ebene hinter dem Inhalt, zu den Rändern ausgeblendet) ---------- */
+.nd .card,.nd .dsh-card:not(.dsh-lib),.nd .rk-card,.nd .pt-card,.nd .co-card,.nd .tool-seo,.nd .pkg,.nd .guide,.nd .tc,.nd .cs-side,.nd .dsh-pcard,.nd .mt-pcard,.nd .pd-sec{position:relative;isolation:isolate}
+.nd .card::after,.nd .dsh-card:not(.dsh-lib)::after,.nd .rk-card::after,.nd .pt-card::after,.nd .co-card::after,.nd .tool-seo::after,.nd .pkg::after,.nd .guide::after,.nd .tc::after,.nd .cs-side::after,.nd .dsh-pcard::after,.nd .pd-sec::after{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;opacity:.16;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cpath d='M28 0l28 16v32L28 64 0 48V16zM28 64l28 16v32M28 64L0 80v32' fill='none' stroke='%2378a6ff' stroke-width='.6'/%3E%3C/svg%3E");
+  -webkit-mask-image:radial-gradient(ellipse at 50% 30%,#000 20%,transparent 78%);mask-image:radial-gradient(ellipse at 50% 30%,#000 20%,transparent 78%)}
+/* Seitenleiste: Symbole minimal kleiner */
+.nds-ic{width:31px;height:31px}
+body.nd-mini .nds-ic{width:35px;height:35px}
+/* Ranks: kräftiger Schatten nach unten unter dem Rang-Emblem */
+.rkx .rkx-in img{filter:drop-shadow(0 14px 10px rgba(0,0,0,.9)) drop-shadow(0 26px 22px rgba(0,0,0,.65)) drop-shadow(0 0 16px color-mix(in srgb,var(--rc) 40%,transparent))}
+/* Ranks: beim Drüberfahren springt das Emblem aus dem Rahmen, der Schatten wird tiefer */
+.rkx .rkx-in img{transition:transform .3s ease,filter .3s ease}
+.rkx .rkx-cell:hover .rkx-in img,.rkx .rkx-cell:focus-visible .rkx-in img{transform:translateX(-50%) translateY(calc(var(--w) * -.02)) scale(1.1);
+  filter:drop-shadow(0 20px 14px rgba(0,0,0,.9)) drop-shadow(0 32px 26px rgba(0,0,0,.6)) drop-shadow(0 0 18px color-mix(in srgb,var(--rc) 50%,transparent))}
+@media (prefers-reduced-motion:reduce){.rkx .rkx-cell:hover .rkx-in img{transform:translateX(-50%) scale(1.06)}}
+
+/* ---------- Seitenleiste: neue Gruppierung, Coaching dezent in Pink hervorgehoben ---------- */
+.nd-side{padding-top:18px}
+.nds-link{padding:9px 12px;margin-bottom:6px}
+.nds-cap{margin:22px 12px 10px}
+.nds-gap{height:30px}
+/* Coaching: dezent von rechts in Pink angeleuchtet, Rahmen läuft nach links aus */
+.nds-link.nds-hot{color:#fff;border:1px solid transparent;border-radius:13px;background-origin:border-box !important;background-repeat:no-repeat !important;
+  background:radial-gradient(130px 70px at 100% 50%,rgba(247,22,110,.26),transparent 75%),linear-gradient(90deg,rgba(14,32,48,0),rgba(14,32,48,.85));
+  transition:box-shadow .2s}
+.nds-link.nds-hot::after{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent 22%,rgba(247,22,110,.25) 60%,rgba(247,22,110,.75));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+  opacity:.75;transition:opacity .2s}
+.nds-link.nds-hot:hover{box-shadow:8px 0 22px -10px rgba(247,22,110,.45);
+  background:radial-gradient(150px 80px at 100% 50%,rgba(247,22,110,.34),transparent 75%),linear-gradient(90deg,rgba(14,32,48,0),rgba(14,32,48,.85))}
+.nds-link.nds-hot:hover::after,.nds-link.nds-hot.on::after{opacity:1}
+.nds-link.nds-hot.on{box-shadow:8px 0 22px -10px rgba(247,22,110,.45);
+  background:radial-gradient(150px 80px at 100% 50%,rgba(247,22,110,.34),transparent 75%),linear-gradient(90deg,rgba(14,32,48,0),rgba(14,32,48,.85))}
+.nds-link.nds-hot:hover .nds-ic{filter:drop-shadow(0 0 6px rgba(46,230,214,.85)) drop-shadow(0 0 14px rgba(247,22,110,.45)) saturate(1.25) brightness(1.18)}.nds-link.nds-hot.on::before{display:none}
+body.nd-mini .nds-link{padding:9px 0}body.nd-mini .nds-gap{height:12px}
+
+/* ---------- Obere Tabs: aktive Seite mit breitem Strich und Lichtverlauf von unten ---------- */
+.nd-tabs{gap:14px}
+.nd-tabs a{padding:0 28px;transition:color .2s,background .2s}
+.nd-tabs a:hover{background:linear-gradient(0deg,rgba(46,230,214,.06),transparent 70%)}
+.nd-tabs a.on{text-shadow:0 0 12px rgba(46,230,214,.45);background:radial-gradient(120% 110% at 50% 100%,rgba(46,230,214,.18),rgba(46,230,214,.05) 55%,transparent 80%)}
+.nd-tabs a.on::after{left:0;right:0;bottom:0;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(90deg,transparent,var(--cy) 15%,var(--cy2) 50%,var(--cy) 85%,transparent);box-shadow:0 0 10px rgba(46,230,214,.7),0 -2px 22px rgba(46,230,214,.3)}
+@media (max-width:1360px) and (min-width:981px){.nd-tabs{gap:8px}.nd-tabs a{padding:0 20px}}
+@media (max-width:980px){.nd-tabs{gap:0}.nd-tabs a{padding:0 9px}.nd-tabs a.on::after{left:0;right:0}}
+
+/* ---------- Begrüßung: Vi-Büste (zwinkernd) bündig auf der Unterkante ---------- */
+@media (min-width:641px){.dsh-bar[class]{overflow:visible;min-height:104px;margin-top:14px;padding-left:216px}.dsh-bar .dsh-vihi{left:26px;bottom:-80px;top:auto;height:214px;z-index:2;clip-path:inset(0 0 80px 0)}}
+@media (min-width:641px) and (max-width:1200px){.dsh-bar[class]{margin-top:0}}
+@media (min-width:1201px){.dsh-bar .dsh-bubble{position:relative;z-index:3;transform:translateY(-34px);box-shadow:0 10px 24px rgba(0,0,0,.35)}}
+@media (max-width:640px){.dsh-hi .dsh-vihi{left:2px;top:auto;bottom:-46px;height:162px}}
+
+/* ---------- Sidebar: Vi unten links, bündig auf der Unterkante ---------- */
+.nd-side{display:flex;flex-direction:column;padding-bottom:0}
+.nds-link{flex:none}
+.nds-vi2{display:block;flex:none;width:calc(100% + 12px);max-width:230px;height:auto;margin:auto 0 0 -12px;padding-top:16px;pointer-events:none;
+  filter:drop-shadow(0 6px 16px rgba(0,0,0,.55));-webkit-mask:linear-gradient(180deg,#000 82%,transparent);mask:linear-gradient(180deg,#000 82%,transparent)}
+body.nd-mini .nds-vi2{display:none}
+@media (max-height:760px){.nds-vi2{display:none}}
+
+/* ---------- Sprechblase im Comic-Stil: Oval mit geschwungenem Zipfel unten links ---------- */
+.dsh-bar .dsh-bubble{border-radius:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120' preserveAspectRatio='none'%3E%3Cpath d='M59.4 102.1A96 52 0 1 0 32.1 91.8Q27 108 9 117Q42 115 59.4 102.1Z' fill='%23f2fbfb' stroke='%2306202a' stroke-width='2.4' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center/100% 100% no-repeat;
+  box-shadow:none;filter:drop-shadow(0 8px 14px rgba(0,0,0,.4));padding:20px 40px 34px;text-align:center;max-width:290px}
+.dsh-bar .dsh-bubble::before{content:none}
+.dsh-bar .dsh-bubble b{white-space:nowrap;letter-spacing:.02em}
+@media (min-width:1201px){.dsh-bar .dsh-bubble{transform:translateY(-34px);box-shadow:none;max-width:330px;margin-left:-48px}}
+@media (max-width:640px){.dsh-bar .dsh-bubble{padding:14px 28px 26px;max-width:220px}}
+
+/* ---------- Dashboard-Bibliothek: größere Waben, Kartengröße bleibt (füllt den freien Platz) ---------- */
+.dsh-lib{container-type:inline-size}
+.dsh-comb{--s:min(71px, calc((100cqw - 76px) / 6));padding:8px 0 4px}
+.dsh-comb>div{gap:6px}
