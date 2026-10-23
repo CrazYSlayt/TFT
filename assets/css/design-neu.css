@@ -762,3 +762,37 @@ html.nd:not(.nd-ready) main,html.nd:not(.nd-ready) footer{opacity:0;visibility:h
 @keyframes mt-nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
 .mt-sliding{position:relative;overflow-x:clip}
 @media (max-width:640px){.nd .mt-head{padding-inline:46px}.nd .mt-nav{width:38px;height:38px;margin-top:-19px}.nd .mt-nav svg{width:18px;height:18px}}
+
+/* ---------- Patches: Gold aus dem alten Design durch die neue Palette ersetzen (Türkis = aktuell/Akzent, Pink = eigene Einschätzung) ---------- */
+.nd .pt-card.cur{border-color:rgba(46,230,214,.65);box-shadow:0 0 0 1px rgba(46,230,214,.22),0 12px 30px rgba(46,230,214,.12)}
+.nd .pt-card:hover{border-color:rgba(46,230,214,.5)}
+.nd .pt-img .pill{background:linear-gradient(90deg,var(--cy),#1fb6e8);color:#03201d;box-shadow:0 0 14px rgba(46,230,214,.45)}
+.nd .pt-meta .hl{background:rgba(46,230,214,.14);color:var(--cy2)}
+.nd .pd-hero small b{color:var(--cy2)}
+.nd .pd-hero blockquote{border-left-color:var(--cy)}
+.nd .pd-note{border-color:rgba(247,22,110,.4);background:linear-gradient(135deg,rgba(247,22,110,.12),var(--panel) 60%)}
+.nd .pd-note h3{color:#ff6fa6}
+.nd .pn-arr{color:var(--cy)}
+.nd .pd-lang{background:rgba(46,230,214,.08);border-color:rgba(46,230,214,.3);color:var(--cy2)}
+
+/* ---------- Palette: Gold war im alten Design die zweite Akzentfarbe – im neuen Design übernimmt das Pink.
+   Echtes Spiel-Gold (Sterne, Gold-Münzen, Trait-Gold, Gold-Orbs, Radiant, Warnungen, Unentschieden) bleibt über --tft-gold golden. ---------- */
+.nd{--gold:#ff6fa6;--gold-soft:rgba(247,22,110,.14);--tft-gold:#f2c14e;--tft-gold-soft:rgba(242,193,78,.16)}
+/* Spiel-Gold zurück */
+.nd .star,.nd .cu-stars,.nd .hex-stars,.nd .su-star,.nd .ss-star,.nd .tbadge.l3,.nd .dr-orb.gold b,.nd .it-desc .d-rad,.nd .sim-hint.warn,.nd .ss-res.w-1,.nd .set-st.pbe{color:var(--tft-gold)}
+.nd .coin,.nd .uh-stars,.nd .ss-mcbar .wd{background:var(--tft-gold)}
+.nd .cbadge.d-MEDIUM,.nd .dr-warn{background:var(--tft-gold-soft);color:var(--tft-gold)}
+.nd .sim-banner.ot{border-color:var(--tft-gold);color:var(--tft-gold)}
+/* gefüllte Flächen: auf Pink weiße statt dunkler Schrift */
+.nd .cp-close,.nd .tm-mode button.on,.nd .tm-box-head h3,.nd .tm-acts button.hl,.nd .tm-tabs button.on,.nd .tm-toast,.nd .b-ibtn:hover,.nd .bp-pills button.on,.nd .dr-new:hover,.nd .dr-tab i,.nd .dr-have b{background:var(--pink);color:#fff}
+.nd .tm-box-head h3{background:linear-gradient(90deg,var(--pink),var(--violet))}
+/* feste Gold-Töne im alten CSS */
+.nd .rd-cmp.down{border-color:rgba(247,22,110,.5)}
+.nd .tm-title input::placeholder{color:rgba(255,111,166,.45)}
+.nd .tm-pool.over{background:rgba(247,22,110,.06)}
+.nd .tc-item.tc-soon .tc-ph{background:radial-gradient(circle at 30% 25%,rgba(247,22,110,.3),rgba(247,22,110,.06) 70%);border-color:rgba(247,22,110,.25)}
+.nd .dr-table tr.best td{background:rgba(247,22,110,.08)}
+.nd .sa-hit{fill:rgba(247,22,110,.22)}
+.nd .csp-ic{border-color:rgba(247,22,110,.3)}
+.nd .chp-bi img{border-color:rgba(46,230,214,.7)}
+.nd .dsh-tools{background:radial-gradient(360px 240px at 100% 100%,rgba(247,22,110,.14),transparent 65%),radial-gradient(320px 220px at 0 0,rgba(46,230,214,.12),transparent 65%),linear-gradient(160deg,rgba(9,36,50,.82),rgba(3,17,27,.92))}

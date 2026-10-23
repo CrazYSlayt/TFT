@@ -104,8 +104,8 @@ const testimonials = [
 
 const guides = [
   {t:'TFT Encounters',s:'Neu · Set 18',col:'linear-gradient(160deg,#8b5cf6,#3b0764)',href:'/guides/encounters',d:'Alle Encounters mit Chance pro Spiel – und welche Comp du auf Ambosse, Gold- und Prismatic-Augments oder besondere Start-Units spielst.',x:'Mit Einschätzung von Challenger-Spielern.'},
-  {t:'Wisp-Guide',s:'Kostenlos · 5 Kapitel',col:'linear-gradient(160deg,#f2c14e,#b7791f)',d:'Wann du Wisps kaufst, welche Upgrades sich lohnen und wie du sie mit deiner Econ verbindest.',x:'Mit Checkliste für die nächsten drei Partien.'},
-  {t:'Rank-Up-Training',s:'Kostenlos · Übungen',col:'linear-gradient(160deg,#3b82f6,#1e3a8a)',d:'Finde eine Gewohnheit, an der du arbeiten willst: Rollen, Leveln oder Positionieren — mit einer klaren Mission pro Partie.',x:'Klein anfangen. Autopilot hat schon genug Partien gespielt.'},
+  {t:'Wisp-Guide',s:'Kostenlos · 5 Kapitel',col:'linear-gradient(160deg,#f7166e,#7a0b3a)',d:'Wann du Wisps kaufst, welche Upgrades sich lohnen und wie du sie mit deiner Econ verbindest.',x:'Mit Checkliste für die nächsten drei Partien.'},
+  {t:'Rank-Up-Training',s:'Kostenlos · Übungen',col:'linear-gradient(160deg,#2ee6d6,#0b5f5a)',d:'Finde eine Gewohnheit, an der du arbeiten willst: Rollen, Leveln oder Positionieren — mit einer klaren Mission pro Partie.',x:'Klein anfangen. Autopilot hat schon genug Partien gespielt.'},
 ];
 
 const ranks = [
