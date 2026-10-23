@@ -1,4 +1,4 @@
-// Climb TFT – Sitemap für Suchmaschinen unter /sitemap.xml (Weiterleitung in vercel.json).
+// TFTClimb – Sitemap für Suchmaschinen unter /sitemap.xml (Weiterleitung in vercel.json).
 // Nimmt die Domain, unter der die Seite gerade aufgerufen wird, und listet jede Seite auf Deutsch und Englisch.
 const fs = require('fs');
 const path = require('path');

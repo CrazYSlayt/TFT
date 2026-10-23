@@ -1,8 +1,8 @@
-// Climb TFT – LP-Grenzen für Challenger und Großmeister, live von der tactics.tools-Bestenliste.
+// TFTClimb – LP-Grenzen für Challenger und Großmeister, live von der tactics.tools-Bestenliste.
 // Läuft als Vercel-Funktion unter /api/cutoffs. Vercel speichert die Antwort 30 Minuten zwischen,
 // damit tactics.tools höchstens ein paar Mal pro Stunde abgefragt wird.
 const REGIONS = ['euw', 'eune', 'na', 'kr'];
-const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36 ClimbTFT';
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36 TFTClimb';
 const RE = /Cutoffs<\/div>[\s\S]*?challenger_solo[^>]*>\s*<div>([\d.,]+)\s*LP<\/div>[\s\S]*?grandmaster_solo[^>]*>\s*<div>([\d.,]+)\s*LP<\/div>/;
 
 async function region(r){

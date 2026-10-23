@@ -2,6 +2,9 @@
   "functions": {
     "api/sitemap.js": { "includeFiles": "data/*.js" }
   },
+  "redirects": [
+    { "source": "/:path*", "has": [{ "type": "host", "value": "tft-lovat.vercel.app" }], "destination": "https://www.tftclimb.com/:path*", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/robots.txt", "destination": "/api/robots" },

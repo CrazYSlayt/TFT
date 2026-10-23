@@ -1,4 +1,4 @@
-/* Climb TFT – Seitenlogik (früher direkt in index.html). Braucht vorher: data/sets.js + Set-Daten (siehe Lader in index.html) */
+/* TFTClimb – Seitenlogik (früher direkt in index.html). Braucht vorher: data/sets.js + Set-Daten (siehe Lader in index.html) */
 /* ================= ADRESSEN ================= */
 // Online echte Pfade (/tierlist/items), lokal per Doppelklick (file://) wie bisher #/tierlist/items
 const FILE_MODE = location.protocol === 'file:';
@@ -990,7 +990,7 @@ function admSourceText(){ return tierSource.src==='draft' ? 'Entwurf in diesem B
 function admSave(msg){
   admEnsure();
   adm.updated = new Date().toISOString().slice(0,10);
-  if(adm.source && adm.source!=='Climb TFT'){ adm.basedOn = adm.source; } adm.source = 'Climb TFT';
+  if(adm.source && !['TFTClimb', 'Climb TFT'].includes(adm.source)){ adm.basedOn = adm.source; } adm.source = 'TFTClimb';   // 'Climb TFT' = alter Name in früheren Exporten
   let ok = true; try { localStorage.setItem(TL_DRAFT_KEY, JSON.stringify(adm)); } catch(e){ ok = false; }
   tierSource = {src:'draft', data:adm};
   ITEM_TL = adm.itemTL || {}; AUG_TL = adm.augTL || {}; HOLD_TL = adm.holdTL || {}; ENC_TL = adm.encTL || {};
@@ -1003,7 +1003,7 @@ function updateTlNote(){
   if(!(D.comps||[]).length){ el.textContent = `Für Set ${TFT_DATA.set} gibt es noch keine Tierlist.`; return; }
   if(D.source==='TFTAcademy'){ el.innerHTML = `Stand: Patch ${esc(D.patch||TL_PATCH)} · Bewertungen und Aufstellungen nach ${link}`; return; }
   const d = D.updated ? new Date(D.updated).toLocaleDateString(LOC) : '';
-  el.innerHTML = `Stand: Patch ${esc(D.patch||TL_PATCH)}${d?' · aktualisiert am '+d:''} · Bewertungen von Climb TFT${D.basedOn==='TFTAcademy' || (TL_FILE && TL_FILE.source==='TFTAcademy') ? ' · Aufstellungen ursprünglich nach ' + link : ''}`;
+  el.innerHTML = `Stand: Patch ${esc(D.patch||TL_PATCH)}${d?' · aktualisiert am '+d:''} · Bewertungen von TFTClimb${D.basedOn==='TFTAcademy' || (TL_FILE && TL_FILE.source==='TFTAcademy') ? ' · Aufstellungen ursprünglich nach ' + link : ''}`;
 }
 function admCardHTML(c){
   const st = STICKER[c.sticker];
@@ -1138,8 +1138,8 @@ document.addEventListener('click', e=>{
   }
   if(t.id==='admExport'){
     admEnsure();
-    const data = {version:1, set:TFT_DATA.set, patch:adm.patch, updated:adm.updated || new Date().toISOString().slice(0,10), source:adm.source || 'Climb TFT', basedOn:adm.basedOn || '', comps:adm.comps, itemTL:adm.itemTL || ITEM_TL, augTL:adm.augTL || AUG_TL, holdTL:adm.holdTL || HOLD_TL, encTL:adm.encTL || ENC_TL};
-    const js = '// Climb TFT – Tierlist-Daten, exportiert aus der Redaktion am ' + new Date().toLocaleString(LOC) + '\n// Datei neben die index.html legen, dann sehen alle Besucher diesen Stand.\nwindow.TIERLIST_DATA = ' + JSON.stringify(data) + ';\n';
+    const data = {version:1, set:TFT_DATA.set, patch:adm.patch, updated:adm.updated || new Date().toISOString().slice(0,10), source:adm.source || 'TFTClimb', basedOn:adm.basedOn || '', comps:adm.comps, itemTL:adm.itemTL || ITEM_TL, augTL:adm.augTL || AUG_TL, holdTL:adm.holdTL || HOLD_TL, encTL:adm.encTL || ENC_TL};
+    const js = '// TFTClimb – Tierlist-Daten, exportiert aus der Redaktion am ' + new Date().toLocaleString(LOC) + '\n// Datei neben die index.html legen, dann sehen alle Besucher diesen Stand.\nwindow.TIERLIST_DATA = ' + JSON.stringify(data) + ';\n';
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([js], {type:'text/javascript'})); a.download = `tierlist-data-${TFT_DATA.set}.js`;
     document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
     admStatus(`Exportiert: tierlist-data-${TFT_DATA.set}.js – neben die index.html legen.`); return;
@@ -1947,8 +1947,8 @@ function setGuide(sub){
   if(key==='encounters') renderEncTL();
 }
 function guideHTML(g){
-  if(g.href) return `<a class="card guide guide-on" href="${g.href}"><div class="guide-cover" style="background:${g.col}"><div>${esc(g.t)}<small>Climb TFT</small></div></div><div><span class="pill gold">${esc(g.s)}</span><h3 style="margin-top:10px">${esc(g.t)}</h3><p>${esc(g.d)}</p><p style="color:var(--faint);font-size:.82rem">${esc(g.x)}</p><span class="link-arrow">Zum Guide →</span></div></a>`;
-  return `<div class="card guide"><div class="guide-cover" style="background:${g.col}"><div>${esc(g.t)}<small>Climb TFT</small></div></div><div><span class="pill">${esc(g.s)}</span><h3 style="margin-top:10px">${esc(g.t)}</h3><p>${esc(g.d)}</p><p style="color:var(--faint);font-size:.82rem">${esc(g.x)}</p><span class="link-arrow">Bald verfügbar</span></div></div>`;
+  if(g.href) return `<a class="card guide guide-on" href="${g.href}"><div class="guide-cover" style="background:${g.col}"><div>${esc(g.t)}<small>TFTClimb</small></div></div><div><span class="pill gold">${esc(g.s)}</span><h3 style="margin-top:10px">${esc(g.t)}</h3><p>${esc(g.d)}</p><p style="color:var(--faint);font-size:.82rem">${esc(g.x)}</p><span class="link-arrow">Zum Guide →</span></div></a>`;
+  return `<div class="card guide"><div class="guide-cover" style="background:${g.col}"><div>${esc(g.t)}<small>TFTClimb</small></div></div><div><span class="pill">${esc(g.s)}</span><h3 style="margin-top:10px">${esc(g.t)}</h3><p>${esc(g.d)}</p><p style="color:var(--faint);font-size:.82rem">${esc(g.x)}</p><span class="link-arrow">Bald verfügbar</span></div></div>`;
 }
 function renderHome(){
   $('#ranks').innerHTML = ranks.map(([n,c,f])=>`<a href="/ranks/${f.toLowerCase()}" class="rank"><div class="rank-gem"><img src="${DD}tft-regalia/TFT_Regalia_${f}.png" alt="TFT Rang ${n}" loading="lazy" onerror="this.outerHTML='<span style=&quot;font:900 1.4rem var(--ff-head);color:${c}&quot;>${n[0]}</span>'"></div>${n}</a>`).join('');
@@ -2063,9 +2063,9 @@ const NAV = [
 $('#tbNav').innerHTML = NAV.filter(n=>!n.more).map(n=>`<a href="${n.h}" class="tb-item" data-route="${n.r}">${n.badge?`<span class="tb-badge">${n.badge}</span>`:''}${navIcon(n)}<span>${n.l}</span></a>`).join('')
   + '<button class="tb-item tb-more" id="moreBtn" aria-haspopup="true" aria-label="Mehr">···</button>';
 $('#moreMenu').innerHTML = NAV.filter(n=>n.more).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('');
-$('#drawerPanel').innerHTML = `<a href="/" class="tb-logo" style="border:0;padding:6px 10px 14px;font-size:1.7rem" aria-label="Climb TFT Startseite"><span class="tft-logo" aria-hidden="true"></span><div><span>Climb</span> <b>TFT</b></div></a>
+$('#drawerPanel').innerHTML = `<a href="/" class="tb-logo" style="border:0;padding:6px 10px 14px;font-size:1.7rem" aria-label="TFTClimb Startseite"><span class="tft-logo" aria-hidden="true"></span><div><span>TFT</span><b>Climb</b></div></a>
   <h5>Tierlist & Daten</h5>${NAV.filter(n=>['tierlist','bibliothek','builder','ranks','tools','patches','cheatsheet'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}
-  <h5>Climb TFT</h5>${NAV.filter(n=>['home','coaching','guides','about','apply'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}`;
+  <h5>TFTClimb</h5>${NAV.filter(n=>['home','coaching','guides','about','apply'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}`;
 const moreMenu = $('#moreMenu');
 $('#moreBtn').onclick = e=>{ e.stopPropagation(); const r=e.currentTarget.getBoundingClientRect(); moreMenu.style.left=Math.min(r.left, innerWidth-240)+'px'; moreMenu.classList.toggle('open'); };
 document.addEventListener('click', e=>{ if(!e.target.closest('#moreMenu')) moreMenu.classList.remove('open'); });
@@ -2847,7 +2847,7 @@ function renderPatches(sub){
       ${p.teaser ? `<blockquote>${esc(p.teaser)}<cite>– Riot Games</cite></blockquote>` : ''}
       ${p.lang==='en' && !EN ? '<p class="pd-lang">Riot hat die deutschen Patchnotes noch nicht veröffentlicht – bis dahin siehst du hier die englische Fassung.</p>' : ''}
       <a class="btn btn-primary" href="${esc(p.url)}" target="_blank" rel="noopener">Komplette Patchnotes bei Riot ↗</a></div></div>
-    ${note ? `<div class="card pd-note"><h3>Einschätzung von Climb TFT</h3>${String(note).split(/\n{2,}/).map(t=>`<p>${esc(t).replace(/\n/g,'<br>')}</p>`).join('')}</div>` : ''}
+    ${note ? `<div class="card pd-note"><h3>Einschätzung von TFTClimb</h3>${String(note).split(/\n{2,}/).map(t=>`<p>${esc(t).replace(/\n/g,'<br>')}</p>`).join('')}</div>` : ''}
     ${grps.length ? `<input class="input pd-search" id="pdSearch" placeholder="Champion, Trait, Item oder Augment suchen …" aria-label="Änderungen durchsuchen">
     <div id="pdList">${grps.map(g=>`<section class="pd-grp">${g.g ? `<h2>${esc(grpLabel(g.g))}</h2>` : ''}${g.secs.map(s=>`<div class="card pd-sec"><h3>${esc(secLabel(s.sec))}</h3><ul>${s.ch.map(patchRowHTML).join('')}</ul></div>`).join('')}</section>`).join('')}</div>`
       : viSays('Für diesen Patch habe ich keine einzelnen Änderungen gefunden – schau direkt in die Patchnotes bei Riot.')}
@@ -3155,7 +3155,7 @@ document.addEventListener('keydown', e=>{   // „/“ springt ins Suchfeld, Esc
 function pageMeta(page, sub){
   const S = `Set ${TFT_DATA.set}`, P = TL_PATCH ? ` (Patch ${TL_PATCH})` : '', rk = rankBy[sub];
   switch(page){
-    case 'home': return ['Climb TFT – TFT Tierlist, Comps & Coaching', `Aktuelle TFT Tierlist für ${S}${P}: die besten Comps mit Items, Augments und Aufstellung – dazu Coaching von Challenger-Spielern.`];
+    case 'home': return ['TFTClimb – TFT Tierlist, Comps & Coaching', `Aktuelle TFT Tierlist für ${S}${P}: die besten Comps mit Items, Augments und Aufstellung – dazu Coaching von Challenger-Spielern.`];
     case 'tierlist':
       if(sub==='items') return [`TFT Item-Tierlist ${S}${P}`, `Welche Items sind in TFT ${S} am stärksten? Item-Tierlist mit kombinierten Items, Lichtversionen und Artefakten.`];
       if(sub==='augments') return [`TFT Augment-Tierlist ${S}${P}`, `Die besten Augments in TFT ${S} – sortiert nach Silber, Gold und Prismatisch.`];
@@ -3176,23 +3176,23 @@ function pageMeta(page, sub){
     case 'builder': return [`TFT Team Builder ${S} – Board planen & teilen`, `Kostenloser TFT Team Builder für ${S}: Units platzieren, Items verteilen, aktive Traits prüfen und dein Board als Link oder Team-Code teilen.`];
     case 'coaching': return ['TFT Coaching von Challenger-Spielern', 'TFT Coaching auf Deutsch und Englisch: Fundamentals und VOD-Review mit Challenger-Coaches. Kostenloses Kennenlernen, Einzelstunde 30 €, Set-Pass und VIP-Mentoring für das ganze Set.'];
     case 'about':
-      if(sub==='crazyslayt') return ['CrazYSlayt – TFT Challenger & Founder', 'Claudio „CrazYSlayt“: Challenger seit Set 15, Founder von Climb TFT und Coach seit Set 17.'];
-      if(sub==='humbadobo') return ['humbadobo – TFT Challenger & Coach', 'Romano „humbadobo“: Challenger seit Set 15, Peak 1.447 LP und Coach bei Climb TFT.'];
-      return ['Meet the Team', 'Das Team hinter Climb TFT: Challenger-Spieler, Coaches – und Vi.'];
+      if(sub==='crazyslayt') return ['CrazYSlayt – TFT Challenger & Founder', 'Claudio „CrazYSlayt“: Challenger seit Set 15, Founder von TFTClimb und Coach seit Set 17.'];
+      if(sub==='humbadobo') return ['humbadobo – TFT Challenger & Coach', 'Romano „humbadobo“: Challenger seit Set 15, Peak 1.447 LP und Coach bei TFTClimb.'];
+      return ['Meet the Team', 'Das Team hinter TFTClimb: Challenger-Spieler, Coaches – und Vi.'];
     case 'apply': return ['Coaching anfragen', 'Frag ein kostenloses Kennenlernen für dein TFT Coaching an.'];
     case 'patches': {
       const p = patchBySlug[sub];
       if(p) return [`TFT Patch ${p.id} – alle Änderungen`, L(`Alle Änderungen aus TFT Patch ${p.id} (${fmtDate(p.date)}) auf einen Blick: Champions, Traits, Items und Augments. ${p.teaser || ''}`, `All changes from TFT patch ${p.id} (${fmtDate(p.date)}) at a glance: champions, traits, items and augments. ${p.teaser || ''}`).trim()];
       return ['TFT Patch Notes – alle Änderungen', 'Alle TFT Patches mit den offiziellen Änderungen von Riot: Champions, Traits, Items und Augments – automatisch aktuell.'];
     }
-    case 'impressum': return ['Impressum', 'Impressum von Climb TFT.'];
-    case 'datenschutz': return ['Datenschutzerklärung', 'Datenschutzerklärung von Climb TFT.'];
+    case 'impressum': return ['Impressum', 'Impressum von TFTClimb.'];
+    case 'datenschutz': return ['Datenschutzerklärung', 'Datenschutzerklärung von TFTClimb.'];
     case 'cheatsheet': {
       const cs = csList().find(s=>s[0]===sub), m = cs && CS_META[cs[0]];
-      if(cs) return [`TFT ${cs[1].replace(/ \(.*\)$/, '')} ${S}${P}`, L(`${cs[1]} in TFT ${S}: ${m.d[0]}. Alle Werte als Tabelle – Teil des Climb TFT Cheatsheets mit Shop-Chancen, Augments, Encounters und mehr.`, `${cs[1]} in TFT ${S}: ${m.d[1].toLowerCase()}. Every number in one table – part of the Climb TFT cheatsheet with shop odds, augments, encounters and more.`)];
+      if(cs) return [`TFT ${cs[1].replace(/ \(.*\)$/, '')} ${S}${P}`, L(`${cs[1]} in TFT ${S}: ${m.d[0]}. Alle Werte als Tabelle – Teil des TFTClimb Cheatsheets mit Shop-Chancen, Augments, Encounters und mehr.`, `${cs[1]} in TFT ${S}: ${m.d[1].toLowerCase()}. Every number in one table – part of the TFTClimb cheatsheet with shop odds, augments, encounters and more.`)];
     }
     return [L(`TFT Cheatsheet ${S}${P} – Shop-Chancen, Augments & Encounters`, `TFT Cheatsheet ${S}${P} – shop odds, augments & encounters`), L(`Alle Zahlen für TFT ${S} auf einer Seite: Shop-Chancen und XP pro Level, Augment-Stufen, Encounter-Chancen, Karussell, Spielerschaden, Loot-Orbs und Emblem-Rezepte.`, `Every number for TFT ${S} on one page: shop odds and XP per level, augment tiers, encounter odds, carousel, player damage, loot orbs and emblem recipes.`)];
-    case 'bedingungen': return ['Widerruf & Bedingungen', 'Widerrufsbelehrung, Muster-Widerrufsformular und Bedingungen für das TFT Coaching bei Climb TFT – Einzelstunde, Set-Pass und VIP-Mentoring.'];
+    case 'bedingungen': return ['Widerruf & Bedingungen', 'Widerrufsbelehrung, Muster-Widerrufsformular und Bedingungen für das TFT Coaching bei TFTClimb – Einzelstunde, Set-Pass und VIP-Mentoring.'];
     case 'guides':
       if(sub==='encounters') return [`TFT Encounters ${S} – welche Comp du spielen solltest`, `Alle TFT Encounters in ${S}: was sie machen, wie oft sie pro Spiel kommen und welche Comps du darauf spielst – Ambosse, Gold- und Prismatic-Augments, Start-Units.`];
       return ['TFT Guides', '', true];
@@ -3212,7 +3212,7 @@ function headTag(sel, make){ let el = document.head.querySelector(sel); if(!el){
 function setMeta(page, sub){
   let [title, desc, noindex] = pageMeta(page, sub);
   title = tr(title); if(desc) desc = tr(desc);   // englische Seite: über das Wörterbuch
-  document.title = page==='home' ? title : title + ' | Climb TFT';
+  document.title = page==='home' ? title : title + ' | TFTClimb';
   if(desc) headTag('meta[name="description"]', ()=>Object.assign(document.createElement('meta'), {name:'description'})).content = desc;
   headTag('meta[name="robots"]', ()=>Object.assign(document.createElement('meta'), {name:'robots'})).content = noindex ? 'noindex' : 'index, follow';
   if(FILE_MODE) return;
@@ -3228,15 +3228,15 @@ function setMeta(page, sub){
   const chImg = page==='champion' && (champImg(champBySlug[sub].n) || champFallback(champBySlug[sub].n));
   const img = chImg || location.origin + '/' + ({tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
   const og = (k, v) => { headTag(`meta[property="${k}"]`, ()=>{ const m = document.createElement('meta'); m.setAttribute('property', k); return m; }).content = v; };
-  og('og:title', document.title); og('og:description', desc || ''); og('og:url', url); og('og:type', 'website'); og('og:site_name', 'Climb TFT'); og('og:locale', EN ? 'en_GB' : 'de_DE'); og('og:image', img);
+  og('og:title', document.title); og('og:description', desc || ''); og('og:url', url); og('og:type', 'website'); og('og:site_name', 'TFTClimb'); og('og:locale', EN ? 'en_GB' : 'de_DE'); og('og:image', img);
   headTag('meta[name="twitter:card"]', ()=>Object.assign(document.createElement('meta'), {name:'twitter:card'})).content = 'summary';
   setLd(page, sub, tool, title, desc, url, path);
 }
 // Strukturierte Daten für Google: Brotkrumen, bei Tools zusätzlich Web-App und die Fragen aus dem Textblock
 const LD_SECTION = {cheatsheet:'Cheatsheet', guides:'Guides', tierlist:'Tierlist', tools:'Tools', bibliothek:'Bibliothek', ranks:'Ranks', patches:'Patches', about:'Meet the Team', builder:'Team Builder', coaching:'Coaching', apply:'Coaching', impressum:'Impressum', datenschutz:'Datenschutz'};
 function setLd(page, sub, tool, title, desc, url, path){
-  const org = {'@type':'Organization', name:'Climb TFT', url:location.origin + withLang('/'), logo:location.origin + '/assets/img/tft-logo.png', email:'info@tftclimb.com'};
-  const graph = [{'@type':'WebSite', name:'Climb TFT', url:location.origin + withLang('/'), inLanguage:EN ? 'en' : 'de', publisher:org}];
+  const org = {'@type':'Organization', name:'TFTClimb', url:location.origin + withLang('/'), logo:location.origin + '/assets/img/tft-logo.png', email:'info@tftclimb.com'};
+  const graph = [{'@type':'WebSite', name:'TFTClimb', url:location.origin + withLang('/'), inLanguage:EN ? 'en' : 'de', publisher:org}];
   if(page!=='home'){
     const items = [['Home', '/']], sec = LD_SECTION[page];
     if(page==='champion') items.push([tr('Bibliothek'), '/bibliothek'], ['Champions', '/bibliothek/champions'], [champBySlug[sub].n, path]);
@@ -3503,7 +3503,7 @@ function ndInit(){
     ml.insertAdjacentHTML('beforebegin', `<div class="mt-pcards">
       ${card('/about/crazyslayt', 'assets/img/team-claudio.jpg', 'CrazYSlayt', 'TFT-Experte &amp; Founder · Coach', 'Hat die ersten beiden Sets gespielt, ist mit Set 12 zurückgekommen und seit Set 15 jedes Set im Challenger. Coacht seit Set 17.', [[L('Rang', 'Rank'), 'Challenger'], ['Peak', '1.002 LP'], [L('Aus', 'From'), 'Frankfurt']], true)}
       ${card('/about/humbadobo', 'assets/img/team-romano.jpg', 'humbadobo', 'Coach', 'Kam beim Studium in Island zu TFT und ist seit Set 15 jedes Set im Challenger.', [[L('Rang', 'Rank'), 'Challenger'], ['Peak', '1.447 LP'], [L('Aus', 'From'), L('Irland', 'Ireland')]], true)}
-      ${card('', 'assets/img/team-kevin.jpg', 'Kevin10K', 'Partner &amp; Co-Founder', 'Partner und Co-Founder von Climb TFT.', [[L('Rang', 'Rank'), 'Unranked'], ['Peak', L('in Dota', 'in Dota')], [L('Aus', 'From'), 'Hamburg']], false)}
+      ${card('', 'assets/img/team-kevin.jpg', 'Kevin10K', 'Partner &amp; Co-Founder', 'Partner und Co-Founder von TFTClimb.', [[L('Rang', 'Rank'), 'Unranked'], ['Peak', L('in Dota', 'in Dota')], [L('Aus', 'From'), 'Hamburg']], false)}
     </div>`);
   }
   $('#ndSide').addEventListener('click', e=>{ if(e.target.closest('a')) document.body.classList.remove('nd-drawer'); });

@@ -702,3 +702,7 @@ body.nd-mini .nds-vi2{display:none}
 
 /* ---------- Bewerbungsformular mittig unter der zentrierten Überschrift ---------- */
 .nd #applyForm{margin-inline:auto}
+
+/* ---------- Coach-Profile: Peak-Zeile der Rang-Historie in Pink statt Gold ---------- */
+.nd .lp-row.best{border-color:rgba(247,22,110,.5);background:linear-gradient(90deg,rgba(247,22,110,.16),rgba(247,22,110,.04));box-shadow:0 0 18px rgba(247,22,110,.12)}
+.nd .lp-row.best em{color:#ff6fa6}

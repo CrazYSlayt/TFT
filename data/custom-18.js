@@ -1,4 +1,4 @@
-// Climb TFT – eigene Ergänzungen zu Set 18 (von Hand gepflegt, das Update-Skript überschreibt diese Datei NICHT)
+// TFTClimb – eigene Ergänzungen zu Set 18 (von Hand gepflegt, das Update-Skript überschreibt diese Datei NICHT)
 // Für ein neues Set einfach eine Kopie als custom-<Set>.js anlegen und anpassen.
 window.TFT_CUSTOM = {
   set: 18,

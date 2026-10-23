@@ -1,5 +1,5 @@
 ﻿<#
-  Climb TFT – offizielle Spieldaten aktualisieren
+  TFTClimb – offizielle Spieldaten aktualisieren
   ------------------------------------------------
   Lädt Champions, Traits, Items und Augments von CommunityDragon:
     • Live-Server  -> data\tft-data-<Set>.js   (Version fest, z. B. 16.20, damit Bild-Links stabil bleiben)
@@ -255,7 +255,7 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
 
   $out = Join-Path $dataDir "tft-data-$SetNo.js"
   $sb = New-Object Text.StringBuilder
-  [void]$sb.AppendLine("// Climb TFT – offizielle Spieldaten (automatisch erzeugt mit tools\update-data.ps1, nicht von Hand bearbeiten)")
+  [void]$sb.AppendLine("// TFTClimb – offizielle Spieldaten (automatisch erzeugt mit tools\update-data.ps1, nicht von Hand bearbeiten)")
   [void]$sb.AppendLine("// Quelle: CommunityDragon $Ver ($Channel) · Set $SetNo · erzeugt am $today")
   [void]$sb.AppendLine("window.TFT_DATA = {")
   [void]$sb.AppendLine("set:$SetNo, channel:$(J $Channel), version:$(J $Ver), generated:$(J $today), cdn:$(J "$Base/game/"),")
@@ -268,7 +268,7 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
   Write-Host ("  geschrieben: {0} ({1:N0} KB)" -f $out, ((Get-Item $out).Length / 1KB)) -ForegroundColor Green
   $en = NewObj; $en['champions'] = $enChamps; $en['traits'] = $enTraits; $en['items'] = $enItems; $en['augments'] = $enAugs
   $outEn = Join-Path $dataDir "tft-data-$SetNo-en.js"
-  [IO.File]::WriteAllText($outEn, "// Climb TFT – englische Texte zu Set $SetNo für die englische Seite (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_DATA_EN = $(J $en);`n", $utf8)
+  [IO.File]::WriteAllText($outEn, "// TFTClimb – englische Texte zu Set $SetNo für die englische Seite (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_DATA_EN = $(J $en);`n", $utf8)
   Write-Host ("  geschrieben: {0} ({1:N0} KB)" -f $outEn, ((Get-Item $outEn).Length / 1KB)) -ForegroundColor Green
 }
 
@@ -300,7 +300,7 @@ function UpdateRanks {
   $url = 'https://www.esportstales.com/teamfight-tactics/seasonal-rank-system-and-player-distribution'
   $out = Join-Path $dataDir 'ranks.js'
   try {
-    $html = (Invoke-WebRequest $url -UseBasicParsing -UserAgent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ClimbTFT-Update' -TimeoutSec 60).Content
+    $html = (Invoke-WebRequest $url -UseBasicParsing -UserAgent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) TFTClimb-Update' -TimeoutSec 60).Content
     $months = 'January','February','March','April','May','June','July','August','September','October','November','December'
     $deMonth = @{ January='Januar'; February='Februar'; March='März'; April='April'; May='Mai'; June='Juni'; July='Juli'; August='August'; September='September'; October='Oktober'; November='November'; December='Dezember' }
     # Alle Sets der Seite (neuestes oben), darin alle Monatsüberschriften mit ihrer Tabelle
@@ -335,7 +335,7 @@ function UpdateRanks {
     $o['history'] = $hist.ToArray()
     $old = $(if (Test-Path $out) { [IO.File]::ReadAllText($out, $utf8) } else { '' })
     $same = $old -match ('"month":"' + [regex]::Escape($o['month']) + '"') -and $old -match ('"set":"' + [regex]::Escape($o['set']) + '"') -and $old -match '"history"'
-    [IO.File]::WriteAllText($out, "// Climb TFT – Rangverteilung für die Ranks- und Stats-Seite (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_RANKS = $(J $o);`n", $utf8)
+    [IO.File]::WriteAllText($out, "// TFTClimb – Rangverteilung für die Ranks- und Stats-Seite (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_RANKS = $(J $o);`n", $utf8)
     if ($same) { Write-Host "  Keine neuen Zahlen – EsportsTales steht weiter bei Set $($o['set']), $($o['month'])." }
     else { Write-Host "  Neuer Stand: Set $($o['set']), $($o['month']) · Verlauf: $($hist.Count) Monate" -ForegroundColor Green }
   } catch { Warn "Rangverteilung nicht aktualisiert ($($_.Exception.Message)) – die bisherigen Zahlen bleiben." }
@@ -358,7 +358,7 @@ function UpdateCutoffs {
   }
   if (-not $regions.Count) { Warn 'Keine LP-Grenzen – die bisherigen bleiben.'; return }
   $o = NewObj; $o['source'] = 'tactics.tools'; $o['url'] = 'https://tactics.tools/leaderboards/euw'; $o['checked'] = (Get-Date).ToString('yyyy-MM-ddTHH:mm'); $o['regions'] = $regions
-  [IO.File]::WriteAllText($out, "// Climb TFT – LP-Grenzen für Challenger/Großmeister (automatisch erzeugt mit tools\update-data.ps1; live über /api/cutoffs)`nwindow.TFT_CUTOFFS = $(J $o);`n", $utf8)
+  [IO.File]::WriteAllText($out, "// TFTClimb – LP-Grenzen für Challenger/Großmeister (automatisch erzeugt mit tools\update-data.ps1; live über /api/cutoffs)`nwindow.TFT_CUTOFFS = $(J $o);`n", $utf8)
   Write-Host ("  " + (($regions.Keys | ForEach-Object { "$($_.ToUpper()) $($regions[$_]['ch'])/$($regions[$_]['gm']) LP" }) -join ' · ')) -ForegroundColor Green
 }
 if ($OnlyRanks) { UpdateRanks; UpdateCutoffs; Write-Host 'Fertig.' -ForegroundColor Green; return }
@@ -478,7 +478,7 @@ function UpdatePatches([int]$liveSet) {
   $sorted = @($all.Values | Sort-Object { [string]$_['date'] } -Descending)
   [IO.File]::WriteAllText($listFile, (J $sorted), $utf8)
   $show = @($sorted | Where-Object { [int]$_['set'] -ge ($liveSet - 1) })
-  [IO.File]::WriteAllText((Join-Path $dataDir 'patches.js'), "// Climb TFT – Patches (automatisch erzeugt mit tools\update-data.ps1 aus Riots Patchnotes, nicht von Hand bearbeiten)`n// Eigene Kommentare zu Patches gehören in data\patch-kommentare.js`nwindow.TFT_PATCHES = $(J $show);`n", $utf8)
+  [IO.File]::WriteAllText((Join-Path $dataDir 'patches.js'), "// TFTClimb – Patches (automatisch erzeugt mit tools\update-data.ps1 aus Riots Patchnotes, nicht von Hand bearbeiten)`n// Eigene Kommentare zu Patches gehören in data\patch-kommentare.js`nwindow.TFT_PATCHES = $(J $show);`n", $utf8)
   Write-Host ("  geschrieben: data\patches.js ({0} Patches)" -f $show.Count) -ForegroundColor Green
   # Englische Fassung derselben Patches (Riots en-gb-Seite) für die englische Seite → data\patches-en.js
   try {
@@ -494,7 +494,7 @@ function UpdatePatches([int]$liveSet) {
     $outEn = NewObj
     foreach ($p in $show) { $e = $en[[string]$p['id']]; if ($e) { $x = NewObj; foreach ($k in 'url','teaser','notes') { if ($e.ContainsKey($k)) { $x[$k] = $e[$k] } }; $outEn[[string]$p['id']] = $x } }
     [IO.File]::WriteAllText($enFile, (J @($en.Values)), $utf8)
-    [IO.File]::WriteAllText((Join-Path $dataDir 'patches-en.js'), "// Climb TFT – Patches auf Englisch für die englische Seite (automatisch erzeugt mit tools\update-data.ps1 aus Riots englischen Patchnotes)`nwindow.TFT_PATCHES_EN = $(J $outEn);`n", $utf8)
+    [IO.File]::WriteAllText((Join-Path $dataDir 'patches-en.js'), "// TFTClimb – Patches auf Englisch für die englische Seite (automatisch erzeugt mit tools\update-data.ps1 aus Riots englischen Patchnotes)`nwindow.TFT_PATCHES_EN = $(J $outEn);`n", $utf8)
     Write-Host ("  geschrieben: data\patches-en.js ({0} Patches auf Englisch)" -f $outEn.Count) -ForegroundColor Green
   } catch { Warn "Englische Patchnotes nicht aktualisiert ($($_.Exception.Message)) – die bisherigen bleiben." }
 }
@@ -547,7 +547,7 @@ foreach ($f in (Get-ChildItem $dataDir -Filter 'tft-data-*.js' | Where-Object { 
   $list.Add($o)
 }
 $list = @($list | Sort-Object { $_['set'] } -Descending)
-$manifest = "// Climb TFT – verfügbare Sets (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_SETS = [`n" + (($list | ForEach-Object { J $_ }) -join ",`n") + "`n];`n"
+$manifest = "// TFTClimb – verfügbare Sets (automatisch erzeugt mit tools\update-data.ps1)`nwindow.TFT_SETS = [`n" + (($list | ForEach-Object { J $_ }) -join ",`n") + "`n];`n"
 [IO.File]::WriteAllText((Join-Path $dataDir 'sets.js'), $manifest, $utf8)
 foreach ($s in $list) { Write-Host ("  Set {0,-3} {1,-7} {2,-12} {3}" -f $s['set'], $s['status'], $s['version'], $s['generated']) }
 

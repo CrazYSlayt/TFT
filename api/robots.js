@@ -1,4 +1,4 @@
-// Climb TFT – robots.txt für Suchmaschinen unter /robots.txt (Weiterleitung in vercel.json).
+// TFTClimb – robots.txt für Suchmaschinen unter /robots.txt (Weiterleitung in vercel.json).
 // Die Redaktion wird nicht indexiert, die Sitemap liegt unter der aktuell aufgerufenen Domain.
 module.exports = (req, res) => {
   const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';

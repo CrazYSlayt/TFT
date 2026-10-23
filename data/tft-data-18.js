@@ -1,4 +1,4 @@
-// Climb TFT – offizielle Spieldaten (automatisch erzeugt mit tools\update-data.ps1, nicht von Hand bearbeiten)
+// TFTClimb – offizielle Spieldaten (automatisch erzeugt mit tools\update-data.ps1, nicht von Hand bearbeiten)
 // Quelle: CommunityDragon 16.21 (live) · Set 18 · erzeugt am 2026-10-22
 window.TFT_DATA = {
 set:18, channel:"live", version:"16.21", generated:"2026-10-22", cdn:"https://raw.communitydragon.org/16.21/game/",
