@@ -1,22 +1,22 @@
 // TFTClimb – Sitemap für Suchmaschinen unter /sitemap.xml (Weiterleitung in vercel.json).
-// Nimmt die Domain, unter der die Seite gerade aufgerufen wird, und listet jede Seite auf Deutsch und Englisch.
+// Listet jede Seite auf Deutsch und Englisch, unter der Domain, über die die Sitemap abgerufen wird.
 const fs = require('fs');
 const path = require('path');
 
 const PAGES = [
-  ['/', 1.0, 'daily'],
-  ['/tierlist', 0.9, 'daily'], ['/tierlist/items', 0.8, 'weekly'], ['/tierlist/augments', 0.8, 'weekly'], ['/tierlist/holds', 0.7, 'weekly'],
-  ['/tools', 0.8, 'weekly'], ['/tools/rolldown', 0.8, 'monthly'], ['/tools/dps', 0.8, 'monthly'], ['/tools/drops', 0.7, 'monthly'],
-  ['/tools/tierlist', 0.7, 'monthly'], ['/tools/simulator', 0.7, 'monthly'], ['/builder', 0.7, 'monthly'],
-  ['/bibliothek', 0.7, 'weekly'], ['/bibliothek/items', 0.7, 'weekly'], ['/bibliothek/traits', 0.7, 'weekly'],
-  ['/ranks', 0.6, 'monthly'],
-  ...['iron', 'bronze', 'silver', 'gold', 'platinum', 'emerald', 'diamond', 'master', 'grandmaster', 'challenger'].map(k => ['/ranks/' + k, 0.4, 'monthly']),
-  ['/patches', 0.7, 'weekly'],
-  ['/cheatsheet', 0.8, 'weekly'],
-  ...['shop', 'augments', 'encounters', 'damage', 'orbs', 'loot', 'gold-subscription', 'reroll-subscription', 'emblems', 'solo'].map(k => ['/cheatsheet/' + k, 0.6, 'weekly']),
-  ['/coaching', 0.7, 'monthly'], ['/apply', 0.5, 'yearly'],
-  ['/about', 0.4, 'monthly'], ['/about/crazyslayt', 0.4, 'monthly'], ['/about/humbadobo', 0.4, 'monthly'],
-  ['/impressum', 0.1, 'yearly'], ['/datenschutz', 0.1, 'yearly'], ['/bedingungen', 0.1, 'yearly'],
+  '/',
+  '/tierlist', '/tierlist/items', '/tierlist/augments', '/tierlist/holds',
+  '/tools', '/tools/rolldown', '/tools/dps', '/tools/drops',
+  '/tools/tierlist', '/tools/simulator', '/builder',
+  '/bibliothek', '/bibliothek/items', '/bibliothek/traits',
+  '/ranks',
+  ...['iron', 'bronze', 'silver', 'gold', 'platinum', 'emerald', 'diamond', 'master', 'grandmaster', 'challenger'].map(k => '/ranks/' + k),
+  '/patches',
+  '/cheatsheet',
+  ...['shop', 'augments', 'encounters', 'damage', 'orbs', 'loot', 'gold-subscription', 'reroll-subscription', 'emblems', 'solo'].map(k => '/cheatsheet/' + k),
+  '/coaching', '/apply',
+  '/about', '/about/crazyslayt', '/about/humbadobo',
+  '/impressum', '/datenschutz', '/bedingungen',
 ];
 
 // Patch-Seiten aus data/patches.js (wird vom Update-Skript gepflegt)
@@ -24,7 +24,7 @@ function patches(){
   try {
     const txt = fs.readFileSync(path.join(process.cwd(), 'data', 'patches.js'), 'utf8');
     const list = JSON.parse(txt.slice(txt.indexOf('['), txt.lastIndexOf(']') + 1));
-    return list.map(p => ['/patches/' + String(p.id).replace('.', '-'), 0.5, 'monthly', p.date]);
+    return list.map(p => '/patches/' + String(p.id).replace('.', '-'));
   } catch (e) { return []; }
 }
 
@@ -40,23 +40,21 @@ function champions(){
     const txt = all.slice(start, end > start ? end : undefined);   // nur der Champion-Abschnitt (danach kommen die Traits)
     const names = [...txt.matchAll(/^\{"api":"[^"]*","n":"([^"]+)"/gm)].map(m => m[1]);
     const slug = n => n.toLowerCase().replace(/['’.]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    return [...new Set(names.map(slug))].map(s => ['/champions/' + s, 0.6, 'weekly', live.generated]);
+    return [...new Set(names.map(slug))].map(s => '/champions/' + s);
   } catch (e) { return []; }
 }
 
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
+// Schlicht wie üblich: nur die Adressen, erst alle deutschen, dann alle englischen Seiten.
+// Die Sprachverweise (hreflang) stehen im Kopf jeder Seite (app.js), Priorität/Häufigkeit wertet Google nicht mehr aus.
 module.exports = (req, res) => {
-  const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
+  let host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
+  if (host === 'tftclimb.com') host = 'www.tftclimb.com';   // immer die kanonische Domain
   const base = (req.headers['x-forwarded-proto'] || 'https') + '://' + host;
-  const urls = [...PAGES, ...champions(), ...patches()].map(([p, prio, freq, date]) => {
-    const de = base + p, en = base + (p === '/' ? '/en/' : '/en' + p);
-    const alt = `<xhtml:link rel="alternate" hreflang="de" href="${esc(de)}"/><xhtml:link rel="alternate" hreflang="en" href="${esc(en)}"/><xhtml:link rel="alternate" hreflang="x-default" href="${esc(de)}"/>`;
-    const meta = `${date ? `<lastmod>${date}</lastmod>` : ''}<changefreq>${freq}</changefreq>`;
-    return `<url><loc>${esc(de)}</loc>${meta}<priority>${prio.toFixed(1)}</priority>${alt}</url>`
-      + `<url><loc>${esc(en)}</loc>${meta}<priority>${Math.max(0.1, prio - 0.1).toFixed(1)}</priority>${alt}</url>`;
-  });
+  const paths = [...PAGES, ...champions(), ...patches()];
+  const urls = [...paths.map(p => base + p), ...paths.map(p => base + (p === '/' ? '/en/' : '/en' + p))];
   res.setHeader('Content-Type', 'application/xml; charset=utf-8');
   res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=86400');
-  res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls.join('\n')}\n</urlset>\n`);
+  res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(u => `  <url><loc>${esc(u)}</loc></url>`).join('\n')}\n</urlset>\n`);
 };
