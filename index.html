@@ -42,7 +42,11 @@
     if(q === 'neu') localStorage.removeItem('tftfreaks_design');
     alt = localStorage.getItem('tftfreaks_design') === 'alt';
   } catch(e){}
-  if(!alt){ document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css">'); }
+  if(!alt){
+    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css">');
+    // Topleiste, Seitenleiste und Inhalt baut app.js: bis alle Skripte gelaufen sind, zeigt design-neu.css nur ein Lade-Logo statt eines einsamen Footers
+    document.addEventListener('DOMContentLoaded', function(){ document.documentElement.classList.add('nd-ready'); });
+  }
 })();
 </script>
 </head>
@@ -948,7 +952,8 @@
     <!-- Profil: CrazYSlayt -->
     <div class="mt-view" data-about="crazyslayt" hidden>
     <div class="page-head"><div class="crumb"><a href="/about">Meet the Team</a> / CrazYSlayt</div><h1>Claudio <em class="serif">„CrazYSlayt“</em></h1></div>
-    <div class="card about">
+    <div class="card about has-mascot">
+      <img class="about-mascot" src="assets/img/mascot-vi-arms.webp" alt="" width="520" height="957" loading="lazy">
       <div>
         <div class="about-pic team-claudio" role="img" aria-label="Claudio „CrazYSlayt“" style="background-size:cover;background-position:center 20%"></div>
         <div class="about-id"><b>CrazYSlayt</b><span>#siQVi · EUW</span></div>
@@ -1007,7 +1012,8 @@
     <!-- Profil: humbadobo -->
     <div class="mt-view" data-about="humbadobo" hidden>
     <div class="page-head"><div class="crumb"><a href="/about">Meet the Team</a> / humbadobo</div><h1>Romano <em class="serif">„humbadobo“</em></h1></div>
-    <div class="card about">
+    <div class="card about has-mascot ks">
+      <img class="about-mascot" src="assets/img/mascot-kaisa.webp" alt="" width="520" height="786" loading="lazy">
       <div>
         <div class="about-pic team-romano" role="img" aria-label="Romano „humbadobo“" style="background-size:cover;background-position:center 20%"></div>
         <div class="about-id"><b>humbadobo</b><span>#000 · EUW</span></div>

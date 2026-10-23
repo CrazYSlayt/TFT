@@ -706,3 +706,29 @@ body.nd-mini .nds-vi2{display:none}
 /* ---------- Coach-Profile: Peak-Zeile der Rang-Historie in Pink statt Gold ---------- */
 .nd .lp-row.best{border-color:rgba(247,22,110,.5);background:linear-gradient(90deg,rgba(247,22,110,.16),rgba(247,22,110,.04));box-shadow:0 0 18px rgba(247,22,110,.12)}
 .nd .lp-row.best em{color:#ff6fa6}
+
+/* ---------- Coach-Profile: Maskottchen rechts im Profilkasten (schaut oben heraus), Text mittig dazwischen ---------- */
+.nd .card.about.has-mascot{--mw:240px;grid-template-columns:220px minmax(0,1fr) var(--mw);margin-top:44px}
+.nd .card.about.ks{--mw:280px}
+.nd .about-mascot{position:absolute;right:16px;top:-58px;width:var(--mw);height:auto;max-height:calc(100% + 58px);object-fit:cover;object-position:top;max-width:none;z-index:1;pointer-events:none;filter:drop-shadow(0 10px 22px rgba(0,0,0,.55));-webkit-mask-image:linear-gradient(180deg,#000 82%,transparent);mask-image:linear-gradient(180deg,#000 82%,transparent)}
+.nd .card.about.has-mascot>div:last-of-type{padding-right:6px}
+@media (max-width:1300px){.nd .card.about.has-mascot .stats{grid-template-columns:1fr 1fr}}
+@media (max-width:1100px){.nd .card.about.has-mascot{--mw:190px}.nd .card.about.ks{--mw:220px}}
+@media (max-width:820px){.nd .card.about.has-mascot{grid-template-columns:1fr;margin-top:20px}.nd .about-mascot{display:none}}
+
+/* ---------- Coach-Profile: Peak-Rang in der Rang-Historie deutlich hervorheben ---------- */
+.nd .lp-row.best{position:relative;margin:6px 0;padding:12px 14px;grid-template-columns:62px 52px 1fr auto;border:1px solid rgba(247,22,110,.75);
+  background:radial-gradient(120% 160% at 100% 50%,rgba(247,22,110,.3),transparent 60%),linear-gradient(90deg,rgba(247,22,110,.2),rgba(176,74,224,.08));
+  box-shadow:0 0 0 1px rgba(247,22,110,.25),0 8px 26px rgba(247,22,110,.28),inset 0 0 18px rgba(247,22,110,.12)}
+.nd .lp-row.best::before{content:"";position:absolute;left:-1px;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:var(--pink);box-shadow:0 0 10px var(--pink)}
+.nd .lp-row.best span{color:#fff}
+.nd .lp-row.best img{width:52px;height:52px;filter:drop-shadow(0 0 10px rgba(247,22,110,.55))}
+.nd .lp-row.best b{display:flex;align-items:center;gap:10px;font-size:1.08rem}
+.nd .lp-row.best b::after{content:"Peak";padding:3px 9px;border-radius:99px;background:linear-gradient(90deg,var(--pink),var(--violet));color:#fff;font-family:var(--ff-head);font-style:italic;font-weight:800;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 0 12px rgba(247,22,110,.5)}
+.nd .lp-row.best em{font-size:1.35rem;color:#fff;text-shadow:0 0 14px rgba(247,22,110,.8)}
+
+/* ---------- Ladezustand: bis app.js die Seite aufgebaut hat (Klasse nd-ready, siehe index.html), Inhalt und Footer verbergen ---------- */
+html.nd:not(.nd-ready) main,html.nd:not(.nd-ready) footer{visibility:hidden}
+html.nd:not(.nd-ready) body::after{content:"";position:fixed;left:50%;top:50%;z-index:100;width:min(240px,60vw);aspect-ratio:720/265;transform:translate(-50%,-50%);
+  background:url(../brand/logo-tftclimb.webp) center/contain no-repeat;filter:drop-shadow(0 0 18px rgba(46,230,214,.35));opacity:0;animation:nd-boot 1.6s ease-in-out .25s infinite}   /* erscheint erst nach 0,25 s – bei schnellem Laden blitzt nichts auf */
+@keyframes nd-boot{0%,100%{opacity:.35}50%{opacity:1}}
