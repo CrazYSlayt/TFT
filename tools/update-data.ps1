@@ -405,6 +405,9 @@ function PatchChanges([string]$url) {
   $secs = New-Object 'System.Collections.Generic.List[object]'; $cur = $null
   $stack = New-Object 'System.Collections.Generic.List[object]'
   $inHead = $false; $head = ''; $pos = 0; $grp = ''
+  # Riot schreibt (v. a. auf Deutsch) manchmal den Namen als eigenen Punkt und die Werte als gleichrangige Punkte darunter
+  # ("Würfelwurf", "Aufwertungskosten: 3 ⇒ 2") – der alleinstehende Name gilt dann für die folgenden Zeilen derselben Liste
+  $bare = ''; $bareDepth = -1
   foreach ($m in [regex]::Matches($html, '<(/?)(ul|ol|li|h2|h3|h4)\b[^>]*>')) {
     $txt = $html.Substring($pos, $m.Index - $pos); $pos = $m.Index + $m.Length
     if ($inHead) { $head += $txt } elseif ($stack.Count) { [void]$stack[$stack.Count-1].t.Append($txt) }
@@ -412,7 +415,7 @@ function PatchChanges([string]$url) {
     if ($tag -match '^h[234]$') {
       if (-not $close) { $inHead = $true; $head = '' }
       else {
-        $inHead = $false; $name = CleanTxt $head
+        $inHead = $false; $name = CleanTxt $head; $bare = ''
         # h2 = Gruppe (z. B. "PATCH-AKTUALISIERUNG" = B-Patch, "GROSSE ÄNDERUNGEN"); ein Datum als h4 gehört zur Gruppe
         if ($tag -eq 'h2') { $grp = $name; $cur = $null }
         elseif ($name -match '^\d{1,2}\.\s+\S+$' -or $name -match '^(?i)(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(st|nd|rd|th)?$') { $grp = ($grp + ' · ' + $name).Trim(' ·') }
@@ -420,16 +423,26 @@ function PatchChanges([string]$url) {
       }
       continue
     }
-    if ($tag -eq 'ul' -or $tag -eq 'ol') { if (-not $close -and $stack.Count) { $p = $stack[$stack.Count-1]; if (-not $p.lead) { $p.lead = CleanTxt $p.t.ToString() } }; continue }
+    if ($tag -eq 'ul' -or $tag -eq 'ol') {
+      if (-not $close -and $stack.Count) { $p = $stack[$stack.Count-1]; if (-not $p.lead) { $p.lead = CleanTxt $p.t.ToString() } }
+      if ($close -and $stack.Count -le $bareDepth) { $bare = '' }
+      continue
+    }
     if (-not $close) { $stack.Add([pscustomobject]@{ t = (New-Object Text.StringBuilder); lead = '' }); continue }
     if (-not $stack.Count) { continue }
     $it = $stack[$stack.Count-1]; $stack.RemoveAt($stack.Count-1)
     $line = $(if ($it.lead) { $it.lead } else { CleanTxt $it.t.ToString() })
-    if (-not $cur -or $line -notmatch '⇒') { continue }
+    if (-not $cur) { continue }
+    if ($line -notmatch '⇒') {
+      # kurzer Punkt ohne Wert und ohne eigene Unterliste = Name für die folgenden Wertezeilen
+      if (-not $it.lead -and $line -and $line.Length -le 40 -and $line -notmatch '[:.!?]') { $bare = $line; $bareDepth = $stack.Count }
+      continue
+    }
     # Oberpunkte (z. B. "Camille" > "Schaden – Angriffsschaden: …"): oberster Punkt = Name, die übrigen gehören zur Bezeichnung
     $anc = @($stack | ForEach-Object { ($_.lead -replace '\s*[–:].*$', '').Trim() } | Where-Object { $_ })
     # Riot verschachtelt manchmal eigene Champions unter einen anderen (z. B. Master Yi und Tristana unter Mama Beak): der tiefste Champion wird zum Namen
     for ($k = $anc.Count - 1; $k -gt 0; $k--) { if ($script:PatchChamps -contains (NormName $anc[$k])) { $anc = @($anc[$k..($anc.Count-1)]); break } }
+    if (-not $anc.Count -and $bare -and $stack.Count -eq $bareDepth -and $line -notmatch ' – ') { $anc = @($bare) }
     $mm = [regex]::Match($line, '^(?<s>.+?) – (?<l>.+?):\s*(?<o>.*?)\s*⇒\s*(?<n>.+)$')
     if (-not $mm.Success) { $mm = [regex]::Match($line, '^(?<l>[^:]+):\s*(?<o>.*?)\s*⇒\s*(?<n>.+)$') }
     if ($mm.Success) {
@@ -437,7 +450,12 @@ function PatchChanges([string]$url) {
       $s = $(if ($parts.Count -gt 1) { $parts[0] } else { '' }); $l = $(if ($parts.Count -gt 1) { ($parts[1..($parts.Count-1)]) -join ' – ' } else { $parts[0] })
       $o = $mm.Groups['o'].Value.Trim()
       # "AD Form: Starting Attack Damage: 60 ⇒ 63": der Teil vor dem zweiten Doppelpunkt gehört noch zur Bezeichnung
-      $om = [regex]::Match($o, '^(?<x>[^:⇒]*\p{L}[^:⇒]*):\s+(?<y>.+)$'); if ($om.Success) { $l = $l + ': ' + $om.Groups['x'].Value.Trim(); $o = $om.Groups['y'].Value.Trim() }
+      $om = [regex]::Match($o, '^(?<x>[^:⇒]*\p{L}[^:⇒]*):\s+(?<y>.+)$')
+      if ($om.Success) {
+        # ohne übergeordneten Namen ist der Teil vor dem ersten Doppelpunkt der Name ("Moonlight Ritual: Base Cost: 2 ⇒ 3")
+        if (-not $s) { $s = $l; $l = $om.Groups['x'].Value.Trim() } else { $l = $l + ': ' + $om.Groups['x'].Value.Trim() }
+        $o = $om.Groups['y'].Value.Trim()
+      }
       $cur['ch'].Add([object[]]@($s, $l, $o, $mm.Groups['n'].Value.Trim()))
     } else { $cur['ch'].Add([object[]]@($(if ($anc.Count) { $anc[0] } else { '' }), '', '', $line)) }
   }
