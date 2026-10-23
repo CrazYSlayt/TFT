@@ -737,3 +737,28 @@ html.nd:not(.nd-ready) main,html.nd:not(.nd-ready) footer{opacity:0;visibility:h
   background:linear-gradient(90deg,var(--cy),#1fb6e8 60%,var(--pink));box-shadow:0 0 10px rgba(46,230,214,.7);animation:nd-load 4s cubic-bezier(.08,.75,.25,1) forwards}
 @keyframes nd-load{from{transform:scaleX(.04)}to{transform:scaleX(.9)}}
 @media (prefers-reduced-motion:reduce){.nd main,.nd footer{transition:none}.nd-r>*{animation:none}.nd-load{display:none}}
+
+/* ---------- Erfolge im Dashboard: festes Etikett „Unsere Students“ vor der wechselnden Zeile (immer eine Zeile, nichts verrutscht) ---------- */
+.dsh-tst{container-type:inline-size;grid-template-columns:auto auto;justify-content:center;align-items:center;column-gap:12px;min-height:34px}
+.dsh-tlab{grid-area:1/1;display:flex;align-items:center;gap:6px;padding-right:12px;border-right:1px solid rgba(247,22,110,.35);font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#ff6fa6;white-space:nowrap}
+.dsh-tlab svg{width:16px;height:16px;flex:none}
+.dsh-ts,.dsh-ts[class]{grid-area:1/2;flex-direction:row;justify-content:flex-start;white-space:nowrap}
+.dsh-tst{column-gap:9px}.dsh-tlab{padding-right:9px;letter-spacing:.08em}.dsh-tn b{font-size:.86rem}
+/* nur Embleme, der Rangname steht im Tooltip; die Session-Zahl nur, wenn die Karte breit genug ist */
+.dsh-tr b{display:none}.dsh-tj{gap:4px}.dsh-tr img{margin:-10px -2px}.dsh-ts[class]{gap:10px}
+@container (max-width:300px){.dsh-tn small{display:none}}
+@container (max-width:275px){.dsh-tst{column-gap:6px}.dsh-tlab{padding-right:6px;gap:4px;font-size:.56rem;letter-spacing:.04em}.dsh-tlab svg{width:13px;height:13px}.dsh-tn b{font-size:.78rem}.dsh-ts[class]{gap:6px}.dsh-tr img{width:40px;height:40px;margin:-8px -3px}}
+
+/* ---------- Coach-Profile: Pfeile zum vorherigen/nächsten Coach neben der Überschrift, Wisch-Übergang ---------- */
+.mt-nav{display:none}
+.nd .mt-head{position:relative;padding-inline:64px}
+.nd .mt-nav{position:absolute;top:50%;display:flex;align-items:center;justify-content:center;width:48px;height:48px;margin-top:-24px;border-radius:50%;color:var(--cy2);
+  background:linear-gradient(160deg,rgba(9,36,50,.92),rgba(3,17,27,.95));border:1px solid rgba(46,230,214,.35);box-shadow:0 8px 20px rgba(0,0,0,.45);transition:color .2s,border-color .2s,box-shadow .2s,transform .2s}
+.nd .mt-prev{left:0}.nd .mt-next{right:0}
+.nd .mt-nav svg{width:22px;height:22px}
+.nd .mt-nav:hover,.nd .mt-nav:focus-visible{color:#fff;border-color:rgba(247,22,110,.7);box-shadow:0 0 0 1px rgba(247,22,110,.35),0 0 20px rgba(247,22,110,.45);transform:scale(1.08)}
+.nd .mt-next:hover svg{animation:mt-nudge .8s ease-in-out infinite}
+.nd .mt-prev:hover svg{animation:mt-nudge .8s ease-in-out infinite reverse}
+@keyframes mt-nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
+.mt-sliding{position:relative;overflow-x:clip}
+@media (max-width:640px){.nd .mt-head{padding-inline:46px}.nd .mt-nav{width:38px;height:38px;margin-top:-19px}.nd .mt-nav svg{width:18px;height:18px}}

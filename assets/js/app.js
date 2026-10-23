@@ -647,8 +647,8 @@ function bSetMode(mode){
   const sim = mode==='sim';
   $('#page-builder').classList.toggle('sim-mode', sim);
   $('#bCrumb').innerHTML = sim ? '<a href="/tools">Tools</a> / Kampf-Simulator' : '<a href="/">Home</a> / Team Builder';
-  $('#bTitle').innerHTML = sim ? `<span class="th-key">TFT Kampf-Simulator:</span> Welches Team gewinnt? <span class="pill gold wip-pill" title="Der Simulator wird noch verbessert – Ergebnisse sind Näherungen">In Arbeit</span>` : `<span class="th-key">TFT Team Builder:</span> Board planen für Set <span data-setno>${TFT_DATA.set}</span>`;
-  $('#bIntro').textContent = sim ? 'Stell dein Team und den Gegner auf – mit Items, Sternen und Augments – und starte den Kampf. Du siehst, wohin jede Unit läuft, wen sie angreift, wann sie ihre Fähigkeit wirkt und wohin sie springt. Der Simulator ist noch in Arbeit: Die Ergebnisse sind Näherungen.'
+  $('#bTitle').innerHTML = sim ? `<span class="th-key">TFT Kampf-Simulator:</span> Welches Team gewinnt?` : `<span class="th-key">TFT Team Builder:</span> Board planen für Set <span data-setno>${TFT_DATA.set}</span>`;
+  $('#bIntro').textContent = sim ? 'Stell dein Team und den Gegner auf – mit Items, Sternen und Augments – und starte den Kampf. Du siehst, wohin jede Unit läuft, wen sie angreift, wann sie ihre Fähigkeit wirkt und wohin sie springt. Die Ergebnisse sind Näherungen.'
     : 'Zieh Units aufs Brett, verteil Items und sieh sofort, welche Traits aktiv sind. Auf dem Handy: erst antippen, dann aufs Feld tippen.';
 }
 
@@ -1383,7 +1383,6 @@ const BUDDY_LINES = {
       o ? `Auf Level 8 ist jeder Shop-Slot zu ${o[3]} % eine 4-Kosten-Unit. Faszinierend, nicht wahr?` : null,
       'Der Item-Drop-Rechner zählt mit, was noch im Item-Pool liegt. Reine Mathematik!',
       'Mit dem Tierlist-Maker baust du deine eigene Tierlist – und schickst sie als Link an deine Freunde.',
-      'Der Kampf-Simulator steht noch auf meiner Werkbank. Ein paar Schrauben fehlen noch!',
       'Ein Experiment ist kein Experiment ohne Wiederholung: Im Simulator rechnest du einen Kampf 100-mal.',
       'Guinsoo oder Infinity Edge? Der DPS-Rechner zeigt es dir als Kurve. Wunderbar!'].filter(Boolean);
   },
@@ -1407,8 +1406,7 @@ const BUDDY_LINES = {
     'Prismatic-Orbs gibt es erst ab 3-7. Geduld ist auch eine Wissenschaft!']; },
   sim(){ return ['Willkommen in meinem Labor! Stell zwei Teams auf und starte das Experiment.',
     'Klick eine Unit an – dann siehst du ihr Ziel, ihren Laufweg und was sie als Nächstes vorhat.',
-    'Ein Kampf ist Zufall, hundert Kämpfe sind Statistik. Probier „Siegchance“!',
-    'Der Simulator steht noch auf meiner Werkbank. Die Ergebnisse sind Näherungen!']; },
+    'Ein Kampf ist Zufall, hundert Kämpfe sind Statistik. Probier „Siegchance“!']; },
   guides(){ return ['Der Encounter-Guide ist fertig geschmiedet. Lies ihn, bevor die nächste Partie startet!', 'Diese Guides glühen noch in der Esse.', 'Ein Guide ist wie eine Klinge: erst schmieden, dann schärfen.', 'Lesen, üben, wiederholen. So wird man Meister.']; },
   notfound(){ return ['Hier ist nichts. Nicht mal Erz.', 'Diesen Pfad habe ich nie geschmiedet. Zurück zur Tierlist!', 'Hmph. Falsch abgebogen, Wanderer.']; },
 };
@@ -2074,11 +2072,41 @@ $('#burger').onclick = ()=>drawer.classList.add('open');
 drawer.addEventListener('click', e=>{ if(e.target.closest('[data-drawer-close]') || e.target.closest('a')) drawer.classList.remove('open'); });
 
 // Meet the Team: Übersicht (/about) oder Profil (/about/<name>)
+// Zwischen den Coach-Profilen blättern: Pfeile neben der Überschrift oder Wischen am Handy; das Profil wischt zur Seite, das neue kommt von der anderen Seite
+const ABOUT_COACHES = [['crazyslayt', 'CrazYSlayt'], ['humbadobo', 'humbadobo']];
+let aboutDir = 0, aboutKey = '';   // aboutDir: 1 = zum nächsten Coach (Profil geht nach links raus), -1 = zum vorherigen
 function setAbout(sub){
   const views = [...document.querySelectorAll('#page-about .mt-view')];
   const key = views.some(v=>v.dataset.about && v.dataset.about===sub) ? sub : '';
-  views.forEach(v=>v.hidden = v.dataset.about!==key);
+  const from = views.find(v=>!v.hidden), to = views.find(v=>v.dataset.about===key), dir = aboutDir;
+  aboutDir = 0; aboutKey = key;
+  views.forEach(v=>{ v.getAnimations().forEach(a=>a.cancel()); v.style.cssText = ''; v.hidden = v.dataset.about!==key; });
+  if(!dir || !from || !to || from===to || !from.dataset.about || !key || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const box = to.parentElement;
+  box.classList.add('mt-sliding');   // Breite begrenzen, damit beim Wischen keine Bildlaufleiste entsteht
+  const pos = {top:to.offsetTop + 'px', left:to.offsetLeft + 'px', width:to.offsetWidth + 'px'};
+  from.hidden = false; Object.assign(from.style, {position:'absolute', pointerEvents:'none'}, pos);
+  const opt = {duration:460, easing:'cubic-bezier(.45,0,.2,1)'};
+  const out = from.animate([{transform:'none', opacity:1}, {transform:`translateX(${-dir * 100}%)`, opacity:0}], opt);
+  to.animate([{transform:`translateX(${dir * 100}%)`, opacity:0}, {transform:'none', opacity:1}], opt);
+  const clean = ()=>{ if(from.dataset.about === aboutKey) return; from.style.cssText = ''; from.hidden = true; box.classList.remove('mt-sliding'); };
+  out.onfinish = clean; setTimeout(clean, opt.duration + 150);   // Timer als Rückfall, falls die Animation pausiert (z. B. Tab im Hintergrund)
 }
+ABOUT_COACHES.forEach(([k], i)=>{
+  const head = document.querySelector(`#page-about .mt-view[data-about="${k}"] .page-head`); if(!head) return;
+  const n = ABOUT_COACHES.length, prev = ABOUT_COACHES[(i - 1 + n) % n], next = ABOUT_COACHES[(i + 1) % n];
+  const arrow = (dir, [key, name]) => `<a class="mt-nav ${dir < 0 ? 'mt-prev' : 'mt-next'}" href="/about/${key}" data-dir="${dir}" title="${esc(name)}" aria-label="${dir < 0 ? L('Vorheriger Coach', 'Previous coach') : L('Nächster Coach', 'Next coach')}: ${esc(name)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${dir < 0 ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6'}"/></svg></a>`;
+  head.classList.add('mt-head'); head.insertAdjacentHTML('beforeend', arrow(-1, prev) + arrow(1, next));
+});
+const aboutGo = (dir, href) => { aboutDir = dir; go(href); };
+document.addEventListener('click', e=>{ const a = e.target.closest('.mt-nav'); if(!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button) return; e.preventDefault(); e.stopPropagation(); aboutGo(+a.dataset.dir, a.getAttribute('href')); }, true);
+let aboutTouch = null;
+$('#page-about').addEventListener('touchstart', e=>{ const v = e.target.closest('.mt-view:not([data-about=""])'); aboutTouch = v && e.touches.length === 1 ? {x:e.touches[0].clientX, y:e.touches[0].clientY, v} : null; }, {passive:true});
+$('#page-about').addEventListener('touchend', e=>{
+  if(!aboutTouch) return; const t = e.changedTouches[0], dx = t.clientX - aboutTouch.x, dy = t.clientY - aboutTouch.y, v = aboutTouch.v; aboutTouch = null;
+  if(Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.5) return;   // nur deutliche waagrechte Wischer
+  const a = v.querySelector(dx < 0 ? '.mt-next' : '.mt-prev'); if(a) aboutGo(dx < 0 ? 1 : -1, a.getAttribute('href'));
+}, {passive:true});
 
 /* ================= TOOLS: Übersicht & Rolldown-Rechner ================= */
 // Shop-Chancen/Pool-Größen pro Set aus data/custom-<Set>.js; Champions pro Kosten aus den offiziellen Set-Daten
@@ -3534,7 +3562,7 @@ function renderDash(){
       <section class="dsh-card dsh-coach">
         <p>${L('Fundamentals und VOD-Review mit uns – auf Deutsch oder Englisch.', 'Fundamentals and VOD reviews with us – in German or English.')}</p>
         <div class="dsh-pcards">${pcard('/about/crazyslayt', 'assets/img/team-claudio.jpg', 'CrazYSlayt', 'Founder & Coach', '1.002 LP', 'Frankfurt')}${pcard('/about/humbadobo', 'assets/img/team-romano.jpg', 'humbadobo', 'Coach', '1.447 LP', L('Irland', 'Ireland'))}</div>
-        ${(()=>{ const tl = testimonials.map(dshTst).filter(Boolean); return tl.length ? `<div class="dsh-tst" aria-live="polite" title="${L('Erfolge nach dem Coaching', 'Results after coaching')}">${tl.join('')}</div>` : ''; })()}
+        ${(()=>{ const tl = testimonials.map(dshTst).filter(Boolean); return tl.length ? `<div class="dsh-tst" aria-live="polite" title="${L('Erfolge nach dem Coaching', 'Results after coaching')}"><span class="dsh-tlab">${ndSvg('coaching')}${L('Unsere Students', 'Our students')}</span>${tl.join('')}</div>` : ''; })()}
         <a class="dsh-btn" href="/coaching">${L('Coaching buchen', 'Book coaching')} →</a>
       </section>
     </div>
@@ -3561,8 +3589,8 @@ const DSH_RANK_DE = {eisen:'iron', bronze:'bronze', silber:'silver', gold:'gold'
 function dshTst(x){
   const m = String(x.r || '').match(/^\s*([^\s→]+)\s*([IV]*)\s*→\s*([^\s·]+)\s*([IV]*)\s*(?:·\s*(\d+))?/); if(!m) return '';
   const a = rankBy[DSH_RANK_DE[m[1].toLowerCase()]], b = rankBy[DSH_RANK_DE[m[3].toLowerCase()]]; if(!a || !b) return '';
-  const side = (t, div) => `<span class="dsh-tr"><img src="${rankImg(t)}" alt=""><b>${esc(t.n)}${div ? ' ' + div : ''}</b></span>`;
-  return `<div class="dsh-ts"><span class="dsh-tn"><b>${esc(x.n)}</b>${m[5] ? `<small>${m[5]} Sessions</small>` : ''}</span><span class="dsh-tj">${side(a, m[2])}<i class="dsh-tarr" aria-label="${L('nach', 'to')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i>${side(b, m[4])}</span></div>`;
+  const side = (t, div) => `<span class="dsh-tr" title="${esc(t.n)}${div ? ' ' + div : ''}"><img src="${rankImg(t)}" alt="${esc(t.n)}"><b>${esc(t.n)}${div ? ' ' + div : ''}</b></span>`;
+  return `<div class="dsh-ts"${m[5] ? ` title="${esc(x.n)} · ${m[5]} Sessions"` : ''}><span class="dsh-tn"><b>${esc(x.n)}</b>${m[5] ? `<small>${m[5]} Sessions</small>` : ''}</span><span class="dsh-tj">${side(a, m[2])}<i class="dsh-tarr" aria-label="${L('nach', 'to')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i>${side(b, m[4])}</span></div>`;
 }
 // nacheinander einblenden
 setInterval(()=>{ const box = document.querySelector('#page-dash.active .dsh-tst'); if(!box || document.hidden) return;
