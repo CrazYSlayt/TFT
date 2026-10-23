@@ -44,13 +44,14 @@
   } catch(e){}
   if(!alt){
     document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css">');
-    // Topleiste, Seitenleiste und Inhalt baut app.js: bis alle Skripte gelaufen sind, zeigt design-neu.css nur ein Lade-Logo statt eines einsamen Footers
+    // Topleiste und Seitenleiste stehen sofort (assets/js/shell.js), den Inhalt baut app.js: bis alle Skripte gelaufen sind, bleibt er verborgen und oben läuft ein Ladebalken
     document.addEventListener('DOMContentLoaded', function(){ document.documentElement.classList.add('nd-ready'); });
   }
 })();
 </script>
 </head>
 <body>
+<script src="assets/js/shell.js"></script>
 <a class="skip" href="#main">Zum Inhalt springen</a>
 
 

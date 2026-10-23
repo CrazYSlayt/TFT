@@ -727,8 +727,13 @@ body.nd-mini .nds-vi2{display:none}
 .nd .lp-row.best b::after{content:"Peak";padding:3px 9px;border-radius:99px;background:linear-gradient(90deg,var(--pink),var(--violet));color:#fff;font-family:var(--ff-head);font-style:italic;font-weight:800;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 0 12px rgba(247,22,110,.5)}
 .nd .lp-row.best em{font-size:1.35rem;color:#fff;text-shadow:0 0 14px rgba(247,22,110,.8)}
 
-/* ---------- Ladezustand: bis app.js die Seite aufgebaut hat (Klasse nd-ready, siehe index.html), Inhalt und Footer verbergen ---------- */
-html.nd:not(.nd-ready) main,html.nd:not(.nd-ready) footer{visibility:hidden}
-html.nd:not(.nd-ready) body::after{content:"";position:fixed;left:50%;top:50%;z-index:100;width:min(240px,60vw);aspect-ratio:720/265;transform:translate(-50%,-50%);
-  background:url(../brand/logo-tftclimb.webp) center/contain no-repeat;filter:drop-shadow(0 0 18px rgba(46,230,214,.35));opacity:0;animation:nd-boot 1.6s ease-in-out .25s infinite}   /* erscheint erst nach 0,25 s – bei schnellem Laden blitzt nichts auf */
-@keyframes nd-boot{0%,100%{opacity:.35}50%{opacity:1}}
+/* ---------- Ladezustand: Topleiste und Seitenleiste stehen sofort (shell.js), der Inhalt blendet ein, sobald app.js fertig ist (nd-ready) ---------- */
+.nd main,.nd footer{transition:margin-left .25s,opacity .45s ease}
+html.nd:not(.nd-ready) main,html.nd:not(.nd-ready) footer{opacity:0;visibility:hidden}
+.nd-r>*{animation:nd-fade .35s ease}
+@keyframes nd-fade{from{opacity:0}}
+/* Ladebalken oben: wächst per transform (läuft auch, während app.js rechnet), am Ende füllt shell.js ihn auf und blendet ihn aus */
+.nd-load{position:fixed;left:0;right:0;top:0;height:3px;z-index:200;pointer-events:none;transform-origin:0 50%;transform:scaleX(0);
+  background:linear-gradient(90deg,var(--cy),#1fb6e8 60%,var(--pink));box-shadow:0 0 10px rgba(46,230,214,.7);animation:nd-load 4s cubic-bezier(.08,.75,.25,1) forwards}
+@keyframes nd-load{from{transform:scaleX(.04)}to{transform:scaleX(.9)}}
+@media (prefers-reduced-motion:reduce){.nd main,.nd footer{transition:none}.nd-r>*{animation:none}.nd-load{display:none}}

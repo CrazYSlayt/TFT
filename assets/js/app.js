@@ -3443,38 +3443,10 @@ i18nStart();
 /* ================= NEUES DESIGN (Vorschau mit ?design=neu) ================= */
 // Topbar mit den drei Hauptpunkten, links eine einklappbare Seitenleiste mit den übrigen Seiten, Dashboard als Startseite.
 // Die alte Kopfzeile bleibt im HTML und wird per CSS (assets/css/design-neu.css) ausgeblendet; Set- und Sprachschalter ziehen um.
-const ND_IC = {
-  tools:'<path d="M14.5 6.5a4 4 0 0 0-5.4 5.1L4 16.7 7.3 20l5.1-5.1a4 4 0 0 0 5.1-5.4l-2.4 2.4-2.4-.6-.6-2.4z"/>',
-  cheat:'<rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M4 9h16M4 14.5h16M10 3.5v17"/>',
-  guides:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M8 8h7M8 12h5"/>',
-  patches:'<path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/>',
-  ranks:'<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 11l2 2 4-4"/>',
-  coaching:'<path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11v5c3 2 7 2 10 0v-5"/>',
-  about:'<circle cx="9" cy="8" r="3"/><path d="M3 20c.6-3.4 3-5.5 6-5.5s5.4 2.1 6 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.6c2.6.2 4.5 2.2 5 5.4"/>',
-  col:'<path d="M15 6l-6 6 6 6"/>'
-};
-const ndSvg = (k, w=1.8) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ND_IC[k]}</svg>`;
+// ND_IC, ndSvg, ND_IMG, ndLink und das Grundgerüst (ndShellHTML) stehen in assets/js/shell.js – das lädt vor allem anderen
 function ndInit(){
   const S = TFT_DATA.set;
-  document.body.insertAdjacentHTML('afterbegin', `
-    <header class="nd-top" id="ndTop">
-      <button class="nd-burger" type="button" aria-label="${L('Menü', 'Menu')}" onclick="document.body.classList.toggle('nd-drawer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-      <a class="nd-brand" href="/" aria-label="TFTClimb ${L('Startseite', 'home')}"><img src="assets/brand/logo-tftclimb.webp" alt="TFTClimb"></a>
-      <nav class="nd-tabs" aria-label="${L('Hauptnavigation', 'Main navigation')}"><a href="/" data-nd="home">Dashboard</a><a href="/tierlist" data-nd="tierlist">Tierlist</a><a href="/bibliothek" data-nd="bibliothek">${L('Bibliothek', 'Library')}</a></nav>
-      <div class="nd-r">
-        <span id="ndSlot"></span>
-      </div>
-    </header>
-    <aside class="nd-side" id="ndSide" aria-label="${L('Weitere Seiten', 'More pages')}">
-      ${ndLink('tools', 'Tools', '/tools')}${ndLink('cheatsheet', 'Cheatsheet', '/cheatsheet', 'cheat')}
-      <div class="nds-cap">${L('Daten', 'Data')}</div>
-      ${ndLink('ranks', 'Ranks', '/ranks')}${ndLink('patches', 'Patches', '/patches')}${ndLink('guides', 'Guides', '/guides')}
-      <div class="nds-gap"></div>
-      ${ndLink('coaching', 'Coaching', '/coaching').replace('class="nds-link"', 'class="nds-link nds-hot"')}${ndLink('about', 'Meet the Team', '/about')}
-      <button class="nds-link nds-col" type="button" onclick="document.body.classList.toggle('nd-mini');try{localStorage.setItem('tftfreaks_side',document.body.classList.contains('nd-mini')?'mini':'')}catch(e){}">${ndSvg('col', 2)}<span>${L('Einklappen', 'Collapse')}</span></button>
-      <img class="nds-vi2" src="assets/img/mascot-vi-huh.webp" alt="" width="520" height="505" loading="lazy">
-    </aside>
-    <div class="nd-scrim" onclick="document.body.classList.remove('nd-drawer')"></div>`);
+  if(!$('#ndTop')) document.body.insertAdjacentHTML('afterbegin', ndShellHTML(EN));   // normalerweise schon von shell.js gebaut
   // Set- und Sprachschalter aus der alten Kopfzeile übernehmen (Funktionen bleiben erhalten)
   // Sprache: nur die Flagge, ein Klick öffnet ein kleines Menü
   const p0 = curPath(), deHref = p0, enHref = '/en' + (p0 === '/' ? '/' : p0);
@@ -3488,7 +3460,6 @@ function ndInit(){
     try { localStorage.setItem('tftfreaks_lang', l); } catch(_){}
     if((l === 'en') === EN){ nl.classList.remove('open'); return; }
     const cp = curPath(); location.href = (l === 'en' ? '/en' + (cp === '/' ? '/' : cp) : cp) + location.search; }, true));
-  try { if(localStorage.getItem('tftfreaks_side')==='mini') document.body.classList.add('nd-mini'); } catch(e){}
   // Meet the Team: Player Cards nebeneinander (gleicher Stil wie im Dashboard, nur größer)
   const ml = document.querySelector('#page-about .mt-list');
   if(ml){
@@ -3509,9 +3480,6 @@ function ndInit(){
   $('#ndSide').addEventListener('click', e=>{ if(e.target.closest('a')) document.body.classList.remove('nd-drawer'); });
   $('#ndTop').addEventListener('click', e=>{ if(e.target.closest('.nd-tabs a')) document.body.classList.remove('nd-drawer'); });
 }
-// Seitenleisten-Symbole (assets/icons/side-*.webp, aus dem Icon-Konzept); ohne Bild bleibt das Strich-Symbol
-const ND_IMG = {tools:'tools', cheatsheet:'cheat', guides:'guides', patches:'patches', ranks:'ranks', coaching:'coaching', about:'team'};
-function ndLink(key, label, href, ic){ const im = ND_IMG[key]; return `<a class="nds-link" href="${href}" data-nd="${key}" title="${label}">${im ? `<img class="nds-ic" src="assets/icons/side-${im}.webp" alt="" width="34" height="34">` : ndSvg(ic || key)}<span>${label}</span></a>`; }
 function ndRoute(page, navKey){
   const key = page==='champion' ? 'bibliothek' : page==='apply' ? 'coaching' : navKey;
   document.querySelectorAll('#ndTop [data-nd], #ndSide [data-nd]').forEach(a=>a.classList.toggle('on', a.dataset.nd===key));
