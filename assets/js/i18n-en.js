@@ -869,7 +869,7 @@ window.I18N_EN = {
   "Magieresistenz": "Magic resist",
   "Reichweite": "Range",
   "Einige Funktionen speichern Einstellungen im lokalen Speicher deines Browsers (localStorage): das gewählte Set, die gewählte Sprache, dein Board im Team Builder und Entwürfe in der Redaktion. Diese Daten bleiben auf deinem Gerät und werden nicht an uns übertragen. Die Speicherung ist für die von dir genutzte Funktion erforderlich (§ {0} Abs. {1} Nr. {2} TDDDG). Du kannst sie jederzeit über die Einstellungen deines Browsers löschen.": "Some features save settings in your browser's local storage (localStorage): the selected set, your language, your board in the team builder and drafts in the editor. This data stays on your device and is not transmitted to us. Storage is required for the feature you use (§ {0} para. {1} no. {2} TDDDG). You can delete it at any time in your browser settings.",
-  "Der Encounter-Guide ist fertig geschmiedet. Lies ihn, bevor die nächste Partie startet!": "The encounter guide is forged and ready. Read it before your next game starts!",
+  "Neue Guides glühen gerade in meiner Esse. Mit Set {0} sind sie fertig geschmiedet!": "New guides are glowing in my forge right now. They'll be fully forged with Set {0}!",
   "/ Encounters": "/ Encounters",
   "TFT Encounters:": "TFT Encounters:",
   "Welche Comp du spielen solltest": "What Comp to Play",

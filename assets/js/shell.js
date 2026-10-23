@@ -34,7 +34,7 @@ function ndShellHTML(en){
     <aside class="nd-side" id="ndSide" aria-label="${T('Weitere Seiten', 'More pages')}">
       ${ndLink('tools', 'Tools', '/tools')}${ndLink('cheatsheet', 'Cheatsheet', '/cheatsheet', 'cheat')}
       <div class="nds-cap">${T('Daten', 'Data')}</div>
-      ${ndLink('ranks', 'Ranks', '/ranks')}${ndLink('patches', 'Patches', '/patches')}${ndLink('guides', 'Guides', '/guides')}
+      ${ndLink('ranks', 'Ranks', '/ranks')}${ndLink('patches', 'Patches', '/patches')}${ndLink('guides', 'Guides', '/guides').replace('</span></a>', '</span><em class="nds-soon">Soon</em></a>')}
       <div class="nds-gap"></div>
       ${ndLink('coaching', 'Coaching', '/coaching').replace('class="nds-link"', 'class="nds-link nds-hot"')}${ndLink('about', 'Meet the Team', '/about')}
       <button class="nds-link nds-col" type="button" onclick="document.body.classList.toggle('nd-mini');try{localStorage.setItem('tftfreaks_side',document.body.classList.contains('nd-mini')?'mini':'')}catch(e){}">${ndSvg('col', 2)}<span>${T('Einklappen', 'Collapse')}</span></button>

@@ -1407,7 +1407,7 @@ const BUDDY_LINES = {
   sim(){ return ['Willkommen in meinem Labor! Stell zwei Teams auf und starte das Experiment.',
     'Klick eine Unit an – dann siehst du ihr Ziel, ihren Laufweg und was sie als Nächstes vorhat.',
     'Ein Kampf ist Zufall, hundert Kämpfe sind Statistik. Probier „Siegchance“!']; },
-  guides(){ return ['Der Encounter-Guide ist fertig geschmiedet. Lies ihn, bevor die nächste Partie startet!', 'Diese Guides glühen noch in der Esse.', 'Ein Guide ist wie eine Klinge: erst schmieden, dann schärfen.', 'Lesen, üben, wiederholen. So wird man Meister.']; },
+  guides(){ return ['Neue Guides glühen gerade in meiner Esse. Mit Set 19 sind sie fertig geschmiedet!', 'Ein Guide ist wie eine Klinge: erst schmieden, dann schärfen.']; },
   notfound(){ return ['Hier ist nichts. Nicht mal Erz.', 'Diesen Pfad habe ich nie geschmiedet. Zurück zur Tierlist!', 'Hmph. Falsch abgebogen, Wanderer.']; },
 };
 const DIFF_LINE = {EASY:'Gute Wahl – die ist leicht zu spielen.', MEDIUM:'Solide! Achte auf die Item-Priorität.', HARD:'Mutig! Die ist schwer, also Leben schonen.', CONDITIONAL:'Nur spielen, wenn die Bedingungen passen!'};
@@ -1939,8 +1939,11 @@ function testimonialHTML(t){
   return `<figure class="card co-quote"><span class="co-qm" aria-hidden="true">“</span><blockquote>${esc(t.q)}</blockquote><figcaption><b>${esc(t.n)}</b>${t.r?`<span>${esc(t.r)}</span>`:''}</figcaption></figure>`;
 }
 // Guides: Übersicht oder ein einzelner Guide (/guides/encounters)
+// Vorerst pausiert: die Seite zeigt „Coming in Set 19“. Mit GUIDES_LIVE = true kommen Übersicht und Encounter-Guide zurück.
+const GUIDES_LIVE = false;
 function setGuide(sub){
-  const key = sub==='encounters' ? 'encounters' : '';
+  if(!GUIDES_LIVE && sub) setUrl('/guides');   // alte Links auf /guides/encounters landen auf der Übersicht
+  const key = GUIDES_LIVE && sub==='encounters' ? 'encounters' : '';
   document.querySelectorAll('#page-guides .gd-view').forEach(v=>{ v.hidden = v.dataset.guide!==key; });
   if(key==='encounters') renderEncTL();
 }
@@ -1958,7 +1961,7 @@ function renderHome(){
   $('#teamViTraits').innerHTML = vi ? vi.t.map(n=>`<span class="tbadge">${traitHex(n,'base',18)}<span>${esc(n)}</span></span>`).join('') : '';
   $('#coachPkgs').innerHTML = packages.map(pkgHTML).join('');
   $('#coachQuotes').innerHTML = testimonials.map(testimonialHTML).join('');
-  $('#allGuides').innerHTML = guides.map(guideHTML).join('');
+  $('#allGuides').innerHTML = GUIDES_LIVE ? guides.map(guideHTML).join('') : `<div class="gd-soon"><span class="gd-soon-ic">${ndSvg('guides', 1.6)}</span><b>Coming in Set 19</b><p>${L('Wir schreiben gerade neue Guides von Challenger-Spielern – sie erscheinen mit dem Start von Set 19.', 'We are writing new guides from Challenger players – they arrive with the launch of Set 19.')}</p></div>`;
 }
 
 /* ================= APPLY ================= */
@@ -3002,7 +3005,7 @@ function csSections(){
   }
   if(ENCS.length){
     const rows = [...ENCS].sort((a,b)=>b.w - a.w).map(e=>[`<b>${esc(e.n)}</b>`, esc(EN ? e.en : e.de), csPct(e.w / ENC_W * 100)]);
-    out.push(['encounters', L('Encounter-Chancen', 'Encounter odds'), csTable(['Encounter', L('Effekt', 'Effect'), L('Chance', 'Chance')], rows) + `<p class="cs-note">${L('Welche Comp du auf welchen Encounter spielst:', 'Which comp to play on which encounter:')} <a href="/guides/encounters">${L('Encounter-Guide', 'encounter guide')}</a>.</p>` + csSrc('TFT Flow · Patch 18.1')]);
+    out.push(['encounters', L('Encounter-Chancen', 'Encounter odds'), csTable(['Encounter', L('Effekt', 'Effect'), L('Chance', 'Chance')], rows) + csSrc('TFT Flow · Patch 18.1')]);
   }
   if(CS.carousel){
     const list = a => a.map(x=>`<div class="cs-li"><span>${typeof x[0]==='number' ? x[0] + ' ' + L('Champions', 'champions') : esc(L(x[0], x[1]))}</span><b>${csPct(x[x.length-1])}</b></div>`).join('');
@@ -3150,7 +3153,7 @@ function renderCheats(sub){
         <details><summary>${L('Wie viel Schaden bekomme ich nach einer Niederlage?', 'How much damage do I take after a loss?')}</summary><p>${L('Den Stage-Schaden plus 1 für jede gegnerische Unit, die den Kampf überlebt.', 'The stage damage plus 1 for every enemy unit that survives the fight.')}</p></details>
         <details><summary>${L('Wie baue ich ein Emblem?', 'How do I build an emblem?')}</summary><p>${L('Pfannenwender oder Bratpfanne plus eine Komponente. Welches Emblem dabei entsteht, steht in der Tabelle Emblem-Rezepte.', 'Spatula or Frying Pan plus a component. Which emblem you get is listed in the emblem recipes table.')}</p></details>
         <h3>${L('Weiterlesen', 'Read more')}</h3>
-        <ul class="ts-links"><li><a href="/tools/rolldown">${L('Rolldown-Rechner', 'Rolldown calculator')}</a></li><li><a href="/tools/drops">${L('Item-Drop-Rechner', 'Item drop calculator')}</a></li><li><a href="/guides/encounters">${L('Encounter-Guide', 'Encounter guide')}</a></li><li><a href="/bibliothek/items">${L('Item-Bibliothek', 'Item library')}</a></li></ul>
+        <ul class="ts-links"><li><a href="/tools/rolldown">${L('Rolldown-Rechner', 'Rolldown calculator')}</a></li><li><a href="/tools/drops">${L('Item-Drop-Rechner', 'Item drop calculator')}</a></li><li><a href="/bibliothek/items">${L('Item-Bibliothek', 'Item library')}</a></li></ul>
       </aside>
     </section>`;
     box.dataset.done = '1';
@@ -3222,7 +3225,7 @@ function pageMeta(page, sub){
     return [L(`TFT Cheatsheet ${S}${P} – Shop-Chancen, Augments & Encounters`, `TFT Cheatsheet ${S}${P} – shop odds, augments & encounters`), L(`Alle Zahlen für TFT ${S} auf einer Seite: Shop-Chancen und XP pro Level, Augment-Stufen, Encounter-Chancen, Karussell, Spielerschaden, Loot-Orbs und Emblem-Rezepte.`, `Every number for TFT ${S} on one page: shop odds and XP per level, augment tiers, encounter odds, carousel, player damage, loot orbs and emblem recipes.`)];
     case 'bedingungen': return ['Widerruf & Bedingungen', 'Widerrufsbelehrung, Muster-Widerrufsformular und Bedingungen für das TFT Coaching bei TFTClimb – Einzelstunde, Set-Pass und VIP-Mentoring.'];
     case 'guides':
-      if(sub==='encounters') return [`TFT Encounters ${S} – welche Comp du spielen solltest`, `Alle TFT Encounters in ${S}: was sie machen, wie oft sie pro Spiel kommen und welche Comps du darauf spielst – Ambosse, Gold- und Prismatic-Augments, Start-Units.`];
+      if(GUIDES_LIVE && sub==='encounters') return [`TFT Encounters ${S} – welche Comp du spielen solltest`, `Alle TFT Encounters in ${S}: was sie machen, wie oft sie pro Spiel kommen und welche Comps du darauf spielst – Ambosse, Gold- und Prismatic-Augments, Start-Units.`];
       return ['TFT Guides', '', true];
     case 'tools':
       if(sub==='tierlist') return [`TFT Tierlist-Maker ${S} – eigene Tierlist erstellen & teilen`, `Kostenloser TFT Tierlist-Maker für ${S}: Champions, Items, Artefakte, Embleme und Augments per Drag & Drop ranken und deine Tierlist als Link teilen.`];
@@ -3280,7 +3283,7 @@ function setLd(page, sub, tool, title, desc, url, path){
     const qa = box ? [...box.querySelectorAll('details')].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}})) : [];
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
   }
-  if(page==='champion' || page==='cheatsheet' || (page==='guides' && sub)){   // Fragen aus dem Textblock der Champion-Seite, des Cheatsheets bzw. des Guides
+  if(page==='champion' || page==='cheatsheet' || (page==='guides' && sub && GUIDES_LIVE)){   // Fragen aus dem Textblock der Champion-Seite, des Cheatsheets bzw. des Guides
     const qa = [...document.querySelectorAll(page==='champion' ? '#chPage .tool-seo details' : page==='cheatsheet' ? '#csPage .tool-seo details' : `#page-guides .gd-view[data-guide="${sub}"] .tool-seo details`)].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}}));
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
   }
