@@ -808,3 +808,87 @@ body.nd-mini .nds-soon{display:none}
 .gd-soon b{font-family:var(--ff-head);font-style:italic;font-weight:900;font-size:clamp(2rem,5vw,3.2rem);line-height:1;text-transform:uppercase;letter-spacing:.01em;
   background:linear-gradient(90deg,#fff 0%,var(--cy2) 55%,#ff6fa6 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(46,230,214,.25))}
 .gd-soon p{margin:0;max-width:440px;color:var(--muted);font-size:.95rem}
+
+/* ---------- Tierlist: Reiter, Filter und Suche mittig wie in der Bibliothek ---------- */
+.nd #page-tierlist #tlTabs{margin:20px auto 0}
+.nd #page-tierlist .toolbar{justify-content:center;margin:22px auto 18px;max-width:1040px}
+.nd #page-tierlist .toolbar .input{margin-left:0;min-width:240px;height:38px}
+.nd #page-tierlist .toolbar .tag-row{justify-content:center}
+.nd #page-tierlist .toolbar .tag-row+.tag-row{padding-left:14px;border-left:1px solid rgba(148,200,255,.18)}
+@media (max-width:640px){.nd #page-tierlist .toolbar .input{min-width:0;flex:1 1 100%}.nd #page-tierlist .toolbar .tag-row+.tag-row{padding-left:0;border-left:0}}
+
+/* ---------- Tierlist-Kopf flacher: ohne Beschreibung, Stand als Abzeichen oben rechts in der Ecke ---------- */
+.nd #page-tierlist .page-head{padding:4px 0 0}
+.nd #page-tierlist .page-head>p{display:none}
+.nd #page-tierlist .page-head h1{margin-bottom:0}
+.nd #page-tierlist #tlTabs{margin-top:18px}
+.nd #page-tierlist .toolbar{margin:16px auto 16px}
+.nd .page-head .updated.tl-badge{position:absolute;top:-14px;right:-6px;margin:0;display:inline-flex;align-items:center;gap:8px;padding:5px 12px;border-radius:99px;
+  font-size:.72rem;font-weight:600;color:#b9c3dd;background:rgba(15,20,35,.72);border:1px solid rgba(148,200,255,.18);white-space:nowrap}
+.tl-badge span+span::before{content:"·";margin-right:8px;color:var(--faint)}
+.tl-badge b{color:#3ddc84;font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.68rem}
+.tl-badge b+span::before{content:"·";margin-right:8px;color:var(--faint)}
+.tl-dot{width:8px;height:8px;border-radius:50%;flex:none;background:#3ddc84;box-shadow:0 0 0 0 rgba(61,220,132,.6);animation:tl-live 2s ease-out infinite}
+.tl-badge.old .tl-dot{background:var(--faint);animation:none}
+@keyframes tl-live{0%{box-shadow:0 0 0 0 rgba(61,220,132,.6)}70%,100%{box-shadow:0 0 0 7px rgba(61,220,132,0)}}
+@media (prefers-reduced-motion:reduce){.tl-dot{animation:none;box-shadow:0 0 8px rgba(61,220,132,.7)}}
+@media (max-width:1180px){.nd .page-head .updated.tl-badge{position:static;margin:0 auto 12px;display:flex;width:fit-content}.nd #page-tierlist .page-head{display:flex;flex-direction:column}.nd #page-tierlist .page-head .tl-badge{order:-1}}
+
+/* ---------- Tierlist: Filter mittig, Suche rechts in derselben Reihe (bei wenig Platz eigene Zeile darunter) ---------- */
+.nd #page-tierlist .toolbar{position:relative;max-width:none;container-type:inline-size}
+.nd #page-tierlist .toolbar .input{position:absolute;right:0;top:50%;transform:translateY(-50%);width:240px;min-width:0}
+@container (max-width:880px){.nd #page-tierlist #compFilters .input{position:static;transform:none;flex:0 0 100%;width:auto}}
+@container (max-width:1030px){.nd #page-tierlist #tl-augments .toolbar .input{position:static;transform:none;flex:0 0 100%;width:auto}}
+
+/* ---------- Cheatsheet Version 2: TFTClimb-Rahmen (Linie per SVG aus app.js csfDraw) ---------- */
+.nd .cs-sec.csf-sec{padding:0;background:none;border:0;box-shadow:none;overflow:visible}
+.nd .cs-sec.csf-sec::after{content:none}
+.csf{position:relative;container-type:inline-size;margin-bottom:26px}
+.csf-box{position:relative;isolation:isolate;padding:24px 28px 62px}
+.csf-svg{position:absolute;inset:0;width:100%;height:100%;z-index:-1;overflow:visible}
+.csf-edge{filter:drop-shadow(0 0 4px rgba(46,230,214,.75)) drop-shadow(0 0 12px rgba(46,230,214,.35))}
+.csf-top{stroke:#b9fbff;stroke-width:3;stroke-linecap:round;filter:blur(2px);opacity:.85}
+.csf-pink path{stroke:var(--pink);stroke-width:3;stroke-linecap:round;fill:none;filter:drop-shadow(0 0 5px rgba(247,22,110,.8))}
+.csf-title{margin:0 0 16px;font-family:var(--ff-head);font-style:normal;font-weight:800;font-size:1.75rem;line-height:1.1;text-transform:none;letter-spacing:.01em;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.85),0 0 16px rgba(0,0,0,.6)}
+.csf-body .csp-tabs{border-color:rgba(46,230,214,.3);background:rgba(3,17,27,.55)}
+.csf-body .cs-wrap{border-radius:10px;overflow:hidden}
+.csf-under{position:relative;display:flex;align-items:center;gap:10px;height:44px;padding:0 2px}
+.csf-hex{width:26px;height:26px;flex:none;fill:none;stroke:#2ee6d6;stroke-width:1.8;filter:drop-shadow(0 0 5px rgba(46,230,214,.7))}
+.csf-line{flex:1 1 0;min-width:20px;height:2px;border-radius:2px;background:linear-gradient(90deg,#2ee6d6,#3b82f6);box-shadow:0 0 6px rgba(46,230,214,.5)}
+.csf-line.r{flex:.55 1 0;background:linear-gradient(90deg,#2ee6d6,#3fd3f0)}
+.csf-dash{width:22px;height:2px;flex:none;border-radius:2px;background:var(--pink);box-shadow:0 0 6px rgba(247,22,110,.7)}
+.csf-gap{flex:none;width:410px}
+.csf-tag{flex:none;font-size:.74rem;font-weight:700;letter-spacing:.42em;text-transform:uppercase;color:#e6f6ff}
+.csf-logo{position:absolute;left:50%;top:-36px;width:262px;height:auto;transform:translateX(-50%);filter:drop-shadow(0 6px 14px rgba(0,0,0,.6));pointer-events:none}
+@container (max-width:559px){
+  .csf-box{padding:18px 14px 46px}
+  .csf-title{font-size:1.4rem}
+  .csf-gap{width:250px}.csf-tag,.csf-line.r{display:none}
+  .csf-logo{width:170px;top:-24px}
+}
+@container (max-width:420px){.csf-under .csf-line,.csf-under .csf-dash{display:none}.csf-under{justify-content:space-between}}
+/* Cheatsheet-Seitenleiste: das allgemeine position:relative (für das Wabenmuster) hat zusammen mit top:100px die Leiste verschoben */
+.nd .cs-side{position:sticky}
+@media (max-width:900px){.nd .cs-side{position:relative;top:0}}
+/* Zierleiste unter dem Rahmen: bei mittlerer Breite „Cheatsheets“ und die rechte Linie weglassen, damit nichts übersteht */
+.csf-line{min-width:0}
+@container (max-width:760px){.csf-tag,.csf-line.r{display:none}}
+/* Topleiste auf schmalen Handys: Tabs etwas enger, damit die Sprachflagge nicht übersteht */
+@media (max-width:520px){.nd-top{gap:4px;padding-right:8px}.nd-tabs a{padding:0 6px;font-size:.8rem}.nd-r{gap:6px}}
+/* Cheatsheet-Rahmen: Titel links, „Cheatsheet“ groß oben rechts; Zierleiste unten symmetrisch */
+.csf-hd{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 16px}
+.csf-hd .csf-title{margin:0;min-width:0}
+.csf-brand{display:inline-flex;align-items:center;gap:8px;flex:none}
+.csf-brand .csf-hex{width:24px;height:24px}
+.csf-brand b{font:italic 900 1.65rem/1 var(--ff-head);text-transform:uppercase;letter-spacing:.05em;color:#fff;text-shadow:0 0 14px rgba(46,230,214,.3)}
+.csf-brand b i{font-style:inherit;background:linear-gradient(90deg,#7ff7ec,#2ee6d6 55%,#3fd3f0);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 8px rgba(46,230,214,.45))}
+@container (min-width:421px){.csf-under .csf-line.r{display:block;flex:1 1 0}}
+@container (max-width:559px){.csf-brand b{font-size:1.05rem}.csf-brand .csf-hex{width:16px;height:16px}.csf-hd{margin-bottom:12px}}
+@container (max-width:380px){.csf-brand .csf-hex{display:none}}
+/* Cheatsheet breiter: Auswahlliste schmaler und näher am Rand, mehr Platz für die Tabellen (z. B. den Augment-Baum) */
+.nd #page-cheatsheet>.wrap{max-width:1500px;padding:0 24px}   /* gleiche Ränder und Maximalbreite wie das Dashboard */
+.nd .cs-layout{grid-template-columns:222px minmax(0,1fr);gap:16px}
+.nd .cs-side{padding:16px 10px 10px}
+.atg{max-width:1300px;margin:0 auto}
+@media (max-width:900px){.nd .cs-layout{grid-template-columns:1fr}}
+@media (max-width:980px){.nd #page-cheatsheet>.wrap{padding:0 12px}}

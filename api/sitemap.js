@@ -13,7 +13,7 @@ const PAGES = [
   ...['iron', 'bronze', 'silver', 'gold', 'platinum', 'emerald', 'diamond', 'master', 'grandmaster', 'challenger'].map(k => ['/ranks/' + k, 0.4, 'monthly']),
   ['/patches', 0.7, 'weekly'],
   ['/cheatsheet', 0.8, 'weekly'],
-  ...['shop', 'augments', 'encounters', 'carousel', 'damage', 'orbs', 'loot', 'gold-subscription', 'reroll-subscription', 'emblems', 'solo'].map(k => ['/cheatsheet/' + k, 0.6, 'weekly']),
+  ...['shop', 'augments', 'encounters', 'damage', 'orbs', 'loot', 'gold-subscription', 'reroll-subscription', 'emblems', 'solo'].map(k => ['/cheatsheet/' + k, 0.6, 'weekly']),
   ['/coaching', 0.7, 'monthly'], ['/apply', 0.5, 'yearly'],
   ['/about', 0.4, 'monthly'], ['/about/crazyslayt', 0.4, 'monthly'], ['/about/humbadobo', 0.4, 'monthly'],
   ['/impressum', 0.1, 'yearly'], ['/datenschutz', 0.1, 'yearly'], ['/bedingungen', 0.1, 'yearly'],

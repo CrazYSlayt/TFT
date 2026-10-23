@@ -570,7 +570,7 @@ window.I18N_EN = {
   "Orb-Inhalte ({0} & Prismatic) und Quelle": "Orb contents ({0} & prismatic) and source",
   "ab Stage {0} · Wert ≈ {1} {2}": "from stage {0} · value ≈ {1} {2}",
   "Item-Entferner + {0} Artefakt-Ambosse": "Item remover + {0} artifact anvils",
-  "{0} Meisterwerk-Aufwertungen + Item-Entferner + Komponenten-Amboss": "{0} masterwork upgrades + item remover + component anvil",
+  "Meisterwerk-Aufwertung + Item-Entferner + Komponenten-Amboss": "Masterwork upgrade + item remover + component anvil",
   "{0} {1} + {2} + Amboss (fertig) + Komponenten-Amboss + {3}": "{0} {1} + {2} + anvil (completed) + component anvil + {3}",
   "Lichtgegenstand-Glückstruhe + {0} {1}": "Radiant lucky chest + {0} {1}",
   "{0} {1} + Item-Entferner + Artefakt-Amboss": "{0} {1} + item remover + artifact anvil",

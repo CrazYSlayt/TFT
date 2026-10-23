@@ -56,6 +56,14 @@ window.TFT_CUSTOM = {
   // Pro Stage alle möglichen Beute-Kombinationen: [Silber, Blau, Gold, Prisma, zufällige Komponenten, Komponenten-Amboss, aufgewertet (0/1), Chance %]
   loot: {
     source: 'tftflow.com (Set 18)',
+    // Für das Cheatsheet: Loot-Tabelle von Little Buddy Bot (Patch 18.5, Stand 24.09.2026). Der Item-Drop-Rechner nutzt weiter „stages“.
+    // Pro Stage alle Kombinationen: [Komponenten-Kugeln, graue, blaue, goldene, prismatische Orbs, Chance %]
+    lbb: {src:'Little Buddy Bot · Patch 18.5', stages:{
+      1: [[3,3,0,0,0,35],[3,0,1,0,0,35],[2,3,1,0,0,8],[2,0,2,0,0,8],[5,3,0,0,0,3],[5,0,1,0,0,3],[4,0,1,0,0,3],[3,0,2,0,0,2],[1,3,2,0,0,2],[3,5,0,0,0,1]],
+      2: [[3,1,0,0,0,20],[2,1,0,0,0,17],[2,0,1,0,0,17],[3,0,1,0,0,15],[2,2,0,0,0,13],[3,3,0,0,0,5],[2,1,0,1,0,4],[2,1,1,0,0,4],[2,0,2,0,0,4],[2,0,1,1,0,1]],
+      3: [[4,1,0,0,0,20],[4,2,0,0,0,20],[3,1,1,0,0,17],[3,3,0,0,0,13],[3,0,2,0,0,13],[4,0,1,0,0,5],[5,1,0,0,0,4],[3,1,0,1,0,3],[3,1,0,0,1,2],[2,0,2,0,0,2],[3,0,1,1,0,1],[4,1,0,1,0,0.25]],
+      4: [[3,2,0,0,0,18],[3,1,1,0,0,18],[2,2,1,0,0,18],[4,1,0,0,0,15],[3,3,0,0,0,13],[5,1,0,0,0,5],[4,1,1,0,0,4],[3,1,0,1,0,4],[2,0,2,0,0,3],[2,2,0,0,1,2],[3,0,2,1,0,1],[2,0,0,1,1,0.03]]
+    }},
     stages: {
       1: [[3,0,0,0,3,0,0,31],[0,1,0,0,3,0,0,31],[3,1,0,0,2,0,0,10.6],[0,2,0,0,2,0,0,10.6],[3,2,0,0,1,0,0,5.3],[3,0,0,0,5,0,1,2.8],[0,1,0,0,5,0,1,2.8],[0,1,0,0,4,0,1,2.3],[0,2,0,0,3,0,1,2.3],[5,0,0,0,3,0,1,1.1]],
       2: [[0,1,0,0,2,0,0,17.7],[1,0,0,0,2,0,0,17.7],[1,0,0,0,3,0,0,17.7],[2,0,0,0,2,0,0,13.3],[0,1,0,0,3,0,0,13.3],[3,0,0,0,3,0,1,5],[1,0,1,0,2,0,1,5],[1,1,0,0,2,0,0,4.4],[0,2,0,0,2,0,0,4.4],[0,1,1,0,2,0,1,1.4]],
@@ -65,10 +73,16 @@ window.TFT_CUSTOM = {
     // ab Stage 5: Xerath – Silber-Orb bei 66 % Leben, Blau-Orb bei 33 %, Amboss für ein fertiges Item beim Sieg
     late: 'Silber-Orb bei 66 % Leben, Blau-Orb bei 33 %, Amboss für ein fertiges Item beim Sieg – keine zufälligen Komponenten mehr.',
     upgraded: [['Keine aufgewertete Runde', 63], ['Eine', 30], ['Zwei', 5.8], ['Drei', 1], ['Alle', 0.2]],
+    // Inhalt der Beutekugeln: orb = Farbe (s grau, b blau, g gold, p prisma). Grau und Blau: Little Buddy Bot, Patch 18.5 (Stand 26.08.2026)
+    orbSrc: 'Little Buddy Bot · Patch 18.5',
     orbs: {
-      gold: {label:'Gold-Orb', wert:'15–18 Gold', items:[['15 Gold', 20], ['4 Gold + Bratpfanne + Pfannenwender + Umgestalter', 15], ['Amboss (fertiges Item)', 18], ['6 Gold + 2 zufällige 4-Kosten', 15], ['2 Gold + 4 zufällige 3-Kosten', 13], ['1 Gold + Diebeshandschuhe', 10], ['Champion-Duplikator + 6 Gold', 3], ['Champion-Duplikator + 2 Gold + kleiner Duplikator', 3], ['5 Gold + 3 zufällige 3-Kosten', 3]], note:'Stage 2–3'},
-      gold4: {label:'Gold-Orb', wert:'≈ 18 Gold', items:[['13 Gold + zufälliger 5-Kosten', 21.1], ['2 Gold + 2 Komponenten-Ambosse', 21.1], ['10 Gold + 2 zufällige 4-Kosten', 15.8], ['2 Gold + Amboss (fertiges Item)', 15.8], ['3 Gold + Diebeshandschuhe', 10.5], ['1 Gold + Bratpfanne + Pfannenwender + Umgestalter + Komponenten-Amboss', 5.3], ['Champion-Duplikator + 8 Gold', 5.3], ['7 Gold + 2 zufällige 5-Kosten', 5.3]], note:'ab Stage 4'},
-      prism: {label:'Prismatic-Orb', wert:'≈ 40 Gold', items:[['Item-Entferner + 2 Artefakt-Ambosse', 15], ['24 Meisterwerk-Aufwertungen + Item-Entferner + Komponenten-Amboss', 15], ['24 Gold + Meisterwerk-Aufwertung', 15], ['18 Gold + Umgestalter + Amboss (fertig) + Komponenten-Amboss + Pfannenwender', 15], ['18 Gold + Umgestalter + Amboss (fertig) + Komponenten-Amboss + Bratpfanne', 15], ['Lichtgegenstand-Glückstruhe + 10 Gold', 15], ['25 Gold + Item-Entferner + Artefakt-Amboss', 10]], note:'ab Stage 3'}
+      gray: {label:'Grauer Orb', orb:'s', wert:'≈ 2 Gold', note:'Stage 1–2', items:[['2 zufällige 1-Kosten', 48], ['zufälliger 2-Kosten', 47], ['2 Gold + Umgestalter', 3], ['2 Gold + Item-Entferner', 1], ['kleiner Duplikator', 1]]},
+      gray3: {label:'Grauer Orb', orb:'s', wert:'≈ 3 Gold', note:'ab Stage 3', items:[['zufälliger 3-Kosten', 49], ['1 Gold + zufälliger 2-Kosten', 46], ['3 Gold + Umgestalter', 3], ['3 Gold + Item-Entferner', 1], ['kleiner Duplikator', 1]]},
+      blue: {label:'Blauer Orb', orb:'b', wert:'≈ 6 Gold', note:'Stage 1–3', items:[['2 zufällige 3-Kosten', 33], ['3 Gold + zufälliger 3-Kosten', 31], ['3 zufällige 2-Kosten', 31], ['2 zufällige 2-Kosten + kleiner Duplikator', 2], ['6 Gold + Umgestalter', 2], ['zufälliger 3-Kosten + Champion-Duplikator', 1]]},
+      blue4: {label:'Blauer Orb', orb:'b', wert:'≈ 8 Gold', note:'ab Stage 4', items:[['4 Gold + zufälliger 4-Kosten', 49], ['2 Gold + 2 zufällige 3-Kosten', 47], ['8 Gold + Umgestalter', 3], ['3 Gold + Champion-Duplikator', 1]]},
+      gold: {label:'Gold-Orb', orb:'g', wert:'≈ 14 Gold', items:[['15 Gold', 20], ['Amboss (fertiges Item)', 18], ['4 Gold + Pfannenwender oder Bratpfanne + Umgestalter', 15], ['6 Gold + 2 zufällige 4-Kosten', 15], ['2 Gold + 4 zufällige 3-Kosten', 13], ['1 Gold + Diebeshandschuhe', 10], ['Champion-Duplikator + 6 Gold', 3], ['2 Gold + Champion-Duplikator + kleiner Duplikator', 3], ['5 Gold + 3 zufällige 3-Kosten', 3]], note:'Stage 2–3'},
+      gold4: {label:'Gold-Orb', orb:'g', wert:'≈ 18 Gold', items:[['13 Gold + zufälliger 5-Kosten', 21], ['2 Gold + 2 Komponenten-Ambosse', 21], ['10 Gold + 2 zufällige 4-Kosten', 16], ['2 Gold + Amboss (fertiges Item)', 16], ['3 Gold + Diebeshandschuhe', 11], ['8 Gold + Champion-Duplikator', 5], ['7 Gold + 2 zufällige 5-Kosten', 5], ['1 Gold + Komponenten-Amboss + Pfannenwender oder Bratpfanne + Umgestalter', 5]], note:'ab Stage 4'},
+      prism: {label:'Prismatic-Orb', orb:'p', wert:'≈ 40 Gold', items:[['Item-Entferner + 2 Artefakt-Ambosse', 15], ['Meisterwerk-Aufwertung + Item-Entferner + Komponenten-Amboss', 15], ['24 Gold + Meisterwerk-Aufwertung', 15], ['18 Gold + Umgestalter + Amboss (fertig) + Komponenten-Amboss + Pfannenwender', 15], ['18 Gold + Umgestalter + Amboss (fertig) + Komponenten-Amboss + Bratpfanne', 15], ['Lichtgegenstand-Glückstruhe + 10 Gold', 15], ['25 Gold + Item-Entferner + Artefakt-Amboss', 10]], note:'ab Stage 3'}
     }
   },
   // Schwarzdorn (Blackthorn): Die Unit auf dem Opferfeld wird vor dem Kampf geopfert.
@@ -103,8 +117,8 @@ window.TFT_CUSTOM = {
     {id:'golden-gala', n:'Golden Gala', ch:'Leona', cat:'augments', w:6, de:'Alle angebotenen Augments sind Gold.', en:'All augments offered are gold.'},
     {id:'golden-prelude', n:'Golden Prelude', ch:'Amumu', cat:'augments', w:4, de:'Das erste Augment ist Gold.', en:'The first augment is gold.'},
     {id:'golden-finale', n:'Golden Finale', ch:'Ivern', cat:'augments', w:4, de:'Das letzte Augment ist Gold.', en:'The last augment is gold.'},
-    {id:'prismatic-opener', n:'Prismatic Opener', ch:'Morgana', cat:'augments', w:4, de:'Das erste Augment ist Prismatisch.', en:'The first augment is prismatic.'},
-    {id:'prismatic-finisher', n:'Prismatic Finisher', ch:'Karma', cat:'augments', w:4, de:'Das letzte Augment ist Prismatisch.', en:'The last augment is prismatic.'},
+    {id:'prismatic-opener', n:'Prismatic Prelude', ch:'Morgana', cat:'augments', w:4, de:'Das erste Augment ist Prismatisch.', en:'The first augment is prismatic.'},
+    {id:'prismatic-finisher', n:'Prismatic Finale', ch:'Karma', cat:'augments', w:4, de:'Das letzte Augment ist Prismatisch.', en:'The last augment is prismatic.'},
     {id:'scouting-party', n:'Scouting Party', ch:'Teemo', cat:'augments', w:4, de:'Du bekommst +1 Augment-Reroll.', en:'You get +1 augment reroll.'},
     {id:'prismatic-party', n:'Prismatic Party', ch:'Elder Dragon', cat:'augments', w:2, de:'Alle angebotenen Augments sind Prismatisch.', en:'All augments offered are prismatic.'},
     {id:'2-cost-start', n:'2 Cost Start', ch:'Warwick', cat:'units', w:6, de:'Du startest mit einem zufälligen 2-Kosten-Champion.', en:'You start with a random 2-cost champion.'},
@@ -120,12 +134,12 @@ window.TFT_CUSTOM = {
   // Cheatsheet (/cheatsheet): Systemwerte des Sets. Shop, Loot und Encounters stehen oben, hier nur der Rest.
   cheats: {
     // Augment-Stufen pro Partie (2-1, 3-2, 4-2): S = Silber, G = Gold, P = Prismatisch, w = Gewicht (Summe 109). Quelle: TFT Flow, Patch 18.1
-    augments: {src:'TFT Flow · Patch 18.1', seq:[
+    augments: {src:'Little Buddy Bot · Patch 18.5', seq:[
       ['GGG',22],['GSG',18],['SGG',12],['GGP',12],['GPG',10],['GPS',6],['SSG',5],['SSP',5],['SGP',5],
       ['PSG',4],['GSP',2],['PGG',2],['PPP',1],['PSP',1],['SPP',1],['GPP',1],['PGP',1],['PPG',1]
     ]},
     // Spielerschaden nach einer Niederlage = Stage-Schaden + 1 pro überlebender gegnerischer Unit. Quelle: TFT Flow, Patch 18.1
-    damage: {src:'TFT Flow · Patch 18.1', stage:[[2,2],[3,6],[4,7],[5,10],[6,12],[7,17],['8+',150]]},
+    damage: {src:'Little Buddy Bot · Patch 18.5', stage:[[1,0],[2,2],[3,6],[4,7],[5,10],[6,12],[7,17],[8,150]]},
     // Karussell pro Stage: Größe, Champion-Auswahl, Item-Auswahl jeweils [Bezeichnung DE, EN, Chance %]. Quelle: TFT Flow, Patch 18.1
     carousel: {src:'TFT Flow · Patch 18.1', stages:[
       {st:'2', size:[[9,85],[11,12],[13,3]],
@@ -145,11 +159,11 @@ window.TFT_CUSTOM = {
         it:[['Halb fertig, halb Komponenten','Half completed, half unbuilt',50],['Fertige Items als Komponenten','Completed items, unbuilt',25],['Fertige Items + 2 Embleme','Completed + 2 emblems',15],['Fertige Items + 3 Embleme','Completed + 3 emblems',10]]}
     ]},
     // Encounter Gold Subscription (Kobuko): eine Zeile wird pro Partie ausgelost, Gold zu Beginn von Stage 1–8. Quelle: TFT Flow, Patch 18.1
-    goldSub: {src:'TFT Flow · Patch 18.1', rows:[[15,[0,1,1,2,2,3,3,4]],[35,[1,2,3,4,5,6,7,8]],[25,[2,4,6,8,10,12,14,16]],[23,[3,6,9,12,15,18,21,24]],[2,[8,16,24,32,40,48,56,64]]]},
+    goldSub: {src:'Little Buddy Bot · Patch 18.5', from:2, to:7, rows:[[15,[0,1,1,2,2,3,3,4]],[35,[1,2,3,4,5,6,7,8]],[25,[2,4,6,8,10,12,14,16]],[23,[3,6,9,12,15,18,21,24]],[2,[8,16,24,32,40,48,56,64]]]},
     // Encounter Reroll Subscription (Kayle): kostenlose Shop-Rerolls zu Beginn jeder Stage [Stage, Rerolls]. Quelle: Little Buddy Bot, Patch 18.4 (05.09.2026)
-    rerollSub: {src:'Little Buddy Bot · Patch 18.4', rows:[[2,4],[3,5],[4,6],[5,7],[6,8],[7,9]]},
+    rerollSub: {src:'Little Buddy Bot · Patch 18.5', rows:[[2,4],[3,5],[4,6],[5,7],[6,8],[7,9]]},
     // 1-Kosten-Champions, die eine Stage-1-PvE-Runde allein schaffen (Position egal). Quelle: Little Buddy Bot, Patch 18.4 (16.09.2026)
-    solo: {src:'Little Buddy Bot · Patch 18.4', rounds:[['1-3',['Akali','Camille',"Rek'Sai",'Yorick']],['1-4',['Camille']]]}
+    solo: {src:'Little Buddy Bot · Patch 18.5', rounds:[['1-3',['Akali','Camille',"Rek'Sai",'Yorick']],['1-4',['Camille']]]}
   },
   // Elderwood-Pflanzen (platzierbare Einheiten ohne Champion-Daten). Reihenfolge nicht ändern – Builder-Links hängen davon ab.
   plants: {

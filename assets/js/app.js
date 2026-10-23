@@ -1003,6 +1003,13 @@ function updateTlNote(){
   if(!(D.comps||[]).length){ el.textContent = `Für Set ${TFT_DATA.set} gibt es noch keine Tierlist.`; return; }
   if(D.source==='TFTAcademy'){ el.innerHTML = `Stand: Patch ${esc(D.patch||TL_PATCH)} · Bewertungen und Aufstellungen nach ${link}`; return; }
   const d = D.updated ? new Date(D.updated).toLocaleDateString(LOC) : '';
+  if(ND){   // neues Design: kompaktes Abzeichen oben rechts – grüner Punkt „Live“, wenn die Tierlist zum aktuellen Patch passt
+    const p = String(D.patch||TL_PATCH), live = p === String(((window.TFT_PATCHES||[])[0]||{}).id || TL_PATCH);
+    el.classList.add('tl-badge'); el.classList.toggle('old', !live);
+    el.title = `${L('Bewertungen von TFTClimb', 'Ratings by TFTClimb')}${d ? ' · ' + L('aktualisiert am ', 'updated on ') + d : ''}`;
+    el.innerHTML = `<i class="tl-dot"></i>${live ? '<b>Live</b>' : ''}<span>Patch ${esc(p)}</span>${d ? `<span>${esc(d)}</span>` : ''}${D.basedOn==='TFTAcademy' || (TL_FILE && TL_FILE.source==='TFTAcademy') ? `<span>${L('Aufstellungen nach', 'Boards from')} ${link}</span>` : ''}`;
+    return;
+  }
   el.innerHTML = `Stand: Patch ${esc(D.patch||TL_PATCH)}${d?' · aktualisiert am '+d:''} · Bewertungen von TFTClimb${D.basedOn==='TFTAcademy' || (TL_FILE && TL_FILE.source==='TFTAcademy') ? ' · Aufstellungen ursprünglich nach ' + link : ''}`;
 }
 function admCardHTML(c){
@@ -2970,73 +2977,144 @@ function renderStatBar(){
 }
 setInterval(()=>document.querySelectorAll('[data-countdown]').forEach(e=>{ e.textContent = stCountdown(); }), 60000);
 /* ================= CHEATSHEET (/cheatsheet) ================= */
-// Alle Systemwerte des Sets auf einer Seite: Shop & XP, Augment-Stufen, Encounters, Karussell, Schaden, Orbs, Embleme.
+// Alle Systemwerte des Sets auf einer Seite: Shop & XP, Augment-Stufen, Encounters, Schaden, Orbs, Embleme (Karussell vorerst ausgeblendet).
 // Werte aus data/custom-<Set>.js (shop, loot, encounters, cheats) und den offiziellen Set-Daten (Emblem-Rezepte).
 const CS = TFT_CUSTOM_SET.cheats || {};
+const CS_SHOW_CAROUSEL = false;
 const csPct = p => fmtNum(Math.round(p * 10) / 10) + L(' %', '%');
 const csTable = (head, rows, cls='') => `<div class="cs-wrap"><table class="cs-table ${cls}"><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 const csSrc = s => s ? `<p class="cs-src">${L('Quelle', 'Source')}: ${esc(s)}</p>` : '';
 const CS_AUG = {S:['s', 'Silber', 'Silver'], G:['g', 'Gold', 'Gold'], P:['p', 'Prisma', 'Prismatic']};
-const csAug = l => `<span class="cs-aug ${CS_AUG[l][0]}">${L(CS_AUG[l][1], CS_AUG[l][2])}</span>`;
+// Spielnahe Darstellung (Vorbild: Little Buddy Bot): große Zahlen, Kostenfarben als Schrift, Symbole statt Fließtext, Einheit direkt am Wert
+// Offizielle Riot-Symbole (assets/icons/tft, aus den Spieldaten über CommunityDragon): Gold, Reroll, XP, Ambosse, Beutekugeln
+const TI = k => `assets/icons/tft/${k}.png`;
+const csIc = (src, n, title, cls='') => `<span class="csx-ic ${cls}" title="${esc(title)}"><img src="${src}" alt="${esc(title)}" width="40" height="40" loading="lazy">${n != null && n !== '' && n !== 1 ? `<b>×${n}</b>` : ''}</span>`;
+const csCoin = n => +n === 0 ? '<span class="csx-none">–</span>' : csIc(TI('gold'), '' + n, n + ' Gold', 'gold');   // Gold zeigt die Anzahl immer, auch ×1
+// Zufällige Champions: Riots Champion-Kugel in der Kostenfarbe (wie im Spiel); zufällige Komponenten: Riots Item-Symbol
+const csChamp = (c, n) => csIc(TI('champ-' + c), n, (n > 1 ? n + ' ' : '') + L(`zufällige ${c}-Kosten-Champions`, `random ${c}-cost champions`), 'chorb');
+const csComp = n => csIc(TI('orb-blue'), '' + n, n + ' ' + L('Komponenten-Kugeln (je eine zufällige Komponente)', 'component orbs (one random component each)'), 'corb');   // Riots Symbol: so sehen Komponenten-Orbs im Spiel aus
+const CS_ORB = {s:['Grauer Orb', 'Gray orb'], b:['Blauer Orb', 'Blue orb'], g:['Gold-Orb', 'Gold orb'], p:['Prismatic-Orb', 'Prismatic orb']};
+// Beutekugeln: eigene Grafiken (assets/icons/tft/lootorb-*.webp) – Riot hat für Grau und Gold nur Platzhalter
+const CS_ORB_IMG = {s:'gray', b:'blue', g:'gold', p:'prism'};
+const csOrb = (k, n, always) => csIc(TI('lootorb-' + CS_ORB_IMG[k]).replace('.png', '.webp'), n > 1 || (always && n) ? '' + n : '', (n > 1 ? n + '× ' : '') + L(CS_ORB[k][0], CS_ORB[k][1]), 'orb o-' + k);
+const CS_ANVIL = {component:['Komponentenschmiede', 'Component anvil'], completed:['Gegenstandsschmiede', 'Completed item anvil'], artifact:['Artefaktschmiede', 'Artifact anvil']};
+const csSpatPan = () => { const a = itemById.DA_Component_Spatula, b = itemById.DA_Component_FryingPan; return a && b ? `<span class="csx-ic sp" title="${L('Pfannenwender oder Bratpfanne', 'Spatula or Frying Pan')}"><img src="${a.img}" alt="" width="40" height="40" loading="lazy"><img class="sp2" src="${b.img}" alt="" width="40" height="40" loading="lazy"></span>` : ''; };
+const csAnvil = (k, n) => csIc(TI('anvil-' + k), n, L(CS_ANVIL[k][0], CS_ANVIL[k][1]), 'anvil a-' + k);// Encounter-Champions: Bild aus den Set-Daten, sonst das LoL-Porträt von Data Dragon (fehlt es, bleibt das Feld leer)
+const CS_DD = {LeBlanc:'Leblanc', "Kai'Sa":'Kaisa', "Rek'Sai":'RekSai', "Kha'Zix":'Khazix', "Cho'Gath":'Chogath', "Vel'Koz":'Velkoz', "Kog'Maw":'KogMaw', Wukong:'MonkeyKing'};
+const csChampPic = n => n ? (champImg(n) || `https://ddragon.leagueoflegends.com/cdn/16.20.1/img/champion/${CS_DD[n] || n.replace(/[^A-Za-z]/g, '')}.png`) : '';
 function csSections(){
   const out = [];
+  const pctI = p => Math.round(p) + L(' %', '%');   // ganze Prozent für bedingte Chancen
   if(SHOP){
-    // Shop-Chancen als Heatmap in den Kostenfarben (ab Level 3), Level 8 vorausgewählt; Klick markiert eine andere Zeile
-    const lv = SHOP.odds.map((r, i)=>[i + 1, r]).filter(([l])=>l >= 3);
+    // Shop-Chancen, Pool-Größen und XP in einer Tabelle: Kosten als farbige Schrift, die wahrscheinlichsten Kosten pro Level fett,
+    // XP bis zum nächsten Level zwischen den Zeilen. Level 8 vorausgewählt; Klick markiert eine andere Zeile
+    const lv = SHOP.odds.map((r, i)=>[i + 1, r]).filter(([l])=>l >= 3 && l <= 10);
     const colMax = [0,1,2,3,4].map(c=>Math.max(...lv.map(([, r])=>r[c])));
-    const odds = `<div class="cs-wrap"><table class="cs-table cs-hm"><thead><tr><th>Level</th>${[1,2,3,4,5].map(c=>`<th><i class="cdot c${c}"></i>${c}<span class="hm-k">${L('-Kosten', '-cost')}</span></th>`).join('')}</tr></thead><tbody>${lv.map(([l, r])=>`<tr class="${l===8 ? 'sel' : ''}"><td>${l}</td>${r.map((o, c)=>o ? `<td class="hm c${c+1}${o===colMax[c] || o >= 30 ? ' top' : ''}" style="--a:${(0.06 + o / colMax[c] * 0.5).toFixed(2)}">${o}${L(' %', '%')}</td>` : '<td>–</td>').join('')}</tr>`).join('')}</tbody></table></div>
-      <p class="cs-note cs-after">${L('Chance pro Shop-Slot nach Level. Klick eine Zeile an, um sie zu markieren. Treffer-Chancen rechnet der', 'Chance per shop slot by level. Click a row to highlight it. Hit chances are in the')} <a href="/tools/rolldown">${L('Rolldown-Rechner', 'rolldown calculator')}</a>.</p>`;
-    let sum = 0;
-    const xp = (SHOP.xp || []).map((x, i)=>{ sum += x; return [`${i+1} → ${i+2}`, x, sum, Math.ceil(x / 4) * 4]; });
-    const xpHtml = csTable([L('Level', 'Level'), L('XP', 'XP'), L('XP gesamt', 'Total XP'), L('Gold, wenn nur gekauft', 'Gold if only bought')], xp) + `<p class="cs-note cs-after">${L('Jede Runde gibt es 2 XP gratis. 4 Gold kaufen 4 XP.', 'You get 2 free XP every round. 4 gold buys 4 XP.')}</p>`;
-    const pool = csTable([L('Kosten', 'Cost'), L('Kopien je Champion', 'Copies per champion'), 'Champions', L('Units im Pool', 'Units in the pool')], [1,2,3,4,5].map(c=>[`<i class="cdot c${c}"></i>${L(`${c}-Kosten`, `${c}-cost`)}`, SHOP.bag[c-1], SHOP_DISTINCT[c-1], SHOP.bag[c-1] * SHOP_DISTINCT[c-1]]));
-    out.push(['shop', L('Shop-Chancen, Pool & XP', 'Shop odds, pool & XP'), {tabs:[
-      [L('Shop-Chancen', 'Shop odds'), '<path d="M3 4h2l2.4 11h11L21 7H6"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/>', odds],
-      [L('XP & Level', 'XP & leveling'), '<path d="M5 20V12M12 20V5M19 20v-9"/>', xpHtml],
-      [L('Champion-Pool', 'Champion pool'), '<circle cx="9" cy="8" r="3"/><path d="M3 20c.6-3.4 3-5.5 6-5.5s5.4 2.1 6 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.6c2.6.2 4.5 2.2 5 5.4"/>', pool]
-    ]}]);
+    const head = `<tr class="cso-bag"><th></th><th></th>${[1,2,3,4,5].map(c=>`<th class="t${c}"><b>${SHOP.bag[c-1]} ${L('Kopien', 'copies')}</b><small>${SHOP_DISTINCT[c-1]} Champions</small></th>`).join('')}</tr>
+      <tr class="cso-h"><th class="cso-xp"><img class="cso-xpi" src="${TI('xp')}" alt="" width="22" height="22">XP</th><th>Level</th>${[1,2,3,4,5].map(c=>`<th><span class="cso-k k${c}">${c}<span class="hm-k">${L('-Kosten', '-cost')}</span></span></th>`).join('')}</tr>`;
+    const rows = lv.map(([l, r])=>{ const mx = Math.max(...r), xp = (SHOP.xp || [])[l - 1];
+      return `<tr class="${l===8 ? 'sel' : ''}"><td class="cso-xp">${xp ? `<span>+${xp}</span>` : ''}</td><td class="cso-lv">Level ${l}</td>${r.map((o, c)=>o ? `<td class="t${c+1}${o===mx ? ' top' : ''}" style="--o:${(0.5 + o / colMax[c] * 0.5).toFixed(2)}">${o}${L(' %', '%')}</td>` : '<td class="cso-0">–</td>').join('')}</tr>`; }).join('');
+    out.push(['shop', L('Shop-Chancen, Pool & XP', 'Shop odds, pool & XP'), `<div class="cs-wrap"><table class="cs-table cs-hm cso"><thead>${head}</thead><tbody>${rows}</tbody></table></div>
+      <p class="cs-note cs-after">${L('Chance pro Shop-Slot. Fett: die wahrscheinlichsten Kosten auf diesem Level. Die Zahl zwischen zwei Levels ist die XP bis zum nächsten Level – jede Runde gibt es 2 XP gratis, 4 Gold kaufen 4 XP. Treffer-Chancen rechnet der', 'Chance per shop slot. Bold: the most likely cost at that level. The number between two levels is the XP to the next level – you get 2 free XP every round, 4 gold buys 4 XP. Hit chances are in the')} <a href="/tools/rolldown">${L('Rolldown-Rechner', 'rolldown calculator')}</a>.</p>` + csSrc('Little Buddy Bot · Patch 18.5')]);
   }
   if(CS.augments){
-    const seq = CS.augments.seq, W = seq.reduce((s, x)=>s + x[1], 0);
-    const first = ['G','S','P'].map(l=>`${csAug(l)} ${csPct(seq.filter(x=>x[0][0]===l).reduce((s, x)=>s + x[1], 0) / W * 100)}`).join(' · ');
+    // Baum wie im Spiel: 1. Augment → 2. Augment (Chance, wenn das 1. so kam) → 3. Augment → Chance für genau diese Reihenfolge
+    const seq = CS.augments.seq, W = seq.reduce((s, x)=>s + x[1], 0), sum = p => seq.filter(x=>x[0].startsWith(p)).reduce((s, x)=>s + x[1], 0);
+    const tier = (l, p) => `<span class="csa-t ${CS_AUG[l][0]}"><b>${pctI(p)}</b> ${L(CS_AUG[l][1], CS_AUG[l][2])}</span>`;
+    let cells = '', row = 2;   // Zeile 1 = Kopf
+    for(const a of 'SGP'){ const wa = sum(a); if(!wa) continue; const ra = row;
+      for(const b of 'SGP'){ const wb = sum(a + b); if(!wb) continue; const rb = row;
+        for(const c of 'SGP'){ const x = seq.find(s=>s[0]===a + b + c); if(!x) continue;
+          cells += `<div class="csa-c csa-3 ${CS_AUG[c][0]}" style="grid-row:${row}">${tier(c, x[1] / wb * 100)}</div><div class="csa-c csa-p" style="grid-row:${row}">${pctI(x[1] / W * 100)}</div>`; row++; }
+        cells += `<div class="csa-c csa-2 ${CS_AUG[b][0]}" style="grid-row:${rb} / ${row}">${tier(b, wb / wa * 100)}</div>`; }
+      cells += `<div class="csa-c csa-1 ${CS_AUG[a][0]}" style="grid-row:${ra} / ${row}">${tier(a, wa / W * 100)}</div>`; }
     const prism = seq.filter(x=>x[0].includes('P')).reduce((s, x)=>s + x[1], 0) / W * 100;
-    const rows = [...seq].sort((a,b)=>b[1]-a[1]).map(([s, w])=>[[...s].map(csAug).join(' → '), csPct(w / W * 100)]);
-    out.push(['augments', L('Augment-Stufen (2-1 · 3-2 · 4-2)', 'Augment tiers (2-1 · 3-2 · 4-2)'), `<p class="cs-note">${L('1. Augment', '1st augment')}: ${first} · ${L('mindestens ein Prismatic', 'at least one prismatic')}: ${csPct(prism)}</p>` + csTable([L('Reihenfolge', 'Order'), L('Chance pro Partie', 'Chance per game')], rows) + csSrc(CS.augments.src)]);
+    const headRow = [[L('1. Augment', '1st augment'), '2-1'], [L('2. Augment', '2nd augment'), '3-2'], [L('3. Augment', '3rd augment'), '4-2'], [L('Chance', 'Odds'), '']].map(([t, s], i)=>`<div class="csa-h" style="grid-column:${i + 1}">${t}${s ? ` <small>${s}</small>` : ''}</div>`).join('');
+    // Baum: Start → 2-1 → 3-2 → 4-2. An den Linien die Chance, wenn es bis dahin so kam; unter den Blättern die Chance für genau diese Reihenfolge.
+    // Klick auf ein Augment (2-1, dann 3-2) zeigt nur noch diesen Ast und rechnet die Blatt-Prozente auf diese Lage um (Vorhersage)
+    const leaves = [], gap = 1.6;   // zusätzlicher Abstand zwischen den drei Ästen (in Blattbreiten)
+    for(const p1 of 'SGP'){ if(!sum(p1)) continue; if(leaves.length) leaves.push(null);
+      for(const p2 of 'SGP') for(const p3 of 'SGP'){ const x = seq.find(s=>s[0]===p1 + p2 + p3); if(x) leaves.push(x[0]); } }
+    const slots = leaves.length + (gap - 1) * leaves.filter(v=>v===null).length, VW = 1000, padL = 84, padR = 26, step = (VW - padL - padR) / (slots - 1);
+    const X = {}; let pos = 0; leaves.forEach(k=>{ if(k===null){ pos += gap; return; } X[k] = padL + pos * step; pos++; });
+    const avg = ks => ks.reduce((s, k)=>s + X[k], 0) / ks.length;
+    for(const len of [2, 1]) seq.map(s=>s[0].slice(0, len)).forEach(p=>{ if(X[p]===undefined) X[p] = avg(Object.keys(X).filter(k=>k.length===len + 1 && k.startsWith(p))); });
+    X[''] = avg(['S','G','P'].filter(k=>X[k]!==undefined));
+    const Y = [44, 160, 280, 398], R = [34, 27, 24, 22], VH = 452;   // flach und breit
+    const hex = (cx, cy, r) => [0,1,2,3,4,5].map(i=>{ const an = Math.PI / 180 * (60 * i - 90); return (cx + r * Math.cos(an)).toFixed(1) + ',' + (cy + r * Math.sin(an)).toFixed(1); }).join(' ');
+    const fmtP = p => (p > 0 && p < 1 ? '<1' : Math.round(p)) + '%';   // ganze Prozent wie bei Little Buddy Bot
+    const node = k => { const lv = k.length, l = k.slice(-1) || 'R', cx = X[k], cy = Y[lv], r = R[lv], w = k ? sum(k) : W;
+      return `<g class="atg-n atg-${l}${lv===3 ? ' atg-leaf' : ''}${lv && lv < 3 ? ' atg-pick' : ''}" data-k="${k}" data-w="${w}"><polygon class="atg-h" points="${hex(cx, cy, r)}"/><polygon class="atg-i" points="${hex(cx, cy, r - 5)}"/><text x="${cx}" y="${cy}" dy=".35em">${k ? l : 'Start'}</text>${lv===3 ? `<text class="atg-p" x="${cx}" y="${cy + r + 27}" data-t="${fmtP(w / W * 100)}">${fmtP(w / W * 100)}</text>` : ''}</g>`; };
+    const keys = [''].concat([1, 2, 3].flatMap(len=>[...new Set(seq.map(s=>s[0].slice(0, len)))]).filter(k=>X[k]!==undefined));
+    const edge = k => { const p = k.slice(0, -1), lv = k.length, x1 = X[p], y1 = Y[lv - 1] + R[lv - 1], x2 = X[k], y2 = Y[lv] - R[lv], pc = sum(k) / (p ? sum(p) : W) * 100;
+      const mx = x1 + (x2 - x1) * .5, my = y1 + (y2 - y1) * .5, dx = Math.abs(x2 - x1) < 2 ? 0 : (x2 < x1 ? -16 : 16);
+      return `<g class="atg-e" data-k="${k}"><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><text x="${mx + dx}" y="${my}" dy=".35em">${Math.round(pc)}</text></g>`; };
+    const rows = [['2-1', 1], ['3-2', 2], ['4-2', 3]].map(([st, lv])=>`<g class="atg-row"><rect x="0" y="${Y[lv] - 15}" width="58" height="30" rx="8"/><text x="29" y="${Y[lv]}" dy=".35em">${st}</text></g>`).join('');
+    const tree = `<svg class="atg" viewBox="0 0 ${VW} ${VH}" role="img" aria-label="${L('Augment-Baum', 'Augment tree')}" data-tw="${W}"><defs><linearGradient id="atgP" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset=".5" stop-color="#818cf8"/><stop offset="1" stop-color="#f0abfc"/></linearGradient></defs>${rows}${keys.filter(k=>k).map(edge).join('')}${keys.map(node).join('')}</svg>`;
+    const legend = `<div class="atg-leg">${[['S', L('Silber', 'Silver')], ['G', 'Gold'], ['P', L('Prismatisch', 'Prismatic')]].map(([l, n])=>`<span><svg viewBox="0 0 24 24" class="atg-n atg-${l}"><polygon class="atg-h" points="${hex(12, 12, 10)}"/></svg>${n}</span>`).join('')}<small>${L('Klick dein Augment auf 2-1 und 3-2 an – der Baum zeigt, was als Nächstes kommt. Alle Zahlen in %.', 'Click your augment on 2-1 and 3-2 – the tree shows what comes next. All numbers in %.')}</small></div>`;
+    out.push(['augments', L('Augment-Stufen (2-1 · 3-2 · 4-2)', 'Augment tiers (2-1 · 3-2 · 4-2)'), `<div class="cst-tree">${legend}${tree}</div><div class="cst-table cs-wrap"><div class="csa">${headRow}${cells}</div></div>
+      <p class="cs-note cs-after">${L('Mindestens ein Prismatic pro Partie', 'At least one prismatic per game')}: <b>${csPct(prism)}</b></p>` + csSrc(CS.augments.src)]);
   }
   if(ENCS.length){
-    const rows = [...ENCS].sort((a,b)=>b.w - a.w).map(e=>[`<b>${esc(e.n)}</b>`, esc(EN ? e.en : e.de), csPct(e.w / ENC_W * 100)]);
-    out.push(['encounters', L('Encounter-Chancen', 'Encounter odds'), csTable(['Encounter', L('Effekt', 'Effect'), L('Chance', 'Chance')], rows) + csSrc('TFT Flow · Patch 18.1')]);
+    const rows = [...ENCS].sort((a,b)=>b.w - a.w).map(e=>{ const src = csChampPic(e.ch);
+      return `<div class="cse"><b class="cse-p">${pctI(e.w / ENC_W * 100)}</b><span class="cse-img"${e.ch ? ` title="${esc(e.ch)}"` : ''}>${src ? `<img src="${src}" alt="" width="44" height="44" loading="lazy" onerror="this.remove()">` : ''}</span><span class="cse-t"><b>${esc(e.n)}</b><small>${esc(EN ? e.en : e.de)}</small></span></div>`; }).join('');
+    out.push(['encounters', L('Encounter-Chancen', 'Encounter odds'), `<div class="cse-grid">${rows}</div>` + csSrc('Little Buddy Bot · Patch 18.5')]);
   }
-  if(CS.carousel){
-    const list = a => a.map(x=>`<div class="cs-li"><span>${typeof x[0]==='number' ? x[0] + ' ' + L('Champions', 'champions') : esc(L(x[0], x[1]))}</span><b>${csPct(x[x.length-1])}</b></div>`).join('');
-    const rows = CS.carousel.stages.map(s=>[`<b>${s.st}</b>`, list(s.size), list(s.ch), list(s.it)]);
-    out.push(['carousel', L('Karussell', 'Carousel'), csTable(['Stage', L('Größe', 'Size'), 'Champions', 'Items'], rows, 'cs-top') + csSrc(CS.carousel.src)]);
+  if(CS.carousel && CS_SHOW_CAROUSEL){   // vorerst aus: Little Buddy Bot hat keine Karussell-Tabelle
+    const list = a => a.map(x=>`<div class="cs-li"><b>${csPct(x[x.length-1])}</b><span>${typeof x[0]==='number' ? x[0] + ' ' + L('Champions', 'champions') : esc(L(x[0], x[1]))}</span></div>`).join('');
+    const rows = CS.carousel.stages.map(s=>[`<b class="csc-st">${s.st}</b>`, list(s.size), list(s.ch), list(s.it)]);
+    out.push(['carousel', L('Karussell', 'Carousel'), csTable(['Stage', L('Größe', 'Size'), 'Champions', 'Items'], rows, 'cs-top csc') + csSrc(CS.carousel.src)]);
   }
   if(CS.damage){
-    const d = CS.damage.stage;
-    out.push(['damage', L('Spielerschaden', 'Player damage'), `<p class="cs-note">${L('Schaden nach einer Niederlage = Stage-Schaden + 1 pro überlebender gegnerischer Unit.', 'Damage after a loss = stage damage + 1 per surviving enemy unit.')}</p>` + csTable(['Stage', ...d.map(x=>x[0])], [[L('Stage-Schaden', 'Stage damage'), ...d.map(x=>x[1])]]) + csSrc(CS.damage.src)]);
+    const d = CS.damage.stage, s4 = d.find(x=>String(x[0])==='4');
+    const list = d.map(([s, v])=>`<div class="csd-r"><span>Stage ${s}</span><b${v >= 100 ? ' class="hot"' : ''}>${v} <small>${L('Schaden', 'damage')}</small></b></div>`).join('');
+    out.push(['damage', L('Spielerschaden', 'Player damage'), `<div class="csd"><div class="csx-card"><div class="csx-head"><img class="csx-hi" src="${TI('combat')}" alt="" width="26" height="26"><b>${L('Stage-Schaden', 'Stage damage')}</b><small>${L('fester Grundwert', 'fixed base value')}</small></div>${list}</div>
+      <div class="csx-card csd-u"><div class="csx-head"><img class="csx-hi" src="${TI('champ')}" alt="" width="26" height="26"><b>${L('Units-Schaden', 'Unit damage')}</b><small>${L('kommt dazu', 'added on top')}</small></div><div class="csd-big">+1<small>${L('Schaden pro gegnerischer Unit, die den Kampf überlebt', 'damage per enemy unit that survives the fight')}</small></div>${s4 ? `<div class="csd-ex">${L('Beispiel', 'Example')}: Stage 4, ${L('3 Units übrig', '3 units left')} → <b>${s4[1]} + 3 = ${s4[1] + 3} ${L('Schaden', 'damage')}</b></div>` : ''}</div></div>` + csSrc(CS.damage.src)]);
   }
   const orbs = TFT_CUSTOM_SET.loot && TFT_CUSTOM_SET.loot.orbs;
   if(orbs){
-    const html = Object.values(orbs).map(o=>`<div class="cs-orb"><h4>${esc(tr(o.label))} <small>${esc(tr(o.note || ''))} · ${esc(tr(o.wert || ''))}</small></h4>${csTable([L('Inhalt', 'Contents'), L('Chance', 'Chance')], o.items.map(([n, p])=>[esc(tr(n)), csPct(p)]))}</div>`).join('');
-    out.push(['orbs', L('Loot-Orbs', 'Loot orbs'), `<div class="cs-grid">${html}</div><p class="cs-note">${L('Welche Komponente als Nächstes kommt, zeigt der', 'Which component drops next is shown in the')} <a href="/tools/drops">${L('Item-Drop-Rechner', 'item drop calculator')}</a>.</p>` + csSrc(TFT_CUSTOM_SET.loot.source)]);
+    // Inhalt als Symbole: Gold als Münze, zufällige Champions in Kostenfarbe, bekannte Items als Bild, der Rest als kurzer Text
+    const ALIAS = {'item-entferner':'DA_Consumable_ItemRemover', 'item remover':'DA_Consumable_ItemRemover', 'diebeshandschuhe':'DA_ThiefsGloves', 'kleiner duplikator':'DA_Consumable_LesserChampionDuplicator', 'lesser duplicator':'DA_Consumable_LesserChampionDuplicator', 'lichtgegenstand-glückstruhe':'DA_RadiantLuckyItemChest', 'radiant lucky chest':'DA_RadiantLuckyItemChest', 'meisterwerk-aufwertung':'DA_MasterworkUpgrade', 'masterwork upgrade':'DA_MasterworkUpgrade'};
+    const part = p => { p = p.trim(); let m, n = 1;
+      if((m = p.match(/^(\d+)\s*Gold$/i))) return csCoin(m[1]);
+      if((m = p.match(/^(\d+)\s+(.+)$/)) && !/kosten|cost/i.test(m[2])){ n = +m[1]; p = m[2]; }   // „2 Komponenten-Ambosse“, „24 Meisterwerk-Aufwertungen“
+      if(/^(pfannenwender oder bratpfanne|spatula or (frying )?pan)$/i.test(p)) return csSpatPan();
+      if(/^(komponenten-ambosse?|component anvils?)$/i.test(p)) return csAnvil('component', n);
+      if(/^(artefakt-ambosse?|artifact anvils?)$/i.test(p)) return csAnvil('artifact', n);
+      if(/^(amboss|anvil)\s*\((fertig|fertiges item|completed( item)?)\)$/i.test(p)) return csAnvil('completed', n);
+      if((m = p.match(/^(?:(\d+)\s+)?(?:zufällige[rn]?|random)\s+(\d)-(?:Kosten|costs?)(?:\s+champions?)?$/i))) return csChamp(m[2], +(m[1] || 1));
+      const pl = p.toLowerCase(), it = itemById[ALIAS[pl]] || ITEMS.find(i=>[i.de, i.en, i.de0].some(x=>(x || '').toLowerCase()===pl));   // de0 = deutscher Name auf der englischen Seite
+      return it ? csIc(it.img, n, EN ? it.en : it.de, 'item') : `<span class="csx-chip">${n > 1 ? n + '× ' : ''}${esc(p)}</span>`; };
+    const card = o => { const k = o.orb || 'g', note = String(tr(o.note || '')).replace(/^ab /, L('ab ', 'from '));
+      return `<div class="csx-card"><div class="csx-head">${csOrb(k, 1)}<b>${L(CS_ORB[k][0], CS_ORB[k][1])}</b><small>${esc(note)}${o.wert ? ' · ' + esc(o.wert) : ''}</small></div>${[...o.items].sort((a,b)=>b[1]-a[1]).map(([n, p])=>`<div class="csx-row"><b class="csx-p">${csPct(p)}</b><span class="csx-c">${String(tr(n)).split(/\s\+\s/).map(part).join('')}</span></div>`).join('')}</div>`; };
+    const all = Object.values(orbs), small = all.filter(o=>'sb'.includes(o.orb)).map(card).join(''), big = all.filter(o=>!'sb'.includes(o.orb)).map(card).join('');
+    const lg = (ic, txt) => `<span class="csx-lg">${ic}<span>${txt}</span></span>`;
+    const legend = `<div class="csx-legend">${lg(csAnvil('component'), L(CS_ANVIL.component[0], CS_ANVIL.component[1]))}${lg(csAnvil('completed'), L(CS_ANVIL.completed[0], CS_ANVIL.completed[1]))}${lg(csAnvil('artifact'), L(CS_ANVIL.artifact[0], CS_ANVIL.artifact[1]))}${lg(csSpatPan(), L('Pfannenwender oder Bratpfanne', 'Spatula or Frying Pan'))}${lg(csChamp(4, 1), L('zufälliger Champion – Farbe = Kosten', 'random champion – colour = cost'))}</div>`;
+    const html = (small ? `<div class="csx-grid csx-4">${small}</div>` : '') + `<div class="csx-grid csx-3"${small ? ' style="margin-top:14px"' : ''}>${big}</div>` + legend;
+    out.push(['orbs', L('Loot-Orbs', 'Loot orbs'), `${html}<p class="cs-note cs-after">${L('Welche Komponente als Nächstes kommt, zeigt der', 'Which component drops next is shown in the')} <a href="/tools/drops">${L('Item-Drop-Rechner', 'item drop calculator')}</a>.</p>` + csSrc(TFT_CUSTOM_SET.loot.orbSrc || TFT_CUSTOM_SET.loot.source)]);
   }
   // Beute aus den Creep-Runden pro Stage: [Silber, Blau, Gold, Prisma, Komponenten, Komponenten-Amboss, aufgewertet, Chance]
   const loot = TFT_CUSTOM_SET.loot;
-  if(loot && loot.stages){
-    const ON = [L('Silber', 'Silver'), L('Blau', 'Blue'), 'Gold', L('Prisma', 'Prismatic')];
-    const orbTxt = r => r.slice(0, 4).map((n, i)=>n ? `${n}× ${ON[i]}` : '').filter(Boolean).join(' · ') || '–';
-    const html = Object.entries(loot.stages).map(([st, list])=>`<div class="cs-orb"><h4>Stage ${st}</h4>${csTable(['Orbs', L('Komponenten', 'Components'), L('Komp.-Amboss', 'Comp. anvil'), L('Aufgewertet', 'Upgraded'), L('Chance', 'Chance')], [...list].sort((a,b)=>b[7]-a[7]).map(r=>[orbTxt(r), r[4] || '–', r[5] || '–', r[6] ? '✓' : '', csPct(r[7])]))}</div>`).join('');
-    const up = loot.upgraded ? csTable([L('Aufgewertete Runden pro Partie', 'Upgraded rounds per game'), L('Chance', 'Chance')], loot.upgraded.map(([n, p])=>[esc(tr(n)), csPct(p)])) : '';
-    out.push(['loot', L('Loot-Verteilung pro Stage', 'Loot distribution per stage'), `<p class="cs-note">${L('Alle möglichen Beute-Kombinationen aus den Creep-Runden. Aufgewertete Runden geben mehr Beute.', 'Every possible loot combination from the creep rounds. Upgraded rounds give more loot.')}</p><div class="cs-grid cs-grid-2">${html}</div>${up ? `<div class="cs-orb" style="margin-top:16px;max-width:480px">${up}</div>` : ''}${loot.late ? `<p class="cs-note" style="margin-top:12px">${L('Ab Stage 5', 'From Stage 5')}: ${esc(tr(loot.late))}</p>` : ''}` + csSrc(loot.source)]);
+  if(loot && loot.lbb){
+    // Little Buddy Bot: [Komponenten-Kugeln, grau, blau, gold, prisma, Chance] – Anzahl immer am Symbol
+    const row = r => `<div class="csx-row"><b class="csx-p">${r[5] < 1 ? fmtNum(r[5]) + L(' %', '%') : pctI(r[5])}</b><span class="csx-c">${r[0] ? csComp(r[0]) : ''}${['s','b','g','p'].map((k, i)=>r[i + 1] ? csOrb(k, r[i + 1], true) : '').join('')}</span></div>`;
+    const html = Object.entries(loot.lbb.stages).map(([st, list])=>`<div class="csx-card"><div class="csx-head"><b>Stage ${st}</b><small>${L('PvE-Runden', 'PvE rounds')}</small></div>${[...list].sort((a,b)=>b[5]-a[5]).map(row).join('')}</div>`).join('');
+    const legend = `<div class="csx-legend"><span class="csx-lg">${csComp(1)}<span>${L('Komponenten-Kugel', 'component orb')}</span></span>${['s','b','g','p'].map(k=>`<span class="csx-lg">${csOrb(k, 1)}<span>${L(CS_ORB[k][0], CS_ORB[k][1])}</span></span>`).join('')}</div>`;
+    out.push(['loot', L('Loot-Verteilung pro Stage', 'Loot distribution per stage'), `<div class="csx-grid csx-2">${html}</div>${legend}<p class="cs-note cs-after">${L('Alle Spieler bekommen gleich viele und gleich gute Orbs, nur der Inhalt unterscheidet sich. Komponenten-Kugeln (mindestens 11, höchstens 15 pro Partie) sehen aus wie blaue Orbs.', 'All players get the same number and quality of orbs, only the contents differ. Component orbs (minimum 11, maximum 15 per game) look like blue orbs.')}</p>` + csSrc(loot.lbb.src)]);
+  } else if(loot && loot.stages){
+    const row = r => `<div class="csx-row${r[6] ? ' up' : ''}"><b class="csx-p">${csPct(r[7])}</b><span class="csx-c">${r[4] ? csComp(r[4]) : ''}${['s','b','g','p'].map((k, i)=>r[i] ? csOrb(k, r[i], true) : '').join('')}${r[5] ? csAnvil('component', r[5]) : ''}</span>${r[6] ? `<span class="csx-up" title="${L('aufgewertete Runde', 'upgraded round')}">★</span>` : ''}</div>`;
+    const html = Object.entries(loot.stages).map(([st, list])=>`<div class="csx-card"><div class="csx-head"><b>Stage ${st}</b><small>${L('Creep-Runden', 'creep rounds')}</small></div>${[...list].sort((a,b)=>b[7]-a[7]).map(row).join('')}</div>`).join('');
+    const up = loot.upgraded ? `<div class="csx-pills"><span>${L('Aufgewertete Runden pro Partie', 'Upgraded rounds per game')}</span>${loot.upgraded.map(([n, p])=>`<span class="csp-pill"><small>${esc(tr(n))}</small>${csPct(p)}</span>`).join('')}</div>` : '';
+    out.push(['loot', L('Loot-Verteilung pro Stage', 'Loot distribution per stage'), `<div class="csx-grid csx-2">${html}</div>${up}<div class="csx-legend">${csComp(1)}<span>${L('Komponenten-Kugel', 'component orb')}</span>${['s','b','g','p'].map(k=>csOrb(k, 1) + `<span>${L(CS_ORB[k][0], CS_ORB[k][1])}</span>`).join('')}${csAnvil('component')}<span>${L(CS_ANVIL.component[0], CS_ANVIL.component[1])}</span><span class="csx-up">★</span><span>${L('aufgewertete Runde', 'upgraded round')}</span></div><p class="cs-note cs-after">${L('Aufgewertete Runden geben mehr Beute.', 'Upgraded rounds give more loot.')}${loot.late ? ' ' + L('Ab Stage 5', 'From Stage 5') + ': ' + esc(tr(loot.late)) : ''}</p>` + csSrc(loot.source)]);
   }
   if(CS.goldSub){
-    const rows = CS.goldSub.rows.map(([p, g])=>[csPct(p), ...g]);
-    out.push(['gold-subscription', 'Gold Subscription', `<p class="cs-note">${L('Pro Partie wird eine Zeile ausgelost. Gold jeweils zu Beginn der Stage.', 'One row is rolled per game. Gold at the start of each stage.')}</p>` + csTable([L('Chance', 'Chance'), ...[1,2,3,4,5,6,7,8].map(s=>'Stage ' + s)], rows) + csSrc(CS.goldSub.src)]);
+    const g0 = (CS.goldSub.from || 1) - 1, g1 = CS.goldSub.to || 8, stg = g => g.slice(g0, g1);
+    const rows = [...CS.goldSub.rows].sort((a,b)=>b[0]-a[0]).map(([p, g])=>`<tr><td class="csg-p">${pctI(p)}</td>${stg(g).map(v=>`<td>${csCoin(v)}</td>`).join('')}</tr>`).join('');
+    out.push(['gold-subscription', 'Gold Subscription', `<p class="cs-note">${L('Pro Partie wird eine Zeile ausgelost – das Gold kommt zu Beginn jeder Stage.', 'One row is rolled per game – the gold arrives at the start of each stage.')}</p><div class="cs-wrap"><table class="cs-table csg"><thead><tr><th>${L('Chance', 'Odds')}</th>${stg(CS.goldSub.rows[0][1]).map((_, i)=>`<th>Stage ${g0 + i + 1}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>` + csSrc(CS.goldSub.src)]);
   }
   if(CS.rerollSub){
-    const r = CS.rerollSub.rows;
-    out.push(['reroll-subscription', 'Reroll Subscription', `<p class="cs-note">${L('Encounter von Kayle: Zu Beginn jeder Stage bekommst du kostenlose Shop-Rerolls.', 'Kayle encounter: you get free shop rerolls at the start of every stage.')}</p>` + csTable(['Stage', ...r.map(x=>x[0])], [[L('Kostenlose Rerolls', 'Free rerolls'), ...r.map(x=>x[1])]]) + csSrc(CS.rerollSub.src)]);
+    const tiles = CS.rerollSub.rows.map(([s, n])=>`<div class="csr-t"><span>Stage ${s}</span>${csIc(TI('reroll'), n, L('kostenlose Rerolls', 'free rerolls'), 'rr')}</div>`).join('');
+    out.push(['reroll-subscription', 'Reroll Subscription', `<p class="cs-note">${L('Encounter von Kayle: Zu Beginn jeder Stage bekommst du kostenlose Shop-Rerolls.', 'Kayle encounter: you get free shop rerolls at the start of every stage.')}</p><div class="csr">${tiles}</div>` + csSrc(CS.rerollSub.src)]);
   }
   // Emblem-Rezepte: Pfannenwender bzw. Bratpfanne + Komponente (aus den offiziellen Item-Daten)
   const em = ITEMS.filter(i=>i.cat==='emblem' || /Tacticians/.test(i.id)), byComp = {};   // Taktiker-Items gehören ins Rezept-Raster
@@ -3044,14 +3122,14 @@ function csSections(){
   const ORD = ['BFSword','RecurveBow','NeedlesslyLargeRod','TearOfTheGoddess','ChainVest','NegatronCloak','GiantsBelt','SparringGloves','Spatula','FryingPan'], ord = i => { const k = ORD.indexOf(i.id.replace('DA_Component_', '')); return k < 0 ? 99 : k; };
   const comps = ITEMS.filter(i=>i.cat==='component').sort((a,b)=>ord(a) - ord(b)), base = ['DA_Component_Spatula', 'DA_Component_FryingPan'].map(id=>itemById[id]).filter(Boolean);
   if(base.length && comps.length){
-    const cell = it => it ? `<span class="cs-it"><img src="${it.img}" alt="" width="28" height="28" loading="lazy">${esc(it.de)}</span>` : '–';
+    const cell = it => it ? `<span class="cs-it"><img src="${it.img}" alt="" width="36" height="36" loading="lazy">${esc(EN ? it.en : it.de)}</span>` : '–';
     const rows = comps.map(c=>[cell(c), ...base.map(b=>cell(byComp[[b.id, c.id].sort().join('+')]))]);
-    const none = em.filter(i=>!i.comp || !i.comp.length).map(i=>esc(i.de));
-    out.push(['emblems', L('Emblem-Rezepte', 'Emblem recipes'), csTable([L('Komponente', 'Component'), ...base.map(cell)], rows, 'cs-emb') + (none.length ? `<p class="cs-note">${L('Nicht baubar', 'Not craftable')}: ${none.join(', ')}</p>` : '')]);
+    const none = em.filter(i=>!i.comp || !i.comp.length).map(i=>esc(EN ? i.en : i.de));
+    out.push(['emblems', L('Emblem-Rezepte', 'Emblem recipes'), csTable([L('Komponente', 'Component'), ...base.map(b=>'+ ' + cell(b))], rows, 'cs-emb') + (none.length ? `<p class="cs-note cs-after">${L('Nicht baubar', 'Not craftable')}: ${none.join(', ')}</p>` : '')]);
   }
   if(CS.solo){
-    const rows = CS.solo.rounds.map(([r, list])=>[`<b>${r}</b>`, `<div class="cs-units">${list.map(n=>`<a href="${champHref(n)}" class="cs-unit"><img class="c${(champBy[n] || {}).c || 1}" src="${champImg(n) || champFallback(n)}" alt="" width="40" height="40" loading="lazy"><span>${esc(n)}</span></a>`).join('')}</div>`]);
-    out.push(['solo', L('Stage 1 solo schaffen', 'Solo Stage 1'), `<p class="cs-note">${L('1-Kosten-Champions, die die PvE-Runde allein gewinnen – Position egal.', '1-cost champions that win the PvE round alone – any position.')}</p>` + csTable([L('Runde', 'Round'), 'Champions'], rows) + csSrc(CS.solo.src)]);
+    const blocks = CS.solo.rounds.map(([r, list])=>`<div class="css-b"><div class="css-h">${L('Runde', 'Round')} ${r}</div><div class="css-u">${list.map(n=>`<a href="${champHref(n)}" class="css-c"><img class="c${(champBy[n] || {}).c || 1}" src="${champImg(n) || champFallback(n)}" alt="" width="64" height="64" loading="lazy"><b>${esc(n)}</b><small>${L('Position egal', 'any position')}</small></a>`).join('')}</div></div>`).join('');
+    out.push(['solo', L('Stage 1 solo schaffen', 'Solo Stage 1'), `<p class="cs-note">${L('1-Kosten-Champions, die die PvE-Runde allein gewinnen.', '1-cost champions that win the PvE round on their own.')}</p><div class="css">${blocks}</div>` + csSrc(CS.solo.src)]);
   }
   return out;
 }
@@ -3072,9 +3150,9 @@ const CS_META = {
   emblems:{s:['Embleme', 'Emblems'], h:['Welche Komponente welches Emblem gibt.', 'Which component makes which emblem.'], d:['Rezepte aus Komponenten', 'Recipes from components'], ic:'<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/>'},
   solo:{s:['Stage 1 solo', 'Solo Stage 1'], h:['Welche 1-Kosten Stage 1 allein schaffen.', 'Which 1-costs win Stage 1 on their own.'], d:['Wer Stage 1 allein schafft', 'Who solos Stage 1'], ic:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.8 3.6-6 7-6s6.2 2.2 7 6"/>'}
 };
-// Gruppen in der Seitenleiste, Reihenfolge wie bei Little Buddy Bot (Karussell ergänzt)
+// Gruppen in der Seitenleiste, Reihenfolge wie bei Little Buddy Bot
 const CS_GROUPS = [
-  [['System-Tabellen', 'System tables'], ['encounters', 'shop', 'augments', 'orbs', 'loot', 'damage', 'gold-subscription', 'reroll-subscription', 'carousel']],
+  [['System-Tabellen', 'System tables'], ['encounters', 'shop', 'augments', 'orbs', 'loot', 'damage', 'gold-subscription', 'reroll-subscription']],
   [['Sonstiges', 'Other'], ['emblems', 'solo']]
 ];
 let CS_LIST = null;
@@ -3092,10 +3170,12 @@ function csPreview(id){
   if(id==='gold-subscription' && CS.goldSub){ const r = [...CS.goldSub.rows].sort((a,b)=>b[0]-a[0])[0]; return r[1].slice(1, 7).map((g, i)=>pill('Stage ' + (i + 2), g)).join('') + `<span class="csp-note">${L('häufigste Zeile', 'most common row')} (${csPct(r[0])})</span>`; }
   if(id==='reroll-subscription' && CS.rerollSub) return CS.rerollSub.rows.map(([s, r])=>pill('Stage ' + s, r)).join('');
   if(id==='shop' && SHOP) return SHOP.odds[7].map((o, c)=>pill(`<i class="cdot c${c+1}"></i>${c+1}`, o + L(' %', '%'))).join('');
-  if(id==='encounters' && ENCS.length) return [...ENCS].sort((a,b)=>b.w - a.w).slice(0, 3).map(e=>pill(esc(e.n), csPct(e.w / ENC_W * 100))).join('');
+  if(id==='encounters' && ENCS.length) return [...ENCS].sort((a,b)=>b.w - a.w).slice(0, 3).map(e=>pill(esc(e.n), Math.round(e.w / ENC_W * 100) + L(' %', '%'))).join('');
   if(id==='solo' && CS.solo) return CS.solo.rounds[0][1].map(n=>`<img class="csp-ch" src="${champImg(n) || champFallback(n)}" alt="${esc(n)}" title="${esc(n)}" width="34" height="34" loading="lazy">`).join('');
   return '';
 }
+// Neues Design: jede Tabelle im TFTClimb-Rahmen (Überschrift oben links, Logo in der Aussparung unten)
+const csHex = '<svg class="csf-hex" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/></svg>';
 function csPanel([id, t, html], flat){
   const m = CS_META[id] || {s:[t, t], h:['', '']};
   const body = typeof html === 'string' ? html
@@ -3103,13 +3183,40 @@ function csPanel([id, t, html], flat){
   const tip = m.tip ? m.tip() : '';
   const i = flat.indexOf(id), rel = [flat[(i + 1) % flat.length], flat[(i + 2) % flat.length]].filter(x=>x && x!==id);
   const cards = rel.map(r=>{ const rm = CS_META[r] || {}, pv = csPreview(r); return `<a class="csp-card" href="/cheatsheet/${r}"><div class="csp-card-h">${csSvg(rm.ic)}<div><b>${csName(r)}</b><small>${rm.h ? L(rm.h[0], rm.h[1]) : ''}</small></div></div>${pv ? `<div class="csp-prev">${pv}</div>` : ''}<span class="csp-more">${L('Ansehen', 'View')} →</span></a>`; }).join('');
-  return `<section class="cs-sec card" id="cs-${id}" hidden>
-    <div class="csp-head"><span class="csp-ic">${csSvg(m.ic)}</span><div><h2>${csName(id)}</h2><p>${L(m.h[0], m.h[1])}</p></div></div>
-    <div class="csp-box">${body}</div>
+  const framed = ND;
+  const main = framed
+    ? `<div class="csf"><div class="csf-box"><svg class="csf-svg" aria-hidden="true"></svg><div class="csf-hd"><h2 class="csf-title">${csName(id)}</h2><span class="csf-brand">${csHex}<b>Cheat<i>sheet</i></b></span></div><div class="csf-body">${body}</div></div>
+        <div class="csf-under">${csHex}<i class="csf-line"></i><i class="csf-dash"></i><span class="csf-gap"></span><i class="csf-dash"></i><i class="csf-line r"></i>${csHex}
+          <img class="csf-logo" src="assets/brand/logo-tftclimb.webp" alt="TFTClimb" width="720" height="265" loading="lazy"></div></div>`
+    : `<div class="csp-head"><span class="csp-ic">${csSvg(m.ic)}</span><div><h2>${csName(id)}</h2><p>${L(m.h[0], m.h[1])}</p></div></div>
+    <div class="csp-box">${body}</div>`;
+  return `<section class="cs-sec card${framed ? ' csf-sec' : ''}" id="cs-${id}" hidden>
+    ${main}
     ${tip ? `<div class="csp-tip">${csSvg('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.5"/>', 2)}<span>${tip}</span></div>` : ''}
     ${cards ? `<div class="csp-rel">${cards}</div>` : ''}
   </section>`;
 }
+// Rahmenlinie passend zur Größe der Box zeichnen: abgeschrägte Ecken, Aussparung unten in der Mitte für das Logo, pinke Eck-Akzente
+function csfDraw(box){
+  const W = box.clientWidth, H = box.clientHeight, svg = box.querySelector('.csf-svg'); if(!W || !H || !svg) return;
+  const u = box.dataset.fid || (box.dataset.fid = 'f' + (++csfDraw.n));   // eigene IDs je Rahmen – sonst greifen versteckte Tabellen auf die Verläufe der ersten zu
+  const sm = W < 560, c = sm ? 12 : 18, n1 = sm ? 92 : 146, dx = sm ? 26 : 38, d = sm ? 30 : 44, s = 1.5, mx = W / 2, k = 9;
+  const path = `M${c} ${s}H${W-c}L${W-s} ${c}V${H-c}L${W-c} ${H-s}H${mx+n1+dx}L${mx+n1} ${H-d}H${mx-n1}L${mx-n1-dx} ${H-s}H${c}L${s} ${H-c}V${c}Z`;
+  const pink = [[s+k, c+k-4, c+k-4, s+k], [W-s-k, c+k-4, W-c-k+4, s+k], [s+k, H-c-k+4, c+k-4, H-s-k], [W-s-k, H-c-k+4, W-c-k+4, H-s-k]].map(([a, b, e, f])=>`<path d="M${a} ${b}L${e} ${f}"/>`).join('');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = `<defs>
+      <linearGradient id="csfFill${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d2a34"/><stop offset="1" stop-color="#071a23"/></linearGradient>
+      <radialGradient id="csfGlow${u}" cx=".5" cy="0" r=".7"><stop offset="0" stop-color="#2ee6d6" stop-opacity=".12"/><stop offset="1" stop-color="#2ee6d6" stop-opacity="0"/></radialGradient>
+      <pattern id="csfHexP${u}" width="64" height="110.85" patternUnits="userSpaceOnUse"><path d="M32 0l32 18.48v36.95L32 73.9 0 55.43V18.48zM32 73.9l32 18.48v18.47M32 73.9L0 92.38v18.47" fill="none" stroke="#000" stroke-opacity=".4" stroke-width="1.4"/><path d="M32 1.5l30.7 17.7" fill="none" stroke="#2ee6d6" stroke-opacity=".07"/></pattern>
+      <linearGradient id="csfLine${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2ee6d6"/><stop offset=".5" stop-color="#3fd3f0"/><stop offset="1" stop-color="#2ee6d6"/></linearGradient>
+    </defs>
+    <path d="${path}" fill="url(#csfFill${u})"/><path d="${path}" fill="url(#csfHexP${u})"/><path d="${path}" fill="url(#csfGlow${u})"/>
+    <path class="csf-edge" d="${path}" fill="none" stroke="url(#csfLine${u})" stroke-width="2" stroke-linejoin="round"/>
+    <path class="csf-top" d="M${W*.3} ${s}H${W*.7}" fill="none"/>
+    <g class="csf-pink">${pink}</g>`;
+}
+csfDraw.n = 0;
+const csfRO = 'ResizeObserver' in window ? new ResizeObserver(es=>es.forEach(e=>csfDraw(e.target))) : null;
 function csFilter(q){
   q = q.trim().toLowerCase();
   document.querySelectorAll('#csPage .cs-group').forEach(g=>{
@@ -3157,10 +3264,12 @@ function renderCheats(sub){
       </aside>
     </section>`;
     box.dataset.done = '1';
+    box.querySelectorAll('.csf-box').forEach(b=>{ if(csfRO) csfRO.observe(b); else csfDraw(b); });
   }
   // /cheatsheet zeigt Shop & XP, /cheatsheet/<id> die gewählte Tabelle
   const cur = secs.find(s=>s[0]===sub) || secs.find(s=>s[0]==='shop') || secs[0]; if(!cur) return;
   box.querySelectorAll('.cs-sec').forEach(s=>{ s.hidden = s.id !== 'cs-' + cur[0]; });
+  box.querySelectorAll('.cs-sec:not([hidden]) .csf-box').forEach(csfDraw);   // Rahmen sofort zeichnen, nicht erst beim nächsten Größen-Ereignis
   box.querySelectorAll('.cs-tile').forEach(a=>a.classList.toggle('on', a.dataset.cs===cur[0]));
   const g = box.querySelector('.cs-tile.on'); if(g && !matchMedia('(max-width:900px)').matches) g.closest('.cs-group').classList.remove('closed');   // am Handy bleibt die Liste zu
   $('#csCrumb').innerHTML = `Home / <a href="/cheatsheet">Cheatsheet</a>${sub===cur[0] ? ' / ' + csName(cur[0]) : ''}`;
@@ -3174,6 +3283,19 @@ document.addEventListener('click', e=>{
   if(row) row.parentNode.querySelectorAll('tr').forEach(r=>r.classList.toggle('sel', r===row));
 });
 document.addEventListener('input', e=>{ if(e.target.id==='csSearch') csFilter(e.target.value); });
+// Augment-Baum: gewählten Ast hervorheben (Weg dorthin + alles darunter) und die Blatt-Prozente auf diese Lage umrechnen
+function atgMark(svg, k){
+  svg.classList.toggle('hl', !!k);
+  svg.querySelectorAll('[data-k]').forEach(n=>{ const nk = n.dataset.k; n.classList.toggle('on', !!k && (k.startsWith(nk) || nk.startsWith(k))); });
+  const wk = k ? +svg.querySelector(`.atg-n[data-k="${k}"]`).dataset.w : 0;
+  svg.querySelectorAll('.atg-leaf').forEach(lf=>{ const p = lf.querySelector('.atg-p'), under = k && lf.dataset.k.startsWith(k) && k.length < 3;
+    p.textContent = under ? Math.round(+lf.dataset.w / wk * 100) + '%' : p.dataset.t; p.classList.toggle('cond', !!under); });
+}
+const atgPick = el => el && el.closest && el.closest('svg.atg .atg-pick, svg.atg .atg-leaf');
+document.addEventListener('mouseover', e=>{ const n = atgPick(e.target); if(n) atgMark(n.ownerSVGElement, n.dataset.k); });
+document.addEventListener('mouseout', e=>{ const n = atgPick(e.target); if(!n || atgPick(e.relatedTarget)) return; const svg = n.ownerSVGElement; atgMark(svg, svg.dataset.sel || ''); });
+document.addEventListener('click', e=>{ const svg = e.target.closest && e.target.closest('svg.atg'); if(!svg) return; const n = atgPick(e.target);
+  svg.dataset.sel = n && svg.dataset.sel !== n.dataset.k ? n.dataset.k : ''; atgMark(svg, svg.dataset.sel); });
 document.addEventListener('keydown', e=>{   // „/“ springt ins Suchfeld, Esc leert es
   const s = $('#csSearch'), pg = $('#page-cheatsheet');
   if(!s || !pg || !pg.classList.contains('active')) return;
@@ -3222,7 +3344,7 @@ function pageMeta(page, sub){
       const cs = csList().find(s=>s[0]===sub), m = cs && CS_META[cs[0]];
       if(cs) return [`TFT ${cs[1].replace(/ \(.*\)$/, '')} ${S}${P}`, L(`${cs[1]} in TFT ${S}: ${m.d[0]}. Alle Werte als Tabelle – Teil des TFTClimb Cheatsheets mit Shop-Chancen, Augments, Encounters und mehr.`, `${cs[1]} in TFT ${S}: ${m.d[1].toLowerCase()}. Every number in one table – part of the TFTClimb cheatsheet with shop odds, augments, encounters and more.`)];
     }
-    return [L(`TFT Cheatsheet ${S}${P} – Shop-Chancen, Augments & Encounters`, `TFT Cheatsheet ${S}${P} – shop odds, augments & encounters`), L(`Alle Zahlen für TFT ${S} auf einer Seite: Shop-Chancen und XP pro Level, Augment-Stufen, Encounter-Chancen, Karussell, Spielerschaden, Loot-Orbs und Emblem-Rezepte.`, `Every number for TFT ${S} on one page: shop odds and XP per level, augment tiers, encounter odds, carousel, player damage, loot orbs and emblem recipes.`)];
+    return [L(`TFT Cheatsheet ${S}${P} – Shop-Chancen, Augments & Encounters`, `TFT Cheatsheet ${S}${P} – shop odds, augments & encounters`), L(`Alle Zahlen für TFT ${S} auf einer Seite: Shop-Chancen und XP pro Level, Augment-Stufen, Encounter-Chancen, Spielerschaden, Loot-Orbs und Emblem-Rezepte.`, `Every number for TFT ${S} on one page: shop odds and XP per level, augment tiers, encounter odds, player damage, loot orbs and emblem recipes.`)];
     case 'bedingungen': return ['Widerruf & Bedingungen', 'Widerrufsbelehrung, Muster-Widerrufsformular und Bedingungen für das TFT Coaching bei TFTClimb – Einzelstunde, Set-Pass und VIP-Mentoring.'];
     case 'guides':
       if(GUIDES_LIVE && sub==='encounters') return [`TFT Encounters ${S} – welche Comp du spielen solltest`, `Alle TFT Encounters in ${S}: was sie machen, wie oft sie pro Spiel kommen und welche Comps du darauf spielst – Ambosse, Gold- und Prismatic-Augments, Start-Units.`];

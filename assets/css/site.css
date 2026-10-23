@@ -2119,3 +2119,215 @@ a.champ{text-decoration:none}
 @media (max-width:560px){.cv-stage{padding:22px 10px 18px;border-radius:18px}.cv-sub{letter-spacing:.2em}.cv-search{min-width:0;flex:1 1 100%}.cv-label{display:none}.cv-chip{height:36px;min-width:36px}.cv-trait{width:36px}}
 /* Lange Werte in Patch-Änderungen umbrechen statt seitlich überstehen */
 .pn-txt{min-width:0}.pn-v,.pn-old,.pn-new{overflow-wrap:anywhere;min-width:0;max-width:100%}
+
+/* ---------- Cheatsheet spielnah (Vorbild Little Buddy Bot): große Zahlen, Kostenfarben als Schrift, Symbole ---------- */
+:root{--t1:#cbd5e1;--t2:#4ade80;--t3:#60a5fa;--t4:#d48bff;--t5:#fcd34d}
+.cso{min-width:600px}
+.cso th,.cso td{text-align:center}
+.cso .t1{color:var(--t1)}.cso .t2{color:var(--t2)}.cso .t3{color:var(--t3)}.cso .t4{color:var(--t4)}.cso .t5{color:var(--t5)}
+.cso-bag th{padding:2px 6px 8px;border-bottom:0;vertical-align:bottom}
+.cso-bag b{display:block;font-size:.95rem;font-weight:800}
+.cso-bag small{display:block;font-size:.72rem;font-weight:600;opacity:.75}
+.cso-h th{padding:4px 6px 10px;color:#fff;border-bottom:1px solid rgba(46,230,214,.25);vertical-align:bottom}
+.cso-k{display:inline-block;padding:5px 11px;border-radius:7px;font-size:.84rem;font-weight:800;color:#06121a}
+.cso-k.k1{background:#a3afc2}.cso-k.k2{background:var(--t2)}.cso-k.k3{background:var(--t3)}.cso-k.k4{background:#c084fc}.cso-k.k5{background:var(--t5)}
+.cso tbody td{padding:10px 6px;font-size:1.15rem;font-weight:600;border-bottom:1px solid rgba(255,255,255,.05)}
+.cso tbody td[style]{opacity:var(--o)}
+.cso tbody td.top{opacity:1;font-weight:900;font-size:1.32rem;text-shadow:0 0 12px color-mix(in srgb,currentColor 55%,transparent)}
+.cso tbody tr:nth-child(odd) td{background:rgba(46,230,214,.035)}
+.cso td.cso-0{color:var(--faint);font-size:.9rem}
+.cs-hm.cso th:first-child,.cs-hm.cso td:first-child{width:52px}
+.cso td.cso-lv{font-family:var(--ff-head);font-size:1.15rem;font-weight:800;color:#fff;text-align:left;white-space:nowrap}
+.cso .cso-xp{position:relative;color:var(--faint);font-size:.78rem}
+.cso td.cso-xp span{position:absolute;left:0;right:0;bottom:0;transform:translateY(50%);z-index:1;font-size:.86rem;font-weight:800;color:#8fb3c4}
+.cs-hm.cso tr.sel td{background:rgba(46,230,214,.11)}
+.cs-hm.cso tr.sel td.cso-lv{box-shadow:inset 3px 0 0 #2ee6d6}
+.cs-hm.cso tr.sel td:first-child{box-shadow:none}
+/* Augment-Baum */
+.csa{display:grid;grid-template-columns:1.1fr 1.25fr 1.25fr .75fr;min-width:540px;border:1px solid rgba(46,230,214,.2);border-radius:12px;overflow:hidden}
+.csa-h{grid-row:1;padding:10px 12px;background:rgba(255,255,255,.06);font-weight:800;font-size:.86rem;color:#fff;text-align:center}
+.csa-h small{color:var(--faint);font-weight:600}
+.csa-c{display:flex;align-items:center;justify-content:center;padding:7px 10px;border-top:1px solid rgba(255,255,255,.06);border-left:1px solid rgba(255,255,255,.06)}
+.csa-1{grid-column:1;border-left:0}.csa-2{grid-column:2}.csa-3{grid-column:3;justify-content:flex-start;padding-left:18px}
+.csa-p{grid-column:4;font-weight:800;font-size:1.08rem;color:#fff;background:rgba(0,0,0,.28);font-variant-numeric:tabular-nums}
+.csa-c.s{background:rgba(148,163,184,.1)}.csa-c.g{background:rgba(242,193,78,.08)}.csa-c.p{background:rgba(147,197,253,.08)}
+.csa-t{font-size:1.02rem;font-weight:600;white-space:nowrap}
+.csa-t b{font-weight:800}
+.csa-t.s{color:#d6dde8}.csa-t.g{color:#fcd34d}.csa-t.p{background:linear-gradient(90deg,#f0abfc,#93c5fd,#86efac);-webkit-background-clip:text;background-clip:text;color:transparent}
+.csa-1 .csa-t{display:flex;flex-direction:column;align-items:center;font-size:1.35rem;line-height:1.15}
+/* Encounters */
+.cse-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+.cse{display:grid;grid-template-columns:62px 44px minmax(0,1fr);align-items:center;gap:12px;padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.03)}
+.cse:nth-child(4n+1),.cse:nth-child(4n+2){background:rgba(46,230,214,.055)}
+.cse-p{font-size:1.15rem;font-weight:800;color:#fff;text-align:right;font-variant-numeric:tabular-nums}
+.cse-img{width:44px;height:44px;border-radius:8px;overflow:hidden;background:rgba(255,255,255,.06);border:1px solid rgba(46,230,214,.4)}
+.cse-img img{display:block;width:100%;height:100%;object-fit:cover}
+.cse-t b{display:block;font-size:.98rem;color:#fff;line-height:1.2}
+.cse-t small{display:block;font-size:.8rem;color:var(--muted);line-height:1.3}
+/* Karten mit Zeilen: Orbs, Loot, Schaden */
+.csx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+.csx-grid.csx-2{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.csx-card{min-width:0;border:1px solid rgba(46,230,214,.18);border-radius:12px;background:rgba(3,17,27,.45);overflow:hidden}
+.csx-head{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(46,230,214,.07);border-bottom:1px solid rgba(46,230,214,.15)}
+.csx-head b{font-family:var(--ff-head);font-size:1.1rem;font-weight:800;color:#fff}
+.csx-head small{margin-left:auto;color:var(--muted);font-size:.78rem;font-weight:600;text-align:right}
+.csx-row{display:grid;grid-template-columns:60px minmax(0,1fr) auto;align-items:center;gap:10px;min-height:46px;padding:5px 14px;border-top:1px solid rgba(255,255,255,.05)}
+.csx-row:nth-child(odd){background:rgba(255,255,255,.025)}
+.csx-row.up{background:rgba(247,22,110,.07)}
+.csx-p{font-size:1.05rem;font-weight:800;color:#fff;text-align:right;font-variant-numeric:tabular-nums}
+.csx-c{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.csx-coin{display:inline-flex;align-items:center;gap:5px;font-weight:800;font-size:1rem;color:var(--t5);white-space:nowrap}
+.csx-coin i{width:17px;height:17px;flex:none;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#f2c14e 45%,#a86b12);box-shadow:inset 0 0 0 1.5px rgba(120,70,0,.55),0 0 6px rgba(242,193,78,.45)}
+.csx-chip{display:inline-flex;align-items:center;padding:4px 9px;border-radius:7px;font-size:.8rem;font-weight:700;line-height:1.2;color:#dbe7f0;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1)}
+.csx-chip.k1{color:var(--t1);border-color:rgba(203,213,225,.4)}.csx-chip.k2{color:var(--t2);border-color:rgba(74,222,128,.4)}.csx-chip.k3{color:var(--t3);border-color:rgba(96,165,250,.45)}.csx-chip.k4{color:var(--t4);border-color:rgba(212,139,255,.45)}.csx-chip.k5{color:var(--t5);border-color:rgba(252,211,77,.45)}
+.csx-chip.comp{color:#a5f3fc;border-color:rgba(46,230,214,.3);background:rgba(46,230,214,.06)}
+.csx-it{width:32px;height:32px;border-radius:6px;border:1px solid rgba(255,255,255,.15)}
+.csx-up{color:#ff6fa6;font-size:1rem;text-shadow:0 0 8px rgba(247,22,110,.7)}
+.csx-pills{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}
+.csx-pills>span:first-child{margin-right:4px;font-size:.8rem;font-weight:700;color:var(--muted)}
+/* Spielerschaden */
+.csd{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.csd-r{display:flex;justify-content:space-between;align-items:baseline;padding:9px 16px;border-top:1px solid rgba(255,255,255,.05)}
+.csd-r:nth-child(odd){background:rgba(255,255,255,.025)}
+.csd-r span{font-weight:700;font-size:1rem;color:#fff}
+.csd-r b{font-size:1.25rem;font-weight:800;color:#fff}
+.csd-r b small{font-size:.75rem;font-weight:600;color:var(--muted)}
+.csd-r b.hot{color:#ff5a6a}
+.csd-u{display:flex;flex-direction:column}
+.csd-big{display:flex;flex-direction:column;align-items:center;gap:8px;padding:26px 18px 14px;font-family:var(--ff-head);font-size:3.6rem;font-weight:900;line-height:1;color:#7ff7ec;text-shadow:0 0 18px rgba(46,230,214,.4);text-align:center}
+.csd-big small{max-width:240px;font-family:var(--ff-body);font-size:.92rem;font-weight:600;line-height:1.35;color:var(--muted);text-shadow:none}
+.csd-ex{margin:auto 14px 14px;padding:10px 12px;border-radius:9px;background:rgba(46,230,214,.07);font-size:.88rem;color:var(--muted);text-align:center}
+.csd-ex b{color:#fff}
+/* Gold & Reroll Subscription */
+.csg th,.csg td{text-align:center}
+.csg td{padding:11px 6px;border-bottom-color:rgba(255,255,255,.05)}
+.csg tbody tr:nth-child(odd) td{background:rgba(46,230,214,.035)}
+.csg td.csg-p,.csg th:first-child{text-align:left}
+.csg td.csg-p{font-size:1.05rem;font-weight:800;color:#fff}
+.csg .csx-coin{font-size:1.08rem}
+.csr{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.csr-t{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-radius:12px;background:rgba(46,230,214,.06);border:1px solid rgba(46,230,214,.18)}
+.csr-t span{font-weight:800;font-size:1.05rem;color:#fff}
+.csr-t b{display:flex;align-items:center;gap:6px;font-size:1.45rem;font-weight:900;color:var(--t5)}
+.csx-rr{width:26px;height:26px}
+/* Karussell */
+.csc td{padding:12px 10px}
+.csc tbody tr:nth-child(odd) td{background:rgba(46,230,214,.035)}
+.csc .csc-st{font-family:var(--ff-head);font-size:1.5rem;color:#fff}
+.csc .cs-li{justify-content:flex-start;gap:10px;min-width:0;padding:2px 0}
+.csc .cs-li b{min-width:52px;text-align:right;font-weight:800;color:#fff}
+/* Embleme */
+.cs-emb td{padding:6px 10px}
+.cs-emb .cs-it{font-weight:700;font-size:.92rem;color:#fff}
+.cs-emb td:first-child .cs-it{font-weight:600;color:var(--muted)}
+.cs-emb th{color:#fff;font-size:.86rem}
+.cs-emb tbody tr:nth-child(odd) td{background:rgba(46,230,214,.035)}
+/* Stage 1 solo */
+.css{display:flex;flex-direction:column;gap:14px}
+.css-b{border:1px solid rgba(46,230,214,.18);border-radius:12px;overflow:hidden}
+.css-h{padding:9px 14px;background:rgba(46,230,214,.07);font-family:var(--ff-head);font-size:1.1rem;font-weight:800;color:#fff}
+.css-u{display:flex;flex-wrap:wrap;justify-content:center;gap:26px;padding:18px}
+.css-c{display:flex;flex-direction:column;align-items:center;gap:4px;color:#fff;text-decoration:none}
+.css-c img{width:64px;height:64px;border-radius:10px;border:2px solid var(--c1)}
+.css-c img.c2{border-color:var(--c2)}.css-c img.c3{border-color:var(--c3)}.css-c img.c4{border-color:var(--c4)}.css-c img.c5{border-color:var(--c5)}
+.css-c b{font-size:.95rem}
+.css-c small{font-size:.78rem;font-weight:600;color:var(--t2)}
+@media (max-width:700px){.cse-grid{grid-template-columns:1fr}.csd{grid-template-columns:1fr}.csr{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){
+  .cso{min-width:0}.cso tbody td{padding:8px 2px;font-size:.9rem}.cso tbody td.top{font-size:1rem}.cso td.cso-lv{font-size:.88rem}
+  .cso-k{padding:3px 6px;font-size:.7rem}.cso-bag b{font-size:.7rem}.cso-bag small{display:none}.cs-hm.cso th:first-child,.cs-hm.cso td:first-child{width:30px}.cso td.cso-xp span{font-size:.72rem}
+  .csa{min-width:0;grid-template-columns:.9fr 1.1fr 1.1fr .8fr}.csa-t{font-size:.82rem}.csa-1 .csa-t{font-size:1rem}.csa-p{font-size:.88rem}.csa-c{padding:6px 5px}.csa-3{padding-left:8px}.csa-h{font-size:.72rem;padding:8px 4px}
+  .cse{grid-template-columns:50px 40px minmax(0,1fr);gap:9px}.cse-img{width:40px;height:40px}.cse-p{font-size:1rem}
+  .csx-row{grid-template-columns:50px minmax(0,1fr) auto;padding:5px 10px}
+}
+.csx-chip.anv{color:#ffd1e3;border-color:rgba(247,22,110,.4);background:rgba(247,22,110,.08)}
+.csx-itw{display:inline-flex;cursor:help}
+/* Offizielle Riot-Symbole im Cheatsheet: Bild mit „×n“ unten rechts (wie im Spiel und bei Little Buddy Bot) */
+.csx-ic{position:relative;display:inline-flex;flex:none;width:40px;height:40px;cursor:help}
+.csx-ic img{width:100%;height:100%;object-fit:contain;border-radius:6px}
+.csx-ic b{position:absolute;right:-5px;bottom:-4px;padding:0 3px;font-size:.8rem;font-weight:900;line-height:1.1;color:#fff;letter-spacing:-.02em;text-shadow:0 0 3px #000,0 0 3px #000,1px 1px 0 #000,-1px -1px 0 #000;font-variant-numeric:tabular-nums}
+.csx-ic.item img,.csx-ic.anvil img{border:2px solid rgba(255,255,255,.25)}
+.csx-ic.a-component img{border-color:#9fb4c8}.csx-ic.a-completed img{border-color:#4ade80}.csx-ic.a-artifact img{border-color:#e879f9}
+.csx-ic.gold img{border-radius:6px}
+.csx-ic.orb{border-radius:50%}
+.csx-ic.rr{width:34px;height:34px}.csx-ic.rr img{border-radius:0}
+.csr-t .csx-ic.rr b{position:static;margin-left:4px;font-size:1.45rem;color:var(--t5);align-self:center;text-shadow:none}
+.csr-t .csx-ic.rr{width:auto;display:flex;align-items:center}.csr-t .csx-ic.rr img{width:34px;height:34px}
+.csx-head .csx-ic{width:30px;height:30px}
+.csx-hi{width:24px;height:24px;flex:none;opacity:.9}
+.cso-xpi{display:block;width:22px;height:22px;margin:0 auto 2px}
+.csg td .csx-ic{width:42px;height:42px;vertical-align:middle}
+.csg td .csx-ic b{font-size:.92rem}
+.csx-row .csx-c{gap:10px 12px}
+@media (max-width:640px){.csx-ic{width:34px;height:34px}.csx-ic b{font-size:.72rem}.csg td .csx-ic{width:32px;height:32px}.csg td .csx-ic b{font-size:.74rem}}
+.csx-none{color:var(--faint);font-weight:700}
+.csx-ic.chorb img{border-radius:50%}
+.csx-ic.corb img{border-radius:50%}
+.csx-grid.csx-4{grid-template-columns:repeat(auto-fit,minmax(185px,1fr))}
+.csx-4 .csx-row{grid-template-columns:48px minmax(0,1fr) auto;gap:8px;padding:5px 10px}
+.csx-4 .csx-head{padding:9px 10px;gap:8px}.csx-4 .csx-head b{font-size:1rem}.csx-4 .csx-head small{font-size:.72rem}
+.csx-legend{display:flex;flex-wrap:wrap;align-items:center;gap:8px 8px;margin-top:14px;padding:10px 12px;border-radius:10px;background:rgba(3,17,27,.45);border:1px solid rgba(46,230,214,.15);font-size:.8rem;font-weight:600;color:var(--muted)}
+.csx-legend .csx-ic{width:28px;height:28px}
+.csx-legend .csx-ic b{display:none}
+.csx-legend>span:not(.csx-ic){margin-right:10px}
+@media (max-width:640px){.csx-legend>span:not(.csx-ic){margin-right:4px}}
+.csx-4 .csx-head{flex-wrap:wrap;row-gap:2px}.csx-4 .csx-head b{white-space:nowrap}.csx-4 .csx-head small{flex:0 0 100%;margin-left:0;padding-left:38px;text-align:left}
+/* Pfannenwender oder Bratpfanne: diagonal geteiltes Symbol */
+.csx-ic.sp img{position:absolute;inset:0;border:2px solid rgba(255,255,255,.25)}
+.csx-ic.sp img.sp2{clip-path:polygon(100% 0,100% 100%,0 100%)}
+.csx-ic.sp::after{content:"";position:absolute;inset:0;background:linear-gradient(to top left,transparent calc(50% - 1px),rgba(0,0,0,.7) 50%,transparent calc(50% + 1px));border-radius:6px;pointer-events:none}
+.csx-ic.o-s{--oc:#a9b4c4}.csx-ic.o-b{--oc:#2f8cf0}.csx-ic.o-g{--oc:#f2a516}.csx-ic.o-p{--oc:#c48cf0}
+/* Beutekugeln: eigene Grafiken (lootorb-*.webp) mit leichtem Schein in der Orb-Farbe */
+.csx-ic.orb img{border-radius:50%;filter:drop-shadow(0 0 5px color-mix(in srgb,var(--oc) 55%,transparent))}
+/* Augment-Baum (Cheatsheet): Sechsecke im Seitenstil, Linien in Türkis; auf schmalen Bildschirmen die Tabelle */
+.cst-table{display:none}
+@container (max-width:639px){.cst-tree{display:none}.cst-table{display:block}}
+.atg{display:block;width:100%;height:auto;overflow:visible;font-family:var(--ff-head)}
+.atg-e line{stroke:#2ee6d6;stroke-width:1.6;opacity:.7;filter:drop-shadow(0 0 3px rgba(46,230,214,.6))}
+.atg-e text{fill:#e6f6ff;font-size:19px;font-weight:700;text-anchor:middle;paint-order:stroke;stroke:#061620;stroke-width:5px;stroke-linejoin:round}
+.atg-n{--nc:#2ee6d6}
+.atg-S{--nc:#b7c0cc}.atg-G{--nc:#f5b82e}.atg-P{--nc:#a78bfa}
+.atg-h{fill:#081c28;stroke:var(--nc);stroke-width:3;filter:drop-shadow(0 0 5px color-mix(in srgb,var(--nc) 70%,transparent))}
+.atg-P .atg-h{stroke:url(#atgP)}
+.atg-i{fill:color-mix(in srgb,var(--nc) 20%,#081c28);stroke:color-mix(in srgb,var(--nc) 35%,transparent);stroke-width:1}
+.atg-n text{fill:#fff;font-size:26px;font-weight:800;text-anchor:middle}
+.atg-R text{font-size:21px}
+.atg-n .atg-p{font-family:var(--ff-body);font-size:18px;font-weight:800;fill:#fff}
+.atg-leaf{cursor:pointer}
+.atg-n,.atg-e{transition:opacity .15s}
+.atg.hl [data-k]:not(.on){opacity:.22}
+.atg.hl .atg-e.on line{stroke:#7ff7ec;stroke-width:2.8;opacity:1}
+.atg.hl .atg-leaf.on .atg-p{fill:#7ff7ec}
+.atg-leg{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;margin:0 0 6px;font-size:.88rem;font-weight:700;color:#e6f6ff}
+.atg-leg span{display:inline-flex;align-items:center;gap:7px}
+.atg-leg svg{width:22px;height:22px;overflow:visible}
+.atg-leg svg .atg-h{stroke-width:2.5}
+.atg-leg small{flex:1 1 100%;font-size:.78rem;font-weight:500;color:var(--muted)}
+/* Augment-Baum: Stage-Marken links, anklickbare Augmente, umgerechnete Blatt-Prozente in Türkis */
+.atg-row rect{fill:rgba(46,230,214,.08);stroke:rgba(46,230,214,.35);stroke-width:1}
+.atg-row text{fill:#7ff7ec;font-size:17px;font-weight:800;text-anchor:middle}
+.atg-pick,.atg-leaf{cursor:pointer}
+.atg-pick:hover .atg-h,.atg-leaf:hover .atg-h{stroke-width:4}
+.atg .atg-p.cond{fill:#7ff7ec}
+.atg.hl .atg-row{opacity:1}
+/* Kartenraster im Cheatsheet ohne einzelne Karte in der letzten Reihe (Breite des Rahmens .csf entscheidet) */
+.csx-grid.csx-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.csx-grid.csx-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+.csx-grid.csx-3{grid-template-columns:repeat(2,minmax(0,1fr))}
+@container (min-width:860px){.csx-grid.csx-4{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@container (min-width:1120px){.csx-grid.csx-3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+/* bei 2 Spalten: die übrige dritte Karte (Prismatic-Orb) über die volle Breite, Zeilen darin zweispaltig */
+@container (max-width:1119px){
+  .csx-3>.csx-card:last-child:nth-child(odd){grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start}
+  .csx-3>.csx-card:last-child:nth-child(odd)>.csx-head{grid-column:1/-1}
+  .csx-3>.csx-card:last-child:nth-child(odd)>.csx-row{background:none}
+  .csx-3>.csx-card:last-child:nth-child(odd)>.csx-row:nth-child(4n+2),.csx-3>.csx-card:last-child:nth-child(odd)>.csx-row:nth-child(4n+3){background:rgba(255,255,255,.025)}
+  .csx-3>.csx-card:last-child:nth-child(odd)>.csx-row:nth-child(odd){border-left:1px solid rgba(255,255,255,.05)}
+  .csx-3>.csx-card:last-child:nth-child(odd)>.csx-row{grid-template-columns:48px minmax(0,1fr) auto;gap:8px;padding:5px 10px}.csx-3>.csx-card:last-child:nth-child(odd) .csx-c{gap:8px}
+}
+@container (max-width:640px){
+  .csx-grid.csx-2,.csx-grid.csx-3{grid-template-columns:minmax(0,1fr)}
+  .csx-3>.csx-card:last-child:nth-child(odd){display:block}
+}
+@container (max-width:420px){.csx-grid.csx-4{grid-template-columns:minmax(0,1fr)}}
+.csx-lg{display:inline-flex;align-items:center;gap:7px;margin-right:12px;white-space:nowrap}
