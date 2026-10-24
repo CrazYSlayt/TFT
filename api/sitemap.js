@@ -7,7 +7,7 @@ const PAGES = [
   '/',
   '/tierlist', '/tierlist/items', '/tierlist/augments', '/tierlist/holds',
   '/tools', '/tools/rolldown', '/tools/dps', '/tools/drops',
-  '/tools/tierlist', '/tools/simulator', '/builder',
+  '/tools/tierlist', '/tools/simulator', '/tools/augments', '/builder',
   '/bibliothek', '/bibliothek/items', '/bibliothek/traits',
   '/ranks',
   ...['iron', 'bronze', 'silver', 'gold', 'platinum', 'emerald', 'diamond', 'master', 'grandmaster', 'challenger'].map(k => '/ranks/' + k),

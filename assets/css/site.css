@@ -2682,3 +2682,117 @@ img.cs-ric{border-radius:0 !important;object-fit:contain;filter:drop-shadow(0 2p
 @media (min-width:761px){.nd .cs-head{padding-inline:calc(var(--vkw) + 8px)}}
 @media (max-width:760px){.cs-vk{display:none}}
 @media (prefers-reduced-motion:reduce){.cs-vk{animation:none}}
+
+/* ---------- Tool-Gerüst Input → Output (zuerst im Augment-Rechner; einheitliche Bereichsnamen „Input“ und „Output“ für alle Tools) ---------- */
+.tio{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:28px;align-items:start}
+.tio>.card{position:relative;margin:0;padding:22px 24px 24px;border-radius:16px}
+.tio-in{border:1px solid rgba(46,230,214,.4);background:radial-gradient(ellipse at 0 0,rgba(46,230,214,.1),transparent 55%),linear-gradient(180deg,#0d2a34,#071a23);box-shadow:0 14px 32px rgba(0,0,0,.35)}
+.tio-out{border:1px solid rgba(247,22,110,.4);background:radial-gradient(ellipse at 100% 0,rgba(247,22,110,.1),transparent 55%),linear-gradient(180deg,#0d2a34,#071a23);box-shadow:0 14px 32px rgba(0,0,0,.35)}
+/* Pfeil von Input zu Output */
+.tio-out::before{content:"";position:absolute;left:-25px;top:150px;width:22px;height:30px;transform:translateY(-50%);background:linear-gradient(90deg,#2ee6d6,#f7166e);clip-path:polygon(0 18%,55% 18%,55% 0,100% 50%,55% 100%,55% 82%,0 82%);filter:drop-shadow(0 0 6px rgba(46,230,214,.6))}
+.tio-hd{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.tio-hd h2{margin:0;font:italic 900 1.55rem/1 var(--ff-head);text-transform:uppercase;letter-spacing:.02em;color:#fff}
+.tio-lbl{flex:none;padding:5px 11px;border-radius:7px;font:900 .8rem/1 var(--ff-body);letter-spacing:.16em;text-transform:uppercase;color:#06202a;background:#2ee6d6;box-shadow:0 0 14px rgba(46,230,214,.45)}
+.tio-lbl.out{color:#fff;background:#f7166e;box-shadow:0 0 14px rgba(247,22,110,.5)}
+.tio-hint{margin:8px 0 14px;font-size:.95rem;line-height:1.45;color:#9fb3c0}
+.tio-reset{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:rgba(3,17,27,.5);color:#c9d6e0;font:inherit;font-size:.86rem;font-weight:700;cursor:pointer}
+.tio-reset svg{width:15px;height:15px}
+.tio-reset:hover:not(:disabled){color:#fff;border-color:#2ee6d6}
+.tio-reset:disabled{opacity:.4;cursor:default}
+@media (max-width:900px){
+  .tio{grid-template-columns:minmax(0,1fr);gap:30px}
+  .tio-out::before{left:50%;top:-27px;transform:translateX(-50%) rotate(90deg)}
+  .tio>.card{padding:18px 16px 20px}
+}
+/* Augment-Rechner: Input */
+.ag-hx{width:24px;height:24px;flex:none;overflow:visible}
+.ag-hx .atg-h{stroke-width:2.6}
+.ag-hx.atg-P .atg-h{stroke:#b794f6}   /* eigene Farbe: der Verlauf #atgP steckt im Baum, der am Handy ausgeblendet ist */
+.tio-in{container-type:inline-size}
+@container (max-width:520px){.ag-opt{flex-direction:column;gap:4px;padding:10px 4px;font-size:.9rem}}
+@media (max-width:640px){.tio-reset span{display:none}.tio-reset{padding:8px}}
+.ag-row{display:grid;grid-template-columns:62px minmax(0,1fr);grid-template-rows:auto auto;gap:6px 14px;align-items:center;padding:14px 0;border-top:1px solid rgba(255,255,255,.06);transition:opacity .2s}
+.ag-st{grid-row:1 / 3;display:grid;place-items:center;height:52px;border-radius:11px;font:800 1.2rem/1 var(--ff-head);color:#7ff7ec;background:rgba(46,230,214,.08);border:1px solid rgba(46,230,214,.35)}
+.ag-row.cur .ag-st{color:#06202a;background:#2ee6d6;box-shadow:0 0 14px rgba(46,230,214,.5)}
+.ag-row.later{opacity:.45}
+.ag-n{font-size:.78rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fb3c0}
+.ag-opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ag-opt{--tc:#b7c0cc;display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;padding:11px 6px;border-radius:11px;border:1.5px solid rgba(255,255,255,.12);background:rgba(3,17,27,.55);color:#dbe7f0;font:inherit;font-weight:700;font-size:.98rem;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s}
+.ag-opt b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ag-opt.g{--tc:#f5b82e}.ag-opt.p{--tc:#a78bfa}
+.ag-opt:hover:not(:disabled){border-color:var(--tc);background:color-mix(in srgb,var(--tc) 10%,#081c28)}
+.ag-opt.on{border-color:var(--tc);background:color-mix(in srgb,var(--tc) 22%,#081c28);color:#fff;box-shadow:0 0 16px color-mix(in srgb,var(--tc) 45%,transparent)}
+.ag-opt:disabled{opacity:.28;cursor:not-allowed}
+/* Augment-Rechner: Output */
+.ag-t{font-weight:800}.ag-t.s{color:#d6dde8}.ag-t.g{color:#fcd34d}.ag-t.p{color:#c4b5fd}
+.ag-chip{padding:2px 9px;border-radius:7px;font:800 .82rem/1.3 var(--ff-body);font-style:normal;color:#06202a;background:#7ff7ec}
+.ag-kpi{display:flex;align-items:center;gap:14px;margin:4px 0 6px;padding:14px 16px;border-radius:12px;border:1px solid rgba(167,139,250,.35);background:linear-gradient(90deg,rgba(167,139,250,.14),rgba(240,171,252,.04))}
+.ag-kpi .ag-hx{width:38px;height:38px}
+.ag-kpi small{display:block;font-size:.84rem;font-weight:700;color:#c9d6e0}
+.ag-kpi b{display:block;font:900 2.1rem/1.05 var(--ff-head);background:linear-gradient(90deg,#f0abfc,#93c5fd);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ag-kpi.got b{font-size:1.6rem}
+.ag-sec{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.06)}
+.ag-sec h3{display:flex;align-items:center;gap:10px;margin:0 0 10px;font:italic 800 1.1rem/1 var(--ff-head);text-transform:uppercase;letter-spacing:.03em;color:#e6f6ff}
+.ag-bar{--tc:#b7c0cc;display:grid;grid-template-columns:118px minmax(0,1fr) 70px;align-items:center;gap:12px;margin:7px 0}
+.ag-bar.g{--tc:#f5b82e}.ag-bar.p{--tc:#a78bfa}
+.ag-bar .nm{display:flex;align-items:center;gap:8px;font-weight:700;color:#dbe7f0}
+.ag-bar .tr{height:12px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden}
+.ag-bar .tr i{display:block;height:100%;border-radius:6px;background:var(--tc);transition:width .3s}
+.ag-bar.p .tr i{background:linear-gradient(90deg,#5eead4,#818cf8,#f0abfc)}
+.ag-bar .v{font:800 1.2rem/1 var(--ff-head);text-align:right;white-space:nowrap;color:#c9d6e0;font-variant-numeric:tabular-nums}
+.ag-bar.top .v{color:#fff}
+.ag-bar.top .nm{color:#fff}
+.ag-bars.big .ag-bar .tr{height:20px;border-radius:10px}
+.ag-bars.big .ag-bar .tr i{border-radius:10px}
+.ag-bars.big .ag-bar{grid-template-columns:118px minmax(0,1fr) 92px}.ag-bars.big .ag-bar .v{font-size:1.65rem}
+.ag-bars.big .ag-bar.top .tr i{box-shadow:0 0 14px color-mix(in srgb,var(--tc) 60%,transparent)}
+.ag-path{display:inline-flex;align-items:center;gap:2px}
+.ag-path>i{width:12px;height:2px;background:rgba(46,230,214,.45)}
+.ag-path>span{display:inline-flex;opacity:.55}
+.ag-path>span.kn{opacity:1}
+.ag-paths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ag-pr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-radius:10px;background:rgba(3,17,27,.5);border:1px solid rgba(255,255,255,.07)}
+.ag-pr b{font:800 1.15rem/1 var(--ff-head);color:#fff}
+.ag-done{display:flex;align-items:center;gap:16px}
+.ag-done .ag-hx{width:34px;height:34px}
+.ag-done p{margin:0;font-size:1rem;line-height:1.45;color:#c9d6e0}
+.ag-done p b{color:#fff;font-size:1.15rem}
+/* Augment-Baum kompakt in der Output-Box (größere Schrift, weil der Baum kleiner gezeichnet wird); am Handy stattdessen die Liste der Verläufe */
+.ag-tsec .atg-leg{margin:0 0 2px;font-size:.8rem}.ag-tsec .atg-leg small{display:none}.ag-tsec .atg-leg svg{width:18px;height:18px}
+.ag-tsec .atg{max-width:520px;margin:-6px auto 0}.ag-tsec{margin-top:12px;padding-top:12px}.ag-tsec h3{margin-bottom:6px}
+.ag-tsec .atg-e text{font-size:25px}.ag-tsec .atg-n text{font-size:30px}.ag-tsec .atg-n .atg-p{font-size:22px}.ag-tsec .atg-row text{font-size:20px}
+.ag-psec{display:none}
+@media (max-width:640px){
+  .ag-bar,.ag-bars.big .ag-bar{grid-template-columns:92px minmax(0,1fr) 66px;gap:8px}.ag-bars.big .ag-bar .v{font-size:1.3rem}
+  .ag-opt{flex-direction:column;gap:4px;font-size:.88rem}
+  .ag-paths{grid-template-columns:minmax(0,1fr)}
+  .ag-tsec{display:none}.ag-psec{display:block}
+}
+/* Cookie-Hinweis (Google Analytics) unten am Bildschirm, Schalter in der Datenschutzerklärung */
+.ckb{position:fixed;left:50%;bottom:16px;z-index:1000;display:flex;align-items:center;gap:22px;width:min(940px,calc(100% - 32px));padding:16px 20px;transform:translateX(-50%);
+  border-radius:14px;border:1px solid rgba(46,230,214,.4);background:linear-gradient(180deg,#0d2a34,#071a23);box-shadow:0 18px 44px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.4);color:#c9d6e0;animation:ckbIn .3s ease}
+.ckb-tx{flex:1;min-width:0}
+.ckb-tx b{display:block;margin-bottom:3px;font:italic 800 1.05rem/1.2 var(--ff-head);text-transform:uppercase;letter-spacing:.03em;color:#fff}
+.ckb-tx p{margin:0;font-size:.9rem;line-height:1.45}
+.ckb-tx a{color:#7ff7ec;text-decoration:underline}
+.ckb-bt{display:flex;gap:10px;flex:none}
+.ckb-bt button{padding:10px 16px;border-radius:10px;font:inherit;font-weight:700;font-size:.92rem;cursor:pointer;white-space:nowrap}
+.ckb-no{border:1px solid rgba(255,255,255,.2);background:transparent;color:#c9d6e0}
+.ckb-no:hover{color:#fff;border-color:rgba(255,255,255,.45)}
+.ckb-ok{border:1px solid #2ee6d6;background:#2ee6d6;color:#06202a}
+.ckb-ok:hover{background:#7ff7ec}
+@keyframes ckbIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+@media (max-width:700px){.ckb{flex-direction:column;align-items:stretch;gap:12px;bottom:10px;padding:14px}.ckb-bt button{flex:1}}
+@media (prefers-reduced-motion:reduce){.ckb{animation:none}}
+.ga-ctl{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;border:1px solid rgba(46,230,214,.25);background:rgba(3,17,27,.4)}
+.ga-ctl span{font-weight:700}
+/* Augment-Vorhersage: oben die Prismatic-Chance, darunter links das nächste Augment, rechts „Danach“; kleiner Baum darunter – passt auf einen Bildschirm */
+.tio-out{container-type:inline-size}
+@container (min-width:600px){
+  .ag-og{display:grid;gap:0 26px;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+  .ag-og.one{grid-template-columns:minmax(0,1fr)}
+  .ag-og>div>.ag-sec{margin-top:14px}
+  .ag-bars.big .ag-bar{grid-template-columns:106px minmax(0,1fr) 78px;gap:10px}
+  .ag-or .ag-bar{grid-template-columns:106px minmax(0,1fr) 58px;gap:10px}
+}
+@media (min-width:1201px){.tio{grid-template-columns:minmax(0,.82fr) minmax(0,1.5fr)}}

@@ -237,7 +237,7 @@ function tileHTML(c){
     ${st?`<span class="ct-st ${st[0]}" title="${st[2]}">${st[1]}</span>`:''}
     ${c.sub?`<span class="ct-st sub" style="background:${TIER_COL[c.sub]}" title="Situativ – Bewertung ${c.sub}">${c.sub}</span>`:''}
     ${tr?`<span class="ct-tr">${traitHex(tr.n, traitCls(tr), 24)}</span>`:''}
-  </button>`;
+  <span></span></button>`;
 }
 function renderTiers(target, list){
   const html = ['S','A','B','C','X'].map(t=>{
@@ -254,22 +254,22 @@ function renderTiers(target, list){
 /* --- Detail-Panel --- */
 function panelHTML(c){
   const variants = comps.filter(x=>x.carry===c.carry).sort((a,b)=>b.main-a.main || 'SABCX'.indexOf(a.tier)-'SABCX'.indexOf(b.tier));
-  const tabs = variants.length>1 ? `<div class="cp-tabs">${variants.map(v=>`<button class="cp-tab${v===c?' on':''}" data-variant="${v.slug}" style="--tc:${TIER_COL[v.tier]}"><span>${v.tier}</span>${esc(v.name)}</button>`).join('')}</div>` : '';
+  const tabs = variants.length>1 ? `<div class="cp-tabs">${variants.map(v=>`<button class="cp-tab${v===c?' on':''}" data-variant="${v.slug}" style="--tc:${TIER_COL[v.tier]}"><span>${v.tier}</span>${esc(v.name)}<span></span></button>`).join('')}</div>` : '';
   const units = c.board.filter(b=>!PLANTS[b.u]).sort((a,b)=>costOf(a.u)-costOf(b.u) || a.u.localeCompare(b.u));
   const augs = c.augs.map(id=>augById[id]).filter(Boolean);
   const prio = c.augTypes.map(t=>`<span class="cp-pill">${AUGTYPE_DE[t]||esc(t)}</span>`).join('<span class="cp-arrow">▶</span>');
-  const carousel = c.carousel.map(findItem).filter(Boolean).map(it=>`<button data-item="${it.id}" title="${esc(it.en)}"><img src="${it.img}" alt="${esc(it.en)}" loading="lazy"></button>`).join('<span class="cp-arrow">▶</span>');
+  const carousel = c.carousel.map(findItem).filter(Boolean).map(it=>`<button data-item="${it.id}" title="${esc(it.en)}"><img src="${it.img}" alt="${esc(it.en)}" loading="lazy"><span></span></button>`).join('<span class="cp-arrow">▶</span>');
   const flex = c.cap.map(b=>{ const l=(b.lv||[])[0]||''; const num=/^\d+$/.test(l); return unitHex(b,{sm:true, lv:num?l:'⇄', lvTitle:num?`ab Level ${l}`:`ersetzt ${l}`}); }).join('');
   const card = (title, body, cls='') => body ? `<div class="cp-card ${cls}"><h4>${title}</h4>${body}</div>` : '';
   return `${tabs}<div class="cp" style="--tc:${TIER_COL[c.tier]}">
-    <button class="cp-close" data-close-panel aria-label="Schließen">✕</button>
+    <button class="cp-close" data-close-panel aria-label="Schließen">✕<span></span></button>
     <div class="cp-left">
       <div class="cp-tierbg">${c.tier}</div>
       ${hexHTML(c.carry,'hx-big')}
       <h3>${esc(c.name)}</h3>
       <div class="cp-style">Spielstil: ${esc(STYLE_DE[c.style]||c.style)} (${DIFF_DE[c.diff]||esc(c.diff)})${c.sub?`<br>Situativ · Bewertung ${c.sub}`:''}</div>
       <div class="trait-row" style="justify-content:center">${compTraits(c).map(t=>tBadge(t,false)).join('')}</div>
-      ${augs.length?`<h4>Augments</h4><div class="cp-augs">${augs.map(a=>`<button class="cp-aug" data-aug="${a.id}" title="${esc(a.en)}"><img src="${augImg(a)}" alt="${esc(a.en)}" loading="lazy"></button>`).join('')}</div>`:''}
+      ${augs.length?`<h4>Augments</h4><div class="cp-augs">${augs.map(a=>`<button class="cp-aug" data-aug="${a.id}" title="${esc(a.en)}"><img src="${augImg(a)}" alt="${esc(a.en)}" loading="lazy"><span></span></button>`).join('')}</div>`:''}
       ${prio?`<h4>Augment-Priorität</h4><div class="cp-prio">${prio}</div>`:''}
       <h4>Spielplan</h4><p>${c.plan ? esc(c.plan).replace(/\n/g,'<br>') : (PLAN[c.style]||'')}</p>
       ${c.tips ? `<h4>Tipps</h4><p>${esc(c.tips).replace(/\n/g,'<br>')}</p>` : ''}
@@ -285,7 +285,7 @@ function panelHTML(c){
         ${card('Aufstellung', `<div class="cp-board">${boardHTML(c)}</div>`)}
         ${card('Alt Builds', c.alt.length?`<div class="cp-units cp-col">${c.alt.map(b=>unitHex(b,{sm:true})).join('')}</div>`:'<p class="note" style="text-align:center;margin:0">–</p>')}
       </div>
-      <div class="cp-actions"><button class="cp-names" type="button" data-builder="${c.slug}">⬡ Im Team Builder öffnen</button><label class="cp-names"><input type="checkbox" data-names> Namen anzeigen</label></div>
+      <div class="cp-actions"><button class="cp-names" type="button" data-builder="${c.slug}">⬡ Im Team Builder öffnen<span></span></button><label class="cp-names"><input type="checkbox" data-names> Namen anzeigen</label></div>
     </div>
   </div>`;
 }
@@ -348,7 +348,7 @@ const augImg = a => AUG_IMG[a.id] || a.icon;
 const AUG_LV = {1:'Silber',2:'Gold',3:'Prismatisch'};
 // Eine Tier-Reihe im Comps-Design (Buchstabe links, Kacheln rechts) – auch für Items, Augments und Holds
 const tierRow = (t, inner, label) => `<div class="tl-tier" style="--tc:${TIER_COL[t] || '#6b7280'}"><div class="tl-row"><div class="tl-letter"><b>${t}</b><small>${label || t + ' TIER'}</small></div><div class="tl-tiles">${inner}</div></div></div>`;
-const icoTile = (attr, name, img) => `<button class="tl-ico" ${attr} data-name="${esc(name)}" aria-label="${esc(name)}"><img src="${img}" alt="" loading="lazy"></button>`;
+const icoTile = (attr, name, img) => `<button class="tl-ico" ${attr} data-name="${esc(name)}" aria-label="${esc(name)}"><img src="${img}" alt="" loading="lazy"><span></span></button>`;
 
 let itlCat = 'craftables';
 function renderItemTL(){
@@ -388,7 +388,7 @@ $('#augSearch').addEventListener('input', renderAugTL);
 
 // Holds: welche 1-, 2- und 3-Kosten-Champions sich von 1-1 bis 1-3 zu halten lohnen (holdTL in tierlist-data-<Set>.js)
 let holdCost = '1';
-const holdTile = n => `<button class="tl-ico tl-champ" data-champ="${esc(n)}" data-name="${esc(n)}" aria-label="${esc(n)}">${hexHTML(n)}</button>`;
+const holdTile = n => `<button class="tl-ico tl-champ" data-champ="${esc(n)}" data-name="${esc(n)}" aria-label="${esc(n)}">${hexHTML(n)}<span></span></button>`;
 function renderHoldTL(){
   const tl = HOLD_TL[holdCost] || {}, pool = champions.filter(c=>c.c===+holdCost).map(c=>c.n);
   const rated = new Set(['S','A','B','C'].flatMap(t=>tl[t]||[]));
@@ -423,7 +423,7 @@ function renderEncTL(){
   const max = Math.max(...ENCS.map(e=>e.w));
   box.innerHTML = list.map(e=>{
     const p = encPct([e]), r = ENC_TL[e.id] || {}, cs = (r.comps||[]).map(s=>compBySlug[s]).filter(Boolean);
-    const rec = cs.length ? `<div class="enc-comps">${cs.map(c=>`<button class="enc-comp" data-comp="${c.slug}" style="--tc:${TIER_COL[c.tier]}"><b>${c.tier}</b><span class="enc-chx">${hexHTML(c.carry)}</span>${esc(c.name)}</button>`).join('')}</div>`
+    const rec = cs.length ? `<div class="enc-comps">${cs.map(c=>`<button class="enc-comp" data-comp="${c.slug}" style="--tc:${TIER_COL[c.tier]}"><b>${c.tier}</b><span class="enc-chx">${hexHTML(c.carry)}</span>${esc(c.name)}<span></span></button>`).join('')}</div>`
       : r.egal ? '<span class="enc-egal">Egal – spiel, was kommt</span>' : '<span class="enc-none">Noch keine Einschätzung</span>';
     return `<div class="enc-row">
       <div class="enc-who">${encIcon(e, 46)}<div><b>${esc(e.n)}</b><small>${esc(ENC_CAT[e.cat] || '')}${e.ch ? ' · ' + esc(e.ch) : ''}</small></div></div>
@@ -445,7 +445,7 @@ function openAug(id){
   const inComps = comps.filter(c=>c.augs.includes(id));
   $('#modalBody').innerHTML = `<div style="display:flex;gap:16px;align-items:center"><img src="${augImg(a)}" alt="" width="64" height="64" style="border-radius:10px;border:1px solid var(--line-2)"><div><small style="font-size:.7rem;color:var(--faint);text-transform:uppercase;letter-spacing:.06em">${a.lv?AUG_LV[a.lv]+'-':''}Augment</small><h2 style="margin:2px 0 0">${esc(a.en)}</h2>${a.de!==a.en?`<div style="color:var(--muted);font-size:.9rem">${esc(a.de)}</div>`:''}</div></div>
     ${desc?`<div class="it-desc">${desc}</div>`:''}
-    ${inComps.length?`<h4 style="margin-top:18px;font-size:.85rem;color:var(--faint)">EMPFOHLEN IN</h4><div class="tag-row">${inComps.map(c=>`<button class="it-link" data-comp="${c.slug}" style="padding:4px 12px">${c.tier} · ${esc(c.name)}</button>`).join('')}</div>`:''}`;
+    ${inComps.length?`<h4 style="margin-top:18px;font-size:.85rem;color:var(--faint)">EMPFOHLEN IN</h4><div class="tag-row">${inComps.map(c=>`<button class="it-link" data-comp="${c.slug}" style="padding:4px 12px">${c.tier} · ${esc(c.name)}<span></span></button>`).join('')}</div>`:''}`;
   openModal();
 }
 document.addEventListener('click', e=>{
@@ -510,7 +510,7 @@ function niceMax(m){ const steps=[0.05,0.1,0.2,0.5,1,2,5,10,20,50]; const s = st
 function barChart(items, onKey){
   const max = niceMax(Math.max(...items.map(i=>i.v)));
   const grid = [1, .5, 0].map(f=>`<div class="rk-gl" style="bottom:${f*100}%"><span>${fmtPct(max*f).replace(' %','%')}</span></div>`).join('');
-  const bars = items.map(i=>`<button class="rk-bar${i.k===onKey?' on':''}" ${i.href?`data-href="${i.href}"`:''} data-tip="${esc(i.label)}: ${fmtPct(i.v)}" aria-label="${esc(i.label)}: ${fmtPct(i.v)}"><em>${fmtPct(i.v)}</em><i style="height:${Math.max(0.6, i.v/max*100)}%"></i></button>`).join('');
+  const bars = items.map(i=>`<button class="rk-bar${i.k===onKey?' on':''}" ${i.href?`data-href="${i.href}"`:''} data-tip="${esc(i.label)}: ${fmtPct(i.v)}" aria-label="${esc(i.label)}: ${fmtPct(i.v)}"><em>${fmtPct(i.v)}</em><i style="height:${Math.max(0.6, i.v/max*100)}%"></i><span></span></button>`).join('');
   const xl = items.map(i=>`<span class="${i.k===onKey?'on':''}">${i.img?`<img src="${i.img}" alt="" loading="lazy">`:''}${esc(i.short||i.label)}</span>`).join('');
   return `<div class="rk-chart">${grid}<div class="rk-bars">${bars}</div></div><div class="rk-xl">${xl}</div>`;
 }
@@ -540,7 +540,7 @@ function renderRankDetail(key){
       <div class="rk-divs${apex?' three':''}">${es.map(e=>rankCell(e, apex && e.t===t ? ' on' : '')).join('')}</div>
       <div class="rk-sec">
         <div><h3>Wie selten ist ${esc(t.n)}?</h3><small class="updated">${view==='all'?'Anteil der Spieler pro Rang':(apex?'Anteil der Spieler pro Apex-Rang':'Anteil der Spieler pro Division')}</small></div>
-        <div class="rk-toggle" role="group" aria-label="Ansicht"><button class="${view==='all'?'on':''}" data-rkview="all">Alle Ränge</button><button class="${view==='div'?'on':''}" data-rkview="div">${esc(groupLabel)}</button></div>
+        <div class="rk-toggle" role="group" aria-label="Ansicht"><button class="${view==='all'?'on':''}" data-rkview="all">Alle Ränge<span></span></button><button class="${view==='div'?'on':''}" data-rkview="div">${esc(groupLabel)}<span></span></button></div>
       </div>
       <div class="rk-chartwrap">
         <div>${barChart(items, view==='all' || apex ? t.k : null)}
@@ -737,8 +737,8 @@ function boardRows(board, side){
       const ch = champBy[b.u], plant = PLANTS[b.u];
       const its = b.i.map((id,n)=>{ const it=findItem(id); return it?`<img src="${it.img}" alt="${esc(it.en)}" title="${esc(it.en)} – Klick entfernt" data-unequip="${key}:${n}" draggable="true">`:''; }).join('');
       cells += `<div class="hex filled c${ch?ch.c:1}${plant?' plant':''}${sel}" data-hex="${h}" data-side="${side}" draggable="true" title="${esc(b.u)}"><div class="hex-bg"></div><div class="hex-img" style="background-image:${champBg(b.u)}"></div>`
-        + `<button class="hex-stars b-star${b.s===1?' one':''}" data-star="${key}" type="button" title="Sterne ändern (${b.s}★)">${'★'.repeat(b.s)}</button>`
-        + `<button class="b-x" data-remove="${key}" type="button" aria-label="${esc(b.u)} entfernen">✕</button>`
+        + `<button class="hex-stars b-star${b.s===1?' one':''}" data-star="${key}" type="button" title="Sterne ändern (${b.s}★)">${'★'.repeat(b.s)}<span></span></button>`
+        + `<button class="b-x" data-remove="${key}" type="button" aria-label="${esc(b.u)} entfernen">✕<span></span></button>`
         + (its?`<div class="hex-items">${its}</div>`:'') + `<span class="hex-name">${esc(b.u)}</span>${btTag}</div>`;
     }
     rows += `<div class="board-row${k%2?' odd':''}">${cells}</div>`;
@@ -757,8 +757,8 @@ function renderSide(side){
     const bp = (traitBy[t.n]||{bp:['1']}).bp;
     return `<div class="bt${t.lvl?'':' off'}">${traitHex(t.n, t.lvl?traitCls(t):'base', 26)}<div><b>${esc(t.n)}</b><span class="bt-bp">${bp.map(x=>`<i class="${+x<=t.k?'on':''}">${x}</i>`).join('')}</span></div><em>${t.k}</em></div>`;
   }).join('') : '<p class="note" style="margin:0">Noch keine Units auf dem Brett.</p>';
-  $('#bAugs'+S).innerHTML = augs.map((id,i)=>{ const a = augById[id]; return a ? `<button class="b-aug" type="button" data-baug-del="${side}:${i}" title="${esc(a.en)} – Klick entfernt"><img src="${augImg(a)}" alt="${esc(a.en)}"></button>` : ''; }).join('')
-    + (augs.length<3 ? `<button class="b-plus" type="button" data-baug-open="${side}" title="Augment hinzufügen" aria-label="Augment hinzufügen">+</button>` : '');
+  $('#bAugs'+S).innerHTML = augs.map((id,i)=>{ const a = augById[id]; return a ? `<button class="b-aug" type="button" data-baug-del="${side}:${i}" title="${esc(a.en)} – Klick entfernt"><img src="${augImg(a)}" alt="${esc(a.en)}"><span></span></button>` : ''; }).join('')
+    + (augs.length<3 ? `<button class="b-plus" type="button" data-baug-open="${side}" title="Augment hinzufügen" aria-label="Augment hinzufügen">+<span></span></button>` : '');
   const comps = bComponents(board);
   $('#bComps'+S).innerHTML = comps.length ? comps.map(([id,n])=>{ const it = itemById[id]; return it ? `<span class="b-comp" title="${esc(it.en)}"><img src="${it.img}" alt="${esc(it.en)}"><b>×${n}</b></span>` : ''; }).join('') : '<p class="b-empty">Items ausrüsten, dann siehst du hier die Komponenten.</p>';
 }
@@ -780,7 +780,7 @@ function bUnitBtn(n){
   const ch = champBy[n];
   const title = ch ? `${n} · ${ch.c} Gold · ${ch.t.join(', ')}` : `${n} (Elderwood-Pflanze)`;
   const av = PLANTS[n] ? `<div class="av av-52 c1"><img src="${PLANT_IMG[n]}" alt=""></div>` : avatar(n,52);
-  return `<button class="bp-u" type="button" draggable="true" data-bunit="${esc(n)}" title="${esc(title)}">${av}</button>`;
+  return `<button class="bp-u" type="button" draggable="true" data-bunit="${esc(n)}" title="${esc(title)}">${av}<span></span></button>`;
 }
 function renderPool(){
   const q = bQuery.toLowerCase().trim();
@@ -799,14 +799,14 @@ function renderPool(){
   $('#bPoolUnits').innerHTML = html || viSays('Keine Unit gefunden. Andere Schreibweise?');
   const items = ITEMS.filter(i=>(bItemCat==='other' ? ['emblem','component'].includes(i.cat) : i.cat===bItemCat) && (!q || i.en.toLowerCase().includes(q) || i.de.toLowerCase().includes(q)))
     .sort((a,b)=>bItemCat==='other' ? a.cat.localeCompare(b.cat) || a.en.localeCompare(b.en) : a.en.localeCompare(b.en));
-  $('#bPoolItems').innerHTML = items.length ? `<div class="bp-grid">${items.map(it=>`<button class="bp-i${bSel&&bSel.type==='item'&&bSel.id===it.id?' sel':''}" type="button" draggable="true" data-bitem="${it.id}" title="${esc(it.en)} · ${esc(it.de)}"><img src="${it.img}" alt="" draggable="false"></button>`).join('')}</div>` : '<p class="b-empty">Kein Item gefunden.</p>';
+  $('#bPoolItems').innerHTML = items.length ? `<div class="bp-grid">${items.map(it=>`<button class="bp-i${bSel&&bSel.type==='item'&&bSel.id===it.id?' sel':''}" type="button" draggable="true" data-bitem="${it.id}" title="${esc(it.en)} · ${esc(it.de)}"><img src="${it.img}" alt="" draggable="false"><span></span></button>`).join('')}</div>` : '<p class="b-empty">Kein Item gefunden.</p>';
   document.querySelectorAll('#bSortPills [data-bsort]').forEach(x=>x.classList.toggle('on', x.dataset.bsort===bSort));
   document.querySelectorAll('#bItemPills [data-bcat]').forEach(x=>x.classList.toggle('on', x.dataset.bcat===bItemCat));
 }
 function renderBuilderCtx(){
   const box = $('#bCtx'), c = bCtx && adm && adm.comps.find(x=>x.slug===bCtx.slug);
   box.hidden = !c;
-  box.innerHTML = c ? `<span>Du bearbeitest die Aufstellung von <b>${esc(c.name)}</b>.</span><button class="btn btn-primary b-btn" id="bApply" type="button">In Comp übernehmen</button><button class="btn btn-ghost b-btn" id="bCancel" type="button">Abbrechen</button>` : '';
+  box.innerHTML = c ? `<span>Du bearbeitest die Aufstellung von <b>${esc(c.name)}</b>.</span><button class="btn btn-primary b-btn" id="bApply" type="button">In Comp übernehmen<span></span></button><button class="btn btn-ghost b-btn" id="bCancel" type="button">Abbrechen<span></span></button>` : '';
 }
 function builderRoute(sub, code2, mode){
   bSetMode(mode || 'builder');
@@ -865,7 +865,7 @@ function bCopy(text, ok){ if(navigator.clipboard) navigator.clipboard.writeText(
 function bOpenAugPicker(side){
   bAugSide = side;
   const draw = q => { q = (q||'').toLowerCase(); const cur = sideAugs(side); return AUGS.filter(a=>!cur.includes(a.id) && !AUG_DUP.has(a.id) && (!q || a.en.toLowerCase().includes(q) || a.de.toLowerCase().includes(q))).sort((a,b)=>(a.lv||9)-(b.lv||9) || a.en.localeCompare(b.en)).slice(0,120)
-    .map(a=>`<button class="b-augpick" type="button" data-baug-add="${a.id}" title="${esc(a.de)}"><img src="${augImg(a)}" alt=""><span>${esc(a.en)}</span><small>${a.lv?AUG_LV[a.lv]:''}</small></button>`).join(''); };
+    .map(a=>`<button class="b-augpick" type="button" data-baug-add="${a.id}" title="${esc(a.de)}"><img src="${augImg(a)}" alt=""><span>${esc(a.en)}</span><small>${a.lv?AUG_LV[a.lv]:''}</small><span></span></button>`).join(''); };
   $('#modalBody').innerHTML = `<h2 style="margin:0 0 12px">Augment wählen${side==='e'?' (Gegner)':''}</h2><input class="input" id="bAugSearch" placeholder="Augment suchen…" style="width:100%" autocomplete="off"><div class="b-augpicklist" id="bAugPickList">${draw('')}</div>`;
   openModal(); setTimeout(()=>{ const i = $('#bAugSearch'); if(i){ i.focus(); i.oninput = ()=>{ $('#bAugPickList').innerHTML = draw(i.value); }; } }, 30);
 }
@@ -1029,7 +1029,7 @@ function renderAdminEdit(){
   const units = [...new Set((c.board||[]).map(b=>b.u).filter(u=>!PLANTS[u]))];
   const chips = (arr, kind) => (arr||[]).map((id,i)=>{
     const o = kind==='aug' ? augById[id] : findItem(id), img = o ? (kind==='aug' ? augImg(o) : o.img) : '';
-    return `<span class="adm-chip">${img?`<img src="${img}" alt="">`:''}${esc(o?o.en:id)}<button type="button" data-adm-del="${kind}:${i}" aria-label="Entfernen">✕</button></span>`;
+    return `<span class="adm-chip">${img?`<img src="${img}" alt="">`:''}${esc(o?o.en:id)}<button type="button" data-adm-del="${kind}:${i}" aria-label="Entfernen">✕<span></span></button></span>`;
   }).join('') || '<span class="note" style="margin:0">–</span>';
   box.innerHTML = `
     <div class="adm-edhead"><span class="adm-hx big">${hexHTML(c.carry||'')}</span><div><small>Bearbeiten</small><h3 id="admEdTitle">${esc(c.name)}</h3></div></div>
@@ -1044,11 +1044,11 @@ function renderAdminEdit(){
     </div>
     <label class="adm-f"><span>Spielplan</span><textarea class="input" rows="4" data-f="plan" placeholder="${esc(PLAN[c.style]||'')}">${esc(c.plan||'')}</textarea><small>Leer lassen = Standardtext für den Spielstil.</small></label>
     <label class="adm-f"><span>Tipps</span><textarea class="input" rows="3" data-f="tips" placeholder="z. B. Worauf man im Early Game achten sollte …">${esc(c.tips||'')}</textarea></label>
-    <div class="adm-f"><span>Augments</span><div class="adm-chips">${chips(c.augs,'aug')}</div><div class="adm-add"><input class="input" list="admAugList" placeholder="Augment hinzufügen…" data-add="aug"><button class="btn btn-ghost b-btn" type="button" data-add-btn="aug">+</button></div></div>
+    <div class="adm-f"><span>Augments</span><div class="adm-chips">${chips(c.augs,'aug')}</div><div class="adm-add"><input class="input" list="admAugList" placeholder="Augment hinzufügen…" data-add="aug"><button class="btn btn-ghost b-btn" type="button" data-add-btn="aug">+<span></span></button></div></div>
     <div class="adm-f"><span>Augment-Fokus</span><div class="adm-checks">${['ITEMS','ECON','COMBAT','TRAIT'].map(k=>`<label><input type="checkbox" data-aug-type="${k}"${(c.augTypes||[]).includes(k)?' checked':''}> ${AUGTYPE_DE[k]}</label>`).join('')}</div></div>
-    <div class="adm-f"><span>Item-Priorität</span><div class="adm-chips">${chips(c.carousel,'item')}</div><div class="adm-add"><input class="input" list="admItemList" placeholder="Item hinzufügen…" data-add="item"><button class="btn btn-ghost b-btn" type="button" data-add-btn="item">+</button></div></div>
-    <div class="adm-f"><span>Aufstellung</span>${(c.board||[]).length?`<div class="adm-board">${boardHTML(c)}</div>`:'<p class="note" style="margin:0">Noch keine Units platziert.</p>'}<button class="btn btn-primary b-btn" type="button" data-adm-builder style="margin-top:8px;align-self:flex-start">⬡ Im Team Builder bearbeiten</button></div>
-    <div class="adm-foot"><button class="btn btn-ghost b-btn" type="button" data-adm-dup>Duplizieren</button><button class="btn btn-ghost b-btn adm-danger" type="button" data-adm-delete>Löschen</button></div>
+    <div class="adm-f"><span>Item-Priorität</span><div class="adm-chips">${chips(c.carousel,'item')}</div><div class="adm-add"><input class="input" list="admItemList" placeholder="Item hinzufügen…" data-add="item"><button class="btn btn-ghost b-btn" type="button" data-add-btn="item">+<span></span></button></div></div>
+    <div class="adm-f"><span>Aufstellung</span>${(c.board||[]).length?`<div class="adm-board">${boardHTML(c)}</div>`:'<p class="note" style="margin:0">Noch keine Units platziert.</p>'}<button class="btn btn-primary b-btn" type="button" data-adm-builder style="margin-top:8px;align-self:flex-start">⬡ Im Team Builder bearbeiten<span></span></button></div>
+    <div class="adm-foot"><button class="btn btn-ghost b-btn" type="button" data-adm-dup>Duplizieren<span></span></button><button class="btn btn-ghost b-btn adm-danger" type="button" data-adm-delete>Löschen<span></span></button></div>
     <datalist id="admAugList">${AUGS.map(a=>`<option value="${esc(a.en)}">`).join('')}</datalist>
     <datalist id="admItemList">${ITEMS.filter(i=>B_ITEM_CATS.includes(i.cat)).map(i=>`<option value="${esc(i.en)}">`).join('')}</datalist>`;
 }
@@ -1212,7 +1212,7 @@ function renderAdminTL(){
   $('#admTabs').querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.admTab===admTab));
   if(comps) return;
   if(admTab==='encounters'){ renderAdmEnc(box); return; }
-  const chip = (key, v, l) => `<button class="chip-btn${admTLf[key]===v?' active':''}" type="button" data-tlf="${key}:${v}">${l}</button>`;
+  const chip = (key, v, l) => `<button class="chip-btn${admTLf[key]===v?' active':''}" type="button" data-tlf="${key}:${v}">${l}<span></span></button>`;
   const filters = admTab==='items' ? ADM_ITEM_CATS.map(([v,l])=>chip('items', v, l)).join('')
     : admTab==='augments' ? `<div class="tag-row">${[['1','Silber'],['2','Gold'],['3','Prismatisch']].map(([v,l])=>chip('alv', v, l)).join('')}</div><div class="tag-row">${[['All','Alle Phasen'],['2-1','2-1'],['3-2','3-2'],['4-2','4-2']].map(([v,l])=>chip('ast', v, l)).join('')}</div>`
     : [['1','1-Kosten'],['2','2-Kosten'],['3','3-Kosten']].map(([v,l])=>chip('hold', v, l)).join('');
@@ -1236,8 +1236,8 @@ function renderAdmEnc(box){
       return `<div class="adm-enc-row">
         <div class="enc-who">${encIcon(e, 40)}<div><b>${esc(e.n)}</b><small>${encPctTxt(encPct([e]))} · ${esc(e.de)}</small></div></div>
         <div class="adm-enc-ed">
-          <div class="adm-chips">${cs.map(c=>`<span class="adm-chip" style="border-left:3px solid ${TIER_COL[c.tier] || '#666'}">${esc(c.tier)} · ${esc(c.name)}<button type="button" data-enc-del="${e.id}|${c.slug}" aria-label="Entfernen">✕</button></span>`).join('') || '<span class="note" style="margin:0">Noch keine Comps</span>'}</div>
-          <div class="adm-add"><input class="input" list="admEncList" placeholder="Comp hinzufügen…" data-enc-inp="${e.id}"><button class="btn btn-ghost b-btn" type="button" data-enc-add="${e.id}">+</button>
+          <div class="adm-chips">${cs.map(c=>`<span class="adm-chip" style="border-left:3px solid ${TIER_COL[c.tier] || '#666'}">${esc(c.tier)} · ${esc(c.name)}<button type="button" data-enc-del="${e.id}|${c.slug}" aria-label="Entfernen">✕<span></span></button></span>`).join('') || '<span class="note" style="margin:0">Noch keine Comps</span>'}</div>
+          <div class="adm-add"><input class="input" list="admEncList" placeholder="Comp hinzufügen…" data-enc-inp="${e.id}"><button class="btn btn-ghost b-btn" type="button" data-enc-add="${e.id}">+<span></span></button>
             <label class="adm-enc-egal"><input type="checkbox" data-enc-egal="${e.id}"${r.egal ? ' checked' : ''}> Egal</label></div>
           <textarea class="input" rows="2" data-enc-note="${e.id}" placeholder="Tipp (optional), z. B. „Früh Items slammen und Lose Streak vermeiden.“">${esc(r.note || '')}</textarea>
         </div></div>`; }).join('')}</div>
@@ -1302,8 +1302,8 @@ const setStatus = () => (window.TFT_SET && TFT_SET.status) || TFT_DATA.channel |
 const fmtDay = d => { const x = new Date(d); return isNaN(x) ? '' : x.toLocaleDateString(LOC); };
 function renderSetSwitcher(){
   const sets = window.TFT_SETS || [], cur = TFT_DATA.set, st = setStatus();
-  $('#setSw').innerHTML = `<button class="set-btn" id="setBtn" type="button" aria-haspopup="true" aria-expanded="false" title="Set wechseln"><b>Set ${cur}</b><span class="set-st ${st}">${SET_LABEL[st]||esc(st)}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-    <div class="set-menu" id="setMenu" hidden><small class="set-menu-h">Set wählen</small>${sets.map(s=>`<button type="button" class="${s.set===cur?'on':''}" data-set-pick="${s.set}"><b>Set ${s.set}</b><span class="set-st ${s.status}">${SET_LABEL[s.status]||esc(s.status)}</span><small>CommunityDragon ${esc(s.version)} · ${fmtDay(s.generated)}</small></button>`).join('')}</div>`;
+  $('#setSw').innerHTML = `<button class="set-btn" id="setBtn" type="button" aria-haspopup="true" aria-expanded="false" title="Set wechseln"><b>Set ${cur}</b><span class="set-st ${st}">${SET_LABEL[st]||esc(st)}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg><span></span></button>
+    <div class="set-menu" id="setMenu" hidden><small class="set-menu-h">Set wählen</small>${sets.map(s=>`<button type="button" class="${s.set===cur?'on':''}" data-set-pick="${s.set}"><b>Set ${s.set}</b><span class="set-st ${s.status}">${SET_LABEL[s.status]||esc(s.status)}</span><small>CommunityDragon ${esc(s.version)} · ${fmtDay(s.generated)}</small><span></span></button>`).join('')}</div>`;
   document.querySelectorAll('[data-setno]').forEach(e=>{ e.textContent = cur; });
   const live = sets.find(s=>s.status==='live'), ban = $('#setBanner');
   if(st!=='live' && live && live.set!==cur){
@@ -1311,7 +1311,7 @@ function renderSetSwitcher(){
     ban.innerHTML = (st==='pbe'
       ? `<b>PBE-Vorschau:</b> Set ${cur} ist noch nicht live – Champions, Items und Werte können sich bis zum Release ändern.`
       : `<b>Archiv:</b> Du siehst die Daten von Set ${cur}. Aktuell live ist Set ${live.set}.`)
-      + ` <button type="button" data-set-pick="${live.set}">Zu Set ${live.set} (Live)</button>`;
+      + ` <button type="button" data-set-pick="${live.set}">Zu Set ${live.set} (Live)<span></span></button>`;
   } else ban.hidden = true;
 }
 function pickSet(n){
@@ -1411,6 +1411,7 @@ const BUDDY_LINES = {
     'Klick die Komponenten an, sobald sie droppen. Je genauer du bist, desto besser meine Vorhersage.',
     'Vor jeder Creep-Stage kommt von jeder Komponente eine dazu. Ein wunderbar logisches System!',
     'Prismatic-Orbs gibt es erst ab 3-7. Geduld ist auch eine Wissenschaft!']; },
+  augtool(){ return ['Silber, Gold oder Prisma? Die Wahrscheinlichkeit sagt es dir!', 'Trag dein Augment auf 2-1 ein – den Rest berechne ich.']; },
   sim(){ return ['Willkommen in meinem Labor! Stell zwei Teams auf und starte das Experiment.',
     'Klick eine Unit an – dann siehst du ihr Ziel, ihren Laufweg und was sie als Nächstes vorhat.',
     'Ein Kampf ist Zufall, hundert Kämpfe sind Statistik. Probier „Siegchance“!']; },
@@ -1446,12 +1447,12 @@ function buddyWire(el){
 document.querySelectorAll('[data-buddy]').forEach(buddyWire);
 // Tool-Seiten: Heimerdinger in der Version des Tools (dasselbe Bild wie auf der Kachel) – nur, wenn es das Bild gibt
 document.querySelectorAll('[data-tool-art]').forEach(head=>{
-  const src = `assets/tools/${head.dataset.toolArt}.webp`, im = new Image();
+  const src = head.dataset.artSrc || `assets/tools/${head.dataset.toolArt}.webp`, im = new Image();
   im.onload = ()=>{
     const sim = head.dataset.toolArt==='simulator';
     head.classList.add('art-on');
     head.insertAdjacentHTML('afterbegin', `<div class="buddy heimer${sim ? ' b-simonly' : ''}" data-buddy="${head.dataset.artBuddy}"><div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>`
-      + `<button class="buddy-img" type="button" style="background:url('${src}') center bottom/contain no-repeat" aria-label="Heimerdinger – nächster Tipp" title="Klick für den nächsten Tipp"></button></div>`);
+      + `<button class="buddy-img" type="button" style="background:url('${src}') center bottom/contain no-repeat" aria-label="Heimerdinger – nächster Tipp" title="Klick für den nächsten Tipp"><span></span></button></div>`);
     buddyWire(head.firstElementChild);
   };
   im.src = src;
@@ -1500,10 +1501,10 @@ function renderChampV2(){
         <nav class="cv-tabs" aria-label="${L('Bibliothek', 'Library')}"><a class="on" href="/bibliothek/champions">Champions</a><a href="/bibliothek/items">Items</a><a href="/bibliothek/traits">Traits</a></nav>
       </div>
       <div class="cv-filters">
-        <button type="button" class="cv-chip on" data-cvcost="all">${L('Alle', 'All')}</button>
-        ${[1,2,3,4,5].map(c=>`<button type="button" class="cv-chip cv-cost c${c}" data-cvcost="${c}" title="${c} Gold"><i></i>${c}</button>`).join('')}
+        <button type="button" class="cv-chip on" data-cvcost="all">${L('Alle', 'All')}<span></span></button>
+        ${[1,2,3,4,5].map(c=>`<button type="button" class="cv-chip cv-cost c${c}" data-cvcost="${c}" title="${c} Gold"><i></i>${c}<span></span></button>`).join('')}
         <span class="cv-sep"></span>
-        ${CV_CLASSES().map(n=>`<button type="button" class="cv-chip cv-trait" data-cvtrait="${esc(n)}" title="${esc(n)}" aria-label="${esc(n)}"><img src="${traitImg(n)}" alt="" loading="lazy"></button>`).join('')}
+        ${CV_CLASSES().map(n=>`<button type="button" class="cv-chip cv-trait" data-cvtrait="${esc(n)}" title="${esc(n)}" aria-label="${esc(n)}"><img src="${traitImg(n)}" alt="" loading="lazy"><span></span></button>`).join('')}
         <input class="cv-search" id="cvSearch" type="search" placeholder="${L('Champion oder Trait suchen …', 'Search champion or trait …')}" autocomplete="off">
       </div>
       <div class="cv-count" id="cvCount"></div>
@@ -1677,7 +1678,7 @@ function traitTiersHTML(name){
 function openChamp(name){
   const c = champBy[name]; if(!c) return;
   const tr = c.t.map(tn=>{const t=traits.find(x=>x.n===tn); return t?`<div class="trait" style="margin-top:10px"><div class="trait-top">${traitHex(t.n, t.bp.length===1?'unique':'base', 28)}<h4>${esc(t.n)}</h4><div class="bp">${t.bp.map(b=>`<span>${b}</span>`).join('')}</div></div><p style="margin:0">${esc(t.d)}</p>${traitMore(t.n)}</div>`:'';}).join('');
-  const inComps = comps.filter(x=>x.core.includes(c.n)).map(x=>`<button class="it-link" data-comp="${x.slug}" style="padding:4px 12px">${x.tier} · ${esc(x.name)}</button>`).join('') || '<span class="note" style="margin:0">Noch in keiner Tierlist-Comp.</span>';
+  const inComps = comps.filter(x=>x.core.includes(c.n)).map(x=>`<button class="it-link" data-comp="${x.slug}" style="padding:4px 12px">${x.tier} · ${esc(x.name)}<span></span></button>`).join('') || '<span class="note" style="margin:0">Noch in keiner Tierlist-Comp.</span>';
   // Häufigste Items auf diesem Champion über alle Comps
   const freq = {};
   comps.forEach(x=>[...x.board, ...x.alt].forEach(b=>{ if(b.u===c.n) (b.i||[]).forEach(id=>{ const it=findItem(id); if(it) freq[it.id]=(freq[it.id]||0)+1; }); }));
@@ -1755,10 +1756,10 @@ function renderChampPage(slug){
       <div class="chp-main">
         ${abHTML ? card('Fähigkeit', `<div class="ch-ab"><div class="ch-ab-head"><b>${esc(ab.n)}</b>${st ? `<span>Mana ${st.mana0} / ${st.mana}</span>` : ''}</div><p>${abHTML}</p>
           ${/ab-q/.test(abHTML) ? '<small class="ch-note">? = Wert, den Riot für dieses Set nicht in den offiziellen Daten mitliefert.</small>' : ''}${/ab-val/.test(abHTML) ? '<small class="ch-note">Werte für 1★ / 2★ / 3★.</small>' : ''}</div>`) : ''}
-        ${top.length ? card('Beste Items', `${best.length ? `<div class="chp-best"><small>Beliebtester Build</small><div>${best.map(it=>`<button class="chp-bi" data-item="${it.id}" title="${esc(it.en)}"><img src="${it.img}" alt="" loading="lazy"><span>${esc(it.en)}</span></button>`).join('<i>+</i>')}</div></div>` : ''}
-          <div class="chp-items">${top.map(({it, k})=>`<button class="chp-it" data-item="${it.id}"><img src="${it.img}" alt="" loading="lazy"><span><b>${esc(it.en)}</b><small>${k === 1 ? 'in 1 Build' : `in ${k} Builds`}</small></span></button>`).join('')}</div>
+        ${top.length ? card('Beste Items', `${best.length ? `<div class="chp-best"><small>Beliebtester Build</small><div>${best.map(it=>`<button class="chp-bi" data-item="${it.id}" title="${esc(it.en)}"><img src="${it.img}" alt="" loading="lazy"><span>${esc(it.en)}</span><span></span></button>`).join('<i>+</i>')}</div></div>` : ''}
+          <div class="chp-items">${top.map(({it, k})=>`<button class="chp-it" data-item="${it.id}"><img src="${it.img}" alt="" loading="lazy"><span><b>${esc(it.en)}</b><small>${k === 1 ? 'in 1 Build' : `in ${k} Builds`}</small></span><span></span></button>`).join('')}</div>
           <p class="note">Aus den Comps unserer Tierlist. Welcher Build am meisten Schaden macht, siehst du im DPS-Rechner.</p>`) : ''}
-        ${card('Comps mit ' + esc(n), cs.length ? `<div class="chp-comps">${cs.map(x=>`<button class="chp-comp" data-comp="${x.slug}" style="--tc:${TIER_COL[x.tier]}"><b class="chp-tier">${x.tier}</b><span><b>${esc(x.name)}</b><small>${esc(STYLE_DE[x.style] || x.style || '')}${x.carry===n ? ' · Carry' : ''}</small></span><span class="chp-chx">${hexHTML(x.carry)}</span></button>`).join('')}</div>`
+        ${card('Comps mit ' + esc(n), cs.length ? `<div class="chp-comps">${cs.map(x=>`<button class="chp-comp" data-comp="${x.slug}" style="--tc:${TIER_COL[x.tier]}"><b class="chp-tier">${x.tier}</b><span><b>${esc(x.name)}</b><small>${esc(STYLE_DE[x.style] || x.style || '')}${x.carry===n ? ' · Carry' : ''}</small></span><span class="chp-chx">${hexHTML(x.carry)}</span><span></span></button>`).join('')}</div>`
           : `<p class="note" style="margin:0">${esc(n)} ist gerade in keiner Comp unserer Tierlist.</p>`)}
         ${st ? card('Werte', `${champStatsHTML(n)}<small class="ch-note">Leben und Angriffsschaden für 1★ / 2★ / 3★.</small>`) : ''}
         ${patch ? card('Letzte Änderungen', `<div class="cp-list">${patch}</div>`) : ''}
@@ -1801,7 +1802,7 @@ function renderTraits(){
     const icon = t.cat==='origin' ? '<path d="M12 3c-3 3-6 6-6 10a6 6 0 0 0 12 0c0-4-3-7-6-10Z"/>' : '<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/>';
     return `<div class="trait"><div class="trait-top">${traitHex(t.n, t.bp.length===1?'unique':'base', 34)}<div><h4>${esc(t.n)}</h4><small style="color:var(--faint);font-size:.72rem">${t.cat==='origin'?'Ursprung':'Klasse'}</small></div></div>
       <div class="bp">${t.bp.map(b=>`<span>${b}</span>`).join('')}</div><p>${esc(t.d)}</p>${traitMore(t.n)}
-      <div class="trait-units">${units.map(u=>`<button data-champ="${esc(u.n)}" style="background:none;border:0;padding:0;cursor:pointer">${avatar(u.n,40)}</button>`).join('')}</div></div>`;
+      <div class="trait-units">${units.map(u=>`<button data-champ="${esc(u.n)}" style="background:none;border:0;padding:0;cursor:pointer">${avatar(u.n,40)}<span></span></button>`).join('')}</div></div>`;
   }).join('');
 }
 $('#traitFilters').addEventListener('click', e=>{
@@ -1868,12 +1869,12 @@ function fmtDesc(desc, fx){
     .replace(/ {2,}/g,' ').replace(/(<br>\s*){3,}/g,'<br><br>').replace(/^(\s*<br>)+|(<br>\s*)+$/g,'').trim();
 }
 const itImg = (it,size) => `<img src="${it.img}" alt="" width="${size}" height="${size}" loading="lazy">`;
-const itLink = it => `<button class="it-link" data-item="${it.id}">${itImg(it,26)}${esc(it.en)}</button>`;
+const itLink = it => `<button class="it-link" data-item="${it.id}">${itImg(it,26)}${esc(it.en)}<span></span></button>`;
 
 function itemCardHTML(it){
   const rec = it.comp.length===2 ? `<div class="it-recipe">${it.comp.map(c=>itemById[c]?itImg(itemById[c],22):'').join('+')}</div>` : '';
   const st = itemStats(it);
-  return `<button class="it-card" data-item="${it.id}"><img class="it-ic" src="${it.img}" alt="" width="48" height="48" loading="lazy"><div><h4>${esc(it.en)}</h4>${it.de!==it.en?`<small>${esc(it.de)}</small>`:''}${rec}${st?`<div class="it-stats">${st}</div>`:''}</div></button>`;
+  return `<button class="it-card" data-item="${it.id}"><img class="it-ic" src="${it.img}" alt="" width="48" height="48" loading="lazy"><div><h4>${esc(it.en)}</h4>${it.de!==it.en?`<small>${esc(it.de)}</small>`:''}${rec}${st?`<div class="it-stats">${st}</div>`:''}</div><span></span></button>`;
 }
 let itemCatF = 'all';
 function renderItems(){
@@ -1888,10 +1889,10 @@ function renderItems(){
 }
 function renderRecipes(){
   const comps = COMPONENTS.map(id=>itemById[id]).filter(Boolean);
-  const head = `<tr><th></th>${comps.map(c=>`<th><button data-item="${c.id}" title="${esc(c.en)}">${itImg(c,42)}</button></th>`).join('')}</tr>`;
-  const rows = comps.map(a=>`<tr><th><button data-item="${a.id}" title="${esc(a.en)}">${itImg(a,42)}</button></th>${comps.map(b=>{
+  const head = `<tr><th></th>${comps.map(c=>`<th><button data-item="${c.id}" title="${esc(c.en)}">${itImg(c,42)}<span></span></button></th>`).join('')}</tr>`;
+  const rows = comps.map(a=>`<tr><th><button data-item="${a.id}" title="${esc(a.en)}">${itImg(a,42)}<span></span></button></th>${comps.map(b=>{
     const r = recipeOf[[a.id,b.id].sort().join('|')];
-    return `<td>${r?`<button data-item="${r.id}" title="${esc(r.en)}">${itImg(r,42)}</button>`:''}</td>`;
+    return `<td>${r?`<button data-item="${r.id}" title="${esc(r.en)}">${itImg(r,42)}<span></span></button>`:''}</td>`;
   }).join('')}</tr>`).join('');
   $('#recipeTable').innerHTML = head + rows;
 }
@@ -1923,7 +1924,7 @@ function openItem(key){
   const rad = it.cat==='craft' ? radiantOf(it) : null;
   if(rad) extra += sec('LICHTVERSION', `<div class="tag-row">${itLink(rad)}</div>`);
   const tr = emblemTrait(it);
-  if(tr && traits.some(t=>t.n===tr)) extra += sec('TRAIT', `<div class="tag-row"><button class="it-link" data-trait="${esc(tr)}" style="padding:4px 12px">${esc(tr)} ansehen →</button></div>`);
+  if(tr && traits.some(t=>t.n===tr)) extra += sec('TRAIT', `<div class="tag-row"><button class="it-link" data-trait="${esc(tr)}" style="padding:4px 12px">${esc(tr)} ansehen →<span></span></button></div>`);
   const st = itemStats(it);
   const desc = it.cat==='component' && st ? '' : itemDescHTML(it);
   $('#modalBody').innerHTML = `<div style="display:flex;gap:16px;align-items:center">${itImg(it,64).replace('<img','<img style="border-radius:10px;border:1px solid var(--line-2)"')}<div><small style="font-size:.7rem;color:var(--faint);text-transform:uppercase;letter-spacing:.06em">${label}</small><h2 style="margin:2px 0 0">${esc(it.en)}</h2>${it.de!==it.en?`<div style="color:var(--muted);font-size:.9rem">${esc(it.de)}</div>`:''}</div></div>
@@ -2069,7 +2070,7 @@ const NAV = [
   return `<span class="tb-ic"><img src="${champImg(n.img)}" alt="" loading="lazy" onerror="this.parentNode.classList.add('svg');this.outerHTML=this.parentNode.dataset.svg"></span>`.replace('<span class="tb-ic">', `<span class="tb-ic" data-svg='${svg}'>`);
 }
 $('#tbNav').innerHTML = NAV.filter(n=>!n.more).map(n=>`<a href="${n.h}" class="tb-item" data-route="${n.r}">${n.badge?`<span class="tb-badge">${n.badge}</span>`:''}${navIcon(n)}<span>${n.l}</span></a>`).join('')
-  + '<button class="tb-item tb-more" id="moreBtn" aria-haspopup="true" aria-label="Mehr">···</button>';
+  + '<button class="tb-item tb-more" id="moreBtn" aria-haspopup="true" aria-label="Mehr">···<span></span></button>';
 $('#moreMenu').innerHTML = NAV.filter(n=>n.more).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('');
 $('#drawerPanel').innerHTML = `<a href="/" class="tb-logo" style="border:0;padding:6px 10px 14px;font-size:1.7rem" aria-label="TFTClimb Startseite"><span class="tft-logo" aria-hidden="true"></span><div><span>TFT</span><b>Climb</b></div></a>
   <h5>Tierlist & Daten</h5>${NAV.filter(n=>['tierlist','bibliothek','builder','ranks','tools','patches','cheatsheet'].includes(n.r)).map(n=>`<a href="${n.h}" data-route="${n.r}">${navIcon(n)}${n.l}</a>`).join('')}
@@ -2206,9 +2207,9 @@ function dpsMount(){
   $('#dpsApp').innerHTML = `<div class="dps">
     <div class="card dps-in">
       <section><h3 class="rd-h"><b>1</b> Champion</h3>
-        <div class="rd-costs" id="dpsCosts">${[1,2,3,4,5].map(c=>`<button type="button" class="rd-cost cb c${c}" data-dcost="${c}">${c} Gold</button>`).join('')}</div>
+        <div class="rd-costs" id="dpsCosts">${[1,2,3,4,5].map(c=>`<button type="button" class="rd-cost cb c${c}" data-dcost="${c}">${c} Gold<span></span></button>`).join('')}</div>
         <div class="rd-champs" id="dpsChamps"></div>
-        <div class="dps-row"><span>Sterne</span><div class="rd-costs" id="dpsStars">${[1,2,3].map(s=>`<button type="button" class="rd-cost" data-dstar="${s}">${'★'.repeat(s)}</button>`).join('')}</div></div></section>
+        <div class="dps-row"><span>Sterne</span><div class="rd-costs" id="dpsStars">${[1,2,3].map(s=>`<button type="button" class="rd-cost" data-dstar="${s}">${'★'.repeat(s)}<span></span></button>`).join('')}</div></div></section>
       <section><h3 class="rd-h"><b>2</b> Item-Builds</h3>
         <div id="dpsBuilds"></div>
         <div id="dpsPicker"></div></section>
@@ -2216,14 +2217,14 @@ function dpsMount(){
         <div id="dpsTraits"></div>
         <p class="rd-hint">Auf welcher Stufe ist der Trait in deinem Board aktiv? Embleme im Build bringen ihren Trait dazu.</p></section>
       <section><h3 class="rd-h"><b>4</b> Ziel</h3>
-        <div class="rd-costs" id="dpsProf">${DPS_PROF.map(([k,l,hp,ar,mr])=>`<button type="button" class="rd-cost" data-dprof="${k}" title="${dpsN(hp)} Leben · ${ar} Rüstung · ${mr} Magieresistenz">${l}</button>`).join('')}</div>
+        <div class="rd-costs" id="dpsProf">${DPS_PROF.map(([k,l,hp,ar,mr])=>`<button type="button" class="rd-cost" data-dprof="${k}" title="${dpsN(hp)} Leben · ${ar} Rüstung · ${mr} Magieresistenz">${l}<span></span></button>`).join('')}</div>
         <p class="rd-hint" id="dpsProfTxt"></p>
-        <div class="dps-row"><span>Puppen</span><div class="rd-costs" id="dpsN">${[1,2,3].map(n=>`<button type="button" class="rd-cost" data-dn="${n}">${n}</button>`).join('')}</div></div>
+        <div class="dps-row"><span>Puppen</span><div class="rd-costs" id="dpsN">${[1,2,3].map(n=>`<button type="button" class="rd-cost" data-dn="${n}">${n}<span></span></button>`).join('')}</div></div>
         <p class="rd-hint">Mehr Puppen nebeneinander zeigen, wie viel Flächenschaden eine Fähigkeit macht.</p></section>
     </div>
     <div class="card dps-res">
       <div class="dps-head"><h3 class="rd-h">Schaden über die Zeit</h3>
-        <div class="rd-costs" id="dpsMode"><button type="button" class="rd-cost" data-dmode="sum">Gesamtschaden</button><button type="button" class="rd-cost" data-dmode="dps">Schaden pro Sekunde</button></div></div>
+        <div class="rd-costs" id="dpsMode"><button type="button" class="rd-cost" data-dmode="sum">Gesamtschaden<span></span></button><button type="button" class="rd-cost" data-dmode="dps">Schaden pro Sekunde<span></span></button></div></div>
       <div id="dpsChart" class="dps-chart"></div>
       <label class="rd-f dps-at"><span>Auswertung bis Sekunde</span><b id="dpsAtV"></b><input type="range" id="dpsAt" min="1" max="30" value="${dps.at}"></label>
       <div class="dps-table-wrap"><table class="dps-table" id="dpsTable"></table></div>
@@ -2267,7 +2268,7 @@ function dpsSetChamp(n){
 }
 function dpsChamps(){
   $('#dpsCosts').querySelectorAll('[data-dcost]').forEach(b=>b.classList.toggle('on', +b.dataset.dcost===dps.cost));
-  $('#dpsChamps').innerHTML = champions.filter(c=>c.c===dps.cost && dpsOk(c.n)).map(c=>`<button type="button" class="rd-ch${c.n===dps.champ?' on':''}" data-dch="${esc(c.n)}" title="${esc(c.n)}">${avatar(c.n, 44)}<span>${esc(c.n)}</span></button>`).join('');
+  $('#dpsChamps').innerHTML = champions.filter(c=>c.c===dps.cost && dpsOk(c.n)).map(c=>`<button type="button" class="rd-ch${c.n===dps.champ?' on':''}" data-dch="${esc(c.n)}" title="${esc(c.n)}">${avatar(c.n, 44)}<span>${esc(c.n)}</span><span></span></button>`).join('');
 }
 // Traits im DPS-Rechner: die eigenen des Champions plus alles, was Embleme in den Builds dazubringen
 function dpsTraitList(){
@@ -2294,31 +2295,31 @@ function dpsTraits(){
     const k = dpsTraitLv(x), dead = SIM_NOCOMBAT.includes(x.n);
     return `<div class="dps-trait${x.own ? '' : ' em'}">${traitHex(x.n, x.t.bp.length===1 ? 'unique' : 'base', 26)}
       <span class="dps-tn"><b>${esc(x.n)}</b>${x.own ? '' : `<small>Emblem in Build <b>${x.from.join(', ')}</b></small>`}${dead ? '<small>kein Kampfeffekt</small>' : ''}</span>
-      ${dead ? '' : `<div class="dps-tl"><button type="button" class="${k===0 ? 'on' : ''}" data-dtl="${esc(x.n)}:0" data-noi18n>${L('Aus', 'Off')}</button>${x.t.bp.map(b=>`<button type="button" class="${k===+b ? 'on' : ''}" data-dtl="${esc(x.n)}:${b}">${b}</button>`).join('')}</div>`}</div>`;
+      ${dead ? '' : `<div class="dps-tl"><button type="button" class="${k===0 ? 'on' : ''}" data-dtl="${esc(x.n)}:0" data-noi18n>${L('Aus', 'Off')}<span></span></button>${x.t.bp.map(b=>`<button type="button" class="${k===+b ? 'on' : ''}" data-dtl="${esc(x.n)}:${b}">${b}<span></span></button>`).join('')}</div>`}</div>`;
   }).join('') : '<p class="rd-hint" style="margin:0">Wähl zuerst einen Champion.</p>';
 }
 const dpsItemImg = id => { const it = findItem(id); return it ? `<img src="${it.img}" alt="" title="${esc(it.en)}">` : ''; };
 function dpsBuilds(){
   $('#dpsBuilds').innerHTML = dps.builds.map((b, i)=>`<div class="dps-build" style="--bc:${DPS_COL[i]}"><b class="dps-bn">${String.fromCharCode(65 + i)}</b>
     <div class="dps-slots">${[0,1,2].map(s=>{ const id = b[s], open = dps.pick && dps.pick.b===i && dps.pick.s===s;
-      return `<div class="dps-slot${open?' on':''}${id?'':' empty'}"><button type="button" data-dslot="${i}:${s}" aria-label="${id ? esc((findItem(id)||{}).en || '') : 'Item wählen'}">${id ? dpsItemImg(id) : '+'}</button>${id?`<button type="button" class="dps-x" data-dclr="${i}:${s}" aria-label="Entfernen">✕</button>`:''}</div>`; }).join('')}</div>
+      return `<div class="dps-slot${open?' on':''}${id?'':' empty'}"><button type="button" data-dslot="${i}:${s}" aria-label="${id ? esc((findItem(id)||{}).en || '') : 'Item wählen'}">${id ? dpsItemImg(id) : '+'}<span></span></button>${id?`<button type="button" class="dps-x" data-dclr="${i}:${s}" aria-label="Entfernen">✕<span></span></button>`:''}</div>`; }).join('')}</div>
     <span class="dps-bname">${b.length ? b.map(id=>esc((findItem(id)||{}).en || '')).join(' · ') : 'Keine Items'}</span>
-    ${dps.builds.length > 1 ? `<button type="button" class="dps-del" data-ddel="${i}" title="Build entfernen" aria-label="Build entfernen">✕</button>` : ''}</div>`).join('')
-    + (dps.builds.length < 4 ? `<button type="button" class="btn btn-ghost b-btn dps-add" data-dadd>+ Build vergleichen</button>` : '');
+    ${dps.builds.length > 1 ? `<button type="button" class="dps-del" data-ddel="${i}" title="Build entfernen" aria-label="Build entfernen">✕<span></span></button>` : ''}</div>`).join('')
+    + (dps.builds.length < 4 ? `<button type="button" class="btn btn-ghost b-btn dps-add" data-dadd>+ Build vergleichen<span></span></button>` : '');
   dpsPicker();
 }
 function dpsPicker(){
   const box = $('#dpsPicker');
   if(!dps.pick){ box.innerHTML = ''; return; }
-  box.innerHTML = `<div class="dps-pick"><div class="dps-pickbar"><span>Item für Build ${String.fromCharCode(65 + dps.pick.b)}, Slot ${dps.pick.s + 1}</span><button type="button" class="dps-x2" data-dclose aria-label="Schließen">✕</button></div>
-    <div class="dps-pickbar">${DPS_CATS.map(([k,l])=>`<button type="button" class="chip-btn${dps.cat===k?' active':''}" data-dcat="${k}">${l}</button>`).join('')}<input class="input" id="dpsQ" placeholder="Item suchen…" value="${esc(dps.q)}"></div>
+  box.innerHTML = `<div class="dps-pick"><div class="dps-pickbar"><span>Item für Build ${String.fromCharCode(65 + dps.pick.b)}, Slot ${dps.pick.s + 1}</span><button type="button" class="dps-x2" data-dclose aria-label="Schließen">✕<span></span></button></div>
+    <div class="dps-pickbar">${DPS_CATS.map(([k,l])=>`<button type="button" class="chip-btn${dps.cat===k?' active':''}" data-dcat="${k}">${l}<span></span></button>`).join('')}<input class="input" id="dpsQ" placeholder="Item suchen…" value="${esc(dps.q)}"></div>
     <div class="dps-grid" id="dpsGrid"></div></div>`;
   dpsPickerGrid();
 }
 function dpsPickerGrid(){
   const q = dps.q.toLowerCase().trim();
   const list = ITEMS.filter(i=>dpsItemOk(i) && (q || i.cat===dps.cat) && (!q || i.en.toLowerCase().includes(q) || i.de.toLowerCase().includes(q))).sort((a,b)=>a.en.localeCompare(b.en));
-  $('#dpsGrid').innerHTML = list.map(i=>`<button type="button" data-ditem="${i.id}" title="${esc(i.en)}"><img src="${i.img}" alt="" loading="lazy"><span>${esc(i.en)}</span></button>`).join('') || '<p class="note">Kein Item gefunden.</p>';
+  $('#dpsGrid').innerHTML = list.map(i=>`<button type="button" data-ditem="${i.id}" title="${esc(i.en)}"><img src="${i.img}" alt="" loading="lazy"><span>${esc(i.en)}</span><span></span></button>`).join('') || '<p class="note">Kein Item gefunden.</p>';
 }
 function dpsUpdate(){
   $('#dpsStars').querySelectorAll('[data-dstar]').forEach(b=>b.classList.toggle('on', +b.dataset.dstar===dps.star));
@@ -2384,16 +2385,88 @@ function dpsHover(e){
 }
 
 function renderTools(sub, a, b){
-  const key = ['rolldown','tierlist','drops','dps'].includes(sub) ? sub : '';
+  const key = ['rolldown','tierlist','drops','dps','augments'].includes(sub) ? sub : '';
   document.querySelectorAll('#page-tools .tool-view').forEach(v=>v.hidden = v.dataset.tool!==key);
   if(key==='rolldown') rdMount();
   if(key==='tierlist') tmRoute(a, b);
   if(key==='drops') drRender();
+  if(key==='augments') agMount();
   if(key==='dps'){   // ?c=<champion> (z. B. von der Champion-Seite) wählt den Champion vor
     dpsMount();
     const q = qParam('c'), c = q && champBySlug[q];
     if(c && dps.champ !== c.n) dpsSetChamp(c.n);
   }
+}
+/* ================= AUGMENT-VORHERSAGE (/tools/augments) ================= */
+// Input: die Augment-Stufen, die du schon gesehen hast (2-1, 3-2, 4-2). Output: was als Nächstes kommt, Prismatic-Chance, wahrscheinlichste Verläufe.
+// Gleiche Daten wie der Augment-Baum im Cheatsheet (CS.augments.seq); der kleine Baum in der Output-Box zeigt dieselbe Auswahl und lässt sich auch anklicken.
+// Die Auswahl steht in der Adresse (?a=SG), damit man sie teilen kann
+const AG_ST = ['2-1', '3-2', '4-2'];
+const ag = {k:''};
+let agMounted = false;
+const agSum = p => CS.augments.seq.filter(x=>x[0].startsWith(p)).reduce((s, x)=>s + x[1], 0);
+const agName = l => L(CS_AUG[l][1], CS_AUG[l][2]);
+const agHex = l => `<svg class="ag-hx atg-n atg-${l}" viewBox="0 0 24 24" aria-hidden="true"><polygon class="atg-h" points="12,1.5 21.1,6.75 21.1,17.25 12,22.5 2.9,17.25 2.9,6.75"/></svg>`;
+const agPct = p => (p > 0 && p < 1 ? '<1' : fmtNum(Math.round(p * 10) / 10)) + L(' %', '%');
+// Verteilung der Stufe an Position i (0 = 2-1), wenn die bisherigen Augments k sind
+const agDist = (k, i) => { const all = CS.augments.seq.filter(x=>x[0].startsWith(k)), w = all.reduce((s, x)=>s + x[1], 0);
+  return 'SGP'.split('').map(l=>[l, w ? all.filter(x=>x[0][i]===l).reduce((s, x)=>s + x[1], 0) / w * 100 : 0]); };
+function agBars(dist, big){
+  const top = Math.max(...dist.map(d=>d[1]));
+  return `<div class="ag-bars${big ? ' big' : ''}">${dist.map(([l, p])=>`<div class="ag-bar ${CS_AUG[l][0]}${p === top && p > 0 ? ' top' : ''}"><span class="nm">${agHex(l)}${agName(l)}</span><span class="tr"><i style="width:${p.toFixed(1)}%"></i></span><b class="v">${agPct(p)}</b></div>`).join('')}</div>`;
+}
+function agInput(){
+  const k = ag.k;
+  return `<div class="tio-hd"><span class="tio-lbl">Input</span><h2>${L('Deine Augments', 'Your augments')}</h2><button type="button" class="tio-reset" id="agReset" title="${L('Zurücksetzen', 'Reset')}"${k ? '' : ' disabled'}>${csSvg('<path d="M4 4v6h6"/><path d="M20 12a8 8 0 1 1-2.3-5.7L4 10"/>', 2)}<span>${L('Zurücksetzen', 'Reset')}</span></button></div>
+    <p class="tio-hint">${L('Wähl die Stufe jedes Augments, sobald du es siehst. Nochmal klicken nimmt die Auswahl zurück.', 'Pick the tier of each augment as soon as you see it. Click again to undo.')}</p>
+    ${AG_ST.map((st, i)=>`<div class="ag-row ${i < k.length ? 'done' : i === k.length ? 'cur' : 'later'}"><span class="ag-st">${st}</span><span class="ag-n">${i + 1}. Augment</span>
+      <div class="ag-opts">${'SGP'.split('').map(l=>{ const ok = i <= k.length && agSum(k.slice(0, i) + l) > 0;
+        return `<button type="button" class="ag-opt ${CS_AUG[l][0]}${k[i] === l ? ' on' : ''}" data-i="${i}" data-l="${l}"${ok ? '' : ' disabled'}${ok ? '' : ` title="${i > k.length ? L('Erst das Augment davor wählen', 'Pick the augment before first') : L('Kommt nach deinen bisherigen Augments nicht vor', 'Does not occur after your previous augments')}"`}>${agHex(l)}<b>${agName(l)}</b><span></span></button>`; }).join('')}</div></div>`).join('')}`;
+}
+function agOutput(){
+  const k = ag.k, n = k.length, W = agSum(''), wk = agSum(k), seq = CS.augments.seq;
+  const prism = k.includes('P') ? 100 : seq.filter(x=>x[0].startsWith(k) && x[0].includes('P')).reduce((s, x)=>s + x[1], 0) / wk * 100;
+  const stChip = i => `<span class="ag-chip">${AG_ST[i]}</span>`;
+  // Oben die Prismatic-Chance, darunter links das nächste Augment (bzw. die fertige Reihenfolge), rechts „Danach“; der Baum steht darunter
+  let main, after = '';
+  if(n < 3){ main = `<div class="ag-sec"><h3>${L('Nächstes Augment', 'Next augment')} ${stChip(n)}</h3>${agBars(agDist(k, n), true)}</div>`;
+    if(n < 2) after = `<div class="ag-sec"><h3>${L('Danach', 'After that')} ${stChip(n + 1)}</h3>${agBars(agDist(k, n + 1))}</div>`; }
+  else { const rank = [...seq].sort((a, b)=>b[1] - a[1]).findIndex(x=>x[0] === k) + 1;
+    main = `<div class="ag-sec"><h3>${L('Deine Reihenfolge', 'Your order')}</h3><div class="ag-done"><span class="ag-path">${k.split('').map(agHex).join('<i></i>')}</span>
+      <p>${L(`Kommt in <b>${agPct(wk / W * 100)}</b> aller Partien vor – Platz ${rank} von ${seq.length} Reihenfolgen.`, `Happens in <b>${agPct(wk / W * 100)}</b> of all games – rank ${rank} of ${seq.length} orders.`)}</p></div></div>`; }
+  const kpi = `<div class="ag-kpi${k.includes('P') ? ' got' : ''}"><span>${agHex('P')}</span><div><small>${L('Mindestens ein Prismatic in dieser Partie', 'At least one prismatic this game')}</small>
+    <b>${k.includes('P') ? L('Hast du schon', 'Already got one') : agPct(prism)}</b></div></div>`;
+  const paths = n < 3 ? seq.filter(x=>x[0].startsWith(k)).sort((a, b)=>b[1] - a[1]).slice(0, 4) : [];
+  const pathList = paths.length ? `<div class="ag-sec ag-psec"><h3>${L('Wahrscheinlichste Verläufe', 'Most likely orders')}</h3><div class="ag-paths">${paths.map(([s, w])=>`<div class="ag-pr"><span class="ag-path">${s.split('').map((l, i)=>`<span class="${i < n ? 'kn' : ''}">${agHex(l)}</span>`).join('<i></i>')}</span><b>${agPct(w / wk * 100)}</b></div>`).join('')}</div></div>` : '';
+  return `<div class="tio-hd"><span class="tio-lbl out">Output</span><h2>${L('Vorhersage', 'Prediction')}</h2></div>
+    <p class="tio-hint">${n ? L('Nach deinen Augments', 'Based on your augments') + ' ' + k.split('').map((l, i)=>`<b class="ag-t ${CS_AUG[l][0]}">${AG_ST[i]} ${agName(l)}</b>`).join(' · ') : L('Noch nichts eingegeben – so verteilen sich die Stufen in allen Partien.', 'Nothing entered yet – this is how the tiers spread across all games.')}</p>
+    ${kpi}<div class="ag-og${after ? '' : ' one'}"><div class="ag-ol">${main}</div>${after ? `<div class="ag-or">${after}</div>` : ''}</div>${pathList}`;
+}
+function agUpdate(syncTree=true){
+  const app = $('#agApp'); if(!app) return;
+  app.querySelector('.tio-in').innerHTML = agInput();
+  app.querySelector('.ag-ob').innerHTML = agOutput();
+  const svg = app.querySelector('svg.atg');
+  if(svg && syncTree){ svg.dataset.sel = ag.k; svg.dataset.hist = JSON.stringify(ag.k.split('').map((_, i)=>ag.k.slice(0, i))); atgMark(svg, ag.k); }   // Verlauf wie nach Klicks im Baum
+  history.replaceState(history.state, '', location.pathname + (ag.k ? '?a=' + ag.k : '') + location.hash);
+}
+function agMount(){
+  const q = (qParam('a') || '').toUpperCase();
+  if(/^[SGP]{1,3}$/.test(q) && agSum(q) > 0) ag.k = q;
+  const app = $('#agApp'); if(!app) return;
+  if(!agMounted){
+    agMounted = true;
+    if(!CS.augments){ app.innerHTML = ornnSays(L(`Für Set ${TFT_DATA.set} fehlen mir noch die Augment-Chancen.`, `I'm still missing the augment odds for Set ${TFT_DATA.set}.`)); return; }
+    const {tree, legend} = atgTreeHTML();
+    app.innerHTML = `<div class="tio"><section class="card tio-in" aria-label="Input"></section><section class="card tio-out" aria-label="Output"><div class="ag-ob" aria-live="polite"></div>
+      <div class="ag-sec ag-tsec"><h3>${L('Augment-Baum', 'Augment tree')}</h3>${legend}${tree}</div></section></div>`;
+    app.addEventListener('click', e=>{
+      const b = e.target.closest('.ag-opt'); if(b && !b.disabled){ const i = +b.dataset.i, l = b.dataset.l; ag.k = ag.k[i] === l ? ag.k.slice(0, i) : ag.k.slice(0, i) + l; agUpdate(); return; }
+      if(e.target.closest('#agReset')){ ag.k = ''; agUpdate(); }
+    });
+    app.addEventListener('atgsel', e=>{ ag.k = e.detail || ''; agUpdate(false); });   // Klick im Baum
+  }
+  agUpdate();
 }
 let rdMounted = false;
 function rdMount(){
@@ -2403,7 +2476,7 @@ function rdMount(){
   app.innerHTML = `<div class="rd">
     <div class="card rd-in">
       <section><h3 class="rd-h"><b>1</b> Champion</h3>
-        <div class="rd-costs" id="rdCosts">${[1,2,3,4,5].map(c=>`<button type="button" class="rd-cost cb c${c}" data-cost="${c}">${c} Gold</button>`).join('')}</div>
+        <div class="rd-costs" id="rdCosts">${[1,2,3,4,5].map(c=>`<button type="button" class="rd-cost cb c${c}" data-cost="${c}">${c} Gold<span></span></button>`).join('')}</div>
         <div class="rd-champs" id="rdChamps"></div></section>
       <section><h3 class="rd-h"><b>2</b> Level &amp; Gold</h3>
         <label class="rd-f"><span>Level</span><b id="rdLvlV"></b><input type="range" id="rdLvl" min="1" max="11" value="${rd.lvl}"></label>
@@ -2415,7 +2488,7 @@ function rdMount(){
           <label class="rd-n"><span>Andere <span id="rdCostLbl"></span>-Kosten draußen</span><input class="input" type="number" id="rdOther" min="0" value="0"><small>alle anderen Units dieser Kosten auf Boards und Bänken</small></label>
         </div></section>
       <section><h3 class="rd-h"><b>4</b> Ziel</h3>
-        <div class="rd-targets" id="rdTargets">${Array.from({length:RD_MAXK}, (_,i)=>`<button type="button" data-k="${i+1}">${i+1}</button>`).join('')}</div>
+        <div class="rd-targets" id="rdTargets">${Array.from({length:RD_MAXK}, (_,i)=>`<button type="button" data-k="${i+1}">${i+1}<span></span></button>`).join('')}</div>
         <p class="rd-hint">So viele Kopien willst du finden · 3 Kopien = ★★ · 9 Kopien = ★★★</p>
         <label class="rd-chk"><input type="checkbox" id="rdBuy" checked> Treffer kosten Gold <small>(wie im Spiel – ausschalten, um nur die Shops zu zählen)</small></label>
         <label class="rd-n"><span>XP bis zum nächsten Level <small>(optional)</small></span><input class="input" type="number" id="rdXp" min="0" placeholder="z. B. 28"><small>Dann vergleicht der Rechner: jetzt rollen oder erst leveln und dann rollen?</small></label></section>
@@ -2437,7 +2510,7 @@ function rdMount(){
 }
 function rdChamps(){
   $('#rdCosts').querySelectorAll('[data-cost]').forEach(b=>b.classList.toggle('on', +b.dataset.cost===rd.cost));
-  $('#rdChamps').innerHTML = champions.filter(c=>c.c===rd.cost).map(c=>`<button type="button" class="rd-ch${c.n===rd.champ?' on':''}" data-rdc="${esc(c.n)}" title="${esc(c.n)}">${avatar(c.n, 44)}<span>${esc(c.n)}</span></button>`).join('');
+  $('#rdChamps').innerHTML = champions.filter(c=>c.c===rd.cost).map(c=>`<button type="button" class="rd-ch${c.n===rd.champ?' on':''}" data-rdc="${esc(c.n)}" title="${esc(c.n)}">${avatar(c.n, 44)}<span>${esc(c.n)}</span><span></span></button>`).join('');
 }
 function rdUpdate(){
   const bag = SHOP.bag[rd.cost-1], maxOther = bag * (SHOP_DISTINCT[rd.cost-1] - 1);
@@ -2564,15 +2637,15 @@ function tmBuild(){
   $('#tmApp').innerHTML = `<div class="tm">
     <div class="tm-top">
       <label class="tm-title"><span>Tierlist</span><i aria-hidden="true">›</i><input id="tmTitle" maxlength="40" placeholder="Dein Titel" aria-label="Titel der Tierlist"></label>
-      <div class="tm-mode" id="tmMode" role="group" aria-label="Modus"><button type="button" data-mode="view">Ansehen</button><button type="button" data-mode="build">Bearbeiten</button></div>
+      <div class="tm-mode" id="tmMode" role="group" aria-label="Modus"><button type="button" data-mode="view">Ansehen<span></span></button><button type="button" data-mode="build">Bearbeiten<span></span></button></div>
     </div>
-    <div class="tm-shared" id="tmShared" hidden><span>Geteilte Tierlist – zum Ansehen.</span><button type="button" class="btn btn-ghost" id="tmCopyOwn">Als eigene Kopie bearbeiten</button></div>
+    <div class="tm-shared" id="tmShared" hidden><span>Geteilte Tierlist – zum Ansehen.</span><button type="button" class="btn btn-ghost" id="tmCopyOwn">Als eigene Kopie bearbeiten<span></span></button></div>
     <div class="tm-body">
       <div class="tm-rows" id="tmRows"></div>
       <aside class="tm-box" id="tmBox">
         <div class="tm-box-head"><h3>Toolbox</h3>
-          <div class="tm-acts"><button type="button" id="tmAddRow">+ Zeile</button><button type="button" id="tmClear">Alles leeren</button><button type="button" id="tmReset" title="Reihen wieder S, A, B, C, X mit den Standardfarben, ohne Einträge und Titel">Zurücksetzen</button><button type="button" id="tmShare" class="hl">Teilen</button></div></div>
-        <div class="tm-tabs" id="tmTabs">${TM_TABS.map(([k,l])=>`<button type="button" data-tab="${k}">${l}</button>`).join('')}</div>
+          <div class="tm-acts"><button type="button" id="tmAddRow">+ Zeile<span></span></button><button type="button" id="tmClear">Alles leeren<span></span></button><button type="button" id="tmReset" title="Reihen wieder S, A, B, C, X mit den Standardfarben, ohne Einträge und Titel">Zurücksetzen<span></span></button><button type="button" id="tmShare" class="hl">Teilen<span></span></button></div></div>
+        <div class="tm-tabs" id="tmTabs">${TM_TABS.map(([k,l])=>`<button type="button" data-tab="${k}">${l}<span></span></button>`).join('')}</div>
         <input class="input" id="tmSearch" placeholder="Suchen …" aria-label="Suchen">
         <div class="tm-sorts" id="tmSorts"></div>
         <div class="tm-pool tm-drop" id="tmPool" data-r="-1"></div>
@@ -2644,8 +2717,8 @@ function tmRender(){
   $('#tmShared').hidden = !tmShared;
   const ti = $('#tmTitle'); if(document.activeElement !== ti) ti.value = tm.title || ''; ti.readOnly = !build;
   $('#tmRows').innerHTML = tm.rows.map((r, i)=>`<div class="tm-row" data-r="${i}" style="--rc:${TM_COLORS[r.c]}">
-      <div class="tm-label"><button type="button" data-act="name" title="Umbenennen" ${build?'':'tabindex="-1"'}>${esc(r.l)}</button>
-        ${build ? `<div class="tm-ctl"><button type="button" data-act="up" title="Nach oben" aria-label="Nach oben">▲</button><button type="button" data-act="color" title="Farbe wechseln" aria-label="Farbe wechseln">●</button><button type="button" data-act="down" title="Nach unten" aria-label="Nach unten">▼</button><button type="button" data-act="del" title="Zeile löschen" aria-label="Zeile löschen">✕</button></div>` : ''}</div>
+      <div class="tm-label"><button type="button" data-act="name" title="Umbenennen" ${build?'':'tabindex="-1"'}>${esc(r.l)}<span></span></button>
+        ${build ? `<div class="tm-ctl"><button type="button" data-act="up" title="Nach oben" aria-label="Nach oben">▲<span></span></button><button type="button" data-act="color" title="Farbe wechseln" aria-label="Farbe wechseln">●<span></span></button><button type="button" data-act="down" title="Nach unten" aria-label="Nach unten">▼<span></span></button><button type="button" data-act="del" title="Zeile löschen" aria-label="Zeile löschen">✕<span></span></button></div>` : ''}</div>
       <div class="tm-drop" data-r="${i}">${r.items.map(tmTile).join('') || (build ? '<span class="tm-empty">Hierher ziehen</span>' : '')}</div>
     </div>`).join('');
   tmRenderPool();
@@ -2655,7 +2728,7 @@ function tmRenderPool(){
   $('#tmTabs').querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on', b.dataset.tab===tmTab));
   $('#tmSorts').hidden = TM_SORTS[tmTab].length < 2;   // nur eine Sortierung: keine Knöpfe nötig
   // Kosten-Knöpfe mit den Standard-Kostenfarben der Units (wie im Rolldown- und DPS-Rechner)
-  $('#tmSorts').innerHTML = TM_SORTS[tmTab].map(([k,l])=>`<button type="button" data-sort="${k}" class="${tmSort[tmTab]===k?'on':''}${tmTab==='c' && /^\d$/.test(k) ? ' cb c' + k : ''}">${l}</button>`).join('');
+  $('#tmSorts').innerHTML = TM_SORTS[tmTab].map(([k,l])=>`<button type="button" data-sort="${k}" class="${tmSort[tmTab]===k?'on':''}${tmTab==='c' && /^\d$/.test(k) ? ' cb c' + k : ''}">${l}<span></span></button>`).join('');
   const q = $('#tmSearch').value.toLowerCase().trim(), used = tmUsed(), s = tmSort[tmTab];
   let list;
   if(tmTab==='c'){
@@ -2721,14 +2794,14 @@ function drRender(){
   const nextDist = nextS <= 4 ? drRest(nextS, 0) : null;
   const stageName = DR_STAGES.find(x=>x[0]===s)[1];
   // Stage-Leiste
-  const tabs = DR_STAGES.map(([k, l, sub])=>`<button type="button" class="dr-tab${k===s ? ' on' : ''}" data-drstage="${k}"><b>${l}</b><small>${sub}</small>${k <= 4 && (dr.drops[k]||[]).length ? `<i>${dr.drops[k].length}</i>` : ''}</button>`).join('');
+  const tabs = DR_STAGES.map(([k, l, sub])=>`<button type="button" class="dr-tab${k===s ? ' on' : ''}" data-drstage="${k}"><b>${l}</b><small>${sub}</small>${k <= 4 && (dr.drops[k]||[]).length ? `<i>${dr.drops[k].length}</i>` : ''}<span></span></button>`).join('');
   // Eingabe
   const pickIds = dr.src==='drop' ? DR_COMPS : COMPONENTS;
   const pick = late && dr.src==='drop' ? `<p class="dr-note">${esc(LOOT.late)}</p>`
     : `<div class="dr-pick">${pickIds.map(id=>{ const it = itemById[id]; const left = dr.src==='drop' ? bag[id] : null;
-        return `<button type="button" class="dr-c${left===0 ? ' empty' : ''}" data-dradd="${id}" title="${esc(it.de)} hinzufügen">${drIcon(id, 44)}<span>${esc(it.de)}</span>${left != null ? `<em>${left}× im Pool</em>` : ''}</button>`; }).join('')}</div>`;
-  const got = [1,2,3,4].map(k=>{ const l = dr.drops[k]||[]; return `<div class="dr-row${k===s ? ' on' : ''}"><span>${DR_STAGES[k-1][1]}</span><div>${l.length ? l.map((id, i)=>`<button type="button" class="dr-chip" data-drdel="${k}:${i}" title="Entfernen">${drIcon(id, 28)}</button>`).join('') : '<small>–</small>'}</div></div>`; }).join('')
-    + `<div class="dr-row"><span>Sonstiges</span><div>${dr.extra.length ? dr.extra.map((id, i)=>`<button type="button" class="dr-chip" data-drdel="x:${i}" title="Entfernen">${drIcon(id, 28)}</button>`).join('') : '<small>Karussell, Amboss, Augments …</small>'}</div></div>`;
+        return `<button type="button" class="dr-c${left===0 ? ' empty' : ''}" data-dradd="${id}" title="${esc(it.de)} hinzufügen">${drIcon(id, 44)}<span>${esc(it.de)}</span>${left != null ? `<em>${left}× im Pool</em>` : ''}<span></span></button>`; }).join('')}</div>`;
+  const got = [1,2,3,4].map(k=>{ const l = dr.drops[k]||[]; return `<div class="dr-row${k===s ? ' on' : ''}"><span>${DR_STAGES[k-1][1]}</span><div>${l.length ? l.map((id, i)=>`<button type="button" class="dr-chip" data-drdel="${k}:${i}" title="Entfernen">${drIcon(id, 28)}<span></span></button>`).join('') : '<small>–</small>'}</div></div>`; }).join('')
+    + `<div class="dr-row"><span>Sonstiges</span><div>${dr.extra.length ? dr.extra.map((id, i)=>`<button type="button" class="dr-chip" data-drdel="x:${i}" title="Entfernen">${drIcon(id, 28)}<span></span></button>`).join('') : '<small>Karussell, Amboss, Augments …</small>'}</div></div>`;
   // Wahrscheinlichkeiten
   const rows = DR_COMPS.map(id=>{
     const it = itemById[id], c = bag[id];
@@ -2772,18 +2845,18 @@ function drRender(){
   const orbTbl = o => o ? `<div class="dr-orbtbl"><h4>${esc(o.label)} <small>${esc(o.note)} · Wert ${esc(o.wert)}</small></h4><table class="dr-table small"><tbody>${o.items.map(([t, p])=>`<tr><td>${esc(t)}</td><td>${fmtNum(p)} %</td></tr>`).join('')}</tbody></table></div>` : '';
   app.innerHTML = `<div class="dr">
     <div class="dr-top"><div class="dr-tabs">${tabs}</div>
-      <button class="dr-new" type="button" data-drreset title="Alle Eingaben löschen und mit einem neuen Spiel starten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Neues Spiel</button></div>
+      <button class="dr-new" type="button" data-drreset title="Alle Eingaben löschen und mit einem neuen Spiel starten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Neues Spiel<span></span></button></div>
     <div class="dr-grid">
       <section class="card dr-in">
         <div class="dr-head"><h3>Was hast du in ${esc(stageName)} bekommen?</h3>
-          <div class="bp-pills"><button type="button" data-drsrc="drop" class="${dr.src==='drop' ? 'on' : ''}">Creep-Drop</button><button type="button" data-drsrc="extra" class="${dr.src==='extra' ? 'on' : ''}">Sonstiges</button></div></div>
+          <div class="bp-pills"><button type="button" data-drsrc="drop" class="${dr.src==='drop' ? 'on' : ''}">Creep-Drop<span></span></button><button type="button" data-drsrc="extra" class="${dr.src==='extra' ? 'on' : ''}">Sonstiges<span></span></button></div></div>
         <p class="dr-note">${dr.src==='drop' ? 'Klick die Komponenten an, die gerade gedroppt sind – sie werden aus dem Item-Pool genommen.' : 'Komponenten aus Karussell, Ambossen oder Augments: zählen für deine Items, aber nicht für den Item-Pool.'}</p>
         ${pick}
         ${warn ? '<p class="dr-warn">Eine Komponente ist öfter gedroppt, als laut Pool-Regel möglich. Stell unten den Start-Pool auf „2 von jeder“ um, falls das in deinem Spiel so war.</p>' : ''}
         <div class="dr-got">${got}</div>
         <div class="dr-actions">
-          ${s < 5 ? `<button class="btn btn-primary" type="button" data-drstage="${s+1}">Weiter zu ${DR_STAGES[s][1]} →</button>` : ''}
-          <button class="b-tbtn" type="button" data-drundo>Letzten entfernen</button>
+          ${s < 5 ? `<button class="btn btn-primary" type="button" data-drstage="${s+1}">Weiter zu ${DR_STAGES[s][1]} →<span></span></button>` : ''}
+          <button class="b-tbtn" type="button" data-drundo>Letzten entfernen<span></span></button>
         </div>
         <label class="dr-set">Start-Pool:
           <select class="input" id="drStart"><option value="1"${dr.start===1 ? ' selected' : ''}>1 von jeder Komponente – Stage 1 ohne Doppelte</option><option value="2"${dr.start===2 ? ' selected' : ''}>2 von jeder Komponente</option></select>
@@ -2799,7 +2872,7 @@ function drRender(){
       <section class="card"><h3>Beute in ${esc(stageName)}</h3>${loot}</section>
       <section class="card"><h3>Deine Komponenten</h3>
         <div class="dr-have">${mine.length ? Object.entries(have).map(([id, k])=>`<span>${drIcon(id, 34)}${k > 1 ? `<b>×${k}</b>` : ''}</span>`).join('') : '<small class="dr-note">Noch keine.</small>'}</div>
-        ${craft.length ? `<h4 class="dr-h4">Daraus baubar</h4><div class="dr-craft">${craft.map(r=>`<button type="button" data-item="${r.id}" title="${esc(r.en)}">${itImg(r, 38)}</button>`).join('')}</div>` : ''}
+        ${craft.length ? `<h4 class="dr-h4">Daraus baubar</h4><div class="dr-craft">${craft.map(r=>`<button type="button" data-item="${r.id}" title="${esc(r.en)}">${itImg(r, 38)}<span></span></button>`).join('')}</div>` : ''}
       </section>
     </div>
     <details class="card dr-more"><summary>Orb-Inhalte (Gold &amp; Prismatic) und Quelle</summary>
@@ -2847,9 +2920,9 @@ if(EN) (()=>{ const names = Object.keys(NAME_IDX).sort((a,b)=>b.length - a.lengt
   PATCHES.forEach(p=>(p.notes||[]).forEach(s=>(s.ch||[]).forEach(r=>{ if(r[0] || !r[1]) return; const l = nameKey(r[1]), n = names.find(x=>l.startsWith(x + ' ')); if(n){ r[0] = r[1].slice(0, n.length); r[1] = r[1].slice(n.length).trim(); } }))); })();
 function patchIcon(subject){
   const m = NAME_IDX[nameKey(subject)]; if(!m) return '';
-  if(m.ty==='c') return `<button class="pn-ic" data-champ="${esc(m.k)}" type="button">${avatar(m.k, 34)}</button>`;
+  if(m.ty==='c') return `<button class="pn-ic" data-champ="${esc(m.k)}" type="button">${avatar(m.k, 34)}<span></span></button>`;
   if(m.ty==='t') return `<span class="pn-ic">${traitHex(m.k, 'base', 30)}</span>`;
-  if(m.ty==='i'){ const it = itemById[m.k]; return it ? `<button class="pn-ic" data-item="${esc(it.id)}" type="button"><img src="${it.img}" alt="" loading="lazy"></button>` : ''; }
+  if(m.ty==='i'){ const it = itemById[m.k]; return it ? `<button class="pn-ic" data-item="${esc(it.id)}" type="button"><img src="${it.img}" alt="" loading="lazy"><span></span></button>` : ''; }
   const a = AUG_BY[m.k]; return a ? `<span class="pn-ic"><img src="${augImg(a)}" alt="" loading="lazy"></span>` : '';
 }
 const grpLabel = g => { const s = String(g||''); if(/PATCH-AKTUALISIERUNG|MID-PATCH UPDATE/i.test(s)) return 'B-Patch' + (s.includes('·') ? ' · ' + secLabel(s.split('·').slice(1).join('·').trim()) : ''); return secLabel(s).replace(/\bGrosse\b/g, 'Große'); };
@@ -3002,6 +3075,33 @@ const csSpatPan = () => { const a = itemById.DA_Component_Spatula, b = itemById.
 const csAnvil = (k, n) => csIc(TI('anvil-' + k), n, L(CS_ANVIL[k][0], CS_ANVIL[k][1]), 'anvil a-' + k);// Encounter-Champions: Bild aus den Set-Daten, sonst das LoL-Porträt von Data Dragon (fehlt es, bleibt das Feld leer)
 const CS_DD = {LeBlanc:'Leblanc', "Kai'Sa":'Kaisa', "Rek'Sai":'RekSai', "Kha'Zix":'Khazix', "Cho'Gath":'Chogath', "Vel'Koz":'Velkoz', "Kog'Maw":'KogMaw', Wukong:'MonkeyKing'};
 const csChampPic = n => n ? (champImg(n) || `https://ddragon.leagueoflegends.com/cdn/16.20.1/img/champion/${CS_DD[n] || n.replace(/[^A-Za-z]/g, '')}.png`) : '';
+// Augment-Baum (Cheatsheet und Augment-Vorhersage): Start → 2-1 → 3-2 → 4-2 mit den Chancen aus CS.augments
+function atgTreeHTML(){
+  const seq = CS.augments.seq, W = seq.reduce((s, x)=>s + x[1], 0), sum = p => seq.filter(x=>x[0].startsWith(p)).reduce((s, x)=>s + x[1], 0);
+  // Baum: Start → 2-1 → 3-2 → 4-2. An den Linien die Chance, wenn es bis dahin so kam; unter den Blättern die Chance für genau diese Reihenfolge.
+  // Klick auf ein Augment (2-1, dann 3-2) zeigt nur noch diesen Ast und rechnet die Blatt-Prozente auf diese Lage um (Vorhersage)
+  const leaves = [], gap = 1.6;   // zusätzlicher Abstand zwischen den drei Ästen (in Blattbreiten)
+  for(const p1 of 'SGP'){ if(!sum(p1)) continue; if(leaves.length) leaves.push(null);
+    for(const p2 of 'SGP') for(const p3 of 'SGP'){ const x = seq.find(s=>s[0]===p1 + p2 + p3); if(x) leaves.push(x[0]); } }
+  const slots = leaves.length + (gap - 1) * leaves.filter(v=>v===null).length, VW = 1000, padL = 84, padR = 26, step = (VW - padL - padR) / (slots - 1);
+  const X = {}; let pos = 0; leaves.forEach(k=>{ if(k===null){ pos += gap; return; } X[k] = padL + pos * step; pos++; });
+  const avg = ks => ks.reduce((s, k)=>s + X[k], 0) / ks.length;
+  for(const len of [2, 1]) seq.map(s=>s[0].slice(0, len)).forEach(p=>{ if(X[p]===undefined) X[p] = avg(Object.keys(X).filter(k=>k.length===len + 1 && k.startsWith(p))); });
+  X[''] = avg(['S','G','P'].filter(k=>X[k]!==undefined));
+  const Y = [44, 160, 280, 398], R = [34, 27, 24, 22], VH = 452;   // flach und breit
+  const hex = (cx, cy, r) => [0,1,2,3,4,5].map(i=>{ const an = Math.PI / 180 * (60 * i - 90); return (cx + r * Math.cos(an)).toFixed(1) + ',' + (cy + r * Math.sin(an)).toFixed(1); }).join(' ');
+  const fmtP = p => (p > 0 && p < 1 ? '<1' : Math.round(p)) + '%';   // ganze Prozent wie bei Little Buddy Bot
+  const node = k => { const lv = k.length, l = k.slice(-1) || 'R', cx = X[k], cy = Y[lv], r = R[lv], w = k ? sum(k) : W;
+    return `<g class="atg-n atg-${l}${lv===3 ? ' atg-leaf' : ''}${lv && lv < 3 ? ' atg-pick' : ''}" data-k="${k}" data-w="${w}"><polygon class="atg-h" points="${hex(cx, cy, r)}"/><polygon class="atg-i" points="${hex(cx, cy, r - 5)}"/><text x="${cx}" y="${cy}" dy=".35em">${k ? l : 'Start'}</text>${lv===3 ? `<text class="atg-p" x="${cx}" y="${cy + r + 27}" data-t="${fmtP(w / W * 100)}">${fmtP(w / W * 100)}</text>` : ''}</g>`; };
+  const keys = [''].concat([1, 2, 3].flatMap(len=>[...new Set(seq.map(s=>s[0].slice(0, len)))]).filter(k=>X[k]!==undefined));
+  const edge = k => { const p = k.slice(0, -1), lv = k.length, x1 = X[p], y1 = Y[lv - 1] + R[lv - 1], x2 = X[k], y2 = Y[lv] - R[lv], pc = sum(k) / (p ? sum(p) : W) * 100;
+    const mx = x1 + (x2 - x1) * .5, my = y1 + (y2 - y1) * .5, dx = Math.abs(x2 - x1) < 2 ? 0 : (x2 < x1 ? -16 : 16);
+    return `<g class="atg-e" data-k="${k}"><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><text x="${mx + dx}" y="${my}" dy=".35em">${Math.round(pc)}</text></g>`; };
+  const rows = [['2-1', 1], ['3-2', 2], ['4-2', 3]].map(([st, lv])=>`<g class="atg-row"><rect x="0" y="${Y[lv] - 15}" width="58" height="30" rx="8"/><text x="29" y="${Y[lv]}" dy=".35em">${st}</text></g>`).join('');
+  const tree = `<svg class="atg" viewBox="0 0 ${VW} ${VH}" role="img" aria-label="${L('Augment-Baum', 'Augment tree')}" data-tw="${W}"><defs><linearGradient id="atgP" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset=".5" stop-color="#818cf8"/><stop offset="1" stop-color="#f0abfc"/></linearGradient></defs>${rows}${keys.filter(k=>k).map(edge).join('')}${keys.map(node).join('')}</svg>`;
+  const legend = `<div class="atg-leg">${[['S', L('Silber', 'Silver')], ['G', 'Gold'], ['P', L('Prismatisch', 'Prismatic')]].map(([l, n])=>`<span><svg viewBox="0 0 24 24" class="atg-n atg-${l}"><polygon class="atg-h" points="${hex(12, 12, 10)}"/></svg>${n}</span>`).join('')}<small>${L('Klick dein Augment auf 2-1 und 3-2 an – der Baum zeigt, was als Nächstes kommt. Alle Zahlen in %.', 'Click your augment on 2-1 and 3-2 – the tree shows what comes next. All numbers in %.')}</small></div>`;
+  return {tree, legend};
+}
 function csSections(){
   const out = [];
   const pctI = p => Math.round(p) + L(' %', '%');   // ganze Prozent für bedingte Chancen
@@ -3030,30 +3130,9 @@ function csSections(){
       cells += `<div class="csa-c csa-1 ${CS_AUG[a][0]}" style="grid-row:${ra} / ${row}">${tier(a, wa / W * 100)}</div>`; }
     const prism = seq.filter(x=>x[0].includes('P')).reduce((s, x)=>s + x[1], 0) / W * 100;
     const headRow = [[L('1. Augment', '1st augment'), '2-1'], [L('2. Augment', '2nd augment'), '3-2'], [L('3. Augment', '3rd augment'), '4-2'], [L('Chance', 'Odds'), '']].map(([t, s], i)=>`<div class="csa-h" style="grid-column:${i + 1}">${t}${s ? ` <small>${s}</small>` : ''}</div>`).join('');
-    // Baum: Start → 2-1 → 3-2 → 4-2. An den Linien die Chance, wenn es bis dahin so kam; unter den Blättern die Chance für genau diese Reihenfolge.
-    // Klick auf ein Augment (2-1, dann 3-2) zeigt nur noch diesen Ast und rechnet die Blatt-Prozente auf diese Lage um (Vorhersage)
-    const leaves = [], gap = 1.6;   // zusätzlicher Abstand zwischen den drei Ästen (in Blattbreiten)
-    for(const p1 of 'SGP'){ if(!sum(p1)) continue; if(leaves.length) leaves.push(null);
-      for(const p2 of 'SGP') for(const p3 of 'SGP'){ const x = seq.find(s=>s[0]===p1 + p2 + p3); if(x) leaves.push(x[0]); } }
-    const slots = leaves.length + (gap - 1) * leaves.filter(v=>v===null).length, VW = 1000, padL = 84, padR = 26, step = (VW - padL - padR) / (slots - 1);
-    const X = {}; let pos = 0; leaves.forEach(k=>{ if(k===null){ pos += gap; return; } X[k] = padL + pos * step; pos++; });
-    const avg = ks => ks.reduce((s, k)=>s + X[k], 0) / ks.length;
-    for(const len of [2, 1]) seq.map(s=>s[0].slice(0, len)).forEach(p=>{ if(X[p]===undefined) X[p] = avg(Object.keys(X).filter(k=>k.length===len + 1 && k.startsWith(p))); });
-    X[''] = avg(['S','G','P'].filter(k=>X[k]!==undefined));
-    const Y = [44, 160, 280, 398], R = [34, 27, 24, 22], VH = 452;   // flach und breit
-    const hex = (cx, cy, r) => [0,1,2,3,4,5].map(i=>{ const an = Math.PI / 180 * (60 * i - 90); return (cx + r * Math.cos(an)).toFixed(1) + ',' + (cy + r * Math.sin(an)).toFixed(1); }).join(' ');
-    const fmtP = p => (p > 0 && p < 1 ? '<1' : Math.round(p)) + '%';   // ganze Prozent wie bei Little Buddy Bot
-    const node = k => { const lv = k.length, l = k.slice(-1) || 'R', cx = X[k], cy = Y[lv], r = R[lv], w = k ? sum(k) : W;
-      return `<g class="atg-n atg-${l}${lv===3 ? ' atg-leaf' : ''}${lv && lv < 3 ? ' atg-pick' : ''}" data-k="${k}" data-w="${w}"><polygon class="atg-h" points="${hex(cx, cy, r)}"/><polygon class="atg-i" points="${hex(cx, cy, r - 5)}"/><text x="${cx}" y="${cy}" dy=".35em">${k ? l : 'Start'}</text>${lv===3 ? `<text class="atg-p" x="${cx}" y="${cy + r + 27}" data-t="${fmtP(w / W * 100)}">${fmtP(w / W * 100)}</text>` : ''}</g>`; };
-    const keys = [''].concat([1, 2, 3].flatMap(len=>[...new Set(seq.map(s=>s[0].slice(0, len)))]).filter(k=>X[k]!==undefined));
-    const edge = k => { const p = k.slice(0, -1), lv = k.length, x1 = X[p], y1 = Y[lv - 1] + R[lv - 1], x2 = X[k], y2 = Y[lv] - R[lv], pc = sum(k) / (p ? sum(p) : W) * 100;
-      const mx = x1 + (x2 - x1) * .5, my = y1 + (y2 - y1) * .5, dx = Math.abs(x2 - x1) < 2 ? 0 : (x2 < x1 ? -16 : 16);
-      return `<g class="atg-e" data-k="${k}"><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><text x="${mx + dx}" y="${my}" dy=".35em">${Math.round(pc)}</text></g>`; };
-    const rows = [['2-1', 1], ['3-2', 2], ['4-2', 3]].map(([st, lv])=>`<g class="atg-row"><rect x="0" y="${Y[lv] - 15}" width="58" height="30" rx="8"/><text x="29" y="${Y[lv]}" dy=".35em">${st}</text></g>`).join('');
-    const tree = `<svg class="atg" viewBox="0 0 ${VW} ${VH}" role="img" aria-label="${L('Augment-Baum', 'Augment tree')}" data-tw="${W}"><defs><linearGradient id="atgP" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset=".5" stop-color="#818cf8"/><stop offset="1" stop-color="#f0abfc"/></linearGradient></defs>${rows}${keys.filter(k=>k).map(edge).join('')}${keys.map(node).join('')}</svg>`;
-    const legend = `<div class="atg-leg">${[['S', L('Silber', 'Silver')], ['G', 'Gold'], ['P', L('Prismatisch', 'Prismatic')]].map(([l, n])=>`<span><svg viewBox="0 0 24 24" class="atg-n atg-${l}"><polygon class="atg-h" points="${hex(12, 12, 10)}"/></svg>${n}</span>`).join('')}<small>${L('Klick dein Augment auf 2-1 und 3-2 an – der Baum zeigt, was als Nächstes kommt. Alle Zahlen in %.', 'Click your augment on 2-1 and 3-2 – the tree shows what comes next. All numbers in %.')}</small></div>`;
+    const {tree, legend} = atgTreeHTML();
     out.push(['augments', L('Augment-Stufen (2-1 · 3-2 · 4-2)', 'Augment tiers (2-1 · 3-2 · 4-2)'), `<div class="cst-tree">${legend}${tree}</div><div class="cst-table cs-wrap"><div class="csa">${headRow}${cells}</div></div>
-      <p class="cs-note cs-after">${L('Mindestens ein Prismatic pro Partie', 'At least one prismatic per game')}: <b>${csPct(prism)}</b></p>` + csSrc(CS.augments.src)]);
+      <p class="cs-note cs-after">${L('Mindestens ein Prismatic pro Partie', 'At least one prismatic per game')}: <b>${csPct(prism)}</b> · ${L('Für deine Partie:', 'For your game:')} <a href="/tools/augments">${L('Augment-Vorhersage', 'Augment prediction')} →</a></p>` + csSrc(CS.augments.src)]);
   }
   if(ENCS.length){
     const rows = [...ENCS].sort((a,b)=>b.w - a.w).map(e=>{ const src = csChampPic(e.ch);
@@ -3255,7 +3334,7 @@ function csTraitBody(t){
     const pane = b => `<div class="cs-wrap"><table class="cs-table ctr-bt"><thead><tr><th>${L('Kosten', 'Cost')}</th><th>${L('Rolle', 'Role')}</th>${[1, 2, 3].map(s=>`<th>${star(s)}</th>`).join('')}</tr></thead><tbody>
       ${t.grid.map((roles, c)=>roles.map((bps, r)=>`<tr class="${r ? '' : 'top'}">${r ? '' : `<td rowspan="3" class="ctr-cost">${csIc(TI('champ-' + (c + 1)), '', L(`${c + 1}-Kosten`, `${c + 1}-cost`), 'chorb')}</td>`}<td class="ctr-role k${c + 1}">${ROLE[r][0]}</td>
         ${bps[b].map(([v1, v2])=>`<td><span class="ctr-v">${v1}${ROLE[r][1] === 'armr' ? '' : '%'} ${csSt(ROLE[r][1])}</span><span class="ctr-v">${ROLE[r][0] === 'AP' ? '+' : ''}${v2}${r === 1 ? '%' : ''} ${csSt(ROLE[r][2])}</span></td>`).join('')}</tr>`).join('')).join('')}</tbody></table></div>`;
-    return `<div class="csp-tabs" role="tablist">${[2, 4, 6].map((b, i)=>`<button type="button" role="tab" class="${i ? '' : 'on'}" data-cstab="${i}" aria-selected="${!i}">${b} Blackthorn</button>`).join('')}</div>
+    return `<div class="csp-tabs" role="tablist">${[2, 4, 6].map((b, i)=>`<button type="button" role="tab" class="${i ? '' : 'on'}" data-cstab="${i}" aria-selected="${!i}">${b} Blackthorn<span></span></button>`).join('')}</div>
       ${[0, 1, 2].map(b=>`<div class="csp-pane"${b ? ' hidden' : ''}>${pane(b)}</div>`).join('')}`;
   }
   if(t.type==='fae'){
@@ -3344,10 +3423,10 @@ function csHome(secs){
   const has = id=>secs.some(s=>s[0]===id);
   const tabs = [[CS_PRIO[0], CS_PRIO[1], ['Priority', 'Priority']], ...CS_GROUPS.map(([g, ids])=>[[g[0], g[1]], ids, [g[0], g[1]]])].map(([n, ids, k])=>[n, ids.filter(has), k]).filter(([, ids])=>ids.length);   // k = Kurzname fürs Handy
   return `<div class="cs-home">
-    <form class="cs-hs" id="csHeroForm" role="search">${csSvg('<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>', 2)}<input id="csHeroQ" type="search" placeholder="${L('Was möchtest du nachschlagen?', 'What do you want to look up?')}" autocomplete="off" aria-label="${L('Cheatsheet suchen', 'Search cheatsheets')}"><button type="submit" aria-label="${L('Öffnen', 'Open')}">${csSvg('<path d="M5 12h14M13 6l6 6-6 6"/>', 2.2)}</button></form>
-    <div class="cs-tabs" role="tablist">${tabs.map(([n, ids, k], i)=>`<button type="button" role="tab" class="cs-tab${i ? '' : ' on'}${i ? '' : ' prio'}" data-cstg="${i}" aria-selected="${!i}">${csSvg(CS_TAB_IC[i], 2)}<span class="cs-tl">${L(n[0], n[1])}</span><span class="cs-ts">${L(k[0], k[1])}</span><small>(${ids.length})</small></button>`).join('')}</div>
+    <form class="cs-hs" id="csHeroForm" role="search">${csSvg('<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>', 2)}<input id="csHeroQ" type="search" placeholder="${L('Was möchtest du nachschlagen?', 'What do you want to look up?')}" autocomplete="off" aria-label="${L('Cheatsheet suchen', 'Search cheatsheets')}"><button type="submit" aria-label="${L('Öffnen', 'Open')}">${csSvg('<path d="M5 12h14M13 6l6 6-6 6"/>', 2.2)}<span></span></button></form>
+    <div class="cs-tabs" role="tablist">${tabs.map(([n, ids, k], i)=>`<button type="button" role="tab" class="cs-tab${i ? '' : ' on'}${i ? '' : ' prio'}" data-cstg="${i}" aria-selected="${!i}">${csSvg(CS_TAB_IC[i], 2)}<span class="cs-tl">${L(n[0], n[1])}</span><span class="cs-ts">${L(k[0], k[1])}</span><small>(${ids.length})</small><span></span></button>`).join('')}</div>
     <div class="cs-panes">${tabs.map(([n, ids], i)=>`<div class="cs-pane" data-cstg="${i}"${i ? ' hidden' : ''}><div class="cs-cards">${ids.map((id, k)=>csCard(id, k)).join('')}</div>
-      ${ids.length > 8 ? `<div class="cs-more-w${ids.length === 9 ? ' n9' : ''}"><button type="button" class="cs-more">${L(`Alle ${ids.length} ${n[0]} ansehen`, `View all ${ids.length} ${n[1]}`)}${csSvg('<path d="M5 12h14M13 6l6 6-6 6"/>', 2.2)}</button></div>` : ''}</div>`).join('')}</div>
+      ${ids.length > 8 ? `<div class="cs-more-w${ids.length === 9 ? ' n9' : ''}"><button type="button" class="cs-more">${L(`Alle ${ids.length} ${n[0]} ansehen`, `View all ${ids.length} ${n[1]}`)}${csSvg('<path d="M5 12h14M13 6l6 6-6 6"/>', 2.2)}<span></span></button></div>` : ''}</div>`).join('')}</div>
     <div class="cs-res" id="csRes" hidden><div class="cs-cards"></div><p class="cs-nores">${L('Nichts gefunden – versuch es mit einem anderen Wort.', 'Nothing found – try another word.')}</p></div>
   </div>`;
 }
@@ -3379,7 +3458,7 @@ const csHex = '<svg class="csf-hex" viewBox="0 0 24 24" aria-hidden="true"><path
 function csPanel([id, t, html], flat){
   const m = CS_META[id] || {s:[t, t], h:['', '']};
   const body = typeof html === 'string' ? html
-    : `<div class="csp-tabs" role="tablist">${html.tabs.map(([l, ic], i)=>`<button type="button" role="tab" class="${i ? '' : 'on'}" data-cstab="${i}" aria-selected="${!i}">${csSvg(ic, 2)}${l}</button>`).join('')}</div>${html.tabs.map(([, , h], i)=>`<div class="csp-pane"${i ? ' hidden' : ''}>${h}</div>`).join('')}`;
+    : `<div class="csp-tabs" role="tablist">${html.tabs.map(([l, ic], i)=>`<button type="button" role="tab" class="${i ? '' : 'on'}" data-cstab="${i}" aria-selected="${!i}">${csSvg(ic, 2)}${l}<span></span></button>`).join('')}</div>${html.tabs.map(([, , h], i)=>`<div class="csp-pane"${i ? ' hidden' : ''}>${h}</div>`).join('')}`;
   const tip = m.tip ? m.tip() : '';
   const i = flat.indexOf(id), rel = [flat[(i + 1) % flat.length], flat[(i + 2) % flat.length]].filter(x=>x && x!==id);
   const cards = rel.map(r=>{ const rm = CS_META[r] || {}, pv = csPreview(r); return `<a class="csp-card" href="/cheatsheet/${r}"><div class="csp-card-h">${csIco(r)}<div><b>${csName(r)}</b><small>${rm.h ? L(rm.h[0], rm.h[1]) : ''}</small></div></div>${pv ? `<div class="csp-prev">${pv}</div>` : ''}<span class="csp-more">${L('Ansehen', 'View')} →</span></a>`; }).join('');
@@ -3437,7 +3516,7 @@ function renderCheats(sub){
     const side = CS_GROUPS.map(([g, ids], gi)=>{
       ids = ids.filter(id=>secs.some(s=>s[0]===id));
       const links = ids.map(id=>`<a class="cs-tile" href="/cheatsheet/${id}" data-cs="${id}"><span class="cs-ti">${csIco(id)}</span><span>${csName(id)}</span></a>`).join('');
-      return links ? `<div class="cs-group closed" data-g="${gi}"><button type="button" class="cs-gh" aria-expanded="false"><span class="cs-gi">${csSvg(GIC[gi], 1.9)}</span><span class="cs-gt">${L(g[0], g[1])}</span><span class="cs-gn">${ids.length}</span>${csSvg('<path d="M6 9l6 6 6-6"/>', 2.4)}</button><div class="cs-menu">${links}</div></div>` : '';
+      return links ? `<div class="cs-group closed" data-g="${gi}"><button type="button" class="cs-gh" aria-expanded="false"><span class="cs-gi">${csSvg(GIC[gi], 1.9)}</span><span class="cs-gt">${L(g[0], g[1])}</span><span class="cs-gn">${ids.length}</span>${csSvg('<path d="M6 9l6 6 6-6"/>', 2.4)}<span></span></button><div class="cs-menu">${links}</div></div>` : '';
     }).join('');
     box.innerHTML = `<div class="cs-head"><img class="cs-vk" src="assets/img/mascot-velkoz.webp" alt="" width="560" height="465">
         <div><div class="crumb" id="csCrumb"></div>
@@ -3522,7 +3601,7 @@ document.addEventListener('click', e=>{ const svg = e.target.closest && e.target
   if(!n){ sel = ''; hist = []; }
   else if(n.dataset.k === cur){ let i = hist.length - 1; while(i >= 0 && !(cur.startsWith(hist[i]) && hist[i] !== cur)) i--; sel = i >= 0 ? hist[i] : ''; hist = hist.slice(0, Math.max(i, 0)); }
   else { hist.push(cur); sel = n.dataset.k; }
-  svg.dataset.sel = sel; svg.dataset.hist = JSON.stringify(hist); atgMark(svg, sel); });
+  svg.dataset.sel = sel; svg.dataset.hist = JSON.stringify(hist); atgMark(svg, sel); svg.dispatchEvent(new CustomEvent('atgsel', {bubbles:true, detail:sel})); });
 document.addEventListener('keydown', e=>{   // „/“ springt ins Suchfeld, Esc leert es
   const s = $('#csPage.cs-home') ? $('#csHeroQ') : $('#csSearch'), pg = $('#page-cheatsheet');   // auf der Startseite die große Suche
   if(!s || !pg || !pg.classList.contains('active')) return;
@@ -3577,6 +3656,7 @@ function pageMeta(page, sub){
       if(GUIDES_LIVE && sub==='encounters') return [`TFT Encounters ${S} – welche Comp du spielen solltest`, `Alle TFT Encounters in ${S}: was sie machen, wie oft sie pro Spiel kommen und welche Comps du darauf spielst – Ambosse, Gold- und Prismatic-Augments, Start-Units.`];
       return ['TFT Guides', '', true];
     case 'tools':
+      if(sub==='augments') return [L(`TFT Augment-Vorhersage ${S}${P} – welche Augment-Stufe kommt als Nächstes?`, `TFT augment prediction ${S}${P} – which augment tier comes next?`), L(`Silber, Gold oder Prismatisch? Gib deine Augment-Stufen von 2-1 und 3-2 ein und sieh, was in TFT ${S} als Nächstes kommt – mit der Chance auf ein Prismatic-Augment.`, `Silver, gold or prismatic? Enter your augment tiers from 2-1 and 3-2 and see what comes next in TFT ${S} – including your odds of a prismatic augment.`)];
       if(sub==='tierlist') return [`TFT Tierlist-Maker ${S} – eigene Tierlist erstellen & teilen`, `Kostenloser TFT Tierlist-Maker für ${S}: Champions, Items, Artefakte, Embleme und Augments per Drag & Drop ranken und deine Tierlist als Link teilen.`];
       if(sub==='rolldown') return [`TFT Rolldown-Rechner ${S} – Odds & Chancen pro Level`, `Wie wahrscheinlich triffst du deine Units? TFT Rolldown-Rechner für ${S} mit Shop-Odds pro Level, Pool-Größen und dem Vergleich: jetzt rollen oder erst leveln.`];
       if(sub==='drops') return [`TFT Item-Drop-Rechner ${S} – nächste Komponente berechnen`, `Trag deine Item-Drops aus den Creep-Runden ein und sieh die Chancen für die nächsten Komponenten in TFT ${S} – mit Gold- und Prismatic-Orb-Chancen pro Stage.`];
@@ -3598,7 +3678,7 @@ function setMeta(page, sub){
   if(FILE_MODE) return;
   if(noindex){ const c = document.head.querySelector('link[rel="canonical"]'); if(c) c.remove(); return; }
   // kanonische Adresse: eine Adresse pro Inhalt (z. B. /bibliothek statt /bibliothek/champions, Builder ohne Team-Code)
-  const keep = {cheatsheet:csList().map(s=>s[0]), guides:['encounters'], tierlist:['items','augments','holds'], bibliothek:['items','traits'], tools:['rolldown','tierlist','simulator','drops','dps'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
+  const keep = {cheatsheet:csList().map(s=>s[0]), guides:['encounters'], tierlist:['items','augments','holds'], bibliothek:['items','traits'], tools:['rolldown','tierlist','simulator','drops','dps','augments'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
   const path = page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : '/' + page + (keep.includes(sub) ? '/' + sub : '');
   headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + withLang(path);
   // beide Sprachfassungen für Suchmaschinen verknüpfen
@@ -3830,7 +3910,7 @@ function ndInit(){
   // Set- und Sprachschalter aus der alten Kopfzeile übernehmen (Funktionen bleiben erhalten)
   // Sprache: nur die Flagge, ein Klick öffnet ein kleines Menü
   const p0 = curPath(), deHref = p0, enHref = '/en' + (p0 === '/' ? '/' : p0);
-  const lang = `<div class="nd-lang" id="ndLang"><button type="button" class="nd-lang-btn" aria-haspopup="true" aria-expanded="false" aria-label="${L('Sprache', 'Language')}" title="${L('Sprache', 'Language')}">${EN ? FLAG_US : FLAG_DE}<svg class="nd-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></button>
+  const lang = `<div class="nd-lang" id="ndLang"><button type="button" class="nd-lang-btn" aria-haspopup="true" aria-expanded="false" aria-label="${L('Sprache', 'Language')}" title="${L('Sprache', 'Language')}">${EN ? FLAG_US : FLAG_DE}<svg class="nd-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg><span></span></button>
     <div class="nd-lang-menu" role="menu"><a role="menuitemradio" aria-checked="${!EN}" href="${deHref}" hreflang="de" data-lang="de" data-noi18n>${FLAG_DE}Deutsch</a><a role="menuitemradio" aria-checked="${EN}" href="${enHref}" hreflang="en" data-lang="en" data-noi18n>${FLAG_US}English</a></div></div>`;
   const slot = $('#ndSlot'); slot.insertAdjacentHTML('afterend', lang); slot.replaceWith($('#setSw'));
   const nl = $('#ndLang');
@@ -3968,3 +4048,48 @@ if(ND) ndInit();
 renderSetSwitcher();
 document.querySelectorAll('.data-src').forEach(el=>{ el.textContent = L(`Offizielle Spieldaten: CommunityDragon ${TFT_DATA.version} · Set ${TFT_DATA.set} · aktualisiert am ${new Date(TFT_DATA.generated).toLocaleDateString(LOC)}. Werte können sich mit Patches ändern.`, `Official game data: CommunityDragon ${TFT_DATA.version} · Set ${TFT_DATA.set} · updated on ${new Date(TFT_DATA.generated).toLocaleDateString(LOC)}. Values may change with patches.`); });
 renderStatBar(); renderHome(); filterComps(); renderItemTL(); renderAugTL(); renderHoldTL(); renderEncTL(); renderChamps(); renderTraits(); renderItems(); renderRecipes(); route();
+
+/* ================= GOOGLE ANALYTICS: HINWEIS-BANNER & WIDERSPRUCH ================= */
+// Analytics läuft ab dem Aufruf (siehe Kopf von index.html). Der Banner informiert darüber; „Analyse ablehnen“ stoppt die Messung
+// sofort und für künftige Besuche und löscht die Analytics-Cookies. Wahl in localStorage: tftfreaks_ga = 'ok' | 'no'
+const GA_ID = 'G-BTL7VP5CTK', GA_KEY = 'tftfreaks_ga';
+const gaGet = () => { try { return localStorage.getItem(GA_KEY); } catch(e){ return null; } };
+function gaDelCookies(){
+  const host = location.hostname, root = host.split('.').slice(-2).join('.');
+  document.cookie.split(';').map(c=>c.split('=')[0].trim()).filter(n=>/^_ga(_|$)/.test(n)).forEach(n=>{
+    [host, '.' + host, '.' + root, ''].forEach(d=>{ document.cookie = n + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/' + (d ? '; domain=' + d : ''); }); });
+}
+function gaLoad(){   // nach erneuter Zustimmung ohne Neuladen starten
+  window['ga-disable-' + GA_ID] = false;
+  if(location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return;
+  if(!window.gtag){ const s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID; document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || []; window.gtag = function(){ dataLayer.push(arguments); }; gtag('js', new Date()); }
+  gtag('config', GA_ID);
+}
+function gaSet(v){
+  try { localStorage.setItem(GA_KEY, v); } catch(e){}
+  if(v === 'no'){ window['ga-disable-' + GA_ID] = true; gaDelCookies(); } else gaLoad();
+  const b = document.getElementById('ckb'); if(b) b.remove();
+  gaCtl();
+}
+function gaBanner(){
+  if(document.getElementById('ckb')) return;
+  document.body.insertAdjacentHTML('beforeend', `<div class="ckb" id="ckb" role="region" aria-label="${L('Hinweis zu Cookies', 'Cookie notice')}">
+    <div class="ckb-tx"><b>${L('Cookies & Reichweitenmessung', 'Cookies & analytics')}</b>
+      <p>${L('Wir nutzen Google Analytics, um zu sehen, wie viele Besucher kommen und welche Seiten genutzt werden. Dafür setzt Google Cookies – die Messung läuft ab dem Aufruf der Seite. Werbung gibt es keine.', 'We use Google Analytics to see how many visitors come and which pages they use. Google sets cookies for this – measuring starts as soon as the page loads. There are no ads.')}
+        <a href="${withLang('/datenschutz')}">${L('Mehr in der Datenschutzerklärung', 'More in the privacy policy')}</a></p></div>
+    <div class="ckb-bt"><button type="button" class="ckb-no" data-ga="no">${L('Analyse ablehnen', 'Decline analytics')}</button><button type="button" class="ckb-ok" data-ga="ok">${L('Verstanden', 'Got it')}</button></div></div>`);
+}
+// Schalter in der Datenschutzerklärung (Abschnitt 3)
+function gaCtl(){
+  const st = document.getElementById('gaState'), bt = document.getElementById('gaToggle'); if(!st || !bt) return;
+  const off = gaGet() === 'no';
+  st.textContent = off ? L('Google Analytics ist für diesen Browser abgeschaltet.', 'Google Analytics is turned off for this browser.') : L('Google Analytics ist für diesen Browser aktiv.', 'Google Analytics is active for this browser.');
+  bt.textContent = off ? L('Wieder erlauben', 'Allow again') : L('Analyse ablehnen', 'Decline analytics');
+  bt.dataset.ga = off ? 'ok' : 'no';
+}
+document.addEventListener('click', e=>{ const b = e.target.closest && e.target.closest('[data-ga]'); if(b) gaSet(b.dataset.ga); });
+// „Cookie-Einstellungen“ in der Fußzeile: Banner wieder zeigen statt zur Datenschutzerklärung zu gehen (Capture, damit der Seiten-Router nicht zuerst navigiert)
+document.addEventListener('click', e=>{ const c = e.target.closest && e.target.closest('[data-ckb]'); if(c){ e.preventDefault(); gaBanner(); } }, true);
+if(!gaGet()) gaBanner();
+gaCtl();
