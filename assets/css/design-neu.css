@@ -748,19 +748,47 @@ html.nd:not(.nd-ready) main,html.nd:not(.nd-ready) footer{opacity:0;visibility:h
 @container (max-width:300px){.dsh-tn small{display:none}}
 @container (max-width:275px){.dsh-tst{column-gap:6px}.dsh-tlab{padding-right:6px;gap:4px;font-size:.56rem;letter-spacing:.04em}.dsh-tlab svg{width:13px;height:13px}.dsh-tn b{font-size:.78rem}.dsh-ts[class]{gap:6px}.dsh-tr img{width:40px;height:40px;margin:-8px -3px}}
 
-/* ---------- Coach-Profile: Pfeile zum vorherigen/nächsten Coach neben der Überschrift, Wisch-Übergang ---------- */
+/* ---------- Kleine Kreise zum vorherigen/nächsten Coach bzw. Tool: kleines Bild mit Pfeil-Abzeichen, Name als Tooltip, Wisch-Übergang ---------- */
 .mt-nav{display:none}
-.nd .mt-head{position:relative;padding-inline:64px}
-.nd .mt-nav{position:absolute;top:50%;display:flex;align-items:center;justify-content:center;width:48px;height:48px;margin-top:-24px;border-radius:50%;color:var(--cy2);
-  background:linear-gradient(160deg,rgba(9,36,50,.92),rgba(3,17,27,.95));border:1px solid rgba(46,230,214,.35);box-shadow:0 8px 20px rgba(0,0,0,.45);transition:color .2s,border-color .2s,box-shadow .2s,transform .2s}
-.nd .mt-prev{left:0}.nd .mt-next{right:0}
-.nd .mt-nav svg{width:22px;height:22px}
-.nd .mt-nav:hover,.nd .mt-nav:focus-visible{color:#fff;border-color:rgba(247,22,110,.7);box-shadow:0 0 0 1px rgba(247,22,110,.35),0 0 20px rgba(247,22,110,.45);transform:scale(1.08)}
-.nd .mt-next:hover svg{animation:mt-nudge .8s ease-in-out infinite}
-.nd .mt-prev:hover svg{animation:mt-nudge .8s ease-in-out infinite reverse}
-@keyframes mt-nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
+.nd .mt-nav{position:absolute;z-index:2;display:grid;place-items:center;width:52px;height:52px;border-radius:50%;color:#04141c;text-decoration:none;
+  background:linear-gradient(160deg,rgba(9,36,50,.92),rgba(3,17,27,.95));border:1px solid rgba(46,230,214,.35);box-shadow:0 8px 20px rgba(0,0,0,.45);transition:border-color .2s,box-shadow .2s,transform .2s}
+.nd .pn-av{width:40px;height:40px;border-radius:50%;object-fit:cover}
+.nd .pn-av.pn-tool{width:40px;height:40px;border-radius:0;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
+.nd .pn-ar{position:absolute;bottom:-4px;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--cy);box-shadow:0 2px 6px rgba(0,0,0,.55);transition:background .2s,color .2s}
+.nd .mt-prev .pn-ar{left:-4px}.nd .mt-next .pn-ar{right:-4px}
+.nd .pn-ar svg{width:12px;height:12px}
+.nd .mt-nav:hover,.nd .mt-nav:focus-visible{border-color:rgba(247,22,110,.7);box-shadow:0 0 0 1px rgba(247,22,110,.35),0 0 20px rgba(247,22,110,.45);transform:scale(1.08)}
+.nd .mt-nav:hover .pn-ar,.nd .mt-nav:focus-visible .pn-ar{background:#f7166e;color:#fff}
+.nd .mt-next:hover .pn-ar svg{animation:mt-nudge .8s ease-in-out infinite}
+.nd .mt-prev:hover .pn-ar svg{animation:mt-nudge .8s ease-in-out infinite reverse}
+@keyframes mt-nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(2px)}}
 .mt-sliding{position:relative;overflow-x:clip}
-@media (max-width:640px){.nd .mt-head{padding-inline:46px}.nd .mt-nav{width:38px;height:38px;margin-top:-19px}.nd .mt-nav svg{width:18px;height:18px}}
+/* Coaches: links und rechts neben der Überschrift */
+.nd .mt-head{position:relative;padding-inline:64px}
+.nd .mt-head .mt-nav{top:50%;margin-top:-26px}
+.nd .mt-head .mt-prev{left:0}.nd .mt-head .mt-next{right:0}
+/* Tools: ein festes Kreis-Paar im Seitenrand (10 px Abstand zum Tool), oben bündig mit der Tool-Box; alle Tool-Köpfe sind gleich hoch (tnEqualize),
+   daher steht es bei jedem Tool gleich – beim Wechsel wischt nur das Tool */
+.tn-nav{display:none}
+.nd #page-tools>.wrap,.nd #page-builder>.wrap{position:relative}
+.nd .tn-nav:not([hidden]){display:block;position:absolute;inset:0;z-index:3;pointer-events:none}
+.nd .tn-rail{position:absolute;top:0;bottom:0;width:40px}
+.nd .tn-rail.l{left:calc(var(--cg) - 50px)}.nd .tn-rail.r{right:calc(var(--cg) - 50px)}
+.nd .tn-rail .mt-nav{position:absolute;top:var(--tn-top,214px);width:40px;height:40px;pointer-events:auto}
+.nd .tn-rail .pn-av{width:31px;height:31px}
+.nd .tn-rail.l .pn-ar{left:-2px}.nd .tn-rail.r .pn-ar{right:-2px}
+.nd #page-builder:not(.sim-mode) .tn-nav{display:none}
+@media (min-width:761px){.nd body[data-lvl="sub"]:has(#page-tools.active .tn-nav:not([hidden]), #page-builder.active.sim-mode .tn-nav:not([hidden])){--cg:56px}}
+/* Handy: Kreise etwas kleiner; bei Tools klein und fest in den oberen Ecken über dem Titel */
+@media (max-width:760px){
+  .nd .mt-nav{width:40px;height:40px}.nd .pn-av,.nd .pn-av.pn-tool{width:30px;height:30px}.nd .pn-ar{width:17px;height:17px}.nd .pn-ar svg{width:10px;height:10px}
+  .nd .mt-head{padding-inline:46px}.nd .mt-head .mt-nav{margin-top:-20px}
+  .nd .tn-rail{bottom:auto;height:26px;width:26px}
+  .nd .tn-rail.l{left:calc(var(--cg) - 4px)}.nd .tn-rail.r{right:calc(var(--cg) - 4px)}
+  .nd .tn-rail .mt-nav{position:absolute;top:-1px;width:26px;height:26px}.nd .tn-rail .pn-av{width:20px;height:20px}
+  .nd .tn-rail .pn-ar{width:13px;height:13px;top:6px;bottom:auto}.nd .tn-rail .pn-ar svg{width:8px;height:8px}
+  .nd .tn-rail.l .pn-ar{left:-6px}.nd .tn-rail.r .pn-ar{right:-6px}
+}
 
 /* ---------- Patches: Gold aus dem alten Design durch die neue Palette ersetzen (Türkis = aktuell/Akzent, Pink = eigene Einschätzung) ---------- */
 .nd .pt-card.cur{border-color:rgba(46,230,214,.65);box-shadow:0 0 0 1px rgba(46,230,214,.22),0 12px 30px rgba(46,230,214,.12)}

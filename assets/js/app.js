@@ -713,7 +713,7 @@ function bSetMode(mode){
   $('#page-builder').classList.toggle('sim-mode', sim);
   $('#bCrumb').innerHTML = sim ? '<a href="/tools">Tools</a> / Kampf-Simulator' : '<a href="/">Home</a> / Team Builder';
   $('#bTitle').innerHTML = sim ? `<span class="th-key">TFT Kampf-Simulator:</span> Welches Team gewinnt?` : `<span class="th-key">TFT Team Builder:</span> Board planen für Set <span data-setno>${TFT_DATA.set}</span>`;
-  $('#bIntro').textContent = sim ? 'Stell dein Team und den Gegner auf – mit Items, Sternen und Augments – und starte den Kampf. Du siehst, wohin jede Unit läuft, wen sie angreift, wann sie ihre Fähigkeit wirkt und wohin sie springt. Die Ergebnisse sind Näherungen.'
+  $('#bIntro').textContent = sim ? 'Stell dein Team und den Gegner auf und starte den Kampf. Du siehst, wohin jede Unit läuft, wen sie angreift und wann sie ihre Fähigkeit wirkt. Die Ergebnisse sind Näherungen.'
     : 'Zieh Units aufs Brett, verteil Items und sieh sofort, welche Traits aktiv sind. Auf dem Handy: erst antippen, dann aufs Feld tippen.';
 }
 
@@ -1521,6 +1521,7 @@ function toolArtLoad(root){ root.querySelectorAll('[data-tool-art]:not([data-art
     head.insertAdjacentHTML('afterbegin', `<div class="buddy heimer${sim ? ' b-simonly' : ''}" data-buddy="${head.dataset.artBuddy}"><div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>`
       + `<button class="buddy-img" type="button" style="background:url('${src}') center bottom/contain no-repeat" aria-label="Heimerdinger – nächster Tipp" title="Klick für den nächsten Tipp"><span></span></button></div>`);
     buddyWire(head.firstElementChild);
+    tnEqualize();   // mit Bild bekommt der Kopf seine Seitenabstände – Höhen neu angleichen
   };
   im.src = src;
 }); }
@@ -2166,40 +2167,97 @@ drawer.addEventListener('click', e=>{ if(e.target.closest('[data-drawer-close]')
 
 // Meet the Team: Übersicht (/about) oder Profil (/about/<name>)
 // Zwischen den Coach-Profilen blättern: Pfeile neben der Überschrift oder Wischen am Handy; das Profil wischt zur Seite, das neue kommt von der anderen Seite
-const ABOUT_COACHES = [['crazyslayt', 'CrazYSlayt'], ['humbadobo', 'humbadobo']];
-let aboutDir = 0, aboutKey = '';   // aboutDir: 1 = zum nächsten Coach (Profil geht nach links raus), -1 = zum vorherigen
-function setAbout(sub){
-  const views = [...document.querySelectorAll('#page-about .mt-view')];
-  const key = views.some(v=>v.dataset.about && v.dataset.about===sub) ? sub : '';
-  const from = views.find(v=>!v.hidden), to = views.find(v=>v.dataset.about===key), dir = aboutDir;
-  aboutDir = 0; aboutKey = key;
-  views.forEach(v=>{ v.getAnimations().forEach(a=>a.cancel()); v.style.cssText = ''; v.hidden = v.dataset.about!==key; });
-  if(!dir || !from || !to || from===to || !from.dataset.about || !key || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const box = to.parentElement;
+const ABOUT_COACHES = [['crazyslayt', 'CrazYSlayt', 'assets/img/team-claudio.jpg'], ['humbadobo', 'humbadobo', 'assets/img/team-romano.jpg']];
+let slideDir = 0;   // 1 = zum nächsten Eintrag (alte Ansicht geht nach links raus), -1 = zum vorherigen; gesetzt von den Pfeilen und Wischgesten
+// Ansichten im selben Container umschalten (Coach-Profile, Tools); mit Richtung wischt die alte Ansicht raus und die neue kommt von der Seite
+function slideViews(views, to){
+  const from = views.find(v=>!v.hidden), dir = slideDir; slideDir = 0;
+  views.forEach(v=>{ v.getAnimations().forEach(a=>a.cancel()); v.style.cssText = ''; delete v.dataset.slide; v.hidden = v !== to; });
+  if(!dir || !from || !to || from===to || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const box = to.parentElement, tok = String(Date.now() + Math.random());
   box.classList.add('mt-sliding');   // Breite begrenzen, damit beim Wischen keine Bildlaufleiste entsteht
   const pos = {top:to.offsetTop + 'px', left:to.offsetLeft + 'px', width:to.offsetWidth + 'px'};
-  from.hidden = false; Object.assign(from.style, {position:'absolute', pointerEvents:'none'}, pos);
+  from.hidden = false; from.dataset.slide = tok; Object.assign(from.style, {position:'absolute', pointerEvents:'none'}, pos);
   const opt = {duration:460, easing:'cubic-bezier(.45,0,.2,1)'};
   const out = from.animate([{transform:'none', opacity:1}, {transform:`translateX(${-dir * 100}%)`, opacity:0}], opt);
   to.animate([{transform:`translateX(${dir * 100}%)`, opacity:0}, {transform:'none', opacity:1}], opt);
-  const clean = ()=>{ if(from.dataset.about === aboutKey) return; from.style.cssText = ''; from.hidden = true; box.classList.remove('mt-sliding'); };
+  const clean = ()=>{ if(from.dataset.slide !== tok) return; delete from.dataset.slide; from.style.cssText = ''; from.hidden = true; box.classList.remove('mt-sliding'); };
   out.onfinish = clean; setTimeout(clean, opt.duration + 150);   // Timer als Rückfall, falls die Animation pausiert (z. B. Tab im Hintergrund)
 }
+function setAbout(sub){
+  const views = [...document.querySelectorAll('#page-about .mt-view')];
+  const key = views.some(v=>v.dataset.about && v.dataset.about===sub) ? sub : '';
+  if(!key || !(views.find(v=>!v.hidden) || {}).dataset.about) slideDir = 0;   // Übersicht ↔ Profil ohne Wischen
+  slideViews(views, views.find(v=>v.dataset.about===key));
+}
+// Kleiner Kreis zum vorherigen/nächsten Eintrag: kleines Bild (Coach-Foto bzw. Tool-Heimer) mit Pfeil-Abzeichen, Name nur als Tooltip.
+// Bilder als data-src: laden erst, wenn die Seite offen ist (route)
+const pnArrow = (dir, href, name, img, label, imgCls='') => `<a class="mt-nav ${dir < 0 ? 'mt-prev' : 'mt-next'}" href="${href}" data-dir="${dir}" title="${esc(name)}" aria-label="${label}: ${esc(name)}">`
+  + `<img class="pn-av${imgCls}"${img ? ` data-src="${img}"` : ''} alt="" width="40" height="40"><i class="pn-ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${dir < 0 ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6'}"/></svg></i></a>`;
 ABOUT_COACHES.forEach(([k], i)=>{
   const head = document.querySelector(`#page-about .mt-view[data-about="${k}"] .page-head`); if(!head) return;
-  const n = ABOUT_COACHES.length, prev = ABOUT_COACHES[(i - 1 + n) % n], next = ABOUT_COACHES[(i + 1) % n];
-  const arrow = (dir, [key, name]) => `<a class="mt-nav ${dir < 0 ? 'mt-prev' : 'mt-next'}" href="/about/${key}" data-dir="${dir}" title="${esc(name)}" aria-label="${dir < 0 ? L('Vorheriger Coach', 'Previous coach') : L('Nächster Coach', 'Next coach')}: ${esc(name)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${dir < 0 ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6'}"/></svg></a>`;
-  head.classList.add('mt-head'); head.insertAdjacentHTML('beforeend', arrow(-1, prev) + arrow(1, next));
+  const n = ABOUT_COACHES.length, [pk, pn, pi] = ABOUT_COACHES[(i - 1 + n) % n], [nk, nn, ni] = ABOUT_COACHES[(i + 1) % n];
+  head.classList.add('mt-head');
+  head.insertAdjacentHTML('beforeend', pnArrow(-1, '/about/' + pk, pn, pi, L('Vorheriger Coach', 'Previous coach')) + pnArrow(1, '/about/' + nk, nn, ni, L('Nächster Coach', 'Next coach')));
 });
-const aboutGo = (dir, href) => { aboutDir = dir; go(href); };
-document.addEventListener('click', e=>{ const a = e.target.closest('.mt-nav'); if(!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button) return; e.preventDefault(); e.stopPropagation(); aboutGo(+a.dataset.dir, a.getAttribute('href')); }, true);
-let aboutTouch = null;
-$('#page-about').addEventListener('touchstart', e=>{ const v = e.target.closest('.mt-view:not([data-about=""])'); aboutTouch = v && e.touches.length === 1 ? {x:e.touches[0].clientX, y:e.touches[0].clientY, v} : null; }, {passive:true});
-$('#page-about').addEventListener('touchend', e=>{
-  if(!aboutTouch) return; const t = e.changedTouches[0], dx = t.clientX - aboutTouch.x, dy = t.clientY - aboutTouch.y, v = aboutTouch.v; aboutTouch = null;
-  if(Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.5) return;   // nur deutliche waagrechte Wischer
-  const a = v.querySelector(dx < 0 ? '.mt-next' : '.mt-prev'); if(a) aboutGo(dx < 0 ? 1 : -1, a.getAttribute('href'));
-}, {passive:true});
+// Tools: ein festes Kreis-Paar pro Seite (Tools und Simulator), außerhalb der wischenden Tool-Ansicht – beim Wechsel bewegt sich nur das Tool,
+// die Kreise bekommen nur neues Ziel und Bild. Desktop: im Seitenrand auf halber Fensterhöhe (bleibt beim Scrollen stehen), Handy: obere Ecken.
+// Reihenfolge wie in der Tool-Übersicht
+const TOOL_NAV = [['rolldown', L('Rolldown-Rechner', 'Rolldown calculator')], ['drops', L('Item-Drop-Chance', 'Item Drop Chance')], ['tierlist', L('Tierlist-Maker', 'Tier list maker')],
+  ['simulator', L('Kampf-Simulator', 'Fight simulator')], ['dps', L('DPS-Vergleich', 'DPS Comparison')], ['augments', L('Augment-Vorhersage', 'Augment prediction')]];
+['#page-tools', '#page-builder'].forEach(sel=>{ const w = document.querySelector(sel + ' > .wrap'); if(!w) return;
+  w.insertAdjacentHTML('afterbegin', `<div class="tn-nav" hidden><div class="tn-rail l">${pnArrow(-1, '/tools', '', '', L('Vorheriges Tool', 'Previous tool'), ' pn-tool')}</div><div class="tn-rail r">${pnArrow(1, '/tools', '', '', L('Nächstes Tool', 'Next tool'), ' pn-tool')}</div></div>`); });
+function tnUpdate(key){   // key = aktuelles Tool ('' = keins → Kreise aus)
+  const i = TOOL_NAV.findIndex(([k])=>k===key), n = TOOL_NAV.length;
+  document.querySelectorAll('.tn-nav').forEach(nav=>{
+    nav.hidden = i < 0; if(i < 0) return;
+    [[-1, '.mt-prev', L('Vorheriges Tool', 'Previous tool')], [1, '.mt-next', L('Nächstes Tool', 'Next tool')]].forEach(([d, s, label])=>{
+      const [k, name] = TOOL_NAV[(i + d + n) % n], a = nav.querySelector(s), img = a.querySelector('.pn-av');
+      a.setAttribute('href', '/tools/' + k); a.title = name; a.setAttribute('aria-label', `${label}: ${name}`);
+      img.removeAttribute('data-src'); img.src = `assets/tools/thumb/${k}.webp`;
+    });
+  });
+  if(i >= 0) requestAnimationFrame(tnEqualize);
+}
+// Alle Tool-Köpfe gleich hoch (der höchste bei der aktuellen Breite): so beginnt jede Tool-Box auf derselben Höhe und die festen
+// Kreise sitzen oben bündig daneben. Gemessen an Kopien im sichtbaren Bereich – auch für Tools, die gerade versteckt sind.
+function tnEqualize(){
+  const heads = [...document.querySelectorAll('.page-head[data-tool-art]')], nav = document.querySelector('.page.active .tn-nav:not([hidden])');
+  heads.forEach(h=>{ h.style.minHeight = ''; const k = h.querySelector('.th-key'); if(k) k.style.fontSize = ''; });
+  if(!nav || matchMedia('(max-width:760px)').matches) return;   // Handy: Kreise in den oberen Ecken, Köpfe frei
+  const wrap = nav.parentElement, cur = [...wrap.querySelectorAll('.page-head[data-tool-art]')].find(h=>h.offsetParent); if(!cur) return;
+  const box = document.createElement('div'); box.setAttribute('data-noi18n', ''); box.style.cssText = `position:absolute;left:0;top:0;width:${cur.offsetWidth}px;visibility:hidden;pointer-events:none`;
+  wrap.appendChild(box);
+  const max = Math.max(...heads.map(h=>{ const c = h.cloneNode(true); c.querySelectorAll('.buddy, .mt-nav').forEach(x=>x.remove()); c.removeAttribute('id'); c.classList.add('art-on');   // jedes Tool hat sein Heimer-Bild
+    box.appendChild(c);
+    // zu langer Tool-Name (z. B. auf Englisch): Schrift so weit verkleinern, dass er wie die anderen in eine Zeile passt
+    const k = c.querySelector('.th-key');
+    if(k){ k.style.whiteSpace = 'nowrap'; const room = k.parentElement.clientWidth, need = k.scrollWidth;
+      if(need > room){ const fs = parseFloat(getComputedStyle(k).fontSize) * room / need * .97 + 'px'; k.style.fontSize = fs; h.querySelector('.th-key').style.fontSize = fs; }
+      k.style.whiteSpace = ''; }
+    const v = c.offsetHeight; c.remove(); return v; }));
+  box.remove();
+  heads.forEach(h=>h.style.minHeight = max + 'px');
+  nav.style.setProperty('--tn-top', (cur.offsetTop + max) + 'px');
+}
+let tnResize = 0; addEventListener('resize', ()=>{ clearTimeout(tnResize); tnResize = setTimeout(tnEqualize, 150); });
+if(document.fonts) document.fonts.ready.then(()=>tnEqualize());
+// Klick auf einen Pfeil: Wisch-Richtung merken, wenn alte und neue Ansicht auf derselben Seite liegen (der Simulator hat eine eigene Seite)
+const pnGo = (a, dir) => { const href = a.getAttribute('href'), page = a.closest('.page');
+  slideDir = page && page.id === 'page-tools' && !/simulator/.test(href) || page && page.id === 'page-about' ? dir : 0; go(href); };
+document.addEventListener('click', e=>{ const a = e.target.closest('.mt-nav'); if(!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button) return; e.preventDefault(); e.stopPropagation(); pnGo(a, +a.dataset.dir); }, true);
+// Wischen auf dem Handy: bei Coaches überall im Profil, bei Tools nur im Kopf (sonst stört es die Bedienung der Tools)
+let pnTouch = null;
+['#page-about', '#page-tools', '#page-builder'].forEach(sel=>{ const pg = $(sel); if(!pg) return;
+  pg.addEventListener('touchstart', e=>{ const v = e.target.closest('.mt-view:not([data-about=""])') || (e.target.closest('.page-head') && e.target.closest('.tool-view, #page-builder.sim-mode'));
+    pnTouch = v && e.touches.length === 1 ? {x:e.touches[0].clientX, y:e.touches[0].clientY, v} : null; }, {passive:true});
+  pg.addEventListener('touchend', e=>{
+    if(!pnTouch) return; const t = e.changedTouches[0], dx = t.clientX - pnTouch.x, dy = t.clientY - pnTouch.y, v = pnTouch.v; pnTouch = null;
+    if(Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.5) return;   // nur deutliche waagrechte Wischer
+    const s = dx < 0 ? '.mt-next' : '.mt-prev', a = v.querySelector(s) || pg.querySelector('.tn-nav:not([hidden]) ' + s);   // Tools: das feste Kreis-Paar der Seite
+    if(a) pnGo(a, dx < 0 ? 1 : -1);
+  }, {passive:true});
+});
 
 /* ================= TOOLS: Übersicht & Rolldown-Rechner ================= */
 // Shop-Chancen/Pool-Größen pro Set aus data/custom-<Set>.js; Champions pro Kosten aus den offiziellen Set-Daten
@@ -2468,7 +2526,11 @@ function dpsHover(e){
 
 function renderTools(sub, a, b){
   const key = ['rolldown','tierlist','drops','dps','augments'].includes(sub) ? sub : '';
-  document.querySelectorAll('#page-tools .tool-view').forEach(v=>v.hidden = v.dataset.tool!==key);
+  const views = [...document.querySelectorAll('#page-tools .tool-view')];
+  if(!key || !(views.find(v=>!v.hidden) || {}).dataset.tool) slideDir = 0;   // Übersicht ↔ Tool ohne Wischen
+  const to = views.find(v=>v.dataset.tool===key);
+  slideViews(views, to);
+  if(to) toolArtLoad(to);
   if(key==='rolldown') rdMount();
   if(key==='tierlist') tmRoute(a, b);
   if(key==='drops') drRender();
@@ -3855,7 +3917,8 @@ function route(){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+pageId));
   // Große Bilder versteckter Seiten (Tool-Karten, Maskottchen) stehen als data-src im HTML und laden erst, wenn die Seite zu sehen ist
   document.querySelectorAll(`#page-${pageId} img[data-src]`).forEach(i=>{ i.src = i.dataset.src; i.removeAttribute('data-src'); });
-  const pageEl = $('#page-' + pageId); if(pageEl) toolArtLoad(pageEl);
+  const pageEl = $('#page-' + pageId); if(pageEl && pageId !== 'tools') toolArtLoad(pageEl);   // Tools: nur das geöffnete Tool (renderTools)
+  tnUpdate(isSim ? 'simulator' : page === 'tools' ? sub : '');
   // Seitenbreite: Übersichtsseiten breit wie das Dashboard, Unterseiten (einzelnes Tool, Cheatsheet, Champion, Patch, Rang, Profil, Rechtliches) schmaler
   const subOk = {tools:['rolldown','tierlist','simulator','drops','dps','augments'], cheatsheet:csList().map(s=>s[0]), patches:Object.keys(patchBySlug), ranks:Object.keys(rankBy), about:['crazyslayt','humbadobo']}[page];
   document.body.dataset.lvl = ['champion','comp','builder','apply','impressum','datenschutz','bedingungen'].includes(page) || (subOk && subOk.includes(sub)) ? 'sub' : 'top';

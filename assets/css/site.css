@@ -751,7 +751,7 @@ a.tcard:hover{border-color:var(--accent)}
 .about-h{margin:0;font-size:1.15rem}
 .about-sub{font-size:.78rem;color:var(--faint);margin:2px 0 12px}
 .lp-hist{display:flex;flex-direction:column;gap:6px}
-.lp-row{display:grid;grid-template-columns:62px 40px 1fr auto;align-items:center;gap:10px;padding:6px 12px;border-radius:10px;background:var(--panel-2);border:1px solid transparent}
+.lp-row{display:grid;grid-template-columns:62px 40px minmax(0,1fr) auto;align-items:center;gap:10px;padding:6px 12px;border-radius:10px;background:var(--panel-2);border:1px solid transparent}
 .lp-row span{color:var(--muted);font-weight:600}
 .lp-row img{width:40px;height:40px;object-fit:contain}
 .lp-row em{font-style:normal;font-family:var(--ff-head);font-weight:700;color:var(--accent-2)}
@@ -1299,7 +1299,7 @@ a.mt-card:hover{transform:translateY(-2px);border-color:var(--accent)}
   .adm-edit{position:static;max-height:none}
   .adm-row{grid-template-columns:56px 1fr}.adm-lbl small{display:none}
   .b-x{opacity:1}
-  .about-grid{grid-template-columns:1fr}
+  .about-grid{grid-template-columns:minmax(0,1fr)}
   .rk-table{grid-template-columns:repeat(2,1fr)}
   .rk-divs{grid-template-columns:repeat(2,1fr)}.rk-divs.three{grid-template-columns:1fr}
   .rk-head{grid-template-columns:auto 1fr}.rk-head img{width:120px;height:120px;margin:-24px -14px -24px -18px}
@@ -1446,6 +1446,7 @@ a.tc:hover .tc-ph{transform:rotate(0) scale(1.05)}
 .dr-set{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;font-size:.84rem;color:var(--muted);font-weight:600}
 .dr-set select{flex:1;min-width:220px}
 .dr-table{width:100%;border-collapse:collapse;font-size:.86rem}
+.dr-out{overflow-x:auto}   /* mittlere Breiten: Tabelle scrollt in der Karte statt über den Seitenrand */
 .dr-table th{font-size:.7rem;color:var(--faint);font-weight:700;text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-2)}
 .dr-table td{padding:7px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}
 .dr-table tr.best td{background:rgba(242,193,78,.08)}
