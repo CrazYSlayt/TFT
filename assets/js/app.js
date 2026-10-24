@@ -3695,7 +3695,7 @@ function setMeta(page, sub){
 // Strukturierte Daten für Google: Brotkrumen, bei Tools zusätzlich Web-App und die Fragen aus dem Textblock
 const LD_SECTION = {cheatsheet:'Cheatsheet', guides:'Guides', tierlist:'Tierlist', tools:'Tools', bibliothek:'Bibliothek', ranks:'Ranks', patches:'Patches', about:'Meet the Team', builder:'Team Builder', coaching:'Coaching', apply:'Coaching', impressum:'Impressum', datenschutz:'Datenschutz'};
 function setLd(page, sub, tool, title, desc, url, path){
-  const org = {'@type':'Organization', name:'TFTClimb', url:location.origin + withLang('/'), logo:location.origin + '/assets/img/tft-logo.png', email:'info@tftclimb.com'};
+  const org = {'@type':'Organization', name:'TFTClimb', url:location.origin + withLang('/'), logo:location.origin + '/assets/brand/logo-symbol-512.png', email:'info@tftclimb.com'};
   const graph = [{'@type':'WebSite', name:'TFTClimb', url:location.origin + withLang('/'), inLanguage:EN ? 'en' : 'de', publisher:org}];
   if(page!=='home'){
     const items = [['Home', '/']], sec = LD_SECTION[page];
@@ -4074,11 +4074,12 @@ function gaSet(v){
 }
 function gaBanner(){
   if(document.getElementById('ckb')) return;
+  // kleines Popup unten links mit dem Logo-Symbol; Details stehen in der Datenschutzerklärung
   document.body.insertAdjacentHTML('beforeend', `<div class="ckb" id="ckb" role="region" aria-label="${L('Hinweis zu Cookies', 'Cookie notice')}">
-    <div class="ckb-tx"><b>${L('Cookies & Reichweitenmessung', 'Cookies & analytics')}</b>
-      <p>${L('Wir nutzen Google Analytics, um zu sehen, wie viele Besucher kommen und welche Seiten genutzt werden. Dafür setzt Google Cookies – die Messung läuft ab dem Aufruf der Seite. Werbung gibt es keine.', 'We use Google Analytics to see how many visitors come and which pages they use. Google sets cookies for this – measuring starts as soon as the page loads. There are no ads.')}
-        <a href="${withLang('/datenschutz')}">${L('Mehr in der Datenschutzerklärung', 'More in the privacy policy')}</a></p></div>
-    <div class="ckb-bt"><button type="button" class="ckb-no" data-ga="no">${L('Analyse ablehnen', 'Decline analytics')}</button><button type="button" class="ckb-ok" data-ga="ok">${L('Verstanden', 'Got it')}</button></div></div>`);
+    <img class="ckb-logo" src="assets/brand/favicon-192.png" alt="" width="46" height="46">
+    <div class="ckb-tx"><b>Cookies</b>
+      <p>${L('Wir nutzen Cookies von Google Analytics, um unsere Seite zu verbessern.', 'We use Google Analytics cookies to improve our site.')} <a href="${withLang('/datenschutz')}">${L('Datenschutz', 'Privacy policy')}</a></p>
+      <div class="ckb-bt"><button type="button" class="ckb-no" data-ga="no">${L('Ablehnen', 'Decline')}</button><button type="button" class="ckb-ok" data-ga="ok">OK</button></div></div></div>`);
 }
 // Schalter in der Datenschutzerklärung (Abschnitt 3)
 function gaCtl(){
