@@ -163,7 +163,140 @@ window.TFT_CUSTOM = {
     // Encounter Reroll Subscription (Kayle): kostenlose Shop-Rerolls zu Beginn jeder Stage [Stage, Rerolls]. Quelle: Little Buddy Bot, Patch 18.4 (05.09.2026)
     rerollSub: {src:'Little Buddy Bot · Patch 18.5', rows:[[2,4],[3,5],[4,6],[5,7],[6,8],[7,9]]},
     // 1-Kosten-Champions, die eine Stage-1-PvE-Runde allein schaffen (Position egal). Quelle: Little Buddy Bot, Patch 18.4 (16.09.2026)
-    solo: {src:'Little Buddy Bot · Patch 18.5', rounds:[['1-3',['Akali','Camille',"Rek'Sai",'Yorick']],['1-4',['Camille']]]}
+    solo: {src:'Little Buddy Bot · Patch 18.5', rounds:[['1-3',['Akali','Camille',"Rek'Sai",'Yorick']],['1-4',['Camille']]]},
+    // Augment-Tabellen (Cheatsheet): Werte von Little Buddy Bot, Patch 18.5. aug = englischer Augment-Name (Icon, deutscher Name und Text kommen aus den Riot-Daten).
+    // Belohnungen als Kürzel: g15 Gold · c2 Komponenten · u3 / u3x2 / u4*2 zufällige Champions (Kosten, Anzahl, Sterne) · ac/af/aa Komponenten-/Gegenstands-/Artefaktschmiede
+    // fi zufälliges fertiges Item · ar Artefakt · ra Lichtgegenstand · em Emblem · sp Pfannenwender oder Bratpfanne · ti Taktiker-Item · xp64 · rr40 Rerolls · hp Leben für alle
+    // egg goldenes Ei · d6 Würfel · coin Kopf · i:<Item-ID oder englischer Name mit _ statt Leerzeichen>x3
+    // Zeilen: [Bezeichnung, Chance %, Belohnung, Text DE, Text EN]
+    augTables: {src:'Little Buddy Bot · Patch 18.5', list:[
+      {id:'trait-ladder', aug:'Trait Ladder', st:'2', unit:['Attribute', 'traits'], groups:[
+        {rows:[['2',null,'g1 i:DA_Reforger','Umgestalter','Reforger'],['3',null,'g3','Gold','gold'],['4',null,'g5','Gold','gold'],['5',null,'c','Komponente','component'],
+          ['6',50,'g7','Gold','gold'],['',50,'u3x2','3-Kosten','3-costs'],['7',null,'g2 ac','Komponentenschmiede','component anvil']]},
+        {rows:[['8',57,'c2','Komponenten','components'],['',43,'af','Gegenstandsschmiede','full item anvil'],['9',null,'g2 u5x2','5-Kosten','5-costs'],['10',null,'g18','Gold','gold'],
+          ['11',null,'ti','Taktiker-Item','Tactician\'s item'],['12',null,'u4x3 i:DA_LuckyItemChest','4-Kosten + Glückstruhe','4-costs + Lucky Chest'],
+          ['13',null,'g8 c4 i:DA_Consumable_ItemRemover','Komponenten','components'],['14',null,'g10 i:DA_MasterworkUpgrade','Meisterwerk-Aufwertung','Masterwork Upgrade']]}]},
+      {id:'we-stick-together', aug:'We Stick Together', st:'2', type:'traits', traits:['Blackthorn','Blossom','Coven','Elderwood','Executioner','Fae','Hunter','Inferno','Invoker','Rapidfire','Ravager','Spellweaver','Sprykin']},
+      {id:'loaded-dice', aug:'Loaded Dice', st:'2', type:'luck', rows:[
+        ['2','Loaded Dice',['Würfelwurf','die roll'],'d6',['garantiert 6','guaranteed 6']],
+        ['2','Loaded Dice',['Münzwurf','coin flip'],'coin',['garantiert Kopf','guaranteed heads']],
+        ['2','Coin Flip',null,'coin',['garantiert Kopf','guaranteed heads']],
+        ['3','Feeling Lucky',null,'coin',['garantiert Kopf','guaranteed heads']],
+        ['3','A Magic Roll',null,'d4 d5 d6',['garantiert 14+ Augen insgesamt','guaranteed 14+ dice total']],
+        ['3/4','Flip Frenzy',null,'coin coin coin coin coin',['die ersten 5 Würfe garantiert Kopf','first 5 flips guaranteed heads']],
+        ['3/4','Die Roll',null,'d6',['garantiert 6','guaranteed 6']],
+        ['3/4','Golden Gamble',null,'coin',['garantiert Kopf (Glücks-Lichtgegenstand-Truhe)','guaranteed heads (Radiant Lucky Item Chest)']]]},
+      {id:'blossoms-call', aug:'Blossom\'s Call', st:'4', type:'blossom', trait:'Blossom', stages:[
+        ['4',[['0',[1]],['1–2',[1,2,3]],['3',[2,3]],['4',[2,3,4]],['5–7',[3,4]],['8+',[3,4,5]]]],
+        ['5',[['0–1',[1,2,3,4]],['2–3',[2,3,4]],['4',[3,4]],['5+',[3,4,5]]]],
+        ['6',[['0–1',[2,3,4,5]],['2–10',[3,4,5]],['11+',[5]]]]]},
+      {id:'expedition', aug:'Expedition', st:'2', groups:[{rows:[[null,null,'g15 u5x2','Gold + 5-Kosten','gold + 5-costs'],[null,null,'ac i:DA_MasterworkUpgrade','Komponentenschmiede + Meisterwerk-Aufwertung','component anvil + Masterwork Upgrade']]}]},
+      {id:'booster-pack', aug:'Booster Pack', st:'2/3/4', groups:[
+        {aug:'Booster Pack', rows:[[null,13.5,'u1 u2 u3x3'],[null,13.5,'u1x2 u2x2 u3 u1*2'],[null,13.5,'u1x2 u2x2 u3 u3'],[null,13.5,'u1x3 u3x2 u1*2'],[null,13.5,'u1x2 u2x2 u3x2'],
+          [null,13.5,'u1 u2 u3 u1x2*2'],[null,8,'u1 u2 u3 u2*2'],[null,8,'u1 u2 u3 u2*2'],[null,1.5,'u1 u2 u3*2'],[null,1.5,'u1x3 u2 u3 u4']]},
+        {aug:'Booster Pack+', rows:[[null,11,'u2x2 u4x2 u2*2'],[null,11,'u2 u3x2 u4 u2*2'],[null,11,'u2 u4 u1x4*2'],[null,11,'u1 u3x3 u4x2'],[null,11,'u2x2 u4x2 u1x2*2'],
+          [null,11,'u2 u3x2 u4 u2*2'],[null,10,'u2 u3 u4 u1*3'],[null,8,'u2 u3 u4 u3*2'],[null,8,'u1 u2x2 u4 u3*2'],[null,5,'u2x3 u4x3'],[null,4,'u3x3 u4 u5']]},
+        {aug:'Booster Pack++', rows:[[null,12,'u3 u5 u2*3'],[null,12,'u1 u2 u5 u3*2 u3*2'],[null,12,'u5 u1*2 u1*2 u2*2 u3*2'],[null,12,'u4 u5 u5 u2*2 u2*2'],[null,12,'u4x4 u5x2'],
+          [null,12,'u4x3 u5 u1*2 u2*2'],[null,12,'u1 u3x2 u5x2 u1*3'],[null,4,'u3x2 u5x4'],[null,4,'u3 u5 u1*3 u1*3'],[null,4,'u5 u3*2 u4*2'],[null,3,'u3 u5 u2*2 u4*2'],[null,1,'u1 u3 u3 u4 u5*2']]}]},
+      {id:'frontline-foundation', aug:'Frontline Foundation', st:'2', type:'units', stars:2, units:[['Kobuko','Brawler'],['Leona','Defender'],['Yorick','Juggernaut'],['Rek\'Sai','Brawler'],['Ornn','Defender'],['Rakan','Vanguard']]},
+      {id:'backline-blueprint', aug:'Backline Blueprint', st:'2', type:'units', units:[['Azir','Executioner'],['Cassiopeia','Spellweaver'],['Diana','Ravager'],['Mama Beak','Rapidfire'],['Tristana','Hunter']]},
+      {id:'warpath', aug:'Warpath', st:'2', groups:[{rows:[[null,null,'u5x3 u4*2 afx2','3× 5-Kosten, 4-Kosten ★★, 2 Gegenstandsschmieden','3× 5-cost, 4-cost ★★, 2 full item anvils']]}]},
+      {id:'slightly-magic-roll', aug:'Slightly Magic Roll', st:'2', groups:[
+        {rows:[['d1',null,'rr6','kostenlose Rerolls','free rerolls'],['d2',null,'g10','Gold','gold']]},
+        {rows:[['d3',null,'g3 u2*2','2-Kosten ★★ + Gold','2-cost ★★ + gold'],['d4',null,'fi i:DA_Reforger','fertiges Item + Umgestalter','full item + Reforger']]},
+        {rows:[['d5',null,'hp','+160 Leben für alle Einheiten','+160 HP board-wide'],['d6',null,'em','zufälliges Emblem','random emblem']]}]},
+      {id:'magic-roll', aug:'A Magic Roll', st:'3', note:['Besonderes goldenes Ei: schlüpft nach 3 Runden und gibt 5 Gold, 2× 5-Kosten und eine Taktikerkrone.', 'Special Golden Egg: hatches in 3 turns and gives 5 gold, 2× 5-cost and a Tactician\'s Crown.'], groups:[
+        {h:['Augensumme der 3 Würfel', 'Total of the 3 dice'], rows:[['4–8',25,'hp','+250 Leben für alle Einheiten (auch künftige)','+250 health for all units (present and future)'],['9–11',36,'u1*2 u2*2 u2*2 u3*2','Haufen Champions','pile of champions'],
+          ['12–15',32,'c4 i:DA_Reforger','4× dieselbe Komponente + Umgestalter','4× same component + Reforger'],['16–17',4,'i:DA_Component_FryingPan c2','Bratpfanne + 2 zufällige Komponenten','Pan + 2 random components'],
+          ['111 · 222 · 333',1.4,'g? i:DA_Consumable_LesserChampionDuplicatorx3','4–6 Gold + 3× kleiner Duplikator','4–6 gold + 3× Lesser Duplicator'],['444 · 555 · 666',1.4,'i:DA_TacticiansCape','Taktikerumhang','Tactician\'s Cape'],
+          ['626',0.5,'egg','besonderes goldenes Ei','Special Golden Egg']]}]},
+      {id:'expected-unexpectedness', aug:'Expected Unexpectedness', st:'2', groups:[
+        {h:'Stage 2', rows:[[null,36,'u4x2'],[null,32,'acx2 i:DA_Reforgerx3'],[null,25,'g9'],[null,4,'aa'],[null,3,'i:DA_TacticiansCrown']]},
+        {h:'Stage 3', rows:[[null,36,'g5 i:DA_Consumable_LesserChampionDuplicatorx2'],[null,32,'g3 af'],[null,25,'g15'],[null,4,'c3'],[null,3,'emx2']]},
+        {h:'Stage 4', rows:[[null,36,'g3 u5x2'],[null,32,'g5 i:DA_LuckyItemChest'],[null,25,'g18'],[null,4,'fi c2'],[null,3,'u5x3 i:DA_Consumable_ChampionDuplicator']]}]},
+      {id:'call-to-chaos', aug:'Call to Chaos', st:'4', groups:[
+        {rows:[[null,11,'g58','Gold','gold'],[null,11,'xp64','Erfahrung','XP'],[null,11,'rr40','Shop-Rerolls','shop rerolls'],[null,11,'af egg','Gegenstandsschmiede + goldenes Ei','full item anvil + Golden Egg'],
+          [null,11,'g8 i:DA_RadiantLuckyItemChest i:DA_Consumable_ItemRemover','Glücks-Lichtgegenstand-Truhe','Radiant Lucky Item Chest']]},
+        {rows:[[null,11,'acx2 i:DA_Component_FryingPan i:DA_Component_Spatula','Komponentenschmieden + Pfanne + Pfannenwender','component anvils + Pan + Spat'],[null,11,'i:DA_ThiefsGlovesx3 i:DA_Consumable_ItemRemover','Diebeshandschuhe','Thief\'s Gloves'],
+          [null,11,'i:DA_LuckyItemChestx3 i:DA_Consumable_ItemRemover','Glückstruhen','Lucky Item Chests'],[null,11,'c6','verschiedene Komponenten','unique components']]}]},
+      {id:'golden-egg', aug:'The Golden Egg', st:'4', groups:[
+        {rows:[[null,15,'g88 i:DA_TacticiansCrown'],[null,15,'g30 i:DA_TacticiansCrownx2 i:DA_ThiefsGloves'],[null,10,'g10 i:DA_TacticiansCrown ra ar fi i:DA_Consumable_ItemRemover'],
+          [null,10,'g25 i:Infinity_Force i:Zhonya\'s_Paradox i:The_Indomitable i:DA_Consumable_ChampionDuplicator i:DA_Consumable_ItemRemoverx2']]},
+        {rows:[[null,15,'g10 i:DA_TacticiansCrown rax2'],[null,15,'g25 i:DA_TacticiansCrown i:DA_ThiefsGlovesRadiant i:DA_ThiefsGloves'],[null,10,'g30 i:DA_TacticiansCrown u5x4 i:DA_Consumable_ChampionDuplicatorx2'],
+          [null,10,'g10 i:DA_TacticiansCrown i:Infinity_Edge i:Jeweled_Gauntlet i:Striker\'s_Flail i:Hand_Of_Justice i:Quicksilver i:DA_Consumable_ItemRemover']]}]},
+      {id:'missed-connections', aug:'Missed Connections', st:'3+', type:'circle', units:['Akali','Camille','Varus','Veigar','Ornn','Yorick','Xayah','Karma','Pebbles','Rek\'Sai','Rakan','Leona','Kobuko','Cinderling']},
+      {id:'slice-of-life', aug:'Slice of Life', st:'2', groups:[{rows:[['2-1',null,'u2'],['2-5',null,'u2']]},{rows:[['3-1',null,'u3'],['3-5',null,'u3']]},{rows:[['4-1',null,'u4'],['4-5',null,'u4']]},{rows:[['5-1',null,'u5']]}]},
+      {id:'hard-commit', aug:'Hard Commit', st:'2', type:'commit', traits:['Blossom','Brawler','Elderwood','Hunter','Juggernaut','Spellweaver','Vanguard']},
+      {id:'solo-leveling', aug:'Solo Leveling', st:'2', type:'stats', stats:[['ad','50 %','Angriffsschaden','Attack Damage'],['ap','50 %','Fähigkeitsstärke','Ability Power'],['as','150 %','Angriffstempo','Attack Speed'],['crit','10 %','Krit-Chance','Crit Chance'],
+        ['da','30 %','Schadensverstärkung','Damage Amp'],['hp','525','Leben','Health'],['dr','20 %','Haltbarkeit','Durability'],['sv','20 %','Omnivampir','Omnivamp']]}
+    ]},
+    // Attribut-Tabellen (Cheatsheet): Werte von Little Buddy Bot, Patch 18.5. trait = englischer Attributname (Symbol aus den Riot-Daten), text = Kurzbeschreibung [DE, EN].
+    // Belohnungen wie bei den Augment-Tabellen, dazu ch:<Champion>x3*2 (bestimmter Champion, Anzahl, Sterne) und „or“ (oder)
+    traitTables: {src:'Little Buddy Bot · Patch 18.5', list:[
+      {id:'prismatic-traits', title:['Prismatische Attribute','Prismatic traits'], trait:'Blossom', type:'prismatic', text:['Mit genug Champions eines Attributs auf dem Feld wird es prismatisch.','Field enough champions of a trait and it turns prismatic.'],
+        rows:[['Blossom',['11 Blossom-Champions aufs Feld (mindestens 2 Embleme nötig)','Field 11 Blossom (requires at least 2 emblems)'],['Geister laden sich mit Kraft auf und werden zu ihren prismatischen Effekten.','Wisps overflow with power, upgrading to their prismatic effects.']],
+          ['Elderwood',['11 Elderwood-Champions aufs Feld (mindestens 2 Embleme nötig)','Field 11 Elderwood (requires at least 2 emblems)'],['Pflanzen steigen auf 3 Sterne auf, und alle 7 Sekunden erscheinen Tiefwald-Beschützer.','Plants star up to 3-star and Deepwood Protectors spawn every 7 seconds.']]]},
+      {id:'coven', title:['Coven-Beute','Coven loot'], trait:'Coven', type:'coven',
+        text:['Sammle Essenz durch Kills und verlorene Kämpfe. Dann wählst du: in Beute umwandeln oder weitersammeln.','Gather Essence by killing champions, plus more by losing player combat. Then choose: convert it to rewards or keep gathering.'],
+        bp:[[3,2,22],[4,2,28],[5,3,35],[7,10,60]],
+        tiers:[[40,5,[[33,'g4'],[33,'u2x2'],[33,'ch:Cassiopeia ch:Camille']]],
+          [85,10,[[33,'g2 c'],[33,'g10'],[33,'ch:Elise c']]],
+          [130,28,[[50,'c ch:Caitlynx3 or ch:Elisex3'],[25,'g6 c'],[25,'g3 c ch:Camillex3']]],
+          [185,45,[[25,'af c'],[25,'g10 af'],[25,'g10 c2 i:DA_Reforger'],[25,'ch:Caitlynx3 ch:Camillex3 af']]],
+          [250,85,[[20,'g20 af af'],[20,'g5 ch:Morganax3 i:DA_LuckyItemChest fi'],[20,'g18 i:DA_LuckyItemChest i:DA_LuckyItemChest i:DA_Reforger'],[20,'g18 ch:Lux i:DA_LuckyItemChest acx2'],[20,'g18 aa af']]],
+          [365,175,[[17,'g27 ra ra i:DA_Consumable_ItemRemoverx2 i:DA_Reforgerx2'],[17,'g22 ch:Morganax3 ch:Sentinelx3 i:DA_RadiantLuckyItemChest i:DA_ThiefsGloves'],[17,'g22 i:DA_RadiantLuckyItemChest af af em'],
+            [17,'g15 ch:Kennenx3 i:DA_ThiefsGloves i:DA_ThiefsGloves i:DA_Consumable_ItemRemoverx3'],[17,'g22 ch:Morgana i:DA_RadiantLuckyItemChest i:DA_18_EmblemInvoker i:DA_18_EmblemInvoker'],[17,'g12 ch:Dravenx3 i:DA_TacticiansCrown i:DA_RadiantLuckyItemChest i:DA_Consumable_GoldenItemRemover']]],
+          [500,300,[[20,'rax3 af af i:DA_Consumable_ItemRemoverx3 i:DA_Reforgerx3'],[20,'u5x3 u5x3 i:DA_RadiantLuckyItemChestx2 fix2 i:DA_Consumable_ItemRemoverx3'],[20,'g20 i:DA_RadiantLuckyItemChest i:DA_RadiantLuckyItemChest aax2 i:DA_Consumable_ItemRemoverx3'],
+            [20,'g10 i:DA_RadiantLuckyItemChest i:DA_RadiantLuckyItemChest emx4 i:DA_Consumable_GoldenItemRemover'],[20,'g15 ch:Kennenx3 ch:Lux*2 i:DA_TacticiansShield i:DA_RadiantLuckyItemChestx2']]],
+          [650,400,[[33,'g30 u5x3 u5x3 u5x3 i:DA_TacticiansShield ra ra ra i:DA_Consumable_GoldenItemRemover'],[33,'g10 ch:Lux*2 ch:Morganax3 i:DA_TacticiansCape i:DA_RadiantLuckyItemChest i:DA_RadiantLuckyItemChest i:DA_RadiantLuckyItemChest i:DA_Consumable_GoldenItemRemover'],
+            [33,'g40 i:DA_TacticiansCrown ra ra ra i:DA_Consumable_ChampionDuplicator i:DA_Consumable_ChampionDuplicator i:DA_Consumable_ChampionDuplicator i:DA_Consumable_GoldenItemRemover i:DA_Reforger i:DA_Reforger']]],
+          [800,1666,[[50,'g100 i:DA_TacticiansCapex3 rax6 i:DA_Consumable_GoldenItemRemover'],[50,'g100 i:DA_TacticiansShield rax6 i:DA_Consumable_ChampionDuplicatorx6']]]]},
+      {id:'riftbeast', title:['Riftbeast-Shop & Buffs','Riftbeast shop & buffs'], trait:'Riftbeast', type:'riftbeast',
+        text:['(5) Jeder 3. Kampf: Dein nächster Shop ist voller Riftbeasts. Chance = mindestens 1 Kopie im Shop (ohne 3-Sterne-Riftbeasts). Diese Shops nutzen feste 5er-Aufstellungen statt der normalen Shop-Chancen.','(5) Every 3 combats, your next shop is overrun with Riftbeasts. % = odds of seeing at least 1 copy in the shop, assuming no 3-star Riftbeasts. These shops use preset 5-unit lineups, not normal shop odds.'],
+        odds:[['Cinderling',[[67,2],[66,2],[64,2],[59,2],[31,3],[21,3],[9,1]]],['Pebbles',[[67,2],[66,2],[64,2],[59,2],[31,3],[21,3],[9,1]]],['Murkwolf',[[44,2],[44,2],[44,2],[45,2],[29,2],[24,3],[14,3]]],
+          ['Gromp',[[56,1],[56,2],[55,2],[55,2],[51,2],[45,2],[14,2]]],['Scuttlecrab',[[56,2],[56,2],[55,2],[55,2],[51,2],[47,3],[27,3]]],['Mama Beak',[[33,1],[34,2],[39,2],[52,2],[52,2],[53,2],[64,3]]],
+          ['Krug',[[67,1],[67,2],[69,2],[76,2],[76,2],[74,2],[64,3]]],['Sentinel',[[11,1],[11,1],[12,1],[15,1],[34,1],[34,1],[24,1]]],['Brambleback',[[11,1],[11,1],[12,1],[15,1],[34,1],[39,1],[51,1]]],['Elder Dragon',[null,null,null,null,null,[5,1],[45,1]]]],
+        buffs:[['Cinderling',['Scharlachroter Buff','Scarlet Buff'],['Erhält bei jedem Zauber 22 % Angriffsschaden.','Gains 22% Attack Damage each cast.']],['Pebbles',['Petrol-Buff','Teal Buff'],['Erhält 2 Manaregeneration pro 4 Sekunden Kanalisieren.','Gain 2 Mana Regen for every 4 seconds channeled.']],
+          ['Gromp',['Lila Buff','Purple Buff'],['Erhält alle 5 Sekunden 30 % Fähigkeitsstärke.','Every 5 seconds, Gromp gains 30% Ability Power.']],['Murkwolf',['Grauer Buff','Grey Buff'],['Erhält Präzision und 25 % Krit-Chance, bis zu 75 % je nach fehlendem Leben.','Gain Precision and 25% Crit Chance, increased up to 75% based on missing Health.']],
+          ['Scuttlecrab',['Grüner Buff','Green Buff'],['Fallen Verbündete unter 50 % Leben, stellen sie 15 % ihres maximalen Lebens wieder her.','When allies fall below 50% Health, they restore 15% max Health.']],['Mama Beak',['Oranger Buff','Orange Buff'],['Normaler Schaden senkt die Rüstung des Gegners um 2.','Dealing physical damage reduces enemy Armor by 2.']],
+          ['Krug',['Schiefer-Buff','Slate Buff'],['Beim Tod schützen Krug und Kruglets Verbündete mit einem Schild über 8 % des maximalen Lebens.','On death, Krug and Kruglettes shield allies for 8% max Health.']],['Brambleback',['Roter Buff','Red Buff'],['Angriffe verbrennen Gegner um 1 % und heilen Brambleback um 5 % des maximalen Lebens.','Attacks 1% Burn enemies and heal Brambleback for 5% max Health.']],
+          ['Sentinel',['Blauer Buff','Blue Buff'],['Bei jedem Zauber erhalten Verbündete 2 Manaregeneration.','Each time Sentinel casts, allies gain 2 Mana Regen.']],['Elder Dragon',['Buff des Ältesten Drachen','Elder Dragon Buff'],['Schaden an Gegnern unter 12 % Leben richtet sie hin.','Damaging an enemy below 12% Health executes them.']]],
+        buffText:['(3) Mit dem Alpha-Mal erhält eine Riftbeast ihren eigenen Buff.','(3) Use the Alpha Mark to grant a Riftbeast their unique Buff.']},
+      // Blackthorn: [Kosten][Rolle Tank/AD/AP][Stufe 2/4/6][Sterne] = [Wert 1, Wert 2] – Tank: Leben % + Rüstung/MR, AD: AD % + AS %, AP: Schadensverstärkung % + Manaregeneration
+      {id:'blackthorn', title:['Blackthorn-Boni','Blackthorn bonus stats'], trait:'Blackthorn', type:'blackthorn',
+        text:['Der Verbündete auf dem Blackthorn-Feld wird vor dem Kampf geopfert und gibt deinen Champions Leben. Blackthorn-Champions erhalten Boni je nach Rolle, Sternen und Kosten des Opfers.','The ally on the Blackthorn hex is sacrificed before combat, granting your champions Health. Blackthorn champions gain bonus stats based on the sacrifice\'s role, star level and cost.'],
+        grid:[
+          [[[[10,7],[17,12],[30,21]],[[13,9],[22,16],[39,27]],[[15,11],[26,18],[45,32]]],[[[14,8],[24,14],[42,25]],[[19,11],[31,18],[55,32]],[[22,13],[36,21],[63,37]]],[[[6,1],[10,2],[18,4]],[[8,2],[13,3],[23,5]],[[9,2],[15,3],[26,5]]]],
+          [[[[12,8],[24,17],[48,34]],[[15,11],[31,22],[62,44]],[[18,13],[36,25],[71,50]]],[[[17,10],[34,20],[67,39]],[[22,13],[44,25],[87,51]],[[25,15],[50,29],[101,59]]],[[[7,1],[14,3],[28,6]],[[9,2],[18,4],[36,7]],[[11,2],[21,4],[42,8]]]],
+          [[[[14,10],[30,21],[56,40]],[[18,12],[39,27],[73,51]],[[20,14],[45,32],[84,59]]],[[[19,11],[42,25],[79,46]],[[25,15],[55,32],[103,60]],[[29,17],[63,37],[119,69]]],[[[8,2],[18,4],[33,7]],[[10,2],[23,5],[43,9]],[[12,2],[26,5],[50,10]]]],
+          [[[[19,13],[36,25],[850,600]],[[24,17],[46,33],[1105,780]],[[28,20],[54,38],[1275,900]]],[[[26,15],[50,29],[1200,700]],[[34,20],[66,38],[1560,910]],[[40,23],[76,44],[1800,1050]]],[[[11,2],[21,4],[500,100]],[[14,3],[27,5],[650,130]],[[17,3],[32,6],[750,150]]]],
+          [[[[24,17],[51,36],[1700,1200]],[[31,22],[66,47],[2210,1560]],[[36,25],[77,54],[2550,1800]]],[[[34,20],[72,42],[2400,1400]],[[44,25],[94,55],[3120,1820]],[[50,29],[108,63],[3600,2100]]],[[[14,3],[30,6],[1000,200]],[[18,4],[39,8],[1300,260]],[[21,4],[45,9],[1500,300]]]]]},
+      {id:'fae', title:['Fae-Pixies & Gold','Fae pixies & gold'], trait:'Fae', type:'fae',
+        text:['Schaden, Heilung und Schilde deines Teams locken Pixies an. Jede Pixie gibt Fae-Champions AD und AP und heilt sie unter 50 % Leben. Nach 7 Pixies kommen stattdessen goldene Pixies, die Gold geben.','Your team\'s damage, healing and shielding attracts Pixies. Each Pixie grants Fae champions AD and AP and heals them below 50% Health. After 7 Pixies, Golden Pixies come instead and grant gold.'],
+        pix:[[2000,[4.5,3],[7,5],[25,3],[28.5,5]],[7500,[9,6],[14,10],[31.5,6],[39,10]],[15000,[13.5,9],[21,15],[38,9],[49.5,15]],[25000,[18,12],[28,20],[45,12],[60,20]],[60000,[22.5,15],[35,25],[52,15],[70.5,25]],[100000,[27,18],[42,30],[58.5,18],[81,30]],[155000,[31.5,21],[49,35],[65,21],[91.5,35]]],
+        gold:[[170000,5],[200000,8],[300000,12],[400000,18],[500000,25],[600000,50],[888888,777]],
+        aug:['Embiggen',['Pixies werden größer und geben 50 % mehr AD und AP. Fae-Champions erhalten sofort 18 % AD und AP.','Fae pixies are now larger and grant 50% more Attack Damage and Ability Power. Fae champions gain 18% Attack Damage and Ability Power immediately.'],'2+']},
+      {id:'primal', title:['Primal-Segen','Primal blessings'], trait:'Primal', type:'info', text:['Wähle einen von vier Primal-Segen.','Choose one of four Primal blessings.'],
+        rows:[['emblem:Primal',['Schildkröte','Turtle'],['Dein Team heilt alle 4 Sekunden 4 % seines maximalen Lebens.','Your team heals for 4% of their max Health every 4 seconds.']],['emblem:Primal',['Bär','Bear'],['Primal-Schaden richtet Gegner unter 12 % Leben hin.','Primal damage executes enemies below 12% Health.']],
+          ['emblem:Primal',['Tiger','Tiger'],['Nach 6 Sekunden erhalten Primal-Champions 35 % Angriffstempo und dein Team 15 % Angriffstempo.','After 6 seconds, Primal champions gain 35% Attack Speed and your team gains 15% Attack Speed.']],['emblem:Primal',['Phönix','Phoenix'],['Alle 15 Primal-Kills erhältst du eine Komponente (höchstens 4).','Every 15 Primal takedowns, gain a component. Max 4.']]]},
+      {id:'avatar-lux', title:['Avatar (Lux)','Avatar (Lux)'], trait:'Avatar', type:'lux', text:['Lux bekommt je nach gewähltem Attribut einen Zusatzeffekt.','Lux gains a bonus effect based on her chosen trait.'],
+        base:[['Passiv: Bei jedem Zauber erhalten alle Verbündeten, die ein Attribut mit Lux teilen, 3/3/100 Mana.','Passive: On cast, all allies that share a trait with Lux gain 3/3/100 mana.'],['Aktiv: Feuert einen Laser in die Linie mit den meisten Gegnern: 375/565/6500 magischer Schaden, pro getroffenem Gegner 25/25/10 % weniger (mindestens 40 %).','Active: Fire a laser towards the most enemies in a line that deals 375/565/6500 magic damage, reduced by 25/25/10% for each enemy hit (minimum 40%).']],
+        rows:[['Blackthorn',['Betäubt getroffene Ziele für 1 Sekunde.','Stuns targets hit for 1 second.']],['Blossom',['Das erste getroffene Ziel erleidet 10 % zusätzlichen Schaden.','The first target hit is dealt 10% bonus damage.']],
+          ['Coven',['Senkt Rüstung und Magieresistenz getroffener Ziele für den restlichen Kampf um 8.','Reduces the Armor and Magic Resist of targets hit by 8 for the rest of combat.']],['Elderwood',['Zauber geben allen Verbündeten für den restlichen Kampf 2,5 % mehr maximales Leben.','Casts grant all allies 2.5% increased max Health for the rest of combat.']],
+          ['Fae',['Heilt den Verbündeten mit dem niedrigsten Leben in Prozent um 18 % des Fähigkeitsschadens.','Heals the lowest percent Health ally for 18% of ability damage dealt.']],['Inferno',['Stellt pro Kill 8 Mana wieder her.','Restores 8 mana per takedown.']],
+          ['Lunar',['Macht getroffene Gegner für 4 Sekunden 10 % verwundbar.','Applies 10% Vulnerable to enemies hit for 4 seconds.']],['Primal',['Nach dem Zauber 6 Sekunden lang 50 % Angriffstempo.','Gain 50% Attack Speed for 6 seconds after cast.']],
+          ['Solar',['Verursacht 15 % zusätzlichen Schaden, plus 12 % je einzigartigem 3-Sterne-Champion auf dem Feld.','Deal 15% bonus damage. For each unique 3-star champion fielded, deal an additional 12% damage.']]]},
+      {id:'sprykin', title:['Sprykin BFF & SFF','Sprykin BFF & SFF'], trait:'Sprykin', type:'sprykin',
+        text:['Du erhältst den besten flauschigen Freund (BFF). Setze einen Sprykin darauf, um seinen Reiter zu wählen. Mit „Small Furry Friend“ (ab Stage 2) kommt ein zweiter, kleinerer Freund (SFF) mit 45 % der Stärke dazu.','You get a Best Furry Friend (BFF). Put a Sprykin on it to choose its Rider. Small Furry Friend (Stage 2+) adds a second summon (SFF) that is 45% as powerful.'],
+        eff:[['bff',[[3,'15 %','15 %',null],[5,'40 %','40 %',50],[7,'55 %','55 %',100]]],['sff',[[3,'6,75 %','6,75 %',null],[5,'18 %','15,75 %',50],[7,'24,75 %','24,75 %',100]]]],
+        melee:[['bff',[[3,'10 %',null],[5,'13 %','6,5 %'],[7,'16 %','16 %']]],['sff',[[3,'4,5 %',null],[5,'0,6 %','0,3 %'],[7,'7,2 %','7,2 %']]]],
+        ranged:[['bff',[[3,'15 %',null],[5,'30 %','15 %'],[7,'40 %','40 %']]],['sff',[[3,'6,75 %',null],[5,'12,6 %','6,3 %'],[7,'15 %','15 %']]]]}
+    ]},
+    // Patch-Plan des Sets: [Patch, Datum, Ereignisse DE, Ereignisse EN]. Quelle: Little Buddy Bot (Stand 09.09.2026)
+    patchSchedule: {src:'Little Buddy Bot', rows:[
+      ['18.1','2026-08-26',['Battle Pass Teil 1','TPC Cup #1'],['Battle Pass Part 1','TPC Cup #1']],['18.2','2026-09-10',['Tactician\'s Trials #1, Woche 1','TPC Cup #2'],['Tactician\'s Trials #1 wk 1','TPC Cup #2']],
+      ['18.3','2026-09-23',['Tactician\'s Trials #1, Woche 2','TPC Cup #3'],['Tactician\'s Trials #1 wk 2','TPC Cup #3']],['18.4','2026-10-07',['Battle Pass Teil 2','Tactician\'s Trials #2'],['Battle Pass Part 2','Tactician\'s Trials #2']],
+      ['18.5','2026-10-21',['Regionals'],['Regionals']],['18.6','2026-11-04',['Patch für 1 Woche','4v4 Superbrawl'],['1 week patch','4v4 Superbrawl']],['18.6B','2026-11-11',['Worlds','Set 19 PBE'],['Worlds','Set 19 PBE']],['19.1','2026-12-01',['Set 19 startet'],['Set 19 launches']]]}
   },
   // Elderwood-Pflanzen (platzierbare Einheiten ohne Champion-Daten). Reihenfolge nicht ändern – Builder-Links hängen davon ab.
   plants: {

@@ -892,3 +892,79 @@ body.nd-mini .nds-soon{display:none}
 .atg{max-width:1300px;margin:0 auto}
 @media (max-width:900px){.nd .cs-layout{grid-template-columns:1fr}}
 @media (max-width:980px){.nd #page-cheatsheet>.wrap{padding:0 12px}}
+
+/* ---------- Cheatsheet-Menü links im TFTClimb-Stil: Schriftzug wie im Rahmen, größere Schrift, Gruppen mit Symbol und Anzahl,
+   aktive Tabelle türkis von links angeleuchtet, Leuchtlinie oben und pinke Eck-Akzente wie beim Cheatsheet-Rahmen ---------- */
+.nd .cs-layout{grid-template-columns:244px minmax(0,1fr)}
+.nd .cs-side{padding:18px 12px 14px;border-radius:14px;border:1px solid rgba(46,230,214,.24);
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M2 12L12 2' stroke='%23f7166e' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") left 7px top 7px/12px 12px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M2 12L12 2' stroke='%23f7166e' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") right 7px bottom 7px/12px 12px no-repeat,
+    radial-gradient(ellipse at 50% 0,rgba(46,230,214,.12),transparent 60%),linear-gradient(180deg,#0d2a34,#071a23);
+  box-shadow:0 16px 36px rgba(0,0,0,.4),inset 0 1px 0 rgba(127,247,236,.08)}
+.nd .cs-side::before{content:"";position:absolute;left:20%;right:20%;top:0;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,#2ee6d6,transparent);box-shadow:0 0 12px rgba(46,230,214,.8)}
+/* Schriftzug „CHEATSHEETS“ wie oben rechts im Rahmen */
+.nd a.cs-side-h{display:flex;align-items:center;gap:9px;margin:2px 6px 0;color:#fff;text-decoration:none;text-transform:none;letter-spacing:0}
+.nd .cs-side-h .csf-hex{width:22px;height:22px}
+.nd .cs-side-h b{font:italic 900 1.55rem/1 var(--ff-head);text-transform:uppercase;letter-spacing:.04em;color:#fff;text-shadow:0 0 14px rgba(46,230,214,.3)}
+.nd .cs-side-h b i{font-style:inherit;background:linear-gradient(90deg,#7ff7ec,#2ee6d6 55%,#3fd3f0);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 8px rgba(46,230,214,.45))}
+.nd a.cs-side-h:hover .csf-hex{fill:rgba(46,230,214,.35)}
+/* Suche */
+.nd .cs-search{margin:0 2px 14px;padding:10px 12px;border-radius:10px;border:1px solid rgba(46,230,214,.2);background:rgba(3,17,27,.65);color:#7fa3ad;box-shadow:inset 0 2px 6px rgba(0,0,0,.35)}
+.nd .cs-search:focus-within{border-color:#2ee6d6;box-shadow:inset 0 2px 6px rgba(0,0,0,.35),0 0 0 3px rgba(46,230,214,.15)}
+.nd .cs-search input{font-size:.95rem}
+.nd .cs-search kbd{flex:none;padding:1px 7px;border-radius:5px;border:1px solid rgba(46,230,214,.3);font:700 .72rem/1.4 var(--ff-body);color:#7fa3ad;background:rgba(46,230,214,.06)}
+/* Gruppen */
+.nd .cs-group+.cs-group{margin-top:4px;padding-top:4px;border-top:1px solid rgba(46,230,214,.1)}
+.nd .cs-gh{gap:9px;justify-content:flex-start;padding:10px 6px 10px 8px;border-radius:10px;font:italic 800 1.04rem/1.1 var(--ff-head);letter-spacing:.03em;white-space:nowrap;text-transform:uppercase;color:#c9d6e0;transition:background .15s,color .15s}
+.nd .cs-gh:hover{color:#fff;background:rgba(46,230,214,.06)}
+.nd .cs-gi{display:grid;place-items:center;width:28px;height:28px;flex:none;border-radius:8px;background:rgba(46,230,214,.08);border:1px solid rgba(46,230,214,.22);color:#2ee6d6}
+.nd .cs-gi svg{width:17px;height:17px}
+.nd .cs-gt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.nd .cs-gn{flex:none;min-width:24px;padding:2px 7px;border-radius:20px;font:700 .74rem/1.3 var(--ff-body);font-style:normal;letter-spacing:0;text-align:center;color:#7fa3ad;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+.nd .cs-gh>svg:last-child{width:15px;height:15px;flex:none;color:#7fa3ad}
+.nd .cs-group:not(.closed) .cs-gh,.nd .cs-group.force-open .cs-gh{color:#fff}
+.nd .cs-group:not(.closed) .cs-gi,.nd .cs-group.force-open .cs-gi{background:linear-gradient(180deg,rgba(46,230,214,.3),rgba(46,230,214,.08));border-color:rgba(46,230,214,.6);box-shadow:0 0 12px rgba(46,230,214,.35)}
+.nd .cs-group:not(.closed) .cs-gn,.nd .cs-group.force-open .cs-gn{color:#06202a;background:#2ee6d6;border-color:#2ee6d6}
+.nd .cs-group:not(.closed) .cs-gh>svg:last-child{color:#2ee6d6}
+/* Tabellen in der Gruppe: Leitlinie links, größere Schrift und Symbole */
+.nd .cs-menu{gap:2px;margin:2px 0 6px 22px;padding:2px 0 2px 10px;border-left:1px solid rgba(46,230,214,.18)}
+.nd .cs-tile{gap:11px;padding:8px 10px;border-radius:9px;font-size:.98rem;font-weight:600;line-height:1.25;color:#a9bac6}
+.nd .cs-ti{display:grid;place-items:center;width:26px;height:26px;flex:none}
+.nd .cs-ti svg{width:21px;height:21px;color:#5eead4;opacity:.8}
+.nd .cs-ti .cs-aic{width:26px;height:26px;border-radius:6px}
+.nd .cs-tile:hover{color:#fff;background:linear-gradient(90deg,rgba(46,230,214,.1),rgba(46,230,214,0))}
+.nd .cs-tile:hover .cs-ti svg{opacity:1}
+.nd .cs-tile.on{color:#fff;font-weight:700;background:linear-gradient(90deg,rgba(46,230,214,.24),rgba(46,230,214,.03));box-shadow:inset 0 0 0 1px rgba(46,230,214,.3)}
+.nd .cs-tile.on::before{left:-11px;top:7px;bottom:7px;width:3px;border-radius:0 3px 3px 0;background:#2ee6d6;box-shadow:0 0 10px #2ee6d6}
+.nd .cs-tile.on .cs-ti svg{opacity:1;filter:drop-shadow(0 0 5px rgba(46,230,214,.8))}
+.nd .cs-tile.on .cs-aic{box-shadow:0 0 0 1px rgba(46,230,214,.6),0 0 10px rgba(46,230,214,.45)}
+@media (max-width:900px){.nd .cs-layout{grid-template-columns:1fr}}
+.nd .cs-side{scrollbar-width:thin;scrollbar-color:rgba(46,230,214,.35) transparent}
+.nd .cs-side::-webkit-scrollbar{width:6px}.nd .cs-side::-webkit-scrollbar-thumb{border-radius:3px;background:rgba(46,230,214,.35)}
+/* Cheatsheet-Schriftzüge (Seitenleiste, oben rechts im Rahmen) im Stil der Seiten-Überschriften: kursiv, fett, Verlauf Weiß → Türkis → Blau */
+.nd .cs-side-h b,.csf-brand b{font-family:var(--ff-head);font-style:italic;font-weight:900;text-transform:uppercase;letter-spacing:-.005em;text-shadow:none;
+  background:linear-gradient(90deg,#fff 0%,#fff 36%,#5eead4 64%,#38bdf8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 14px rgba(56,189,248,.35))}
+.nd .cs-side-h b i,.csf-brand b i{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:inherit;filter:none;font-style:inherit}
+.nd .cs-side-h b{font-size:1.7rem}
+/* Seitenleiste: Schriftzug und Suche bleiben beim Scrollen der Liste oben stehen (eigener Hintergrund, Leuchtlinie und pinker Eck-Akzent wandern mit) */
+.nd .cs-side{padding-top:0}
+.nd .cs-side::before{display:none}
+.cs-side-top{position:sticky;top:0;z-index:3;margin:0 -12px 4px;padding:18px 12px 2px;border-radius:14px 14px 0 0;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M2 12L12 2' stroke='%23f7166e' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") left 7px top 7px/12px 12px no-repeat,
+    radial-gradient(ellipse at 50% 0,rgba(46,230,214,.12),transparent 70%),#0d2a34;box-shadow:0 12px 14px -12px rgba(0,0,0,.7)}
+.cs-side-top::before{content:"";position:absolute;left:20%;right:20%;top:0;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,#2ee6d6,transparent);box-shadow:0 0 12px rgba(46,230,214,.8)}
+.nd .cs-side-top a.cs-side-h{margin:2px 6px 14px}
+.nd .cs-side-top .cs-search{margin:0 2px 12px}
+@media (max-width:900px){.cs-side-top{position:relative;box-shadow:none}}
+/* Tools: Heimerdinger oben rechts im Kopf, steht still. Tipp-Blase beim Drüberfahren, Klick = nächster Tipp */
+.nd .page-head.heimer-head,.nd .page-head.art-on{position:relative;--hw:clamp(150px,14vw,230px);min-height:0}
+.nd .page-head .buddy.heimer{display:block;position:absolute;right:-6px;top:6px;bottom:auto;width:var(--hw);height:calc(var(--hw) * .84);margin:0;pointer-events:none;z-index:0}
+.nd .page-head .buddy.heimer .buddy-img{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 12px 22px rgba(0,0,0,.5)) drop-shadow(0 0 18px rgba(242,193,78,.28));animation:none}
+.nd .page-head .buddy.heimer .buddy-bubble{right:calc(100% - 6px);top:6px;width:240px;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
+.nd .page-head .buddy.heimer[data-hover]{z-index:5}
+.nd .page-head .buddy.heimer[data-hover] .buddy-bubble{opacity:1;visibility:visible;animation:none}
+.nd .page-head .buddy.heimer.b-simonly{display:none}
+.nd .sim-mode .page-head .buddy.heimer.b-simonly{display:block}
+.nd .page-head.heimer-head>*:not(.buddy),.nd .page-head.art-on>*:not(.buddy){position:relative;z-index:1}
+@media (min-width:761px){.nd .page-head.heimer-head,.nd .page-head.art-on{padding-inline:calc(var(--hw) + 8px)}.nd #page-builder:not(.sim-mode) .page-head.art-on{padding-inline:0}}
+@media (max-width:760px){.nd .page-head .buddy.heimer,.nd .sim-mode .page-head .buddy.heimer.b-simonly{display:none}}

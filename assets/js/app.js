@@ -2983,7 +2983,7 @@ const CS = TFT_CUSTOM_SET.cheats || {};
 const CS_SHOW_CAROUSEL = false;
 const csPct = p => fmtNum(Math.round(p * 10) / 10) + L(' %', '%');
 const csTable = (head, rows, cls='') => `<div class="cs-wrap"><table class="cs-table ${cls}"><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
-const csSrc = s => s ? `<p class="cs-src">${L('Quelle', 'Source')}: ${esc(s)}</p>` : '';
+const csSrc = s => s && !/little buddy/i.test(s) ? `<p class="cs-src">${L('Quelle', 'Source')}: ${esc(s)}</p>` : '';   // Little Buddy Bot wird nicht als Quelle genannt
 const CS_AUG = {S:['s', 'Silber', 'Silver'], G:['g', 'Gold', 'Gold'], P:['p', 'Prisma', 'Prismatic']};
 // Spielnahe Darstellung (Vorbild: Little Buddy Bot): große Zahlen, Kostenfarben als Schrift, Symbole statt Fließtext, Einheit direkt am Wert
 // Offizielle Riot-Symbole (assets/icons/tft, aus den Spieldaten über CommunityDragon): Gold, Reroll, XP, Ambosse, Beutekugeln
@@ -3015,7 +3015,7 @@ function csSections(){
     const rows = lv.map(([l, r])=>{ const mx = Math.max(...r), xp = (SHOP.xp || [])[l - 1];
       return `<tr class="${l===8 ? 'sel' : ''}"><td class="cso-xp">${xp ? `<span>+${xp}</span>` : ''}</td><td class="cso-lv">Level ${l}</td>${r.map((o, c)=>o ? `<td class="t${c+1}${o===mx ? ' top' : ''}" style="--o:${(0.5 + o / colMax[c] * 0.5).toFixed(2)}">${o}${L(' %', '%')}</td>` : '<td class="cso-0">–</td>').join('')}</tr>`; }).join('');
     out.push(['shop', L('Shop-Chancen, Pool & XP', 'Shop odds, pool & XP'), `<div class="cs-wrap"><table class="cs-table cs-hm cso"><thead>${head}</thead><tbody>${rows}</tbody></table></div>
-      <p class="cs-note cs-after">${L('Chance pro Shop-Slot. Fett: die wahrscheinlichsten Kosten auf diesem Level. Die Zahl zwischen zwei Levels ist die XP bis zum nächsten Level – jede Runde gibt es 2 XP gratis, 4 Gold kaufen 4 XP. Treffer-Chancen rechnet der', 'Chance per shop slot. Bold: the most likely cost at that level. The number between two levels is the XP to the next level – you get 2 free XP every round, 4 gold buys 4 XP. Hit chances are in the')} <a href="/tools/rolldown">${L('Rolldown-Rechner', 'rolldown calculator')}</a>.</p>` + csSrc('Little Buddy Bot · Patch 18.5')]);
+      <p class="cs-note cs-after">${L('Chance pro Shop-Slot. Fett: die wahrscheinlichsten Kosten auf diesem Level. Die Zahl zwischen zwei Levels ist die XP bis zum nächsten Level – jede Runde gibt es 2 XP gratis, 4 Gold kaufen 4 XP. Treffer-Chancen rechnet der', 'Chance per shop slot. Bold: the most likely cost at that level. The number between two levels is the XP to the next level – you get 2 free XP every round, 4 gold buys 4 XP. Hit chances are in the')} <a href="/tools/rolldown">${L('Rolldown-Rechner', 'rolldown calculator')}</a>.</p>`]);
   }
   if(CS.augments){
     // Baum wie im Spiel: 1. Augment → 2. Augment (Chance, wenn das 1. so kam) → 3. Augment → Chance für genau diese Reihenfolge
@@ -3058,7 +3058,7 @@ function csSections(){
   if(ENCS.length){
     const rows = [...ENCS].sort((a,b)=>b.w - a.w).map(e=>{ const src = csChampPic(e.ch);
       return `<div class="cse"><b class="cse-p">${pctI(e.w / ENC_W * 100)}</b><span class="cse-img"${e.ch ? ` title="${esc(e.ch)}"` : ''}>${src ? `<img src="${src}" alt="" width="44" height="44" loading="lazy" onerror="this.remove()">` : ''}</span><span class="cse-t"><b>${esc(e.n)}</b><small>${esc(EN ? e.en : e.de)}</small></span></div>`; }).join('');
-    out.push(['encounters', L('Encounter-Chancen', 'Encounter odds'), `<div class="cse-grid">${rows}</div>` + csSrc('Little Buddy Bot · Patch 18.5')]);
+    out.push(['encounters', L('Encounter-Chancen', 'Encounter odds'), `<div class="cse-grid">${rows}</div>`]);
   }
   if(CS.carousel && CS_SHOW_CAROUSEL){   // vorerst aus: Little Buddy Bot hat keine Karussell-Tabelle
     const list = a => a.map(x=>`<div class="cs-li"><b>${csPct(x[x.length-1])}</b><span>${typeof x[0]==='number' ? x[0] + ' ' + L('Champions', 'champions') : esc(L(x[0], x[1]))}</span></div>`).join('');
@@ -3090,7 +3090,7 @@ function csSections(){
     const all = Object.values(orbs), small = all.filter(o=>'sb'.includes(o.orb)).map(card).join(''), big = all.filter(o=>!'sb'.includes(o.orb)).map(card).join('');
     const lg = (ic, txt) => `<span class="csx-lg">${ic}<span>${txt}</span></span>`;
     const legend = `<div class="csx-legend">${lg(csAnvil('component'), L(CS_ANVIL.component[0], CS_ANVIL.component[1]))}${lg(csAnvil('completed'), L(CS_ANVIL.completed[0], CS_ANVIL.completed[1]))}${lg(csAnvil('artifact'), L(CS_ANVIL.artifact[0], CS_ANVIL.artifact[1]))}${lg(csSpatPan(), L('Pfannenwender oder Bratpfanne', 'Spatula or Frying Pan'))}${lg(csChamp(4, 1), L('zufälliger Champion – Farbe = Kosten', 'random champion – colour = cost'))}</div>`;
-    const html = (small ? `<div class="csx-grid csx-4">${small}</div>` : '') + `<div class="csx-grid csx-3"${small ? ' style="margin-top:14px"' : ''}>${big}</div>` + legend;
+    const html = (small ? `<div class="csx-grid csx-4 csx-compact">${small}</div>` : '') + `<div class="csx-grid csx-3 csx-compact"${small ? ' style="margin-top:10px"' : ''}>${big}</div>` + legend;
     out.push(['orbs', L('Loot-Orbs', 'Loot orbs'), `${html}<p class="cs-note cs-after">${L('Welche Komponente als Nächstes kommt, zeigt der', 'Which component drops next is shown in the')} <a href="/tools/drops">${L('Item-Drop-Rechner', 'item drop calculator')}</a>.</p>` + csSrc(TFT_CUSTOM_SET.loot.orbSrc || TFT_CUSTOM_SET.loot.source)]);
   }
   // Beute aus den Creep-Runden pro Stage: [Silber, Blau, Gold, Prisma, Komponenten, Komponenten-Amboss, aufgewertet, Chance]
@@ -3100,7 +3100,7 @@ function csSections(){
     const row = r => `<div class="csx-row"><b class="csx-p">${r[5] < 1 ? fmtNum(r[5]) + L(' %', '%') : pctI(r[5])}</b><span class="csx-c">${r[0] ? csComp(r[0]) : ''}${['s','b','g','p'].map((k, i)=>r[i + 1] ? csOrb(k, r[i + 1], true) : '').join('')}</span></div>`;
     const html = Object.entries(loot.lbb.stages).map(([st, list])=>`<div class="csx-card"><div class="csx-head"><b>Stage ${st}</b><small>${L('PvE-Runden', 'PvE rounds')}</small></div>${[...list].sort((a,b)=>b[5]-a[5]).map(row).join('')}</div>`).join('');
     const legend = `<div class="csx-legend"><span class="csx-lg">${csComp(1)}<span>${L('Komponenten-Kugel', 'component orb')}</span></span>${['s','b','g','p'].map(k=>`<span class="csx-lg">${csOrb(k, 1)}<span>${L(CS_ORB[k][0], CS_ORB[k][1])}</span></span>`).join('')}</div>`;
-    out.push(['loot', L('Loot-Verteilung pro Stage', 'Loot distribution per stage'), `<div class="csx-grid csx-2">${html}</div>${legend}<p class="cs-note cs-after">${L('Alle Spieler bekommen gleich viele und gleich gute Orbs, nur der Inhalt unterscheidet sich. Komponenten-Kugeln (mindestens 11, höchstens 15 pro Partie) sehen aus wie blaue Orbs.', 'All players get the same number and quality of orbs, only the contents differ. Component orbs (minimum 11, maximum 15 per game) look like blue orbs.')}</p>` + csSrc(loot.lbb.src)]);
+    out.push(['loot', L('Loot-Verteilung pro Stage', 'Loot distribution per stage'), `<div class="csx-grid csx-loot csx-compact">${html}</div>${legend}<p class="cs-note cs-after">${L('Alle Spieler bekommen gleich viele und gleich gute Orbs, nur der Inhalt unterscheidet sich. Komponenten-Kugeln (mindestens 11, höchstens 15 pro Partie) sehen aus wie blaue Orbs.', 'All players get the same number and quality of orbs, only the contents differ. Component orbs (minimum 11, maximum 15 per game) look like blue orbs.')}</p>` + csSrc(loot.lbb.src)]);
   } else if(loot && loot.stages){
     const row = r => `<div class="csx-row${r[6] ? ' up' : ''}"><b class="csx-p">${csPct(r[7])}</b><span class="csx-c">${r[4] ? csComp(r[4]) : ''}${['s','b','g','p'].map((k, i)=>r[i] ? csOrb(k, r[i], true) : '').join('')}${r[5] ? csAnvil('component', r[5]) : ''}</span>${r[6] ? `<span class="csx-up" title="${L('aufgewertete Runde', 'upgraded round')}">★</span>` : ''}</div>`;
     const html = Object.entries(loot.stages).map(([st, list])=>`<div class="csx-card"><div class="csx-head"><b>Stage ${st}</b><small>${L('Creep-Runden', 'creep rounds')}</small></div>${[...list].sort((a,b)=>b[7]-a[7]).map(row).join('')}</div>`).join('');
@@ -3131,7 +3131,167 @@ function csSections(){
     const blocks = CS.solo.rounds.map(([r, list])=>`<div class="css-b"><div class="css-h">${L('Runde', 'Round')} ${r}</div><div class="css-u">${list.map(n=>`<a href="${champHref(n)}" class="css-c"><img class="c${(champBy[n] || {}).c || 1}" src="${champImg(n) || champFallback(n)}" alt="" width="64" height="64" loading="lazy"><b>${esc(n)}</b><small>${L('Position egal', 'any position')}</small></a>`).join('')}</div></div>`).join('');
     out.push(['solo', L('Stage 1 solo schaffen', 'Solo Stage 1'), `<p class="cs-note">${L('1-Kosten-Champions, die die PvE-Runde allein gewinnen.', '1-cost champions that win the PvE round on their own.')}</p><div class="css">${blocks}</div>` + csSrc(CS.solo.src)]);
   }
+  out.push(...csAugSections(), ...csTraitSections(), ...csPatchSection());
   return out;
+}
+// Augment-Tabellen (Little Buddy Bot): Augment aus den Riot-Daten (Set-18-Version bevorzugt), Belohnungen aus Kürzeln (siehe data/custom-<Set>.js)
+const csAugFind = en => { const l = AUGS.filter(a=>a.en===en); const a = l.find(x=>/^DA_/.test(x.id)) || l[0]; if(!a) return null;
+  const ic = [a, ...l].map(augImg).find(s=>s && !/missing/.test(s)) || augImg(a); return Object.assign({}, a, {img:ic}); };
+const csDie = n => `<span class="csx-ic die" title="${L('Würfel', 'Die')}: ${n}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="4"/>${({1:[[12,12]], 2:[[7,7],[17,17]], 3:[[7,7],[12,12],[17,17]], 4:[[7,7],[17,7],[7,17],[17,17]], 5:[[7,7],[17,7],[12,12],[7,17],[17,17]], 6:[[7,6],[17,6],[7,12],[17,12],[7,18],[17,18]]})[n].map(([x, y])=>`<circle cx="${x}" cy="${y}" r="2.1"/>`).join('')}</svg></span>`;
+const csHeads = () => `<span class="csx-ic coinh" title="${L('Kopf', 'Heads')}"><i></i></span>`;
+const CS_RAND = {ar:['Zufälliges Artefakt', 'Random artifact', 'random-artifact'], ra:['Zufälliger Lichtgegenstand', 'Random radiant item', 'random-radiant']};
+// Offizielle Embleme (Item-Symbole aus den Riot-Daten); ohne Emblem bleibt das Attribut-Symbol
+const csEmb = n => ITEMS.find(i=>i.cat==='emblem' && i.en===n + ' Emblem');
+// Attribut-Symbol im Stil der Spiel-Embleme: das offizielle Emblem; ohne Emblem (Riftbeast, Avatar, Solar) das Attribut-Symbol auf einer Emblem-Medaille.
+// Ohne Größe bestimmt das CSS des Platzes die Größe (Seitenleiste, Karten)
+const csTrIc = (n, size, cls='') => { const e = csEmb(n), st = size ? ` style="width:${size}px;height:${size}px"` : '';
+  return e ? `<img class="cs-emb ${cls}" src="${e.img}" alt="" title="${esc(n)}" width="${size || 40}" height="${size || 40}" loading="lazy"${st}>`
+    : `<span class="cs-emb cs-medal ${cls}" title="${esc(n)}"${st}><img src="${traitImg(n)}" alt="" loading="lazy"></span>`; };
+const csEmbImg = (n, size) => { const e = csEmb(n); return e ? `<img class="cax-emb" src="${e.img}" alt="" title="${esc(EN ? e.en : e.de)}" width="${size}" height="${size}" loading="lazy">` : traitHex(n, 'base', size * .8); };
+// Zufälliges fertiges Item: Riot nutzt dafür dasselbe Symbol wie für Komponenten – deshalb Item-Rahmen mit Fragezeichen und Beschriftung.
+// Zufälliges Emblem: zwei offizielle Embleme diagonal geteilt, mit Fragezeichen
+const csRq = (em, n) => { const tt = `${n > 1 ? n + '× ' : ''}${em ? L('Zufälliges Emblem', 'Random emblem') : L('Zufälliges fertiges Item', 'Random full item')}`, bd = n > 1 ? `<b>×${n}</b>` : '';
+  const e = em && ITEMS.filter(i=>i.cat==='emblem' && traitBy[i.en.replace(/ Emblem$/, '')]);
+  return e && e.length > 1 ? `<span class="csx-ic sp emr" title="${tt}"><img src="${e[0].img}" alt="" width="40" height="40" loading="lazy"><img class="sp2" src="${e[1].img}" alt="" width="40" height="40" loading="lazy"><i>?</i>${bd}</span>`
+    : `<span class="csx-rfi" title="${tt}"><span class="csx-ic rq rfi"><i>?</i>${bd}</span><em>${L('Zufälliges<br>fertiges Item', 'Random<br>full item')}</em></span>`; };   // mit Beschriftung, sonst nicht zu erkennen
+function csTok(str){
+  return String(str || '').split(' ').filter(Boolean).map(t=>{ let m;
+    if((m = t.match(/^g(\d+|\?)$/))) return csCoin(m[1]);
+    if((m = t.match(/^c(\d*)$/))){ const n = +(m[1] || 1); return csIc(TI('orb-blue'), n > 1 ? n : '', n + ' ' + L('Komponenten-Kugeln (je eine zufällige Komponente)', 'component orbs (one random component each)'), 'corb'); }   // in Belohnungen ohne „×1“
+    if((m = t.match(/^u([1-5])(?:x(\d+))?(?:\*([23]))?$/))){ const n = +(m[2] || 1), s = +(m[3] || 0), h = csChamp(+m[1], n);
+      return s ? h.replace(/<\/span>$/, `<i class="csx-stars s${s}">${'★'.repeat(s)}</i></span>`).replace('title="', `title="${'★'.repeat(s)} `) : h; }
+    if((m = t.match(/^a([cfa])(?:x(\d+))?$/))) return csAnvil({c:'component', f:'completed', a:'artifact'}[m[1]], +(m[2] || 1));
+    if((m = t.match(/^(fi|em)(?:x(\d+))?$/))) return csRq(m[1]==='em', +(m[2] || 1));
+    if((m = t.match(/^(ar|ra)(?:x(\d+))?$/))){ const r = CS_RAND[m[1]]; return csIc(TI(r[2]), +(m[2] || 1), L(r[0], r[1]), 'item rand'); }
+    if(t==='sp' || t==='ti') return csSpatPan();
+    if((m = t.match(/^xp(\d+)$/))) return csIc(TI('xp'), m[1], m[1] + L(' Erfahrung', ' XP'), 'xp');
+    if((m = t.match(/^rr(\d+)$/))) return csIc(TI('reroll'), m[1], m[1] + L(' kostenlose Rerolls', ' free rerolls'), 'rr');
+    if(t==='hp') return csIc(TI('stat-hp'), '', L('Leben für alle Einheiten', 'Health for all units'), 'sti');
+    if(t==='egg') return csIc(TI('golden-egg'), '', L('Goldenes Ei', 'Golden Egg'), 'item');
+    if((m = t.match(/^d([1-6])$/))) return csDie(+m[1]);
+    if(t==='coin') return csHeads();
+    if((m = t.match(/^ch:(.+?)(?:x(\d+))?(?:\*([23]))?$/))){ const n = m[1].replace(/_/g, ' '), c = champBy[n]; if(!c) return ''; const k = +(m[2] || 1), s = +(m[3] || 0);
+      return `<span class="csx-ic chu c${c.c}" title="${s ? '★'.repeat(s) + ' ' : ''}${esc(n)}${k > 1 ? ' ×' + k : ''}"><img src="${champFallback(n) || champImg(n)}" alt="${esc(n)}" width="40" height="40" loading="lazy">${s ? `<i class="csx-stars s${s}">${'★'.repeat(s)}</i>` : ''}${k > 1 ? `<b>×${k}</b>` : ''}</span>`; }
+    if(t === 'or') return `<span class="csx-or">${L('oder', 'or')}</span>`;
+    if((m = t.match(/^i:(.+?)(?:x(\d+))?$/))){ const k = m[1], nm = k.replace(/_/g, ' ').toLowerCase(), it = itemById[k] || ITEMS.find(i=>i.en.toLowerCase()===nm); return it ? csIc(it.img, +(m[2] || 1), EN ? it.en : it.de, 'item') : ''; }
+    return '';
+  }).join('');
+}
+const csTrName = n => n;   // Attributnamen wie auf der restlichen Seite (englisch)
+const csTrChip = n => `<span class="cax-tr">${csEmbImg(n, 44)}<b>${esc(csTrName(n))}</b></span>`;
+const csAv = (n, size=40) => champBy[n] ? `<a class="cax-av" href="${champHref(n)}" title="${esc(n)} · ${champBy[n].c} Gold">${avatar(n, size)}</a>` : '';
+// Größe nach Inhalt: wenige Zeilen → groß (sz-xl), mittel → sz-lg, lange Listen oder viele Symbole pro Zeile → sz-md
+const csSz = (rows, cards, toks=0) => { let s = rows <= 3 ? 2 : rows <= (cards > 2 ? 6 : 8) ? 1 : 0; if(toks >= 10) s = Math.max(0, s - 1); return ['sz-md', 'sz-lg', 'sz-xl'][s]; };
+function csAugBody(t){
+  if(t.groups){
+    const rows = t.groups.flatMap(g=>g.rows || []), hasP = rows.some(r=>r[1] != null);   // Prozent-Spalte in allen Zeilen, damit die Symbole untereinander stehen
+    const kc = Math.max(0, ...rows.map(r=>r[0] ? (/^d[1-6]$/.test(r[0]) ? 2 : r[0].length) : 0));   // Breite der Bezeichnungen (in Zeichen)
+    const sz = csSz(Math.max(...t.groups.map(g=>(g.rows || []).length)), t.groups.length, Math.max(...rows.map(r=>String(r[2] || '').split(' ').filter(Boolean).length)));
+    const rowHTML = ([k, p, tok, de, en]) => `<div class="cax-row">${k != null ? `<b class="cax-k">${k && /^d[1-6]$/.test(k) ? csDie(+k[1]) : esc(k)}</b>` : ''}${hasP ? `<b class="cax-p">${p != null ? fmtNum(p) + L(' %', '%') : ''}</b>` : ''}<span class="cax-ic">${csTok(tok)}</span>${de ? `<span class="cax-t">${esc(L(de, en || de))}</span>` : ''}</div>`;
+    const cards = t.groups.map(g=>{ const ga = g.aug && csAugFind(g.aug);
+      const head = ga ? `<img src="${ga.img}" alt="" width="32" height="32" loading="lazy"><b>${esc(ga.de)}</b>` : g.h ? `<b>${esc(Array.isArray(g.h) ? L(g.h[0], g.h[1]) : g.h)}</b>`
+        : t.unit ? `<b>${esc(L(t.unit[0], t.unit[1]))}</b><small>${L('Belohnung', 'Reward')}</small>` : '';   // Einheit der Bezeichnungen (z. B. Attribute) einmal im Kopf statt in jeder Zeile
+      return `<div class="csx-card cax-card">${head ? `<div class="csx-head">${head}</div>` : ''}${(g.rows || []).map(rowHTML).join('')}</div>`; }).join('');
+    return `<div class="cax-grid ${sz} n${Math.min(t.groups.length, 4)}" style="--kc:${kc}">${cards}</div>${t.note ? `<p class="cs-note cs-after">${esc(L(t.note[0], t.note[1]))}</p>` : ''}`;
+  }
+  if(t.type==='traits'){
+    const ok = t.traits.filter(n=>traitBy[n]);
+    const no = [...new Set(ITEMS.filter(i=>i.cat==='emblem').map(i=>i.en.replace(/ Emblem$/, '')))].filter(n=>traitBy[n] && !ok.includes(n));
+    return `<div class="cax-traits">${ok.map(csTrChip).join('')}</div>${no.length ? `<div class="cax-no"><span>${L('Nicht möglich', 'Not possible')}:</span>${no.map(n=>`<span class="cax-x" title="${esc(n)}">${csEmbImg(n, 40)}</span>`).join('')}</div>` : ''}`;
+  }
+  // Champion + das Emblem, das es dazu gibt
+  if(t.type==='units') return `<div class="cax-units" style="--c:${Math.min(t.units.length, 6)}">${t.units.filter(([n])=>champBy[n]).map(([n, tr])=>`<div class="cax-unit"><div class="cax-pair">${csAv(n, 64)}<i>+</i>${csEmbImg(tr, 52)}</div><b>${esc(n)}${t.stars ? ` <i class="cax-star">${'★'.repeat(t.stars)}</i>` : ''}</b><span>${esc(csTrName(tr))}</span></div>`).join('')}</div>`;
+  if(t.type==='luck') return `<div class="csx-card cax-card cax-luck ${csSz(t.rows.length, 1)}" style="--kc:3">${t.rows.map(([st, src, sub, tok, txt])=>{ const a = csAugFind(src);
+    return `<div class="cax-row"><b class="cax-k">${st}</b><span class="cax-src">${a ? `<img src="${a.img}" alt="" width="40" height="40" loading="lazy">` : csTrIc('Blossom', 40)}<b>${esc(a ? a.de : src)}${sub || !a ? ` <small>${sub ? esc(L(sub[0], sub[1])) : L('Geist', 'Wisp')}</small>` : ''}</b></span><span class="cax-ic">${csTok(tok)}</span><span class="cax-t">${esc(L(txt[0], txt[1]))}</span></div>`; }).join('')}</div>`;
+  if(t.type==='blossom'){ const mem = champions.filter(c=>c.t.includes(t.trait)).sort((a, b)=>a.c - b.c || a.n.localeCompare(b.n));
+    return `<div class="cax-grid n${t.stages.length} ${csSz(Math.max(...t.stages.map(s=>s[1].length)), t.stages.length)}" style="--kc:4">${t.stages.map(([st, rows])=>`<div class="csx-card cax-card"><div class="csx-head"><b>Stage ${st}</b><small>${L('Geist-Kosten', 'Wisp cost')}${csIc(TI('gold'), '', 'Gold', 'gold')}</small></div>${rows.map(([k, costs])=>`<div class="cax-row"><b class="cax-k">${k}</b><span class="cax-avs">${mem.filter(c=>costs.includes(c.c)).map(c=>csAv(c.n, 52)).join('')}</span></div>`).join('')}</div>`).join('')}</div>`; }
+  if(t.type==='commit') return `<div class="csx-card cax-card cax-commit ${csSz(t.traits.length, 1)}">${t.traits.map(tr=>`<div class="cax-row"><span class="cax-src">${csTrChip(tr)}</span><span class="cax-avs">${champions.filter(c=>c.t.includes(tr) && c.c >= 2).sort((a, b)=>a.c - b.c || a.n.localeCompare(b.n)).map(c=>csAv(c.n, 52)).join('')}</span></div>`).join('')}</div>`;
+  // Missed Connections: Kugeln im Kreis auf dem Boden der Standard-Arena (Riot-Textur battlefield_a, assets/img/arena-default.webp).
+  // Lage wie im Spiel; Radien des Kreises in CSS (--rx/--ry), hier nur die Richtung jeder Kugel
+  if(t.type==='circle'){ const us = t.units.filter(n=>champBy[n]), N = us.length;
+    return `<div class="cax-circle">${us.map((n, i)=>{ const an = -Math.PI / 2 + i / N * 2 * Math.PI; return `<div class="cax-cu" style="--c:${Math.cos(an).toFixed(3)};--s:${Math.sin(an).toFixed(3)}">${csAv(n, 64)}<b>${esc(n)}</b></div>`; }).join('')}</div>
+      <p class="cs-note cs-after">${L('Lage der Kugeln: im Uhrzeigersinn, Akali oben.', 'Orb layout: clockwise, Akali at the top.')}</p>`; }
+  if(t.type==='stats') return `<div class="cax-stats">${t.stats.map(([k, v, de, en])=>`<div class="cax-stat"><img src="${TI('stat-' + k)}" alt="" width="36" height="36"><div><b>${esc(v)}</b><span>${esc(L(de, en))}</span></div></div>`).join('')}</div>`;
+  return '';
+}
+function csAugSections(){
+  const T = CS.augTables; if(!T) return [];
+  return T.list.map(t=>{ const a = csAugFind(t.aug); if(!a) return null;
+    // Riot-Text ohne Regel-Zusätze (z. B. „Tactician's Crown 2025“) und leere Zahlenzeilen, als ein Absatz
+    const desc = fmtDesc(String(a.desc || '').replace(/<rules>[\s\S]*?<\/rules>/gi, ''), a.fx).split('<br>').map(s=>s.trim()).filter(s=>s && !/^[\d\s.,%]*$/.test(s.replace(/<[^>]+>/g, ''))).join(' ')
+      .replace(/\s*[^.<>]*<span class="d-var"[^>]*>X<\/span>[^.<]*\.?/g, '');   // Platzhalter ohne Wert („Belohnung: X“) weglassen
+    const info = `<div class="cax-info"><img src="${a.img}" alt="" width="52" height="52" loading="lazy"><div><b>${esc(a.de)} <span class="cax-st">Stage ${esc(t.st)}</span></b>${desc ? `<p>${desc}</p>` : ''}</div></div>`;
+    return [t.id, a.de, info + csAugBody(t) + csSrc(T.src)];
+  }).filter(Boolean);
+}
+// Attribut- und Patch-Tabellen (Little Buddy Bot): Kopf mit Attribut-Symbol, darunter je Typ eine eigene Darstellung. Symbole nur aus den offiziellen Daten (Attribute, Embleme, Items, Champions)
+const CS_STAT = {ad:['Angriffsschaden', 'Attack Damage'], ap:['Fähigkeitsstärke', 'Ability Power'], as:['Angriffstempo', 'Attack Speed'], crit:['Krit-Chance', 'Crit Chance'], da:['Schadensverstärkung', 'Damage Amp'],
+  hp:['Leben', 'Health'], dr:['Haltbarkeit', 'Durability'], sv:['Omnivampir', 'Omnivamp'], armor:['Rüstung', 'Armor'], mr:['Magieresistenz', 'Magic Resist'], mana:['Manaregeneration', 'Mana Regen']};
+const csSt = k => k === 'adap' ? csSt('ad') + csSt('ap') : k === 'armr' ? csSt('armor') + csSt('mr')
+  : `<img class="cax-si" src="${TI('stat-' + k)}" alt="${esc(L(CS_STAT[k][0], CS_STAT[k][1]))}" title="${esc(L(CS_STAT[k][0], CS_STAT[k][1]))}" width="18" height="18">`;
+const csStName = k => k === 'adap' ? L('AD & AP', 'AD & AP') : k === 'armr' ? L('Rüstung & MR', 'Armor & MR') : L(CS_STAT[k][0], CS_STAT[k][1]);
+const csTL = a => esc(L(a[0], a[1]));
+const csTraitHead = (n, text) => { const t = traitBy[n];
+  return `<div class="cax-info">${csTrIc(n, 56)}<div><b>${esc(n)}${t && t.bp && t.bp.length > 1 ? ` <span class="cax-st">${t.bp.join(' / ')}</span>` : ''}</b>${text ? `<p>${csTL(text)}</p>` : ''}</div></div>`; };
+const csChTile = (n, size=44, cls='') => champBy[n] ? `<a class="cax-av ${cls}" href="${champHref(n)}" title="${esc(n)} · ${champBy[n].c} Gold">${avatar(n, size)}</a>` : '';
+function csTraitBody(t){
+  if(t.type==='prismatic') return `<div class="ctr-pris">${t.rows.map(([n, q, fx])=>`<div class="ctr-pc">${csTrIc(n, 72)}<div><b>${esc(n)}</b>
+    <p><span>${L('Aufgabe', 'Quest')}</span>${csTL(q)}</p><p class="fx"><span>${L('Effekt', 'Effect')}</span>${csTL(fx)}</p></div></div>`).join('')}</div>`;
+  if(t.type==='coven'){
+    const bp = `<div class="ctr-bps">${t.bp.map(([u, k, l])=>`<span><b>(${u})</b> ${k} ${L('pro Kill', 'per kill')} · ${l} ${L('pro Niederlage', 'per loss')}</span>`).join('')}</div>`;
+    const cards = t.tiers.map(([e, ap, rows], i)=>`<div class="csx-card cax-card ctr-ct t${i}"><div class="csx-head"><b>${e} ${L('Essenz', 'Essence')}</b><small title="${L('Mit dem Augment „Dunkles Ritual“ bekommen Coven-Champions so viel Fähigkeitsstärke statt der Beute.', 'With the Dark Ritual augment, Coven champions get this much Ability Power instead of the loot.')}">${csSt('ap')} ${ap}</small></div>
+      ${rows.map(([p, tok])=>`<div class="cax-row"><b class="cax-p">${fmtNum(p)}${L(' %', '%')}</b><span class="cax-ic">${csTok(tok)}</span></div>`).join('')}</div>`).join('');
+    return bp + `<div class="ctr-coven">${cards}</div><p class="cs-note cs-after">${L('Zahl oben rechts: Fähigkeitsstärke für Coven-Champions statt der Beute, wenn du das Augment „Dunkles Ritual“ hast.', 'Number top right: Ability Power for Coven champions instead of the loot if you have the Dark Ritual augment.')}</p>`;
+  }
+  if(t.type==='riftbeast'){
+    const head = `<tr><th>${L('Einheit', 'Unit')}</th>${[4, 5, 6, 7, 8, 9, 10].map(l=>`<th>Lvl ${l}</th>`).join('')}</tr>`;
+    const rows = t.odds.filter(([n])=>champBy[n]).map(([n, cs])=>`<tr><td><span class="ctr-u">${csChTile(n, 34)}<b class="k${champBy[n].c}">${esc(n)}</b></span></td>${cs.map(c=>c ? `<td style="--h:${c[0] / 100}"><b>${c[0]}${L(' %', '%')}</b><small>max ${c[1]}</small></td>` : '<td class="na">–</td>').join('')}</tr>`).join('');
+    const buffs = t.buffs.filter(([n])=>champBy[n]).map(([n, b, fx])=>`<div class="ctr-buff">${csChTile(n, 46)}<div><b class="k${champBy[n].c}">${esc(n)}</b><small>${csTL(b)}</small><p>${csTL(fx)}</p></div></div>`).join('');
+    return `<div class="cs-wrap"><table class="cs-table ctr-odds"><thead>${head}</thead><tbody>${rows}</tbody></table></div>
+      <h3 class="ctr-h3">${L('Riftbeast-Buffs', 'Riftbeast buffs')}</h3><p class="cs-note">${csTL(t.buffText)}</p><div class="ctr-buffs">${buffs}</div>`;
+  }
+  if(t.type==='blackthorn'){
+    const ROLE = [['Tank', 'hp', 'armr'], ['AD', 'ad', 'as'], ['AP', 'da', 'mana']], star = s=>'<i class="ctr-star">' + '★'.repeat(s) + '</i>';
+    const pane = b => `<div class="cs-wrap"><table class="cs-table ctr-bt"><thead><tr><th>${L('Kosten', 'Cost')}</th><th>${L('Rolle', 'Role')}</th>${[1, 2, 3].map(s=>`<th>${star(s)}</th>`).join('')}</tr></thead><tbody>
+      ${t.grid.map((roles, c)=>roles.map((bps, r)=>`<tr class="${r ? '' : 'top'}">${r ? '' : `<td rowspan="3" class="ctr-cost">${csIc(TI('champ-' + (c + 1)), '', L(`${c + 1}-Kosten`, `${c + 1}-cost`), 'chorb')}</td>`}<td class="ctr-role k${c + 1}">${ROLE[r][0]}</td>
+        ${bps[b].map(([v1, v2])=>`<td><span class="ctr-v">${v1}${ROLE[r][1] === 'armr' ? '' : '%'} ${csSt(ROLE[r][1])}</span><span class="ctr-v">${ROLE[r][0] === 'AP' ? '+' : ''}${v2}${r === 1 ? '%' : ''} ${csSt(ROLE[r][2])}</span></td>`).join('')}</tr>`).join('')).join('')}</tbody></table></div>`;
+    return `<div class="csp-tabs" role="tablist">${[2, 4, 6].map((b, i)=>`<button type="button" role="tab" class="${i ? '' : 'on'}" data-cstab="${i}" aria-selected="${!i}">${b} Blackthorn</button>`).join('')}</div>
+      ${[0, 1, 2].map(b=>`<div class="csp-pane"${b ? ' hidden' : ''}>${pane(b)}</div>`).join('')}`;
+  }
+  if(t.type==='fae'){
+    const cell = ([a, h]) => `<span class="ctr-v">${fmtNum(a)} % ${csSt('adap')}</span><small>${fmtNum(h)} % ${L('Heilung', 'heal')}</small>`;
+    const pix = `<div class="cs-wrap"><table class="cs-table ctr-fae"><thead><tr><th>#</th><th>${L('Schwelle', 'Threshold')}</th><th>2 Fae</th><th>4 Fae</th><th class="emb">2 Fae + Embiggen</th><th class="emb">4 Fae + Embiggen</th></tr></thead><tbody>
+      ${t.pix.map(([th, a, b, c, d], i)=>`<tr><td class="no">${i + 1}</td><td class="th">${th.toLocaleString(EN ? 'en-US' : 'de-DE')}</td><td>${cell(a)}</td><td>${cell(b)}</td><td class="emb">${cell(c)}</td><td class="emb">${cell(d)}</td></tr>`).join('')}</tbody></table></div>`;
+    const gold = `<div class="cs-wrap"><table class="cs-table ctr-fae gold"><thead><tr><th>#</th><th>${L('Schwelle', 'Threshold')}</th><th>Gold</th></tr></thead><tbody>
+      ${t.gold.map(([th, g], i)=>`<tr><td class="no">${i + 1}</td><td class="th">${th.toLocaleString(EN ? 'en-US' : 'de-DE')}</td><td>${csCoin(g)}</td></tr>`).join('')}</tbody></table></div>`;
+    const a = csAugFind(t.aug[0]);
+    return `<div class="ctr-fgrid"><div><h3 class="ctr-h3">${L('Pixie-Effekte', 'Pixie effects')}</h3>${pix}</div><div><h3 class="ctr-h3">${L('Goldene Pixies', 'Golden Pixies')}</h3>${gold}</div></div>
+      <div class="ctr-aug">${csEmbImg('Fae', 46)}<div><b>${esc(a ? a.de : t.aug[0])} <span class="cax-st">Stage ${t.aug[2]}</span></b><p>${csTL(t.aug[1])}</p></div></div>`;
+  }
+  if(t.type==='info') return `<div class="ctr-info">${t.rows.map(([ic, n, fx])=>`<div class="ctr-ic">${/^emblem:/.test(ic) ? csEmbImg(ic.slice(7), 56) : traitHex(ic, 'base', 46)}<div><b>${csTL(n)}</b><p>${csTL(fx)}</p></div></div>`).join('')}</div>`;
+  if(t.type==='lux') return `<div class="ctr-lux">${csChTile('Lux', 56)}<div><b>Lux · ${L('Grundeffekt', 'Base')}</b>${t.base.map(x=>`<p>${csTL(x)}</p>`).join('')}</div></div>
+    <div class="ctr-lt">${t.rows.filter(([n])=>traitBy[n]).map(([n, fx])=>`<div class="ctr-ltr">${csTrIc(n, 44)}<div><b>${esc(n)}</b><p>${csTL(fx)}</p></div></div>`).join('')}</div>`;
+  if(t.type==='sprykin'){
+    const who = k => `<span class="ctr-who ${k}">${csTrIc('Sprykin', k === 'bff' ? 46 : 34)}<b>${k.toUpperCase()}</b></span>`;
+    const eff = t.eff.map(([k, lines])=>`<div class="ctr-sp">${who(k)}<ul>${lines.map(([u, hp, as, ab])=>`<li><b>(${u})</b> ${L('Reiter', 'Rider')}: <em>${hp}</em> ${csSt('hp')} · <em>${as}</em> ${csSt('as')}${ab ? ` · ${L(`${ab} % der BFF-Fähigkeit wirkt auf deine Sprykin-Champions`, `${ab}% of the BFF's ability applies to your Sprykin champions`)}` : ''}</li>`).join('')}</ul></div>`).join('');
+    const abil = (rows, st, txt, other) => rows.map(([k, lines])=>`<div class="ctr-sp">${who(k)}<div><p class="d">${csTL(txt(k))}</p><ul>${lines.map(([u, a, b])=>`<li><b>(${u})</b> <em>${a}</em> ${csSt(st)} ${L('Reiter', 'Rider')}${b ? `, <em>${b}</em> ${csSt(st)} ${csTL(other(k))}` : ''}</li>`).join('')}</ul></div></div>`).join('');
+    return `<div class="csx-card ctr-spc"><div class="csx-head"><b>${L('BFF- und SFF-Effekte', 'BFF vs SFF effects')}</b></div><div class="ctr-sp2">${eff}</div></div>
+      <div class="ctr-sp2 two"><div class="csx-card ctr-spc"><div class="csx-head"><b>${L('BFF-Fähigkeit (Nahkampf)', 'BFF ability (melee)')}</b></div>${abil(t.melee, 'hp', k=>k === 'bff' ? ['Der BFF brüllt und heilt den Reiter und andere Verbündete um % ihres maximalen Lebens.', 'The BFF roars, healing the Rider and other allies for a % of their max Health.'] : ['Der SFF brüllt und heilt den Reiter und andere Sprykin um % ihres maximalen Lebens.', 'The SFF roars, healing the Rider and other Sprykin for a % of their max Health.'], k=>k === 'bff' ? ['andere Verbündete', 'other allies'] : ['andere Sprykin', 'other Sprykin'])}</div>
+      <div class="csx-card ctr-spc"><div class="csx-head"><b>${L('BFF-Fähigkeit (Fernkampf)', 'BFF ability (ranged)')}</b></div>${abil(t.ranged, 'adap', k=>k === 'bff' ? ['Der BFF tanzt und gibt dem Reiter für den restlichen Kampf AD und AP.', 'The BFF dances, granting the Rider AD and AP for the rest of combat.'] : ['Der SFF tanzt und gibt dem Reiter für den restlichen Kampf AD und AP.', 'The SFF dances, granting the Rider AD and AP for the rest of combat.'], ()=>['andere Sprykin', 'other Sprykin'])}</div></div>`;
+  }
+  return '';
+}
+function csTraitSections(){
+  const T = CS.traitTables; if(!T) return [];
+  return T.list.filter(t=>traitBy[t.trait]).map(t=>[t.id, L(t.title[0], t.title[1]), (t.type==='prismatic' ? '' : csTraitHead(t.trait, t.text)) + csTraitBody(t) + csSrc(T.src)]);
+}
+function csPatchSection(){
+  const P = CS.patchSchedule; if(!P) return [];
+  const now = new Date(), d = s => new Date(s + 'T12:00:00'), cur = P.rows.filter(r=>d(r[1]) <= now).pop(), next = P.rows.find(r=>d(r[1]) > now);
+  const rows = P.rows.map(r=>{ const dt = d(r[1]), tag = r === cur ? ['aktuell', 'current'] : r === next ? ['nächster', 'next'] : null;
+    return `<tr class="${r === cur ? 'cur' : r === next ? 'nxt' : dt < now ? 'past' : ''}"><td class="set">Set ${r[0].split('.')[0]}</td><td class="pv">${esc(r[0])}${tag ? ` <i class="ctr-tag">${L(tag[0], tag[1])}</i>` : ''}</td>
+      <td>${dt.toLocaleDateString(EN ? 'en-US' : 'de-DE', {weekday:'long'})}</td><td class="dt">${dt.toLocaleDateString(EN ? 'en-US' : 'de-DE', {day:'numeric', month:'short'})}</td><td class="ev">${(L(r[2], r[3]) || []).map(esc).join('<br>')}</td></tr>`; }).join('');
+  return [['patch-schedule', L('Patch-Plan', 'Patch schedule'), `<div class="cs-wrap"><table class="cs-table ctr-ps"><thead><tr><th>Set</th><th>Patch</th><th>${L('Tag', 'Day')}</th><th>${L('Datum', 'Date')}</th><th>${L('Was passiert', 'What happens')}</th></tr></thead><tbody>${rows}</tbody></table></div>` + csSrc(P.src)]];
 }
 // Seitenleiste & Panels: Kurzname (s), Unterzeile (h), Kurztext für Karten (d), Icon (SVG-Pfade), optional ein Hinweis (tip)
 const CS_META = {
@@ -3150,18 +3310,58 @@ const CS_META = {
   emblems:{s:['Embleme', 'Emblems'], h:['Welche Komponente welches Emblem gibt.', 'Which component makes which emblem.'], d:['Rezepte aus Komponenten', 'Recipes from components'], ic:'<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/>'},
   solo:{s:['Stage 1 solo', 'Solo Stage 1'], h:['Welche 1-Kosten Stage 1 allein schaffen.', 'Which 1-costs win Stage 1 on their own.'], d:['Wer Stage 1 allein schafft', 'Who solos Stage 1'], ic:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.8 3.6-6 7-6s6.2 2.2 7 6"/>'}
 };
-// Gruppen in der Seitenleiste, Reihenfolge wie bei Little Buddy Bot
+// Offizielle Riot-Symbole für die System-Tabellen (assets/icons/tft: Stage-Symbole, Shop-Knöpfe, Gold, Beutekugel; Embleme = Pfannenwender)
+const CS_RIOT_IC = {encounters:'stage-encounter', shop:'shop-xp', augments:'stage-augment', orbs:'orb-blue', loot:'stage-krugs', damage:'stage-damage',
+  'gold-subscription':'gold', 'reroll-subscription':'shop-reroll', solo:'stage-minions', carousel:'stage-carousel'};
+Object.entries(CS_RIOT_IC).forEach(([id, k])=>{ if(CS_META[id]) Object.assign(CS_META[id], {img:TI(k), rio:1}); });
+if(CS_META.emblems && itemById.DA_Component_Spatula) Object.assign(CS_META.emblems, {img:itemById.DA_Component_Spatula.img, rio:1});
+// Augment-Tabellen: Name und Icon aus den Riot-Daten
+(CS.augTables ? CS.augTables.list : []).forEach(t=>{ const a = csAugFind(t.aug); if(a) CS_META[t.id] = {s:[a.de, a.en], h:['Augment-Tabelle · Stage ' + t.st, 'Augment table · Stage ' + t.st], d:['Alle Belohnungen und Chancen', 'every reward and its odds'], img:a.img, st:t.st}; });
+(CS.traitTables ? CS.traitTables.list : []).forEach(t=>{ CS_META[t.id] = {s:t.title, h:['Attribut-Tabelle · ' + t.trait, 'Trait table · ' + t.trait], d:['Werte und Belohnungen des Attributs', 'the trait\'s values and rewards'], trait:t.trait}; });
+CS_META['patch-schedule'] = {s:['Patch-Plan', 'Patch schedule'], h:['Wann welcher Patch kommt.', 'When each patch lands.'], d:['Termine aller Patches des Sets', 'dates of every patch this set'], img:TI('tft-logo-game'), rio:1, ic:'<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'};
+// Gruppen: [Kurzname DE/EN (Seitenleiste), Überschrift DE/EN und Unterzeile DE/EN (Übersicht)], Tabellen – Reihenfolge wie bei Little Buddy Bot
 const CS_GROUPS = [
-  [['System-Tabellen', 'System tables'], ['encounters', 'shop', 'augments', 'orbs', 'loot', 'damage', 'gold-subscription', 'reroll-subscription']],
-  [['Sonstiges', 'Other'], ['emblems', 'solo']]
+  [['System', 'System', 'System-Tabellen', 'System tables', 'Shop-Chancen, Loot, Schaden – die festen Zahlen des Sets.', 'Shop odds, loot, damage – the fixed numbers of the set.'], ['encounters', 'shop', 'augments', 'orbs', 'loot', 'damage', 'gold-subscription', 'reroll-subscription']],
+  [['Augments', 'Augments', 'Augment-Tabellen', 'Augment tables', 'Was einzelne Augments wirklich geben – mit allen Chancen.', 'What single augments really give – with every chance.'], CS.augTables ? CS.augTables.list.map(t=>t.id) : []],
+  [['Attribute', 'Traits', 'Attribut-Tabellen', 'Trait tables', 'Was Attribute wirklich geben – Beute, Shop-Chancen und Boni.', 'What traits really give – loot, shop odds and bonuses.'], CS.traitTables ? CS.traitTables.list.map(t=>t.id) : []],
+  [['Sonstiges', 'Other', 'Sonstiges', 'Other', 'Patch-Plan, Embleme bauen und Stage 1 allein schaffen.', 'Patch schedule, building emblems and winning Stage 1 solo.'], ['patch-schedule', 'emblems', 'solo']]
 ];
 let CS_LIST = null;
 const csList = () => CS_LIST || (CS_LIST = csSections());
 const csSvg = (ic, w=1.8) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${ic || ''}</svg>`;
+const csIco = id => { const m = CS_META[id] || {}; return m.trait ? csTrIc(m.trait, 0, 'cs-aic') : m.img ? `<img class="cs-aic${m.rio ? ' cs-ric' : ''}" src="${m.img}" alt="" width="24" height="24" loading="lazy">` : csSvg(m.ic); };   // Augment-Tabellen mit Augment-Icon
 const csName = id => { const m = CS_META[id]; return m ? L(m.s[0], m.s[1]) : id; };
-const CS_CLOSED_KEY = 'tftfreaks_cs_closed';
-function csClosed(){ try { return JSON.parse(localStorage.getItem(CS_CLOSED_KEY) || '[]'); } catch(e){ return []; } }
-function csSaveClosed(){ try { localStorage.setItem(CS_CLOSED_KEY, JSON.stringify([...document.querySelectorAll('#csPage .cs-group.closed')].map(g=>+g.dataset.g))); } catch(e){} }
+// Startseite (/cheatsheet): Reiter mit Karten. „TFTClimb Priority“ = unsere wichtigsten Tabellen (stehen zusätzlich in ihrer Gruppe).
+// Pro Reiter zuerst 9 Karten (bei 2 Spalten 8, damit keine einzelne Karte in der letzten Reihe steht), der Rest über „Alle … ansehen“
+const CS_PRIO = [['TFTClimb Priority', 'TFTClimb Priority'], ['augments', 'damage', 'coven', 'call-to-chaos', 'solo']];
+const CS_IC_TRAIT = '<path d="M12 3c2.5 3 6 4 8 4-1 6-3.5 10.5-8 14-4.5-3.5-7-8-8-14 2 0 5.5-1 8-4z"/><path d="M12 9v6M9 12h6"/>';   // Attribut-Wappen
+const CS_TAB_IC = ['<path d="M13 2.5L5 13.5h6.2L10 21.5l9-11.5h-6.4z"/>', '<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>', '<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/>', CS_IC_TRAIT, '<circle cx="5.5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18.5" cy="12" r="1.6"/>'];
+function csCard(id, k=0){   // k = Position im Reiter: ab der 10. Karte ausgeblendet, die 9. nur bei 3 Spalten
+  const m = CS_META[id] || {};
+  return `<a class="cs-card${k >= 9 ? ' xtra' : k === 8 ? ' n9' : ''}" href="/cheatsheet/${id}"><span class="cs-card-ic">${csIco(id)}</span><span class="cs-card-tx"><b>${esc(csName(id))}</b>${m.st ? `<small><i class="cs-card-st">Stage ${esc(m.st)}</i></small>` : m.h ? `<small>${L(m.h[0], m.h[1])}</small>` : ''}</span>${csSvg('<path d="M9 6l6 6-6 6"/>', 2.4)}</a>`;
+}
+function csHome(secs){
+  const has = id=>secs.some(s=>s[0]===id);
+  const tabs = [[CS_PRIO[0], CS_PRIO[1], ['Priority', 'Priority']], ...CS_GROUPS.map(([g, ids])=>[[g[0], g[1]], ids, [g[0], g[1]]])].map(([n, ids, k])=>[n, ids.filter(has), k]).filter(([, ids])=>ids.length);   // k = Kurzname fürs Handy
+  return `<div class="cs-home">
+    <form class="cs-hs" id="csHeroForm" role="search">${csSvg('<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>', 2)}<input id="csHeroQ" type="search" placeholder="${L('Was möchtest du nachschlagen?', 'What do you want to look up?')}" autocomplete="off" aria-label="${L('Cheatsheet suchen', 'Search cheatsheets')}"><button type="submit" aria-label="${L('Öffnen', 'Open')}">${csSvg('<path d="M5 12h14M13 6l6 6-6 6"/>', 2.2)}</button></form>
+    <div class="cs-tabs" role="tablist">${tabs.map(([n, ids, k], i)=>`<button type="button" role="tab" class="cs-tab${i ? '' : ' on'}${i ? '' : ' prio'}" data-cstg="${i}" aria-selected="${!i}">${csSvg(CS_TAB_IC[i], 2)}<span class="cs-tl">${L(n[0], n[1])}</span><span class="cs-ts">${L(k[0], k[1])}</span><small>(${ids.length})</small></button>`).join('')}</div>
+    <div class="cs-panes">${tabs.map(([n, ids], i)=>`<div class="cs-pane" data-cstg="${i}"${i ? ' hidden' : ''}><div class="cs-cards">${ids.map((id, k)=>csCard(id, k)).join('')}</div>
+      ${ids.length > 8 ? `<div class="cs-more-w${ids.length === 9 ? ' n9' : ''}"><button type="button" class="cs-more">${L(`Alle ${ids.length} ${n[0]} ansehen`, `View all ${ids.length} ${n[1]}`)}${csSvg('<path d="M5 12h14M13 6l6 6-6 6"/>', 2.2)}</button></div>` : ''}</div>`).join('')}</div>
+    <div class="cs-res" id="csRes" hidden><div class="cs-cards"></div><p class="cs-nores">${L('Nichts gefunden – versuch es mit einem anderen Wort.', 'Nothing found – try another word.')}</p></div>
+  </div>`;
+}
+// Suche auf der Startseite: Treffer aus allen Tabellen statt der Reiter; Enter öffnet den ersten Treffer
+function csHomeSearch(q){
+  q = q.trim().toLowerCase();
+  const res = $('#csRes'); if(!res) return;
+  const ids = [...new Set(CS_GROUPS.flatMap(g=>g[1]))].filter(id=>csList().some(s=>s[0]===id)), hit = ids.filter(id=>{ const m = CS_META[id] || {};
+    return [csName(id), m.s && m.s[0], m.s && m.s[1], m.h && L(m.h[0], m.h[1]), m.d && L(m.d[0], m.d[1])].filter(Boolean).join(' ').toLowerCase().includes(q); });
+  res.hidden = !q; document.querySelectorAll('#csOv .cs-tabs,#csOv .cs-panes').forEach(el=>{ el.hidden = !!q; });
+  res.querySelector('.cs-cards').innerHTML = q ? hit.map(id=>csCard(id)).join('') : '';
+  res.querySelector('.cs-nores').hidden = !q || hit.length > 0;
+  return hit;
+}
 // kleine Vorschau auf den Karten unter dem Panel
 function csPreview(id){
   const pill = (k, v) => `<span class="csp-pill"><small>${k}</small>${v}</span>`;
@@ -3182,13 +3382,13 @@ function csPanel([id, t, html], flat){
     : `<div class="csp-tabs" role="tablist">${html.tabs.map(([l, ic], i)=>`<button type="button" role="tab" class="${i ? '' : 'on'}" data-cstab="${i}" aria-selected="${!i}">${csSvg(ic, 2)}${l}</button>`).join('')}</div>${html.tabs.map(([, , h], i)=>`<div class="csp-pane"${i ? ' hidden' : ''}>${h}</div>`).join('')}`;
   const tip = m.tip ? m.tip() : '';
   const i = flat.indexOf(id), rel = [flat[(i + 1) % flat.length], flat[(i + 2) % flat.length]].filter(x=>x && x!==id);
-  const cards = rel.map(r=>{ const rm = CS_META[r] || {}, pv = csPreview(r); return `<a class="csp-card" href="/cheatsheet/${r}"><div class="csp-card-h">${csSvg(rm.ic)}<div><b>${csName(r)}</b><small>${rm.h ? L(rm.h[0], rm.h[1]) : ''}</small></div></div>${pv ? `<div class="csp-prev">${pv}</div>` : ''}<span class="csp-more">${L('Ansehen', 'View')} →</span></a>`; }).join('');
+  const cards = rel.map(r=>{ const rm = CS_META[r] || {}, pv = csPreview(r); return `<a class="csp-card" href="/cheatsheet/${r}"><div class="csp-card-h">${csIco(r)}<div><b>${csName(r)}</b><small>${rm.h ? L(rm.h[0], rm.h[1]) : ''}</small></div></div>${pv ? `<div class="csp-prev">${pv}</div>` : ''}<span class="csp-more">${L('Ansehen', 'View')} →</span></a>`; }).join('');
   const framed = ND;
   const main = framed
     ? `<div class="csf"><div class="csf-box"><svg class="csf-svg" aria-hidden="true"></svg><div class="csf-hd"><h2 class="csf-title">${csName(id)}</h2><span class="csf-brand">${csHex}<b>Cheat<i>sheet</i></b></span></div><div class="csf-body">${body}</div></div>
         <div class="csf-under">${csHex}<i class="csf-line"></i><i class="csf-dash"></i><span class="csf-gap"></span><i class="csf-dash"></i><i class="csf-line r"></i>${csHex}
           <img class="csf-logo" src="assets/brand/logo-tftclimb.webp" alt="TFTClimb" width="720" height="265" loading="lazy"></div></div>`
-    : `<div class="csp-head"><span class="csp-ic">${csSvg(m.ic)}</span><div><h2>${csName(id)}</h2><p>${L(m.h[0], m.h[1])}</p></div></div>
+    : `<div class="csp-head"><span class="csp-ic">${csIco(id)}</span><div><h2>${csName(id)}</h2><p>${L(m.h[0], m.h[1])}</p></div></div>
     <div class="csp-box">${body}</div>`;
   return `<section class="cs-sec card${framed ? ' csf-sec' : ''}" id="cs-${id}" hidden>
     ${main}
@@ -3225,28 +3425,32 @@ function csFilter(q){
     g.hidden = !any; g.classList.toggle('force-open', !!q);
   });
 }
+let csFromSide = false;   // Klick in der Seitenleiste: deren Auf/Zu-Zustand bleibt, kein Scrollen
+document.addEventListener('click', e=>{ if(e.target.closest && e.target.closest('#csPage .cs-side .cs-tile')) csFromSide = true; }, true);
 function renderCheats(sub){
   const box = $('#csPage'); if(!box) return;
   const secs = csList(), S = TFT_DATA.set;
   if(!box.dataset.done){
     const flat = CS_GROUPS.flatMap(g=>g[1]).filter(id=>secs.some(s=>s[0]===id));
-    const closed = matchMedia('(max-width:900px)').matches ? CS_GROUPS.map((g, i)=>i) : csClosed();   // am Handy zugeklappt starten
+    // Gruppen: Symbol, Name, Anzahl der Tabellen, Pfeil zum Aufklappen
+    const GIC = ['<rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M4 10h16M10 4v16"/>', '<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 8.2l1.1 2.4 2.6.3-1.9 1.8.5 2.6L12 14l-2.3 1.3.5-2.6-1.9-1.8 2.6-.3z"/>', CS_IC_TRAIT, '<circle cx="6" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/>'];
     const side = CS_GROUPS.map(([g, ids], gi)=>{
-      const links = ids.filter(id=>secs.some(s=>s[0]===id)).map(id=>`<a class="cs-tile" href="/cheatsheet/${id}" data-cs="${id}">${csSvg((CS_META[id] || {}).ic)}<span>${csName(id)}</span></a>`).join('');
-      return links ? `<div class="cs-group${closed.includes(gi) ? ' closed' : ''}" data-g="${gi}"><button type="button" class="cs-gh" aria-expanded="${!closed.includes(gi)}">${L(g[0], g[1])}${csSvg('<path d="M6 9l6 6 6-6"/>', 2.2)}</button><div class="cs-menu">${links}</div></div>` : '';
+      ids = ids.filter(id=>secs.some(s=>s[0]===id));
+      const links = ids.map(id=>`<a class="cs-tile" href="/cheatsheet/${id}" data-cs="${id}"><span class="cs-ti">${csIco(id)}</span><span>${csName(id)}</span></a>`).join('');
+      return links ? `<div class="cs-group closed" data-g="${gi}"><button type="button" class="cs-gh" aria-expanded="false"><span class="cs-gi">${csSvg(GIC[gi], 1.9)}</span><span class="cs-gt">${L(g[0], g[1])}</span><span class="cs-gn">${ids.length}</span>${csSvg('<path d="M6 9l6 6 6-6"/>', 2.4)}</button><div class="cs-menu">${links}</div></div>` : '';
     }).join('');
-    box.innerHTML = `<div class="cs-head">
+    box.innerHTML = `<div class="cs-head"><img class="cs-vk" src="assets/img/mascot-velkoz.webp" alt="" width="560" height="465">
         <div><div class="crumb" id="csCrumb"></div>
-          <h1 class="cs-h1"><span class="cs-sr">TFT Cheatsheet: </span>${L('Jede Zahl.', 'Every number.')} <em>${L('Ein Ort.', 'One place.')}</em></h1>
-          <p>${L(`Dein Nachschlagewerk für Set ${S}.`, `Your quick reference for Set ${S}.`)}</p></div>
+          <h1 class="cs-h1" id="csH1"></h1>
+          <p id="csLead"></p></div>
       </div>
       <div class="cs-layout">
         <aside class="cs-side" aria-label="Cheatsheet">
-          <div class="cs-side-h">Cheatsheet</div>
-          <label class="cs-search">${csSvg('<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>', 2)}<input id="csSearch" type="search" placeholder="${L('Tabelle suchen …', 'Find a table …')}" autocomplete="off" aria-label="${L('Tabelle suchen', 'Find a table')}"></label>
+          <div class="cs-side-top"><a class="cs-side-h" href="/cheatsheet">${csHex}<b>Cheat<i>sheets</i></b></a>
+          <label class="cs-search">${csSvg('<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>', 2)}<input id="csSearch" type="search" placeholder="${L('Tabelle suchen …', 'Find a table …')}" autocomplete="off" aria-label="${L('Tabelle suchen', 'Find a table')}"><kbd>/</kbd></label></div>
           ${side}
         </aside>
-        <div class="cs-main">${secs.map(s=>csPanel(s, flat)).join('')}</div>
+        <div class="cs-main"><div class="cs-ov" id="csOv" hidden>${csHome(secs)}</div>${secs.map(s=>csPanel(s, flat)).join('')}</div>
       </div>
       <div class="cs-foot"><span>Set ${S}${TL_PATCH ? ' · Patch ' + TL_PATCH : ''}</span><span><kbd>/</kbd>${L('Tabellen suchen', 'Search tables')}</span></div>
     <section class="tool-seo" aria-labelledby="ts-cs">
@@ -3266,23 +3470,40 @@ function renderCheats(sub){
     box.dataset.done = '1';
     box.querySelectorAll('.csf-box').forEach(b=>{ if(csfRO) csfRO.observe(b); else csfDraw(b); });
   }
-  // /cheatsheet zeigt Shop & XP, /cheatsheet/<id> die gewählte Tabelle
-  const cur = secs.find(s=>s[0]===sub) || secs.find(s=>s[0]==='shop') || secs[0]; if(!cur) return;
-  box.querySelectorAll('.cs-sec').forEach(s=>{ s.hidden = s.id !== 'cs-' + cur[0]; });
+  // /cheatsheet zeigt die Übersicht aller Tabellen, /cheatsheet/<id> die gewählte – jeweils mit eigener Überschrift
+  const cur = secs.find(s=>s[0]===sub) || null, m = cur && CS_META[cur[0]];
+  $('#csOv').hidden = !!cur; box.classList.toggle('cs-home', !cur);
+  box.querySelectorAll('.cs-sec').forEach(s=>{ s.hidden = !cur || s.id !== 'cs-' + cur[0]; });
   box.querySelectorAll('.cs-sec:not([hidden]) .csf-box').forEach(csfDraw);   // Rahmen sofort zeichnen, nicht erst beim nächsten Größen-Ereignis
-  box.querySelectorAll('.cs-tile').forEach(a=>a.classList.toggle('on', a.dataset.cs===cur[0]));
-  const g = box.querySelector('.cs-tile.on'); if(g && !matchMedia('(max-width:900px)').matches) g.closest('.cs-group').classList.remove('closed');   // am Handy bleibt die Liste zu
-  $('#csCrumb').innerHTML = `Home / <a href="/cheatsheet">Cheatsheet</a>${sub===cur[0] ? ' / ' + csName(cur[0]) : ''}`;
+  box.querySelectorAll('.cs-tile').forEach(a=>a.classList.toggle('on', !!cur && a.dataset.cs===cur[0]));
+  // Seitenleiste: Gruppe der gewählten Tabelle aufklappen. Kommt man nicht aus der Leiste selbst (Startseite, Suche, Karten, Link),
+  // sind alle anderen Gruppen zu und die Tabelle steht mittig in der Leiste. Am Handy bleibt die Liste zu
+  const g = box.querySelector('.cs-tile.on'), fromSide = csFromSide; csFromSide = false;
+  if(g && !matchMedia('(max-width:900px)').matches){
+    const gr = g.closest('.cs-group');
+    box.querySelectorAll('.cs-group').forEach(x=>{ if(x !== gr && fromSide) return; const open = x === gr; x.classList.toggle('closed', !open); x.querySelector('.cs-gh').setAttribute('aria-expanded', open); });
+    const mid = ()=>{ const side = box.querySelector('.cs-side'), sr = side.getBoundingClientRect(), tr = g.getBoundingClientRect(), hd = side.querySelector('.cs-side-top').offsetHeight;   // Mitte des sichtbaren Teils unter dem festen Kopf
+      side.scrollTop += tr.top - sr.top + tr.height / 2 - (side.clientHeight + hd) / 2; };
+    if(!fromSide){ mid(); setTimeout(mid, 150); }   // zweiter Durchlauf, falls Schrift/Bilder die Höhen noch verschieben
+  }
+  $('#csH1').innerHTML = cur ? '<span class="cs-sr">TFT Cheatsheet: </span>' + esc(csName(cur[0])) : 'TFT <em>Cheatsheets</em>';
+  $('#csLead').textContent = m && m.h ? L(m.h[0], m.h[1]) : L(`Jede Zahl an einem Ort – dein Nachschlagewerk für Set ${S}.`, `Every number in one place – your quick reference for Set ${S}.`);
+  $('#csCrumb').innerHTML = `Home / <a href="/cheatsheet">Cheatsheet</a>${cur ? ' / ' + esc(csName(cur[0])) : ''}`;
 }
 document.addEventListener('click', e=>{
   const tab = e.target.closest('#csPage [data-cstab]');
   if(tab){ const sec = tab.closest('.cs-sec'); sec.querySelectorAll('[data-cstab]').forEach(b=>{ b.classList.toggle('on', b===tab); b.setAttribute('aria-selected', b===tab); }); sec.querySelectorAll('.csp-pane').forEach((p, i)=>{ p.hidden = i !== +tab.dataset.cstab; }); return; }
+  const tg = e.target.closest('#csOv .cs-tab');
+  if(tg){ document.querySelectorAll('#csOv .cs-tab').forEach(b=>{ b.classList.toggle('on', b===tg); b.setAttribute('aria-selected', b===tg); }); document.querySelectorAll('#csOv .cs-pane').forEach(p=>{ p.hidden = p.dataset.cstg !== tg.dataset.cstg; }); return; }
+  const more = e.target.closest('#csOv .cs-more');
+  if(more){ more.closest('.cs-pane').classList.add('all'); more.parentNode.remove(); return; }
   const gh = e.target.closest('#csPage .cs-gh');
-  if(gh){ const g = gh.parentNode; g.classList.toggle('closed'); gh.setAttribute('aria-expanded', !g.classList.contains('closed')); csSaveClosed(); return; }
+  if(gh){ const g = gh.parentNode; g.classList.toggle('closed'); gh.setAttribute('aria-expanded', !g.classList.contains('closed')); return; }
   const row = e.target.closest('#csPage .cs-hm tbody tr');
   if(row) row.parentNode.querySelectorAll('tr').forEach(r=>r.classList.toggle('sel', r===row));
 });
-document.addEventListener('input', e=>{ if(e.target.id==='csSearch') csFilter(e.target.value); });
+document.addEventListener('input', e=>{ if(e.target.id==='csSearch') csFilter(e.target.value); if(e.target.id==='csHeroQ') csHomeSearch(e.target.value); });
+document.addEventListener('submit', e=>{ if(e.target.id!=='csHeroForm') return; e.preventDefault(); const h = csHomeSearch($('#csHeroQ').value); if(h && h.length) go('/cheatsheet/' + h[0]); });
 // Augment-Baum: gewählten Ast hervorheben (Weg dorthin + alles darunter) und die Blatt-Prozente auf diese Lage umrechnen
 function atgMark(svg, k){
   svg.classList.toggle('hl', !!k);
@@ -3294,13 +3515,19 @@ function atgMark(svg, k){
 const atgPick = el => el && el.closest && el.closest('svg.atg .atg-pick, svg.atg .atg-leaf');
 document.addEventListener('mouseover', e=>{ const n = atgPick(e.target); if(n) atgMark(n.ownerSVGElement, n.dataset.k); });
 document.addEventListener('mouseout', e=>{ const n = atgPick(e.target); if(!n || atgPick(e.relatedTarget)) return; const svg = n.ownerSVGElement; atgMark(svg, svg.dataset.sel || ''); });
+// Klick: neues Augment wählen (vorherige Auswahl merken). Erneuter Klick auf die Auswahl geht nur einen Schritt zurück –
+// zur letzten gemerkten Auswahl auf diesem Ast (z. B. 2-1 bleibt, wenn man 3-2 wieder abwählt), sonst ganz zurück. Klick daneben hebt alles auf
 document.addEventListener('click', e=>{ const svg = e.target.closest && e.target.closest('svg.atg'); if(!svg) return; const n = atgPick(e.target);
-  svg.dataset.sel = n && svg.dataset.sel !== n.dataset.k ? n.dataset.k : ''; atgMark(svg, svg.dataset.sel); });
+  const cur = svg.dataset.sel || ''; let hist = JSON.parse(svg.dataset.hist || '[]'), sel;
+  if(!n){ sel = ''; hist = []; }
+  else if(n.dataset.k === cur){ let i = hist.length - 1; while(i >= 0 && !(cur.startsWith(hist[i]) && hist[i] !== cur)) i--; sel = i >= 0 ? hist[i] : ''; hist = hist.slice(0, Math.max(i, 0)); }
+  else { hist.push(cur); sel = n.dataset.k; }
+  svg.dataset.sel = sel; svg.dataset.hist = JSON.stringify(hist); atgMark(svg, sel); });
 document.addEventListener('keydown', e=>{   // „/“ springt ins Suchfeld, Esc leert es
-  const s = $('#csSearch'), pg = $('#page-cheatsheet');
+  const s = $('#csPage.cs-home') ? $('#csHeroQ') : $('#csSearch'), pg = $('#page-cheatsheet');   // auf der Startseite die große Suche
   if(!s || !pg || !pg.classList.contains('active')) return;
   if(e.key==='/' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)){ e.preventDefault(); s.focus(); }
-  else if(e.key==='Escape' && document.activeElement===s){ s.value = ''; csFilter(''); s.blur(); }
+  else if(e.key==='Escape' && document.activeElement===s){ s.value = ''; csFilter(''); csHomeSearch(''); s.blur(); }
 });
 
 /* ================= SEITENTITEL & SUCHMASCHINEN ================= */

@@ -14,6 +14,11 @@ const PAGES = [
   '/patches',
   '/cheatsheet',
   ...['shop', 'augments', 'encounters', 'damage', 'orbs', 'loot', 'gold-subscription', 'reroll-subscription', 'emblems', 'solo'].map(k => '/cheatsheet/' + k),
+  // Augment-Tabellen (ids wie in data/custom-<Set>.js → cheats.augTables)
+  ...['trait-ladder', 'we-stick-together', 'loaded-dice', 'blossoms-call', 'expedition', 'booster-pack', 'frontline-foundation', 'backline-blueprint', 'warpath',
+    'slightly-magic-roll', 'magic-roll', 'expected-unexpectedness', 'call-to-chaos', 'golden-egg', 'missed-connections', 'slice-of-life', 'hard-commit', 'solo-leveling'].map(k => '/cheatsheet/' + k),
+  // Attribut-Tabellen und Patch-Plan (cheats.traitTables / patchSchedule)
+  ...['prismatic-traits', 'coven', 'riftbeast', 'blackthorn', 'fae', 'primal', 'avatar-lux', 'sprykin', 'patch-schedule'].map(k => '/cheatsheet/' + k),
   '/coaching', '/apply',
   '/about', '/about/crazyslayt', '/about/humbadobo',
   '/impressum', '/datenschutz', '/bedingungen',
