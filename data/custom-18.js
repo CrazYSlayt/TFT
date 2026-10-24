@@ -56,7 +56,7 @@ window.TFT_CUSTOM = {
   // Pro Stage alle möglichen Beute-Kombinationen: [Silber, Blau, Gold, Prisma, zufällige Komponenten, Komponenten-Amboss, aufgewertet (0/1), Chance %]
   loot: {
     source: 'tftflow.com (Set 18)',
-    // Für das Cheatsheet: Loot-Tabelle von Little Buddy Bot (Patch 18.5, Stand 24.09.2026). Der Item-Drop-Rechner nutzt weiter „stages“.
+    // Loot-Tabelle von Little Buddy Bot (Patch 18.5, Stand 24.09.2026) – für Cheatsheet und Item-Drop-Chance. „stages“ (tftflow) bleibt nur als Rückfall.
     // Pro Stage alle Kombinationen: [Komponenten-Kugeln, graue, blaue, goldene, prismatische Orbs, Chance %]
     lbb: {src:'Little Buddy Bot · Patch 18.5', stages:{
       1: [[3,3,0,0,0,35],[3,0,1,0,0,35],[2,3,1,0,0,8],[2,0,2,0,0,8],[5,3,0,0,0,3],[5,0,1,0,0,3],[4,0,1,0,0,3],[3,0,2,0,0,2],[1,3,2,0,0,2],[3,5,0,0,0,1]],

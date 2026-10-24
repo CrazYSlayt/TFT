@@ -49,6 +49,20 @@ function champions(){
   } catch (e) { return []; }
 }
 
+// Comp-Seiten aus der veröffentlichten Tierlist des Live-Sets (tierlist-data-<Set>.js), Adresse wie in app.js (compHref)
+function compPages(){
+  try {
+    const sets = fs.readFileSync(path.join(process.cwd(), 'data', 'sets.js'), 'utf8');
+    const list = JSON.parse(sets.slice(sets.indexOf('['), sets.lastIndexOf(']') + 1));
+    const live = list.find(s => s.status === 'live') || list[0];
+    const txt = fs.readFileSync(path.join(process.cwd(), 'tierlist-data-' + live.set + '.js'), 'utf8');
+    const data = JSON.parse(txt.slice(txt.indexOf('{'), txt.lastIndexOf('}') + 1));
+    const slug = n => String(n || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/['’.]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const seen = new Set();
+    return (data.comps || []).filter(c => !c.hidden).map(c => { const base = slug(c.name) || 'comp'; let k = base, n = 2; while (seen.has(k)) k = base + '-' + n++; seen.add(k); return '/comps/' + k; });
+  } catch (e) { return []; }
+}
+
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
 // Schlicht wie üblich: nur die Adressen, erst alle deutschen, dann alle englischen Seiten.
@@ -57,7 +71,7 @@ module.exports = (req, res) => {
   let host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
   if (host === 'tftclimb.com') host = 'www.tftclimb.com';   // immer die kanonische Domain
   const base = (req.headers['x-forwarded-proto'] || 'https') + '://' + host;
-  const paths = [...PAGES, ...champions(), ...patches()];
+  const paths = [...PAGES, ...compPages(), ...champions(), ...patches()];
   const urls = [...paths.map(p => base + p), ...paths.map(p => base + (p === '/' ? '/en/' : '/en' + p))];
   res.setHeader('Content-Type', 'application/xml; charset=utf-8');
   res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=86400');

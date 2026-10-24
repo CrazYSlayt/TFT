@@ -413,9 +413,8 @@ body.nd-mini .nds-col svg{transform:rotate(180deg)}
 .nd-lang{position:relative}
 .nd-lang-btn{display:flex;align-items:center;gap:6px;height:36px;padding:0 9px;border-radius:10px;border:1px solid transparent;background:none;cursor:pointer;color:var(--muted)}
 .nd-lang-btn:hover,.nd-lang.open .nd-lang-btn{border-color:var(--line-2);background:rgba(7,28,40,.7)}
-.nd-lang .tl-flag{width:24px;height:16px;border-radius:4px;opacity:1;flex:none;box-shadow:0 0 0 1px rgba(46,230,214,.45),0 0 10px rgba(46,230,214,.25)}
+.nd-lang .tl-flag{width:24px;height:16px;border-radius:4px;opacity:1;flex:none;box-shadow:none}
 .nd-lang-btn{border-color:var(--line-2);background:rgba(7,28,40,.7)}
-.nd-lang-btn:hover .tl-flag,.nd-lang.open .tl-flag{box-shadow:0 0 0 1px var(--cy),0 0 14px rgba(46,230,214,.45)}
 .nd-lang-btn:hover,.nd-lang.open .nd-lang-btn{border-color:var(--cy);color:var(--cy2)}
 .nd-chev{width:12px;height:12px;transition:transform .15s}
 .nd-lang.open .nd-chev{transform:rotate(180deg)}
@@ -874,7 +873,11 @@ body.nd-mini .nds-soon{display:none}
 .csf-line{min-width:0}
 @container (max-width:760px){.csf-tag,.csf-line.r{display:none}}
 /* Topleiste auf schmalen Handys: Tabs etwas enger, damit die Sprachflagge nicht übersteht */
-@media (max-width:520px){.nd-top{gap:4px;padding-right:8px}.nd-tabs a{padding:0 6px;font-size:.8rem}.nd-r{gap:6px}}
+@media (max-width:520px){.nd-top{gap:4px;padding-right:8px}.nd-tabs a{padding:0 6px;font-size:.8rem}.nd-r{gap:6px}
+  /* Set und Sprache nur als Kurzform (ohne Pfeil/Status), Tabs notfalls seitlich wischbar statt Überlauf der ganzen Seite */
+  .nd-burger{margin-left:6px}.nd-tabs{min-width:0;overflow-x:auto;scrollbar-width:none}.nd-tabs::-webkit-scrollbar{display:none}.nd-tabs a{flex:none}
+  .nd-top .set-btn .set-st,.nd-top .set-btn svg,.nd-lang .nd-chev{display:none}.nd-top .set-btn{gap:0;padding:0 8px}.nd-lang-btn{padding:0 6px}}
+@media (max-width:420px){.nd-tabs a{padding:0 4px;font-size:.78rem}.nd-tabs a.on::after{left:4px;right:4px}}
 /* Cheatsheet-Rahmen: Titel links, „Cheatsheet“ groß oben rechts; Zierleiste unten symmetrisch */
 .csf-hd{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 16px}
 .csf-hd .csf-title{margin:0;min-width:0}

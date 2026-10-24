@@ -45,7 +45,17 @@ const champBy = Object.fromEntries(champions.map(c=>[c.n,c]));
 // Eigene Trait-Texte und Einteilung (Ursprung/Klasse). Offizielle Namen, Breakpoints und Icons kommen aus data/tft-data.js.
 const TRAIT_META = (window.TFT_CUSTOM && TFT_CUSTOM.traits) || {};
 const plainDesc = s => String(s||'').replace(/<br>/gi,' ').replace(/<[^>]+>/g,'').replace(/@[^@]*@/g,'').replace(/\s+/g,' ').trim();
-const traits = TFT_DATA.traits.map(x=>{ const m = TRAIT_META[x.n] || {}; return {n:x.n, cat:m.cat||'origin', bp:x.bp.map(String), d:(!EN && m.d) || plainDesc(x.desc)}; });
+// Riot-Text eines Traits mit Werten: Zeile i (<row>) bekommt die Werte der Stufe i (fx[i]), z. B. „(2) … 15 % Krit-Chance“; fehlt ein Wert in der Stufe, nimm ihn aus einer anderen
+function traitDesc(x){
+  const fx = Array.isArray(x.fx) ? x.fx : [], val = (k, mul, i) => { const f = [fx[i], ...fx].find(e=>e && e.v && k in e.v); if(k === 'MinUnits') return fx[i] ? fx[i].min : ''; if(!f) return ''; const v = f.v[k] * (mul ? 100 : 1); return String(Math.round(v * 100) / 100); };
+  let i = -1;
+  const s = String(x.desc || '').replace(/<row>|@([A-Za-z0-9_]+)(\*100)?@/gi, (m, k, mul)=>{ if(/^<row>$/i.test(m)){ i++; return m; } return val(k, mul, Math.max(i, 0)); });
+  // Werte-Symbole im Riot-Text (%i:scaleHealth%) als Wort
+  const ST = {health:['Leben', 'Health'], as:['Angriffstempo', 'Attack Speed'], ad:['Angriffsschaden', 'Attack Damage'], ap:['Fähigkeitsstärke', 'Ability Power'], armor:['Rüstung', 'Armor'], mr:['Magieresistenz', 'Magic Resist'],
+    manaregen:['Manaregeneration', 'Mana Regen'], mana:['Mana', 'Mana'], crit:['Krit-Chance', 'Crit Chance'], critmult:['Krit-Schaden', 'Crit Damage'], da:['Schadensverstärkung', 'Damage Amp'], dr:['Haltbarkeit', 'Durability'], sv:['Omnivampir', 'Omnivamp'], omnivamp:['Omnivampir', 'Omnivamp']};
+  return plainDesc(s.replace(/%i:scale([A-Za-z]+)%/g, (m, k)=>{ const t = ST[k.toLowerCase()]; return t ? L(t[0], t[1]) : k.replace(/([a-z])([A-Z])/g, '$1 $2'); }).replace(/%i:[^%]*%/g, '')).replace(/\(\)\s*/g, '');
+}
+const traits = TFT_DATA.traits.map(x=>{ const m = TRAIT_META[x.n] || {}; return {n:x.n, cat:m.cat||'origin', bp:x.bp.map(String), d:(!EN && m.d) || traitDesc(x)}; });
 
 
 
@@ -152,7 +162,18 @@ const trendTxt = {rising:'▲ Steigend',falling:'▼ Fallend',new:'✦ Neu',stab
 /* ================= RENDER: COMPS (Kachel-Tierlist, Aufstellungen nach TFTAcademy) ================= */
 const STYLE_DE = {'1-Cost Reroll':'1-Kosten-Reroll','2-Cost Reroll':'2-Kosten-Reroll','3-Cost Reroll':'3-Kosten-Reroll','4-Cost Fast 8':'Fast 8','Fast 9':'Fast 9','Lose Streak':'Lose Streak'};
 const DIFF_DE = {EASY:'Leicht',MEDIUM:'Mittel',HARD:'Schwer',CONDITIONAL:'Situativ'};
-const AUGTYPE_DE = {ITEMS:'Items',ECON:'Econ',COMBAT:'Kampf',TRAIT:'Trait',TRAITS:'Traits'};
+const AUGTYPE_DE = {ITEMS:'Items',ECON:'Econ',COMBAT:'Kampf',TRAIT:'Trait',TRAITS:'Traits',EMBLEM:'Emblem'};
+const DIFF_EN = {EASY:'Easy',MEDIUM:'Medium',HARD:'Hard',CONDITIONAL:'Situational'};
+const compStyleName = c => L(STYLE_DE[c.style] || c.style, c.style), compDiffName = c => L(DIFF_DE[c.diff] || c.diff || '', DIFF_EN[c.diff] || c.diff || '');
+const augTypeName = t => L(AUGTYPE_DE[t] || t, t === 'COMBAT' ? 'Combat' : AUGTYPE_DE[t] || t.charAt(0) + t.slice(1).toLowerCase());
+const PLAN_EN = {
+  '1-Cost Reroll':'Reroll comp for 1-costs: play your best pairs early, build interest and usually roll down at 3-1 to 3-2 on level 5–6 until your carries are 3★. Then level steadily and add strong 4-costs to the board.',
+  '2-Cost Reroll':'Reroll comp for 2-costs: go level 6 and from 3-1 or 3-2 slow roll above 50 gold until carry and tank are 3★. Then level 7–8 for further upgrades.',
+  '3-Cost Reroll':'Reroll comp for 3-costs: build econ up to level 7, from about 4-1 slow roll above 50 gold until the carry is 3★. With a stable board, go level 8 afterwards for further upgrades.',
+  '4-Cost Fast 8':'Fast 8 comp: keep health and gold early, hit level 8 on 4-1 or 4-2 and roll there for the 4-cost carries. Until then, park components on the tank and a temporary carry.',
+  'Fast 9':'Fast 9 comp: maximum econ with solid transition boards. Level 8 on 4-1/4-2, keep saving and go level 9 on 5-1/5-2 for the 5-costs. Health is the most important resource here.',
+  'Lose Streak':'Lose streak comp: lose on purpose early, take the gold and streak bonus and collect components along the way. Stabilise the board with a big rolldown in stage 4.',
+};
 const PLAN = {
   '1-Cost Reroll':'Reroll-Comp für 1-Koster: Spiel früh mit den besten Paaren, sammle Zinsen und rolle meist auf 3-1 bis 3-2 auf Level 5–6, bis deine Carrys 3★ sind. Danach stabil leveln und das Board mit starken 4-Kostern ergänzen.',
   '2-Cost Reroll':'Reroll-Comp für 2-Koster: Auf Level 6 gehen und ab 3-1 bzw. 3-2 langsam über 50 Gold rollen, bis Carry und Tank 3★ sind. Danach Level 7–8 für weitere Upgrades.',
@@ -174,7 +195,15 @@ function rebuildComps(list){
   });
   mainComps = comps.filter(c=>c.main);
   compBySlug = Object.fromEntries(comps.map(c=>[c.slug,c]));
+  // Adresse aus dem Comp-Namen („Draven Dragon 9“ → draven-dragon-9), bei gleichem Namen mit -2, -3 … (gleiche Regel in api/sitemap.js)
+  compByKey = {};
+  comps.forEach(c=>{ const base = compNameSlug(c.name) || 'comp'; let k = base, n = 2; while(compByKey[k]) k = base + '-' + n++; c.key = k; compByKey[k] = c; });
 }
+// Eigene Seite pro Comp: /comps/<name>
+let compByKey = {};
+const compNameSlug = n => String(n || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/['’.]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const compKey = c => c.key;
+const compHref = c => '/comps/' + compKey(c);
 rebuildComps(tierSource.data.comps);
 const traitBy = Object.fromEntries(traits.map(t=>[t.n,t]));
 const costOf = u => (champBy[u]||{c:0}).c;
@@ -252,40 +281,42 @@ function renderTiers(target, list){
 }
 
 /* --- Detail-Panel --- */
-function panelHTML(c){
+function panelHTML(c, page){   // page: auf der eigenen Comp-Seite (Varianten als Links, kein Schließen-Knopf)
   const variants = comps.filter(x=>x.carry===c.carry).sort((a,b)=>b.main-a.main || 'SABCX'.indexOf(a.tier)-'SABCX'.indexOf(b.tier));
-  const tabs = variants.length>1 ? `<div class="cp-tabs">${variants.map(v=>`<button class="cp-tab${v===c?' on':''}" data-variant="${v.slug}" style="--tc:${TIER_COL[v.tier]}"><span>${v.tier}</span>${esc(v.name)}<span></span></button>`).join('')}</div>` : '';
+  const tabs = variants.length>1 ? `<div class="cp-tabs">${variants.map(v=>page
+    ? `<a class="cp-tab${v===c?' on':''}" href="${compHref(v)}" style="--tc:${TIER_COL[v.tier]}"><span>${v.tier}</span>${esc(v.name)}</a>`
+    : `<button class="cp-tab${v===c?' on':''}" data-variant="${v.slug}" style="--tc:${TIER_COL[v.tier]}"><span>${v.tier}</span>${esc(v.name)}<span></span></button>`).join('')}</div>` : '';
   const units = c.board.filter(b=>!PLANTS[b.u]).sort((a,b)=>costOf(a.u)-costOf(b.u) || a.u.localeCompare(b.u));
   const augs = c.augs.map(id=>augById[id]).filter(Boolean);
-  const prio = c.augTypes.map(t=>`<span class="cp-pill">${AUGTYPE_DE[t]||esc(t)}</span>`).join('<span class="cp-arrow">▶</span>');
+  const prio = c.augTypes.map(t=>`<span class="cp-pill">${esc(augTypeName(t))}</span>`).join('<span class="cp-arrow">▶</span>');
   const carousel = c.carousel.map(findItem).filter(Boolean).map(it=>`<button data-item="${it.id}" title="${esc(it.en)}"><img src="${it.img}" alt="${esc(it.en)}" loading="lazy"><span></span></button>`).join('<span class="cp-arrow">▶</span>');
-  const flex = c.cap.map(b=>{ const l=(b.lv||[])[0]||''; const num=/^\d+$/.test(l); return unitHex(b,{sm:true, lv:num?l:'⇄', lvTitle:num?`ab Level ${l}`:`ersetzt ${l}`}); }).join('');
+  const flex = c.cap.map(b=>{ const l=(b.lv||[])[0]||''; const num=/^\d+$/.test(l); return unitHex(b,{sm:true, lv:num?l:'⇄', lvTitle:num?L(`ab Level ${l}`, `from level ${l}`):L(`ersetzt ${l}`, `replaces ${l}`)}); }).join('');
   const card = (title, body, cls='') => body ? `<div class="cp-card ${cls}"><h4>${title}</h4>${body}</div>` : '';
   return `${tabs}<div class="cp" style="--tc:${TIER_COL[c.tier]}">
-    <button class="cp-close" data-close-panel aria-label="Schließen">✕<span></span></button>
+    ${page ? '' : '<button class="cp-close" data-close-panel aria-label="Schließen">✕<span></span></button>'}
     <div class="cp-left">
       <div class="cp-tierbg">${c.tier}</div>
       ${hexHTML(c.carry,'hx-big')}
       <h3>${esc(c.name)}</h3>
-      <div class="cp-style">Spielstil: ${esc(STYLE_DE[c.style]||c.style)} (${DIFF_DE[c.diff]||esc(c.diff)})${c.sub?`<br>Situativ · Bewertung ${c.sub}`:''}</div>
+      <div class="cp-style">${L('Spielstil', 'Playstyle')}: ${esc(compStyleName(c))} (${esc(compDiffName(c))})${c.sub?`<br>${L('Situativ · Bewertung', 'Situational · rated')} ${c.sub}`:''}</div>
       <div class="trait-row" style="justify-content:center">${compTraits(c).map(t=>tBadge(t,false)).join('')}</div>
       ${augs.length?`<h4>Augments</h4><div class="cp-augs">${augs.map(a=>`<button class="cp-aug" data-aug="${a.id}" title="${esc(a.en)}"><img src="${augImg(a)}" alt="${esc(a.en)}" loading="lazy"><span></span></button>`).join('')}</div>`:''}
-      ${prio?`<h4>Augment-Priorität</h4><div class="cp-prio">${prio}</div>`:''}
-      <h4>Spielplan</h4><p>${c.plan ? esc(c.plan).replace(/\n/g,'<br>') : (PLAN[c.style]||'')}</p>
-      ${c.tips ? `<h4>Tipps</h4><p>${esc(c.tips).replace(/\n/g,'<br>')}</p>` : ''}
+      ${prio?`<h4>${L('Augment-Priorität', 'Augment priority')}</h4><div class="cp-prio">${prio}</div>`:''}
+      <h4>${L('Spielplan', 'Game plan')}</h4><p>${c.plan ? esc(c.plan).replace(/\n/g,'<br>') : L(PLAN[c.style]||'', PLAN_EN[c.style]||'')}</p>
+      ${c.tips ? `<h4>${L('Tipps', 'Tips')}</h4><p>${esc(c.tips).replace(/\n/g,'<br>')}</p>` : ''}
     </div>
     <div class="cp-right">
       <div class="cp-card cp-final">${units.map(b=>unitHex(b)).join('')}</div>
       <div class="cp-mid">
         ${card('Early Units', c.early.length?`<div class="cp-units">${c.early.map(b=>unitHex(b,{sm:true})).join('')}</div>`:'')}
-        ${card('Item-Priorität', carousel?`<div class="cp-itemprio">${carousel}</div>`:'')}
+        ${card(L('Item-Priorität', 'Item priority'), carousel?`<div class="cp-itemprio">${carousel}</div>`:'')}
         ${card('Flex Units', flex?`<div class="cp-units">${flex}</div>`:'')}
       </div>
       <div class="cp-bottom">
         ${card('Aufstellung', `<div class="cp-board">${boardHTML(c)}</div>`)}
         ${card('Alt Builds', c.alt.length?`<div class="cp-units cp-col">${c.alt.map(b=>unitHex(b,{sm:true})).join('')}</div>`:'<p class="note" style="text-align:center;margin:0">–</p>')}
       </div>
-      <div class="cp-actions"><button class="cp-names" type="button" data-builder="${c.slug}">⬡ Im Team Builder öffnen<span></span></button><label class="cp-names"><input type="checkbox" data-names> Namen anzeigen</label></div>
+      <div class="cp-actions">${page ? '' : `<a class="cp-names cp-page" href="${compHref(c)}">${L('Ganze Comp-Seite', 'Full comp page')} →</a>`}<button class="cp-names" type="button" data-builder="${c.slug}">⬡ ${L('Im Team Builder öffnen', 'Open in Team Builder')}<span></span></button><label class="cp-names"><input type="checkbox" data-names> ${L('Namen anzeigen', 'Show names')}</label></div>
     </div>
   </div>`;
 }
@@ -313,17 +344,51 @@ function filterComps(){
     (!q || c.name.toLowerCase().includes(q) || c.core.some(u=>u.toLowerCase().includes(q)) || compTraits(c).some(t=>t.n.toLowerCase().includes(q))));
   renderTiers('#tierRows', list);
 }
-function openComp(slug){
-  const c = compBySlug[slug]; if(!c) return;
-  const main = c.main ? c : (mainComps.find(x=>x.carry===c.carry) || c);
-  go('/tierlist');
-  setTimeout(()=>{
-    $('#compSearch').value=''; compStyle='all';
-    $('#compFilters').querySelectorAll('.chip-btn').forEach(x=>x.classList.toggle('active', x.dataset.style==='all'));
-    filterComps();
-    const tile = document.querySelector(`#tierRows .ct[data-slug="${main.slug}"]`);
-    if(tile){ openPanel(tile, c.slug); tile.closest('.tl-tier').scrollIntoView({behavior:'smooth',block:'start'}); }
-  },60);
+function openComp(slug){   // Comp-Links (Suche, Champion-Seiten, Fenster) führen auf die eigene Comp-Seite
+  const c = compBySlug[slug]; if(c) go(compHref(c));
+}
+// Comp-Seite (/comps/<key>): Kopf mit Carry, Tier und Spielstil, darunter dasselbe Panel wie in der Tierlist,
+// dann weitere Comps derselben Tier-Stufe und ein Textblock mit Fragen für Google
+const compItemsOf = (c, u) => ((c.board.find(b=>b.u===u) || {}).i || []).map(findItem).filter(Boolean);
+function renderCompPage(key){
+  const box = $('#compPage'), c = compByKey[key];
+  if(!c){ box.innerHTML = ornnSays(L('Diese Comp gibt es in der aktuellen Tierlist nicht (mehr).', 'This comp is not (or no longer) in the current tier list.')); return; }
+  const S = TFT_DATA.set, tr = compTraits(c), carryItems = compItemsOf(c, c.carry), splash = champImg(c.carry) || champFallback(c.carry);
+  const tierTxt = c.tier === 'X' ? L(`Situativ (${c.sub || '–'})`, `Situational (${c.sub || '–'})`) : `${c.tier}-Tier`;
+  const others = comps.filter(x=>x !== c && x.main && x.tier === c.tier).slice(0, 8);
+  const units = c.board.filter(b=>!PLANTS[b.u]).map(b=>b.u);
+  const augTxt = c.augTypes.map(augTypeName).join(', ');
+  box.innerHTML = `
+    <div class="crumb"><a href="/">Home</a> / <a href="/tierlist">Tierlist</a> / ${esc(c.name)}</div>
+    <section class="chp-hero comp-hero" style="--tc:${TIER_COL[c.tier]}${splash ? `;--splash:url('${splash}')` : ''}">
+      <div class="chp-hero-in">
+        <div class="comp-tierb"><b>${c.tier}</b><small>${c.tier === 'X' ? 'Situational' : 'Tier'}</small></div>
+        <div class="chp-head">
+          <h1 class="chp-h1"><span class="th-key">${esc(c.name)}</span> ${L('TFT Comp Guide', 'TFT comp guide')} · Set ${S}</h1>
+          <div class="chp-tags"><span class="chp-tr">${tierTxt}</span><span class="chp-tr">${esc(compStyleName(c))}</span>${c.diff ? `<span class="chp-tr">${esc(compDiffName(c))}</span>` : ''}<a class="chp-tr" href="${champHref(c.carry)}">Carry: ${esc(c.carry)}</a></div>
+          <div class="trait-row">${tr.map(t=>tBadge(t, true)).join('')}</div>
+          <div class="chp-acts"><button class="btn btn-primary" type="button" data-builder="${c.slug}">⬡ ${L('Im Team Builder öffnen', 'Open in Team Builder')}</button><a class="btn btn-ghost" href="/tierlist">${L('Zur Tierlist', 'To the tier list')}</a></div>
+        </div>
+      </div>
+    </section>
+    <div class="comp-panel">${panelHTML(c, true)}</div>
+    ${others.length ? `<section class="card comp-more"><h2>${L(`Weitere ${c.tier === 'X' ? 'situative' : c.tier + '-Tier'} Comps`, `More ${c.tier === 'X' ? 'situational' : c.tier + '-tier'} comps`)}</h2>
+      <div class="chp-comps">${others.map(x=>`<a class="chp-comp" href="${compHref(x)}" style="--tc:${TIER_COL[x.tier]}"><b class="chp-tier">${x.tier}</b><span><b>${esc(x.name)}</b><small>${esc(compStyleName(x))}</small></span><span class="chp-chx">${hexHTML(x.carry)}</span></a>`).join('')}</div></section>` : ''}
+    <section class="tool-seo" aria-labelledby="ts-comp">
+      <div class="ts-main">
+        <h2 id="ts-comp">${L(`${esc(c.name)} in TFT Set ${S}: So spielst du die Comp`, `${esc(c.name)} in TFT Set ${S}: how to play the comp`)}</h2>
+        <p>${L(`${esc(c.name)} ist eine ${esc(compStyleName(c))}-Comp mit ${esc(c.carry)} als Carry. In unserer Tierlist steht sie auf ${tierTxt}.`, `${esc(c.name)} is a ${esc(compStyleName(c))} comp with ${esc(c.carry)} as the carry. In our tier list it is rated ${tierTxt}.`)}</p>
+        <p>${L(`Das fertige Board: ${units.map(esc).join(', ')}.`, `The final board: ${units.map(esc).join(', ')}.`)}${tr.length ? ' ' + L(`Aktive Traits: ${tr.map(t=>`${t.k} ${esc(t.n)}`).join(', ')}.`, `Active traits: ${tr.map(t=>`${t.k} ${esc(t.n)}`).join(', ')}.`) : ''}</p>
+      </div>
+      <aside class="ts-side">
+        <h3>${L('Häufige Fragen', 'FAQ')}</h3>
+        ${carryItems.length ? `<details><summary>${L(`Welche Items braucht ${esc(c.carry)}?`, `Which items does ${esc(c.carry)} need?`)}</summary><p>${L(`In ${esc(c.name)} bekommt ${esc(c.carry)} ${carryItems.map(it=>esc(it.en)).join(', ')}.`, `In ${esc(c.name)}, ${esc(c.carry)} gets ${carryItems.map(it=>esc(it.en)).join(', ')}.`)}</p></details>` : ''}
+        ${augTxt ? `<details><summary>${L('Welche Augments passen?', 'Which augments fit?')}</summary><p>${L(`Am besten passen Augments der Art ${esc(augTxt)}.`, `Augments of these types fit best: ${esc(augTxt)}.`)}</p></details>` : ''}
+        <details><summary>${L(`Wie stark ist ${esc(c.name)}?`, `How strong is ${esc(c.name)}?`)}</summary><p>${L(`In unserer TFT Tierlist für Set ${S} steht ${esc(c.name)} auf ${tierTxt}.`, `In our TFT tier list for Set ${S}, ${esc(c.name)} is rated ${tierTxt}.`)}${TL_PATCH ? ' ' + L(`Stand: Patch ${TL_PATCH}.`, `As of patch ${TL_PATCH}.`) : ''}</p></details>
+        <h3>${L('Weiterlesen', 'Read more')}</h3>
+        <ul class="ts-links"><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="${champHref(c.carry)}">${esc(c.carry)}</a></li><li><a href="/tools/dps">${L('DPS-Vergleich', 'DPS Comparison')}</a></li><li><a href="/tools/rolldown">${L('Rolldown-Rechner', 'Rolldown calculator')}</a></li></ul>
+      </aside>
+    </section>`;
 }
 document.addEventListener('click', e=>{
   const tile = e.target.closest('.ct'); if(tile){ openPanel(tile); return; }
@@ -1445,8 +1510,10 @@ function buddyWire(el){
   el.addEventListener('mouseleave', ()=>{ delete el.dataset.hover; });
 }
 document.querySelectorAll('[data-buddy]').forEach(buddyWire);
-// Tool-Seiten: Heimerdinger in der Version des Tools (dasselbe Bild wie auf der Kachel) – nur, wenn es das Bild gibt
-document.querySelectorAll('[data-tool-art]').forEach(head=>{
+// Tool-Seiten: Heimerdinger in der Version des Tools (dasselbe Bild wie auf der Kachel) – nur, wenn es das Bild gibt.
+// Erst wenn die Seite geöffnet wird (route), damit nicht jeder Aufruf alle Tool-Bilder lädt
+function toolArtLoad(root){ root.querySelectorAll('[data-tool-art]:not([data-art-done])').forEach(head=>{
+  head.dataset.artDone = '1';
   const src = head.dataset.artSrc || `assets/tools/${head.dataset.toolArt}.webp`, im = new Image();
   im.onload = ()=>{
     const sim = head.dataset.toolArt==='simulator';
@@ -1456,7 +1523,7 @@ document.querySelectorAll('[data-tool-art]').forEach(head=>{
     buddyWire(head.firstElementChild);
   };
   im.src = src;
-});
+}); }
 setInterval(()=>{
   const page = document.querySelector('.page.active'); if(!page || document.hidden) return;
   const el = [...page.querySelectorAll('[data-buddy]')].find(b=>b.offsetParent); if(!el || el.dataset.hover) return;
@@ -2003,14 +2070,29 @@ const searchIndex = [
   ...traits.map(t=>({label:t.n,type:t.cat==='origin'?'Ursprung':'Klasse',html:traitHex(t.n, t.bp.length===1?'unique':'base', 34),go:()=>{closeSearch();go('/bibliothek/traits');setTimeout(()=>{$('#traitSearch').value=t.n;renderTraits();},10);}})),
   ...ITEMS.map(it=>({label:it.en,alt:it.de,type:'Item · '+(ITEM_CATS.find(([k])=>k===it.cat)||[])[1],html:`<img src="${it.img}" alt="" width="40" height="40" loading="lazy" style="width:40px;height:40px;border-radius:8px">`,go:()=>{closeSearch();openItem(it.id);}})),
   ...AUGS.filter(a=>!AUG_DUP.has(a.id)).map(a=>({label:a.en,alt:a.de,type:'Augment'+(a.lv?' · '+AUG_LV[a.lv]:''),html:`<img src="${augImg(a)}" alt="" width="40" height="40" loading="lazy" style="width:40px;height:40px;border-radius:8px">`,go:()=>{closeSearch();openAug(a.id);}})),
-  ...comps.map(c=>({label:c.name,type:'Comp · '+c.tier,html:avatar(c.carry,40),go:()=>{closeSearch();openComp(c.slug);}})),
 ];
+// Tools (Karten der Tool-Übersicht), Team Builder und alle Cheatsheets: erst beim ersten Öffnen gesammelt,
+// dann sind die Cheatsheet-Daten geladen und die Karten schon übersetzt. Comps immer frisch (Tierlist kann nachladen).
+let searchPages = null;
+const srIc = ic => `<span class="sr-ic">${ic}</span>`;
+function searchPagesBuild(){
+  const tools = [...document.querySelectorAll('#page-tools .tc')].map(a=>{ const href = a.getAttribute('href'), ph = a.querySelector('.tc-ph');
+    return {label:a.querySelector('h3').textContent.trim(), alt:a.querySelector('.tc-text').textContent + ' ' + href, type:'Tool', html:srIc(ph ? ph.innerHTML : ''), go:()=>{closeSearch();go(href);}}; });
+  tools.push({label:'Team Builder', alt:'builder board planer planner', type:'Tool', html:srIc(csSvg('<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 7.5l4 2.3v4.4L12 16.5l-4-2.3V9.8z"/>')), go:()=>{closeSearch();go('/builder');}});
+  const sheets = csList().map(([id])=>{ const m = CS_META[id] || {};
+    return {label:csName(id), alt:[...(m.s || []), ...(m.h || []), ...(m.d || []), id].join(' '), type:'Cheatsheet', html:srIc(csIco(id)), go:()=>{closeSearch();go('/cheatsheet/' + id);}}; });
+  return [...tools, ...sheets];
+}
+const searchAll = () => [...(searchPages || (searchPages = searchPagesBuild())), ...searchIndex,
+  ...comps.map(c=>({label:c.name,type:'Comp · '+c.tier,html:avatar(c.carry,40),go:()=>{closeSearch();openComp(c.slug);}}))];
 let sResults=[], sFocus=0;
 function openSearch(){ $('#searchOv').classList.add('open'); $('#searchInput').value=''; runSearch(); setTimeout(()=>$('#searchInput').focus(),20); }
 function closeSearch(){ $('#searchOv').classList.remove('open'); }
 function runSearch(){
-  const q = $('#searchInput').value.toLowerCase().trim();
-  sResults = (q ? searchIndex.filter(s=>s.label.toLowerCase().includes(q) || (s.alt && s.alt.toLowerCase().includes(q))) : searchIndex.filter(s=>s.type.startsWith('Comp'))).slice(0,12);
+  const q = $('#searchInput').value.toLowerCase().trim(), all = searchAll();
+  // Treffer am Namensanfang zuerst (sonst verdrängen z. B. viele Augments das Tool „Augment-Vorhersage“), danach Treffer irgendwo im Namen oder in der Beschreibung
+  const rank = s=>{ const l = s.label.toLowerCase(); return l.startsWith(q) ? 0 : l.includes(q) ? 1 : s.alt && s.alt.toLowerCase().includes(q) ? 2 : 3; };
+  sResults = (q ? all.map((s, i)=>[rank(s), i, s]).filter(([r])=>r < 3).sort((a, b)=>a[0] - b[0] || a[1] - b[1]).map(([, , s])=>s) : all.filter(s=>s.type.startsWith('Comp'))).slice(0,12);
   sFocus = 0;
   $('#searchRes').innerHTML = sResults.length ? sResults.map((s,i)=>`<div class="sr ${i===0?'focus':''}" data-i="${i}">${s.html}<span>${esc(s.label)}</span><small>${esc(s.type)}</small></div>`).join('') : '<div class="sr-empty">'+viSays('Nichts gefunden. Versuch es mit einem Champion, Item oder Trait!')+'</div>';
 }
@@ -2752,7 +2834,11 @@ function tmRenderPool(){
 /* ================= TOOLS: Item-Drop-Chance ================= */
 // Komponenten aus Creep-Runden kommen aus einem Item-Pool: gezogene Komponenten fehlen darin, vor jeder weiteren Creep-Stage
 // kommt von jeder Komponente eine dazu. Beute-Tabellen pro Stage stehen in data/custom-<Set>.js (loot).
-const LOOT = TFT_CUSTOM_SET.loot && TFT_CUSTOM_SET.loot.stages ? TFT_CUSTOM_SET.loot : null;
+// Bevorzugt die Loot-Tabelle von Little Buddy Bot (loot.lbb, wie im Cheatsheet) – umgerechnet ins Zeilenformat
+// [grau, blau, gold, prisma, Komponenten-Kugeln, Komponenten-Amboss, aufgewertet, Chance]; LBB kennt keine Ambosse und aufgewerteten Runden (bleiben 0)
+const LOOT = (()=>{ const l = TFT_CUSTOM_SET.loot; if(!l) return null;
+  if(l.lbb) return Object.assign({}, l, {lbb:true, source:l.lbb.src, stages:Object.fromEntries(Object.entries(l.lbb.stages).map(([s, rows])=>[s, rows.map(([c, g, b, go, p, w])=>[g, b, go, p, c, 0, 0, w])]))});
+  return l.stages ? l : null; })();
 const DR_KEY = 'tftfreaks_drops_v1_' + TFT_DATA.set;
 const DR_COMPS = COMPONENTS.filter(id=>!/spatula|fryingpan/i.test(normN(itemById[id].en))).slice(0, 8);   // die 8 Komponenten im Item-Pool
 const DR_STAGES = [[1,'Stage 1','Minions'],[2,'2-7','Creeps'],[3,'3-7','Creeps'],[4,'4-7','Creeps'],[5,'ab 5-7','Xerath']];
@@ -2825,12 +2911,13 @@ function drRender(){
     const P = f => ok.filter(f).reduce((a, r)=>a + r[7], 0) / tot;
     const cnt = {}; all.forEach(r=>{ cnt[r[4]] = (cnt[r[4]]||0) + r[7]; });
     const maxC = Math.max(...Object.values(cnt));
-    const orbName = r => [r[0] && `${r[0]}× Silber`, r[1] && `${r[1]}× Blau`, r[2] && `${r[2]}× Gold`, r[3] && `${r[3]}× Prismatic`, `${r[4]} Komponente${r[4]===1 ? '' : 'n'}`, r[5] && 'Komponenten-Amboss'].filter(Boolean).join(' + ');
+    const orbName = r => [r[4] && `${r[4]}× ${L('Komponente', 'component')}`, r[0] && `${r[0]}× ${L('Grau', 'gray')}`, r[1] && `${r[1]}× ${L('Blau', 'blue')}`, r[2] && `${r[2]}× Gold`, r[3] && `${r[3]}× ${L('Prismatisch', 'prismatic')}`, r[5] && L('Komponenten-Amboss', 'component anvil')].filter(Boolean).join(' + ');
+    const hasUp = all.some(r=>r[6] > 0);   // aufgewertete Runden gibt es nur in der alten tftflow-Tabelle
     loot = `<div class="dr-orbs">
         <div class="dr-orb prism"><span>Prismatic-Orb</span><b>${drPct(P(r=>r[3] > 0))}</b></div>
         <div class="dr-orb gold"><span>Gold-Orb</span><b>${drPct(P(r=>r[2] > 0))}</b></div>
         <div class="dr-orb blue"><span>Blau-Orb</span><b>${drPct(P(r=>r[1] > 0))}</b></div>
-        <div class="dr-orb up"><span>Aufgewertet</span><b>${drPct(P(r=>r[6] > 0))}</b></div>
+        ${hasUp ? `<div class="dr-orb up"><span>Aufgewertet</span><b>${drPct(P(r=>r[6] > 0))}</b></div>` : `<div class="dr-orb gray"><span>${L('Grauer Orb', 'Gray orb')}</span><b>${drPct(P(r=>r[0] > 0))}</b></div>`}
       </div>
       ${cur.length ? `<p class="dr-note">Schon berücksichtigt: Du hast in ${esc(stageName)} ${cur.length} Komponente${cur.length===1 ? '' : 'n'} – Kombinationen mit weniger fallen raus.</p>` : ''}
       <h4 class="dr-h4">Zufällige Komponenten in ${esc(stageName)}</h4>
@@ -2877,7 +2964,8 @@ function drRender(){
     </div>
     <details class="card dr-more"><summary>Orb-Inhalte (Gold &amp; Prismatic) und Quelle</summary>
       <div class="dr-orbgrid">${orbTbl(LOOT.orbs.prism)}${orbTbl(LOOT.orbs.gold)}${orbTbl(LOOT.orbs.gold4)}
-        <div class="dr-orbtbl"><h4>Aufgewertete Runden <small>einmal pro Spiel geheim ausgewürfelt</small></h4><table class="dr-table small"><tbody>${LOOT.upgraded.map(([t, p])=>`<tr><td>${esc(t)}</td><td>${fmtNum(p)} %</td></tr>`).join('')}</tbody></table></div></div>
+        ${LOOT.lbb ? '' : `<div class="dr-orbtbl"><h4>Aufgewertete Runden <small>einmal pro Spiel geheim ausgewürfelt</small></h4><table class="dr-table small"><tbody>${LOOT.upgraded.map(([t, p])=>`<tr><td>${esc(t)}</td><td>${fmtNum(p)} %</td></tr>`).join('')}</tbody></table></div>`}</div>
+      ${LOOT.lbb ? `<p class="dr-note">${L('Alle Spieler bekommen dieselbe Menge und Qualität an Orbs, nur der Inhalt unterscheidet sich. Komponenten-Kugeln (mindestens 11, höchstens 15 pro Spiel) sehen aus wie blaue Orbs.', 'All players receive the same quantity and quality of orbs, only the contents vary. Component orbs (minimum 11, maximum 15 per game) look the same as blue orbs.')}</p>` : ''}
       <p class="dr-note">Beute-Tabellen: ${esc(LOOT.source)}. Die Pool-Regel (gezogene Komponenten fehlen, vor jeder Creep-Stage kommt von jeder eine dazu) ist nicht offiziell von Riot dokumentiert – deshalb kannst du den Start-Pool umstellen.</p>
     </details>
   </div>`;
@@ -3333,7 +3421,7 @@ function csTraitBody(t){
     const ROLE = [['Tank', 'hp', 'armr'], ['AD', 'ad', 'as'], ['AP', 'da', 'mana']], star = s=>'<i class="ctr-star">' + '★'.repeat(s) + '</i>';
     const pane = b => `<div class="cs-wrap"><table class="cs-table ctr-bt"><thead><tr><th>${L('Kosten', 'Cost')}</th><th>${L('Rolle', 'Role')}</th>${[1, 2, 3].map(s=>`<th>${star(s)}</th>`).join('')}</tr></thead><tbody>
       ${t.grid.map((roles, c)=>roles.map((bps, r)=>`<tr class="${r ? '' : 'top'}">${r ? '' : `<td rowspan="3" class="ctr-cost">${csIc(TI('champ-' + (c + 1)), '', L(`${c + 1}-Kosten`, `${c + 1}-cost`), 'chorb')}</td>`}<td class="ctr-role k${c + 1}">${ROLE[r][0]}</td>
-        ${bps[b].map(([v1, v2])=>`<td><span class="ctr-v">${v1}${ROLE[r][1] === 'armr' ? '' : '%'} ${csSt(ROLE[r][1])}</span><span class="ctr-v">${ROLE[r][0] === 'AP' ? '+' : ''}${v2}${r === 1 ? '%' : ''} ${csSt(ROLE[r][2])}</span></td>`).join('')}</tr>`).join('')).join('')}</tbody></table></div>`;
+        ${bps[b].map(([v1, v2])=>`<td><div class="ctr-vv"><span class="ctr-v">${v1}${ROLE[r][1] === 'armr' ? '' : '%'} ${csSt(ROLE[r][1])}</span><span class="ctr-v">${ROLE[r][0] === 'AP' ? '+' : ''}${v2}${r === 1 ? '%' : ''} ${csSt(ROLE[r][2])}</span></div></td>`).join('')}</tr>`).join('')).join('')}</tbody></table></div>`;
     return `<div class="csp-tabs" role="tablist">${[2, 4, 6].map((b, i)=>`<button type="button" role="tab" class="${i ? '' : 'on'}" data-cstab="${i}" aria-selected="${!i}">${b} Blackthorn<span></span></button>`).join('')}</div>
       ${[0, 1, 2].map(b=>`<div class="csp-pane"${b ? ' hidden' : ''}>${pane(b)}</div>`).join('')}`;
   }
@@ -3632,6 +3720,14 @@ function pageMeta(page, sub){
       if(!c) return ['Champion nicht gefunden', '', true];
       return [`${c.n} TFT Build ${S} – Items, Comps & Fähigkeit`, `${c.n} in TFT ${S}: die besten Items, Comps und Traits, dazu Fähigkeit und Werte des ${c.c}-Kosten-Champions – mit Builds aus unserer Challenger-Tierlist.`];
     }
+    case 'comp': {
+      const c = compByKey[sub];
+      if(!c) return ['Comp nicht gefunden', '', true];
+      const its = compItemsOf(c, c.carry).map(it=>it.en).join(', '), tierTxt = c.tier === 'X' ? 'situativ' : c.tier + '-Tier';
+      return [L(`${c.name} – TFT Comp Guide ${S}${P}`, `${c.name} – TFT Comp Guide ${S}${P}`),
+        L(`So spielst du ${c.name} in TFT ${S}: Aufstellung, Items${its ? ` für ${c.carry} (${its})` : ''}, Augments und Spielplan – ${tierTxt} in unserer Tierlist.`,
+          `How to play ${c.name} in TFT ${S}: positioning, items${its ? ` for ${c.carry} (${its})` : ''}, augments and game plan – ${c.tier === 'X' ? 'situational' : c.tier + '-tier'} in our tier list.`)];
+    }
     case 'builder': return [`TFT Team Builder ${S} – Board planen & teilen`, `Kostenloser TFT Team Builder für ${S}: Units platzieren, Items verteilen, aktive Traits prüfen und dein Board als Link oder Team-Code teilen.`];
     case 'coaching': return ['TFT Coaching von Challenger-Spielern', 'TFT Coaching auf Deutsch und Englisch: Fundamentals und VOD-Review mit Challenger-Coaches. Kostenloses Kennenlernen, Einzelstunde 30 €, Set-Pass und VIP-Mentoring für das ganze Set.'];
     case 'about':
@@ -3679,13 +3775,14 @@ function setMeta(page, sub){
   if(noindex){ const c = document.head.querySelector('link[rel="canonical"]'); if(c) c.remove(); return; }
   // kanonische Adresse: eine Adresse pro Inhalt (z. B. /bibliothek statt /bibliothek/champions, Builder ohne Team-Code)
   const keep = {cheatsheet:csList().map(s=>s[0]), guides:['encounters'], tierlist:['items','augments','holds'], bibliothek:['items','traits'], tools:['rolldown','tierlist','simulator','drops','dps','augments'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
-  const path = page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : '/' + page + (keep.includes(sub) ? '/' + sub : '');
+  const path = page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : page==='comp' ? compHref(compByKey[sub]) : '/' + page + (keep.includes(sub) ? '/' + sub : '');
   headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + withLang(path);
   // beide Sprachfassungen für Suchmaschinen verknüpfen
   [['de', path], ['en', '/en' + path], ['x-default', path]].forEach(([l, p])=>{ headTag(`link[rel="alternate"][hreflang="${l}"]`, ()=>Object.assign(document.createElement('link'), {rel:'alternate', hreflang:l})).href = location.origin + p; });
   // Vorschau beim Teilen (Discord, WhatsApp, X …)
   const url = location.origin + withLang(path), tool = page==='tools' ? (sub && keep.includes(sub) ? sub : 'overview') : page==='builder' ? 'builder' : '';
-  const chImg = page==='champion' && (champImg(champBySlug[sub].n) || champFallback(champBySlug[sub].n));
+  const chN = page==='champion' ? champBySlug[sub].n : page==='comp' ? compByKey[sub].carry : '';   // Vorschaubild: Champion bzw. Carry der Comp
+  const chImg = chN && (champImg(chN) || champFallback(chN));
   const img = chImg || location.origin + '/' + ({tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp', augments:'assets/tools/augments.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
   const og = (k, v) => { headTag(`meta[property="${k}"]`, ()=>{ const m = document.createElement('meta'); m.setAttribute('property', k); return m; }).content = v; };
   og('og:title', document.title); og('og:description', desc || ''); og('og:url', url); og('og:type', 'website'); og('og:site_name', 'TFTClimb'); og('og:locale', EN ? 'en_GB' : 'de_DE'); og('og:image', img);
@@ -3700,6 +3797,7 @@ function setLd(page, sub, tool, title, desc, url, path){
   if(page!=='home'){
     const items = [['Home', '/']], sec = LD_SECTION[page];
     if(page==='champion') items.push([tr('Bibliothek'), '/bibliothek'], ['Champions', '/bibliothek/champions'], [champBySlug[sub].n, path]);
+    else if(page==='comp') items.push(['Tierlist', '/tierlist'], [compByKey[sub].name, path]);
     else {
       if(sec) items.push([tr(sec), '/' + page]);
       if(path !== '/' + page) items.push([title.split(' – ')[0], path]);
@@ -3712,8 +3810,8 @@ function setLd(page, sub, tool, title, desc, url, path){
     const qa = box ? [...box.querySelectorAll('details')].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}})) : [];
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
   }
-  if(page==='champion' || page==='cheatsheet' || (page==='guides' && sub && GUIDES_LIVE)){   // Fragen aus dem Textblock der Champion-Seite, des Cheatsheets bzw. des Guides
-    const qa = [...document.querySelectorAll(page==='champion' ? '#chPage .tool-seo details' : page==='cheatsheet' ? '#csPage .tool-seo details' : `#page-guides .gd-view[data-guide="${sub}"] .tool-seo details`)].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}}));
+  if(page==='champion' || page==='comp' || page==='cheatsheet' || (page==='guides' && sub && GUIDES_LIVE)){   // Fragen aus dem Textblock der Champion-/Comp-Seite, des Cheatsheets bzw. des Guides
+    const qa = [...document.querySelectorAll(page==='champion' ? '#chPage .tool-seo details' : page==='comp' ? '#compPage .tool-seo details' : page==='cheatsheet' ? '#csPage .tool-seo details' : `#page-guides .gd-view[data-guide="${sub}"] .tool-seo details`)].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}}));
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
   }
   let el = document.getElementById('ldPage');
@@ -3744,19 +3842,24 @@ function route(){
   let page = parts[0] || 'home', sub = parts[1];
   // Champion-Seiten: /champions/<name>
   if(page==='champions' && sub){ page = 'champion'; }
+  // Comp-Seiten: /comps/<name>, /comps allein = Tierlist
+  if(page==='comps'){ page = sub ? 'comp' : 'tierlist'; }
   // alte Adressen weiter unterstützen
   if(['champions','items','traits'].includes(page)){ sub = page; page = 'bibliothek'; }
   if(page==='augments'){ sub = 'augments'; page = 'tierlist'; }
-  const valid = ['home','tierlist','bibliothek','champion','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches'];
+  const valid = ['home','tierlist','bibliothek','champion','comp','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches'];
   if(!valid.includes(page)) page='notfound';
   const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche
   const isCv = page==='bibliothek' && !['items','traits'].includes(sub);   // Champions: Wabenansicht (auch alte Adresse /bibliothek/v2)
   const pageId = isCv ? 'champv2' : page==='bibliothek' ? 'library' : isSim ? 'builder' : ND && page==='home' ? 'dash' : page;
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+pageId));
+  // Große Bilder versteckter Seiten (Tool-Karten, Maskottchen) stehen als data-src im HTML und laden erst, wenn die Seite zu sehen ist
+  document.querySelectorAll(`#page-${pageId} img[data-src]`).forEach(i=>{ i.src = i.dataset.src; i.removeAttribute('data-src'); });
+  const pageEl = $('#page-' + pageId); if(pageEl) toolArtLoad(pageEl);
   // Seitenbreite: Übersichtsseiten breit wie das Dashboard, Unterseiten (einzelnes Tool, Cheatsheet, Champion, Patch, Rang, Profil, Rechtliches) schmaler
   const subOk = {tools:['rolldown','tierlist','simulator','drops','dps','augments'], cheatsheet:csList().map(s=>s[0]), patches:Object.keys(patchBySlug), ranks:Object.keys(rankBy), about:['crazyslayt','humbadobo']}[page];
-  document.body.dataset.lvl = ['champion','builder','apply','impressum','datenschutz','bedingungen'].includes(page) || (subOk && subOk.includes(sub)) ? 'sub' : 'top';
-  let navKey = page==='champion' ? 'bibliothek' : page;
+  document.body.dataset.lvl = ['champion','comp','builder','apply','impressum','datenschutz','bedingungen'].includes(page) || (subOk && subOk.includes(sub)) ? 'sub' : 'top';
+  let navKey = page==='champion' ? 'bibliothek' : page==='comp' ? 'tierlist' : page;
   $('#statBar').classList.toggle('sb-off', page!=='home');   // LP-Grenzen und Patch-Countdown nur auf der Startseite
   if(page==='home') requestAnimationFrame(()=>sbCount(true));   // beim Öffnen der Startseite die LP hochzählen
   if(!isSim) simPause();
@@ -3772,6 +3875,7 @@ function route(){
   else if(page==='tools') renderTools(sub, parts[2], parts[3]);
   if(page==='patches') renderPatches(sub);
   if(page==='champion') renderChampPage(sub);
+  if(page==='comp') renderCompPage(sub);
   if(page==='cheatsheet') renderCheats(sub);
   if(page==='apply'){ const pk = qParam('paket'), sel = $('#fPkg'); if(pk && sel && [...sel.options].some(o=>o.value===pk)) sel.value = pk; }   // z. B. /apply?paket=vip
   document.querySelectorAll('[data-route]').forEach(a=>a.classList.toggle('active', a.dataset.route===navKey));
@@ -3929,7 +4033,7 @@ function ndInit(){
     const card = (href, img, name, role, bio, facts, chall) => {
       const tag = href ? 'a' : 'div';
       return `<${tag} class="dsh-pcard mt-pcard${href ? '' : ' mt-later'}"${href ? ` href="${href}"` : ''}>
-        <span class="dsh-pav"><img src="${img}" alt="${esc(name)}">${chall ? `<img class="dsh-pemb" src="${rankImg(rankBy.challenger)}" alt="Challenger">` : ''}</span>
+        <span class="dsh-pav"><img ${$('#page-about').classList.contains('active') ? 'src' : 'data-src'}="${img}" alt="${esc(name)}">${chall ? `<img class="dsh-pemb" src="${rankImg(rankBy.challenger)}" alt="Challenger">` : ''}</span>
         <b>${esc(name)}${chall ? '<i>#EUW</i>' : ''}</b><span class="dsh-prole">${role}</span><p class="mt-pbio">${bio}</p>
         <span class="dsh-pfacts">${facts.map(([l, v])=>`<span><small>${l}</small><em>${v}</em></span>`).join('')}</span>
         <span class="mt-pgo">${href ? L('Profil ansehen', 'View profile') + ' →' : L('Profil folgt', 'Profile coming soon')}</span></${tag}>`;
@@ -3991,7 +4095,7 @@ function renderDash(){
       <section class="dsh-card"><div class="dsh-h"><h2>Top Comps</h2><a href="/tierlist">${L('Ganze Tierlist', 'Full tier list')} →</a></div>
         ${top.length ? top.map(c=>{
           const units = c.board.map(b=>b.u).filter(u=>champBy[u]).sort((a,b)=>(b===c.carry) - (a===c.carry) || costOf(b) - costOf(a)).slice(0, 7);
-          return `<a class="dsh-comp" href="/tierlist" data-dshcomp="${esc(c.slug)}">${tierBadge(c.tier)}<span class="dsh-cn"><b>${esc(c.name)}</b><small>${esc(L(STYLE_DE[c.style] || c.style, c.style))} · ${esc(L(DIFF_DE[c.diff] || '', (c.diff || '').toLowerCase()))}</small></span><span class="dsh-units">${units.map(u=>dshHex(u)).join('')}</span><span class="dsh-pill">Carry: ${esc(c.carry)}</span></a>`; }).join('')
+          return `<a class="dsh-comp" href="${compHref(c)}">${tierBadge(c.tier)}<span class="dsh-cn"><b>${esc(c.name)}</b><small>${esc(compStyleName(c))} · ${esc(compDiffName(c))}</small></span><span class="dsh-units">${units.map(u=>dshHex(u)).join('')}</span><span class="dsh-pill">Carry: ${esc(c.carry)}</span></a>`; }).join('')
           : `<p class="dsh-empty">${L('Die Tierlist wird gerade neu aufgebaut.', 'The tier list is being rebuilt.')}</p>`}
       </section>
       <section class="dsh-card dsh-coach">
@@ -4014,7 +4118,7 @@ function renderDash(){
           ['/tools/drops', 'drops', L('Item-Drop-Chance', 'Item Drop Chance'), L('Was droppt als Nächstes?', 'What drops next?')],
           ['/tools/tierlist', 'tierlist', 'Tierlist-Maker', L('Eigene Tierlist bauen', 'Build your own tier list')],
           ['/builder', 'simulator', 'Team Builder', L('Board planen & teilen', 'Plan & share boards')]
-        ].map(([h, img, t, d])=>`<a href="${h}"><img src="assets/tools/${img}.webp" alt="" loading="lazy"><span><b>${t}</b><small>${d}</small></span></a>`).join('')}</div></section>
+        ].map(([h, img, t, d])=>`<a href="${h}"><img src="assets/tools/thumb/${img}.webp" alt="" width="34" height="34" loading="lazy"><span><b>${t}</b><small>${d}</small></span></a>`).join('')}</div></section>
     </div>`;
   const f = box.querySelector('.dsh-ts'); if(f) f.classList.add('on');
   box.dataset.done = '1';
@@ -4043,8 +4147,6 @@ function dshCount(fromZero){
   dshCount.timer = setInterval(()=>{ const k = Math.max(0, Math.min(1, (performance.now() - t0) / dur));
     jobs.forEach(j=>{ j.el.textContent = fmtLP(Math.round(j.from + (j.to - j.from) * ease(k))); }); if(k >= 1) clearInterval(dshCount.timer); }, 16);
 }
-// Klick auf eine Top Comp: Tierlist öffnen und die Comp aufklappen
-document.addEventListener('click', e=>{ const a = e.target.closest('[data-dshcomp]'); if(!a || e.ctrlKey || e.metaKey) return; e.preventDefault(); go('/tierlist'); const slug = a.dataset.dshcomp; setTimeout(()=>{ const t = document.querySelector(`#tierRows .ct[data-slug="${CSS.escape(slug)}"]`); if(t){ t.click(); t.scrollIntoView({block:'center'}); } }, 60); }, true);
 if(ND) ndInit();
 
 /* init */

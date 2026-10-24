@@ -2,8 +2,10 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<!-- Online gelten alle Dateipfade ab der Startseite (auch unter /tierlist/items); lokal per Doppelklick bleiben sie relativ -->
-<script>if (location.protocol !== 'file:') document.write('<base href="/">');</script>
+<!-- Online gelten alle Dateipfade ab der Startseite (auch unter /tierlist/items); lokal per Doppelklick bleiben sie relativ.
+     Fest im HTML statt per Skript: sonst lädt der Browser-Vorlader auf Unterseiten (/comps/…) alles erst unter falschen Adressen. -->
+<base href="/">
+<script>if (location.protocol === 'file:') document.querySelector('base').remove();</script>
 <script>
 // Sprache: Adressen mit /en/… sind Englisch, alle anderen Deutsch.
 // Erstbesuch ohne gespeicherte Wahl und mit nicht-deutschem Browser → englische Version (nicht für Suchmaschinen).
@@ -49,6 +51,9 @@
 <link rel="icon" type="image/png" sizes="48x48" href="assets/brand/favicon-48.png">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/brand/favicon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/apple-touch-icon.png">
+<!-- Champion-, Item- und Rang-Bilder kommen von CommunityDragon/Riot: Verbindung schon beim Laden der Seite aufbauen -->
+<link rel="preconnect" href="https://raw.communitydragon.org">
+<link rel="preconnect" href="https://ddragon.leagueoflegends.com">
 <link rel="stylesheet" href="assets/css/fonts.css">
 <link rel="stylesheet" href="assets/css/site.css">
 <script>
@@ -324,6 +329,9 @@
 </div>
 
 <!-- ================= CHAMPION-SEITE (/champions/<name>) ================= -->
+<div class="page" id="page-comp">
+  <div class="wrap" id="compPage"></div>
+</div>
 <div class="page" id="page-champion">
   <div class="wrap" id="chPage"></div>
 </div>
@@ -535,42 +543,42 @@
         <div class="tc-item">
           <a class="tc" href="/tools/rolldown">
             <div class="tc-text"><span class="tc-tag">Rechner</span><h3>Rolldown-Rechner</h3><p>Rollen oder leveln? Rechne aus, ob du deine Units triffst.</p></div>
-            <div class="tc-art" aria-hidden="true"><img src="assets/tools/rolldown.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.4" fill="currentColor"/><circle cx="16" cy="8" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="8" cy="16" r="1.4" fill="currentColor"/><circle cx="16" cy="16" r="1.4" fill="currentColor"/></svg></span></div>
+            <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/rolldown.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.4" fill="currentColor"/><circle cx="16" cy="8" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="8" cy="16" r="1.4" fill="currentColor"/><circle cx="16" cy="16" r="1.4" fill="currentColor"/></svg></span></div>
           </a>
           <div class="tc-cap"><span>TFT Rolldown-Rechner</span><span class="tc-st">Neu</span></div>
         </div>
         <div class="tc-item">
           <a class="tc" href="/tools/drops">
             <div class="tc-text"><span class="tc-tag">Chancen</span><h3>Item-Drop-Chance</h3><p>Was droppt als Nächstes? Der Item-Pool verrät es.</p></div>
-            <div class="tc-art" aria-hidden="true"><img src="assets/tools/drops.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 8h10l2 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><circle cx="12" cy="14" r="2"/></svg></span></div>
+            <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/drops.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 8h10l2 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><circle cx="12" cy="14" r="2"/></svg></span></div>
           </a>
           <div class="tc-cap"><span>TFT Item-Drop-Chance</span><span class="tc-st">Neu</span></div>
         </div>
         <div class="tc-item">
           <a class="tc" href="/tools/tierlist">
             <div class="tc-text"><span class="tc-tag">Ersteller</span><h3>Tierlist-Maker</h3><p>Deine eigene Tierlist. Sortieren, teilen, diskutieren.</p></div>
-            <div class="tc-art" aria-hidden="true"><img src="assets/tools/tierlist.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="5" height="4" rx="1"/><rect x="3" y="10" width="5" height="4" rx="1"/><rect x="3" y="16" width="5" height="4" rx="1"/><path d="M11 6h10M11 12h7M11 18h4"/></svg></span></div>
+            <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/tierlist.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="5" height="4" rx="1"/><rect x="3" y="10" width="5" height="4" rx="1"/><rect x="3" y="16" width="5" height="4" rx="1"/><path d="M11 6h10M11 12h7M11 18h4"/></svg></span></div>
           </a>
           <div class="tc-cap"><span>TFT Tierlist-Maker</span><span class="tc-st">Neu</span></div>
         </div>
         <div class="tc-item">
           <a class="tc" href="/tools/simulator">
             <div class="tc-text"><span class="tc-tag">Simulator</span><h3>Kampf-Simulator</h3><p>Zwei Teams, ein Kampf. Wer läuft wohin – und wer gewinnt?</p></div>
-            <div class="tc-art" aria-hidden="true"><img src="assets/tools/simulator.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4l9 9M4 4h4M4 4v4"/><path d="M20 4l-9 9M20 4h-4M20 4v4"/><path d="M9 15l-4 4M15 15l4 4M7.5 13.5l3 3M16.5 13.5l-3 3"/></svg></span></div>
+            <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/simulator.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4l9 9M4 4h4M4 4v4"/><path d="M20 4l-9 9M20 4h-4M20 4v4"/><path d="M9 15l-4 4M15 15l4 4M7.5 13.5l3 3M16.5 13.5l-3 3"/></svg></span></div>
           </a>
           <div class="tc-cap"><span>TFT Kampf-Simulator</span><span class="tc-st">Neu</span></div>
         </div>
         <div class="tc-item">
           <a class="tc" href="/tools/dps">
             <div class="tc-text"><span class="tc-tag">Vergleich</span><h3>DPS-Vergleich</h3><p>Welcher Item-Build macht mehr Schaden? Im Graph verglichen.</p></div>
-            <div class="tc-art" aria-hidden="true"><img src="assets/tools/dps.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 20h18"/><path d="M4 16l5-5 4 3 7-8"/><path d="M16 6h4v4"/></svg></span></div>
+            <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/dps.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 20h18"/><path d="M4 16l5-5 4 3 7-8"/><path d="M16 6h4v4"/></svg></span></div>
           </a>
           <div class="tc-cap"><span>TFT DPS-Vergleich</span><span class="tc-st">Neu</span></div>
         </div>
         <div class="tc-item">
           <a class="tc" href="/tools/augments">
             <div class="tc-text"><span class="tc-tag">Vorhersage</span><h3>Augment-Vorhersage</h3><p>Silber, Gold oder Prisma? Sieh, was als Nächstes kommt.</p></div>
-            <div class="tc-art" aria-hidden="true"><img src="assets/tools/augments.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 8v4l3 2"/></svg></span></div>
+            <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/augments.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 8v4l3 2"/></svg></span></div>
           </a>
           <div class="tc-cap"><span>TFT Augment-Vorhersage</span><span class="tc-st">Neu</span></div>
         </div>
@@ -1013,7 +1021,7 @@
     <div class="mt-view" data-about="crazyslayt" hidden>
     <div class="page-head"><div class="crumb"><a href="/about">Meet the Team</a> / CrazYSlayt</div><h1>Claudio <em class="serif">„CrazYSlayt“</em></h1></div>
     <div class="card about has-mascot">
-      <img class="about-mascot" src="assets/img/mascot-vi-arms.webp" alt="" width="520" height="957" loading="lazy">
+      <img class="about-mascot" data-src="assets/img/mascot-vi-arms.webp" alt="" width="520" height="957" loading="lazy">
       <div>
         <div class="about-pic team-claudio" role="img" aria-label="Claudio „CrazYSlayt“" style="background-size:cover;background-position:center 20%"></div>
         <div class="about-id"><b>CrazYSlayt</b><span>#siQVi · EUW</span></div>
@@ -1073,7 +1081,7 @@
     <div class="mt-view" data-about="humbadobo" hidden>
     <div class="page-head"><div class="crumb"><a href="/about">Meet the Team</a> / humbadobo</div><h1>Romano <em class="serif">„humbadobo“</em></h1></div>
     <div class="card about has-mascot ks">
-      <img class="about-mascot" src="assets/img/mascot-kaisa.webp" alt="" width="520" height="786" loading="lazy">
+      <img class="about-mascot" data-src="assets/img/mascot-kaisa.webp" alt="" width="520" height="786" loading="lazy">
       <div>
         <div class="about-pic team-romano" role="img" aria-label="Romano „humbadobo“" style="background-size:cover;background-position:center 20%"></div>
         <div class="about-id"><b>humbadobo</b><span>#000 · EUW</span></div>

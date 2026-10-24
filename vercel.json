@@ -1,7 +1,11 @@
 {
   "functions": {
-    "api/sitemap.js": { "includeFiles": "data/*.js" }
+    "api/sitemap.js": { "includeFiles": "{data/*.js,tierlist-data-*.js}" }
   },
+  "headers": [
+    { "source": "/assets/fonts/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
+    { "source": "/assets/(img|tools|brand|icons|augments|plants)/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }] }
+  ],
   "redirects": [
     { "source": "/:path*", "has": [{ "type": "host", "value": "tft-lovat.vercel.app" }], "destination": "https://www.tftclimb.com/:path*", "permanent": true }
   ],

@@ -1466,7 +1466,7 @@ a.tc:hover .tc-ph{transform:rotate(0) scale(1.05)}
 .dr-orb span{font-size:.72rem;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.04em}
 .dr-orb b{font-family:var(--ff-head);font-size:1.35rem}
 .dr-orb.prism{border-color:rgba(240,171,252,.5);background:linear-gradient(135deg,rgba(240,171,252,.14),rgba(96,165,250,.1))}.dr-orb.prism b{color:#f0abfc}
-.dr-orb.gold b{color:var(--gold)}.dr-orb.blue b{color:#60a5fa}.dr-orb.up b{color:var(--up)}
+.dr-orb.gold b{color:var(--gold)}.dr-orb.blue b{color:#60a5fa}.dr-orb.up b{color:var(--up)}.dr-orb.gray b{color:#c4ccd8}
 .dr-h4{margin:16px 0 8px;font-size:.92rem}
 .dr-counts{display:flex;gap:8px;align-items:flex-end;height:110px}
 .dr-counts div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:100%}
@@ -2601,6 +2601,18 @@ a.cs-side-h:hover{color:var(--accent-2)}
 .ctr-bt .ctr-role{font:italic 800 1.1rem/1 var(--ff-head);text-align:left}
 .ctr-bt td .ctr-v{display:flex;justify-content:center;font-size:1.12rem}
 .ctr-bt td .ctr-v .cax-si{width:20px;height:20px}
+.ctr-bt .ctr-vv{display:flex;flex-direction:column;align-items:center}
+/* Breiter Rahmen: beide Werte nebeneinander (erster rechtsbündig, zweiter linksbündig) – halbe Höhe, alle 15 Zeilen auf einen Blick */
+@container (min-width:620px){
+  .ctr-bt td{padding-top:5px;padding-bottom:5px}
+  .ctr-bt .ctr-vv{display:grid;grid-template-columns:1fr 1fr;column-gap:14px;align-items:center}
+  .ctr-bt .ctr-vv .ctr-v{font-size:1.04rem}
+  .ctr-bt .ctr-vv .ctr-v:first-child{justify-content:flex-end}
+  .ctr-bt .ctr-vv .ctr-v:last-child{justify-content:flex-start}
+  .ctr-bt td .ctr-v .cax-si{width:18px;height:18px}
+  .ctr-bt .ctr-cost .csx-ic{width:34px;height:34px}
+  .ctr-bt .ctr-role{font-size:1rem}
+}
 .ctr-bt th .ctr-star{font-size:1.25rem}
 .ctr-star{font-style:normal;letter-spacing:-1px;color:#f2c14e}
 /* Fae */
@@ -2799,3 +2811,25 @@ img.cs-ric{border-radius:0 !important;object-fit:contain;filter:drop-shadow(0 2p
 /* schmale Input-Box: Überschrift einzeilig, „Zurücksetzen“ nur als Symbol */
 .tio-hd h2{white-space:nowrap}
 @container (max-width:420px){.tio-reset span{display:none}.tio-reset{padding:8px}}
+/* ---------- Comp-Seite (/comps/<name>): Kopf mit Tier-Abzeichen und Carry-Splash, darunter das Tierlist-Panel ---------- */
+.comp-hero .chp-hero-in{align-items:center}
+.comp-tierb{display:grid;place-items:center;flex:none;width:112px;height:128px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  background:linear-gradient(160deg,var(--tc),color-mix(in srgb,var(--tc) 35%,#0a0d17));box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.comp-tierb b{margin-top:14px;font:italic 900 3.6rem/1 var(--ff-head);color:#111}
+.comp-tierb small{margin-top:-14px;font:800 .7rem/1 var(--ff-body);letter-spacing:.14em;text-transform:uppercase;color:rgba(0,0,0,.65)}
+.comp-hero .trait-row{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.comp-hero a.chp-tr{color:inherit;text-decoration:none}
+.comp-hero a.chp-tr:hover{border-color:var(--tc)}
+.comp-panel{margin:22px 0}
+.comp-panel .cp-tabs a.cp-tab{text-decoration:none}
+.comp-more{margin:0 0 22px;padding:20px 22px}
+.comp-more h2{margin:0 0 12px;font-size:1.3rem}
+.comp-more .chp-comps{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.comp-more a.chp-comp{text-decoration:none;color:inherit}
+.cp-actions a.cp-page{text-decoration:none;color:var(--accent-2);border-color:rgba(46,230,214,.45)}
+.cp-actions a.cp-page:hover{color:#fff;border-color:#2ee6d6}
+@media (max-width:640px){.comp-tierb{width:84px;height:96px}.comp-tierb b{font-size:2.6rem}}
+/* Suche: Symbol für Tools und Cheatsheets im selben 40-px-Raster wie Champion- und Item-Bilder */
+.sr-ic{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:8px;border:1px solid rgba(46,230,214,.28);background:rgba(46,230,214,.07);color:#2ee6d6}
+.sr-ic svg,.sr-ic img{width:24px;height:24px}
+.sr-ic .cs-aic{margin:0}
