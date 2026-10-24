@@ -3686,7 +3686,7 @@ function setMeta(page, sub){
   // Vorschau beim Teilen (Discord, WhatsApp, X …)
   const url = location.origin + withLang(path), tool = page==='tools' ? (sub && keep.includes(sub) ? sub : 'overview') : page==='builder' ? 'builder' : '';
   const chImg = page==='champion' && (champImg(champBySlug[sub].n) || champFallback(champBySlug[sub].n));
-  const img = chImg || location.origin + '/' + ({tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
+  const img = chImg || location.origin + '/' + ({tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp', augments:'assets/tools/augments.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
   const og = (k, v) => { headTag(`meta[property="${k}"]`, ()=>{ const m = document.createElement('meta'); m.setAttribute('property', k); return m; }).content = v; };
   og('og:title', document.title); og('og:description', desc || ''); og('og:url', url); og('og:type', 'website'); og('og:site_name', 'TFTClimb'); og('og:locale', EN ? 'en_GB' : 'de_DE'); og('og:image', img);
   headTag('meta[name="twitter:card"]', ()=>Object.assign(document.createElement('meta'), {name:'twitter:card'})).content = 'summary';
