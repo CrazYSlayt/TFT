@@ -956,13 +956,11 @@ body.nd-mini .nds-soon{display:none}
 .nd .cs-side-top a.cs-side-h{margin:2px 6px 14px}
 .nd .cs-side-top .cs-search{margin:0 2px 12px}
 @media (max-width:900px){.cs-side-top{position:relative;box-shadow:none}}
-/* Tools: Heimerdinger oben rechts im Kopf, steht still. Tipp-Blase beim Drüberfahren, Klick = nächster Tipp */
+/* Tools: Heimerdinger oben rechts im Kopf, steht still, ohne Sprechblase (reine Deko, nicht anklickbar) */
 .nd .page-head.heimer-head,.nd .page-head.art-on{position:relative;--hw:clamp(150px,14vw,230px);min-height:0}
 .nd .page-head .buddy.heimer{display:block;position:absolute;right:-6px;top:6px;bottom:auto;width:var(--hw);height:calc(var(--hw) * .84);margin:0;pointer-events:none;z-index:0}
-.nd .page-head .buddy.heimer .buddy-img{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 12px 22px rgba(0,0,0,.5)) drop-shadow(0 0 18px rgba(242,193,78,.28));animation:none}
-.nd .page-head .buddy.heimer .buddy-bubble{right:calc(100% - 6px);top:6px;width:240px;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
-.nd .page-head .buddy.heimer[data-hover]{z-index:5}
-.nd .page-head .buddy.heimer[data-hover] .buddy-bubble{opacity:1;visibility:visible;animation:none}
+.nd .page-head .buddy.heimer .buddy-img{position:absolute;inset:0;pointer-events:none;cursor:default;width:100%;height:100%;filter:drop-shadow(0 12px 22px rgba(0,0,0,.5)) drop-shadow(0 0 18px rgba(242,193,78,.28));animation:none}
+.nd .page-head .buddy.heimer .buddy-bubble{display:none}
 .nd .page-head .buddy.heimer.b-simonly{display:none}
 .nd .sim-mode .page-head .buddy.heimer.b-simonly{display:block}
 .nd .page-head.heimer-head>*:not(.buddy),.nd .page-head.art-on>*:not(.buddy){position:relative;z-index:1}
