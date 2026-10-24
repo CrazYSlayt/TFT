@@ -1388,10 +1388,10 @@ const BUDDY_LINES = {
     return ['Willkommen in meiner Werkstatt! Such dir ein Werkzeug aus – alles frisch kalibriert.',
       'Rollen oder leveln? Mein Rolldown-Rechner kennt die Antwort. Wissenschaft!',
       o ? `Auf Level 8 ist jeder Shop-Slot zu ${o[3]} % eine 4-Kosten-Unit. Faszinierend, nicht wahr?` : null,
-      'Der Item-Drop-Rechner zählt mit, was noch im Item-Pool liegt. Reine Mathematik!',
+      'Die Item-Drop-Chance zählt mit, was noch im Item-Pool liegt. Reine Mathematik!',
       'Mit dem Tierlist-Maker baust du deine eigene Tierlist – und schickst sie als Link an deine Freunde.',
       'Ein Experiment ist kein Experiment ohne Wiederholung: Im Simulator rechnest du einen Kampf 100-mal.',
-      'Guinsoo oder Infinity Edge? Der DPS-Rechner zeigt es dir als Kurve. Wunderbar!'].filter(Boolean);
+      'Guinsoo oder Infinity Edge? Der DPS-Vergleich zeigt es dir als Kurve. Wunderbar!'].filter(Boolean);
   },
   // Heimerdinger in den einzelnen Tools (erscheint nur, wenn assets/tools/<tool>.webp existiert)
   tlmaker(){ return ['S-Tier oder C-Tier? Hmm … eine Frage für die Wissenschaft – und für deine Meinung!',
@@ -1748,7 +1748,7 @@ function renderChampPage(slug){
           <h1 class="chp-h1"><span class="th-key">${esc(n)}</span> TFT Build: Items, Comps &amp; Fähigkeit</h1>
           <div class="chp-tags"><span class="chp-cost"><span class="coin"></span>${c.c} Gold</span>${rangeLabel(n) ? `<span class="ch-rng ${isMelee(n) ? 'melee' : 'ranged'}">${rangeLabel(n)}</span>` : ''}${c.t.map(t=>`<span class="chp-tr">${traitHex(t, 'base', 20)}${esc(t)}</span>`).join('')}</div>
           <p class="chp-lead">${esc(n)} ist ein ${c.c}-Kosten-Champion aus TFT Set ${S}.</p>
-          <div class="chp-acts">${dpsOk(n) ? `<a class="btn btn-primary" href="/tools/dps?c=${champSlug(n)}">Builds im DPS-Rechner vergleichen</a>` : ''}<a class="btn btn-ghost" href="/bibliothek/champions">Alle Champions</a></div>
+          <div class="chp-acts">${dpsOk(n) ? `<a class="btn btn-primary" href="/tools/dps?c=${champSlug(n)}">Builds im DPS-Vergleich testen</a>` : ''}<a class="btn btn-ghost" href="/bibliothek/champions">Alle Champions</a></div>
         </div>
       </div>
     </section>
@@ -1758,7 +1758,7 @@ function renderChampPage(slug){
           ${/ab-q/.test(abHTML) ? '<small class="ch-note">? = Wert, den Riot für dieses Set nicht in den offiziellen Daten mitliefert.</small>' : ''}${/ab-val/.test(abHTML) ? '<small class="ch-note">Werte für 1★ / 2★ / 3★.</small>' : ''}</div>`) : ''}
         ${top.length ? card('Beste Items', `${best.length ? `<div class="chp-best"><small>Beliebtester Build</small><div>${best.map(it=>`<button class="chp-bi" data-item="${it.id}" title="${esc(it.en)}"><img src="${it.img}" alt="" loading="lazy"><span>${esc(it.en)}</span><span></span></button>`).join('<i>+</i>')}</div></div>` : ''}
           <div class="chp-items">${top.map(({it, k})=>`<button class="chp-it" data-item="${it.id}"><img src="${it.img}" alt="" loading="lazy"><span><b>${esc(it.en)}</b><small>${k === 1 ? 'in 1 Build' : `in ${k} Builds`}</small></span><span></span></button>`).join('')}</div>
-          <p class="note">Aus den Comps unserer Tierlist. Welcher Build am meisten Schaden macht, siehst du im DPS-Rechner.</p>`) : ''}
+          <p class="note">Aus den Comps unserer Tierlist. Welcher Build am meisten Schaden macht, siehst du im DPS-Vergleich.</p>`) : ''}
         ${card('Comps mit ' + esc(n), cs.length ? `<div class="chp-comps">${cs.map(x=>`<button class="chp-comp" data-comp="${x.slug}" style="--tc:${TIER_COL[x.tier]}"><b class="chp-tier">${x.tier}</b><span><b>${esc(x.name)}</b><small>${esc(STYLE_DE[x.style] || x.style || '')}${x.carry===n ? ' · Carry' : ''}</small></span><span class="chp-chx">${hexHTML(x.carry)}</span><span></span></button>`).join('')}</div>`
           : `<p class="note" style="margin:0">${esc(n)} ist gerade in keiner Comp unserer Tierlist.</p>`)}
         ${st ? card('Werte', `${champStatsHTML(n)}<small class="ch-note">Leben und Angriffsschaden für 1★ / 2★ / 3★.</small>`) : ''}
@@ -1780,12 +1780,12 @@ function renderChampPage(slug){
       </div>
       <aside class="ts-side">
         <h3>Häufige Fragen</h3>
-        <details><summary>Welche Items sind die besten für ${esc(n)}?</summary><p>${best.length ? `Der beliebteste Build für ${esc(n)} in unserer Tierlist ist ${best.map(it=>esc(it.en)).join(', ')}.` : top.length ? `Am häufigsten bekommt ${esc(n)} in unserer Tierlist ${top.slice(0, 3).map(x=>esc(x.it.en)).join(', ')}.` : `Für ${esc(n)} gibt es in unserer Tierlist noch keine festen Items – vergleich Builds im DPS-Rechner.`}</p></details>
+        <details><summary>Welche Items sind die besten für ${esc(n)}?</summary><p>${best.length ? `Der beliebteste Build für ${esc(n)} in unserer Tierlist ist ${best.map(it=>esc(it.en)).join(', ')}.` : top.length ? `Am häufigsten bekommt ${esc(n)} in unserer Tierlist ${top.slice(0, 3).map(x=>esc(x.it.en)).join(', ')}.` : `Für ${esc(n)} gibt es in unserer Tierlist noch keine festen Items – teste Builds im DPS-Vergleich.`}</p></details>
         <details><summary>Welche Traits hat ${esc(n)}?</summary><p>${esc(n)}: ${c.t.map(esc).join(', ')}.</p></details>
         <details><summary>Wie viel kostet ${esc(n)} in TFT?</summary><p>${esc(n)} kostet ${c.c} Gold. Für ★★ brauchst du 3 Kopien, für ★★★ 9 Kopien.</p></details>
         <details><summary>In welchen Comps spielt man ${esc(n)}?</summary><p>${cs.length ? cs.slice(0, 4).map(x=>`${esc(x.name)} (${x.tier})`).join(', ') : `${esc(n)} ist gerade in keiner Comp unserer Tierlist.`}</p></details>
         <h3>Weitere Tools</h3>
-        <ul class="ts-links">${dpsOk(n) ? `<li><a href="/tools/dps?c=${champSlug(n)}">DPS-Rechner</a></li>` : ''}<li><a href="/tools/rolldown">Rolldown-Rechner</a></li><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="/builder">Team Builder</a></li></ul>
+        <ul class="ts-links">${dpsOk(n) ? `<li><a href="/tools/dps?c=${champSlug(n)}">DPS-Vergleich</a></li>` : ''}<li><a href="/tools/rolldown">Rolldown-Rechner</a></li><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="/builder">Team Builder</a></li></ul>
       </aside>
     </section>`;
 }
@@ -2170,14 +2170,14 @@ function rdGoldFor(q){   // kleinstes Gold, mit dem das Ziel mit Chance q erreic
   return hi;
 }
 
-/* ================= DPS-RECHNER ================= */
+/* ================= DPS-VERGLEICH ================= */
 // Ein Champion mit bis zu 4 Item-Builds schlägt 30 s auf Trainingspuppen (Engine des Kampf-Simulators, sim.js → simDps)
 const dpsN = v => Math.round(v).toLocaleString(LOC);
 const DPS_COL = ['#4f8cff','#ff8a1f','#2fe0d0','#e05cff'];
 const DPS_PROF = [['back','Backline', 800, 30, 30], ['mid','Frontline', 1600, 70, 70], ['tank','Tank', 3000, 150, 150]];
 const DPS_CATS = [['craft','Kombiniert'], ['radiant','Lichtversionen'], ['artifact','Artefakte'], ['emblem','Embleme']];
 const DPS_ITEM_CATS = DPS_CATS.map(c=>c[0]);
-// Tanks werden nicht auf Schaden gebaut – im DPS-Rechner nur Carrys und Schadens-Units
+// Tanks werden nicht auf Schaden gebaut – im DPS-Vergleich nur Carrys und Schadens-Units
 // Units mit Tank-Trait bleiben nur drin, wenn sie in den Tierlist-Comps überwiegend Schadens-Items tragen (z. B. Elise, Morgana),
 // nicht aber Tanks mit Tank-Items (z. B. Malphite mit Gargoyle, Warmog's, Crownguard)
 const dpsDmgItem = it => { const f = it.fx || {}; return !!(f.AD || f.AP || f.AS || f.CritChance); };
@@ -2270,7 +2270,7 @@ function dpsChamps(){
   $('#dpsCosts').querySelectorAll('[data-dcost]').forEach(b=>b.classList.toggle('on', +b.dataset.dcost===dps.cost));
   $('#dpsChamps').innerHTML = champions.filter(c=>c.c===dps.cost && dpsOk(c.n)).map(c=>`<button type="button" class="rd-ch${c.n===dps.champ?' on':''}" data-dch="${esc(c.n)}" title="${esc(c.n)}">${avatar(c.n, 44)}<span>${esc(c.n)}</span><span></span></button>`).join('');
 }
-// Traits im DPS-Rechner: die eigenen des Champions plus alles, was Embleme in den Builds dazubringen
+// Traits im DPS-Vergleich: die eigenen des Champions plus alles, was Embleme in den Builds dazubringen
 function dpsTraitList(){
   const c = champBy[dps.champ]; if(!c) return [];
   const list = c.t.map(n=>({n, own:true, from:[]}));
@@ -2727,7 +2727,7 @@ function tmRenderPool(){
   if(tmMode!=='build') return;
   $('#tmTabs').querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on', b.dataset.tab===tmTab));
   $('#tmSorts').hidden = TM_SORTS[tmTab].length < 2;   // nur eine Sortierung: keine Knöpfe nötig
-  // Kosten-Knöpfe mit den Standard-Kostenfarben der Units (wie im Rolldown- und DPS-Rechner)
+  // Kosten-Knöpfe mit den Standard-Kostenfarben der Units (wie im Rolldown- und DPS-Vergleich)
   $('#tmSorts').innerHTML = TM_SORTS[tmTab].map(([k,l])=>`<button type="button" data-sort="${k}" class="${tmSort[tmTab]===k?'on':''}${tmTab==='c' && /^\d$/.test(k) ? ' cb c' + k : ''}">${l}<span></span></button>`).join('');
   const q = $('#tmSearch').value.toLowerCase().trim(), used = tmUsed(), s = tmSort[tmTab];
   let list;
@@ -2749,7 +2749,7 @@ function tmRenderPool(){
   $('#tmPool').innerHTML = free.map(tmTile).join('') || `<span class="tm-empty">${list.length ? 'Alles einsortiert!' : 'Nichts gefunden.'}</span>`;
 }
 
-/* ================= TOOLS: Item-Drop-Rechner ================= */
+/* ================= TOOLS: Item-Drop-Chance ================= */
 // Komponenten aus Creep-Runden kommen aus einem Item-Pool: gezogene Komponenten fehlen darin, vor jeder weiteren Creep-Stage
 // kommt von jeder Komponente eine dazu. Beute-Tabellen pro Stage stehen in data/custom-<Set>.js (loot).
 const LOOT = TFT_CUSTOM_SET.loot && TFT_CUSTOM_SET.loot.stages ? TFT_CUSTOM_SET.loot : null;
@@ -3170,7 +3170,7 @@ function csSections(){
     const lg = (ic, txt) => `<span class="csx-lg">${ic}<span>${txt}</span></span>`;
     const legend = `<div class="csx-legend">${lg(csAnvil('component'), L(CS_ANVIL.component[0], CS_ANVIL.component[1]))}${lg(csAnvil('completed'), L(CS_ANVIL.completed[0], CS_ANVIL.completed[1]))}${lg(csAnvil('artifact'), L(CS_ANVIL.artifact[0], CS_ANVIL.artifact[1]))}${lg(csSpatPan(), L('Pfannenwender oder Bratpfanne', 'Spatula or Frying Pan'))}${lg(csChamp(4, 1), L('zufälliger Champion – Farbe = Kosten', 'random champion – colour = cost'))}</div>`;
     const html = (small ? `<div class="csx-grid csx-4 csx-compact">${small}</div>` : '') + `<div class="csx-grid csx-3 csx-compact"${small ? ' style="margin-top:10px"' : ''}>${big}</div>` + legend;
-    out.push(['orbs', L('Loot-Orbs', 'Loot orbs'), `${html}<p class="cs-note cs-after">${L('Welche Komponente als Nächstes kommt, zeigt der', 'Which component drops next is shown in the')} <a href="/tools/drops">${L('Item-Drop-Rechner', 'item drop calculator')}</a>.</p>` + csSrc(TFT_CUSTOM_SET.loot.orbSrc || TFT_CUSTOM_SET.loot.source)]);
+    out.push(['orbs', L('Loot-Orbs', 'Loot orbs'), `${html}<p class="cs-note cs-after">${L('Welche Komponente als Nächstes kommt, zeigt die', 'Which component drops next is shown in the')} <a href="/tools/drops">${L('Item-Drop-Chance', 'Item Drop Chance')}</a>.</p>` + csSrc(TFT_CUSTOM_SET.loot.orbSrc || TFT_CUSTOM_SET.loot.source)]);
   }
   // Beute aus den Creep-Runden pro Stage: [Silber, Blau, Gold, Prisma, Komponenten, Komponenten-Amboss, aufgewertet, Chance]
   const loot = TFT_CUSTOM_SET.loot;
@@ -3543,7 +3543,7 @@ function renderCheats(sub){
         <details><summary>${L('Wie viel Schaden bekomme ich nach einer Niederlage?', 'How much damage do I take after a loss?')}</summary><p>${L('Den Stage-Schaden plus 1 für jede gegnerische Unit, die den Kampf überlebt.', 'The stage damage plus 1 for every enemy unit that survives the fight.')}</p></details>
         <details><summary>${L('Wie baue ich ein Emblem?', 'How do I build an emblem?')}</summary><p>${L('Pfannenwender oder Bratpfanne plus eine Komponente. Welches Emblem dabei entsteht, steht in der Tabelle Emblem-Rezepte.', 'Spatula or Frying Pan plus a component. Which emblem you get is listed in the emblem recipes table.')}</p></details>
         <h3>${L('Weiterlesen', 'Read more')}</h3>
-        <ul class="ts-links"><li><a href="/tools/rolldown">${L('Rolldown-Rechner', 'Rolldown calculator')}</a></li><li><a href="/tools/drops">${L('Item-Drop-Rechner', 'Item drop calculator')}</a></li><li><a href="/bibliothek/items">${L('Item-Bibliothek', 'Item library')}</a></li></ul>
+        <ul class="ts-links"><li><a href="/tools/rolldown">${L('Rolldown-Rechner', 'Rolldown calculator')}</a></li><li><a href="/tools/drops">${L('Item-Drop-Chance', 'Item Drop Chance')}</a></li><li><a href="/bibliothek/items">${L('Item-Bibliothek', 'Item library')}</a></li></ul>
       </aside>
     </section>`;
     box.dataset.done = '1';
@@ -3659,10 +3659,10 @@ function pageMeta(page, sub){
       if(sub==='augments') return [L(`TFT Augment-Vorhersage ${S}${P} – welche Augment-Stufe kommt als Nächstes?`, `TFT augment prediction ${S}${P} – which augment tier comes next?`), L(`Silber, Gold oder Prismatisch? Gib deine Augment-Stufen von 2-1 und 3-2 ein und sieh, was in TFT ${S} als Nächstes kommt – mit der Chance auf ein Prismatic-Augment.`, `Silver, gold or prismatic? Enter your augment tiers from 2-1 and 3-2 and see what comes next in TFT ${S} – including your odds of a prismatic augment.`)];
       if(sub==='tierlist') return [`TFT Tierlist-Maker ${S} – eigene Tierlist erstellen & teilen`, `Kostenloser TFT Tierlist-Maker für ${S}: Champions, Items, Artefakte, Embleme und Augments per Drag & Drop ranken und deine Tierlist als Link teilen.`];
       if(sub==='rolldown') return [`TFT Rolldown-Rechner ${S} – Odds & Chancen pro Level`, `Wie wahrscheinlich triffst du deine Units? TFT Rolldown-Rechner für ${S} mit Shop-Odds pro Level, Pool-Größen und dem Vergleich: jetzt rollen oder erst leveln.`];
-      if(sub==='drops') return [`TFT Item-Drop-Rechner ${S} – nächste Komponente berechnen`, `Trag deine Item-Drops aus den Creep-Runden ein und sieh die Chancen für die nächsten Komponenten in TFT ${S} – mit Gold- und Prismatic-Orb-Chancen pro Stage.`];
-      if(sub==='dps') return [`TFT DPS-Rechner ${S} – Item-Builds & Schaden vergleichen`, `Welcher Item-Build macht am meisten Schaden? Kostenloser TFT DPS-Rechner für ${S}: bis zu vier Builds eines Champions über 30 Sekunden im Graph vergleichen.`];
+      if(sub==='drops') return [`TFT Item-Drop-Chance ${S} – nächste Komponente berechnen`, `Trag deine Item-Drops aus den Creep-Runden ein und sieh die Chancen für die nächsten Komponenten in TFT ${S} – mit Gold- und Prismatic-Orb-Chancen pro Stage.`];
+      if(sub==='dps') return [`TFT DPS-Vergleich ${S} – Item-Builds & Schaden vergleichen`, `Welcher Item-Build macht am meisten Schaden? Kostenloser TFT DPS-Vergleich für ${S}: bis zu vier Builds eines Champions über 30 Sekunden im Graph vergleichen.`];
       if(sub==='simulator') return [`TFT Kampf-Simulator ${S} – Teams gegeneinander testen`, `Lass zwei TFT Teams für ${S} gegeneinander kämpfen: Laufwege, Ziele, Fähigkeiten und Sprünge Schritt für Schritt – mit Items, Sternen, Traits und Augments.`];
-      return [`TFT Tools ${S} – Rolldown-Rechner, DPS-Rechner & Tierlist-Maker`, `Kostenlose TFT Tools für ${S}: Rolldown-Rechner mit Shop-Odds, DPS-Rechner für Item-Builds, Item-Drop-Rechner, Tierlist-Maker und Kampf-Simulator.`];
+      return [`TFT Tools ${S} – Rolldown-Rechner, DPS-Vergleich & Tierlist-Maker`, `Kostenlose TFT Tools für ${S}: Rolldown-Rechner mit Shop-Odds, DPS-Vergleich für Item-Builds, Item-Drop-Chance, Tierlist-Maker und Kampf-Simulator.`];
     case 'news': return ['TFT News', '', true];
     case 'admin': return ['Redaktion', '', true];
     default: return ['Seite nicht gefunden', '', true];
@@ -3753,6 +3753,9 @@ function route(){
   const isCv = page==='bibliothek' && !['items','traits'].includes(sub);   // Champions: Wabenansicht (auch alte Adresse /bibliothek/v2)
   const pageId = isCv ? 'champv2' : page==='bibliothek' ? 'library' : isSim ? 'builder' : ND && page==='home' ? 'dash' : page;
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+pageId));
+  // Seitenbreite: Übersichtsseiten breit wie das Dashboard, Unterseiten (einzelnes Tool, Cheatsheet, Champion, Patch, Rang, Profil, Rechtliches) schmaler
+  const subOk = {tools:['rolldown','tierlist','simulator','drops','dps','augments'], cheatsheet:csList().map(s=>s[0]), patches:Object.keys(patchBySlug), ranks:Object.keys(rankBy), about:['crazyslayt','humbadobo']}[page];
+  document.body.dataset.lvl = ['champion','builder','apply','impressum','datenschutz','bedingungen'].includes(page) || (subOk && subOk.includes(sub)) ? 'sub' : 'top';
   let navKey = page==='champion' ? 'bibliothek' : page;
   $('#statBar').classList.toggle('sb-off', page!=='home');   // LP-Grenzen und Patch-Countdown nur auf der Startseite
   if(page==='home') requestAnimationFrame(()=>sbCount(true));   // beim Öffnen der Startseite die LP hochzählen
@@ -4007,8 +4010,8 @@ function renderDash(){
         <div class="dsh-h"><h2>Tools</h2><a href="/tools">${L('Alle Tools', 'All tools')} →</a></div>
         <div class="dsh-tlist">${[
           ['/tools/rolldown', 'rolldown', L('Rolldown-Rechner', 'Rolldown calculator'), L('Rollen oder leveln?', 'Roll or level?')],
-          ['/tools/dps', 'dps', L('DPS-Rechner', 'DPS calculator'), L('Item-Builds vergleichen', 'Compare item builds')],
-          ['/tools/drops', 'drops', L('Item-Drop-Rechner', 'Item drop calculator'), L('Was droppt als Nächstes?', 'What drops next?')],
+          ['/tools/dps', 'dps', L('DPS-Vergleich', 'DPS Comparison'), L('Item-Builds vergleichen', 'Compare item builds')],
+          ['/tools/drops', 'drops', L('Item-Drop-Chance', 'Item Drop Chance'), L('Was droppt als Nächstes?', 'What drops next?')],
           ['/tools/tierlist', 'tierlist', 'Tierlist-Maker', L('Eigene Tierlist bauen', 'Build your own tier list')],
           ['/builder', 'simulator', 'Team Builder', L('Board planen & teilen', 'Plan & share boards')]
         ].map(([h, img, t, d])=>`<a href="${h}"><img src="assets/tools/${img}.webp" alt="" loading="lazy"><span><b>${t}</b><small>${d}</small></span></a>`).join('')}</div></section>
