@@ -2,6 +2,9 @@
   "functions": {
     "api/sitemap.js": {
       "includeFiles": "{data/*.js,tierlist-data-*.js}"
+    },
+    "api/page.js": {
+      "includeFiles": "{index.html,data/seo-meta.json}"
     }
   },
   "headers": [
@@ -180,8 +183,8 @@
       "destination": "/api/robots"
     },
     {
-      "source": "/((?!api/|assets/|data/|tools/[^/]*\\.|tierlist-data-|robots\\.txt|riot\\.txt|sitemap\\.xml|TFT\\.html).*)",
-      "destination": "/index.html"
+      "source": "/:path((?!api/|assets/|data/|tools/[^/]*\\.|tierlist-data-|robots\\.txt|riot\\.txt|sitemap\\.xml|TFT\\.html).*)",
+      "destination": "/api/page?__p=:path"
     }
   ]
 }

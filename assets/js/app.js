@@ -3116,12 +3116,14 @@ function patchRowHTML(r){
 }
 // Kopf der Patch-Seite: Patch-Nummer groß, rechts eine Nachricht von CrazYSlayt an die Besucher (Foto + Sprechblase, Klick auf Foto/Name → Profil)
 const PATCH_AUTHOR = {img:'assets/img/team-claudio.jpg', href:'/about/crazyslayt'};
+// Anfang der Ansage = Meta-Beschreibung der Patch-Seite (mit Keyword „TFT Patch 18.5“), danach ggf. der Hinweis auf B-Patches
+const patchIntro = p => p===CURRENT_PATCH ? L(`Hey Leute, TFT Patch ${p.id} ist draußen! Ich hab ihn für euch übersichtlich aufbereitet – alle Änderungen auf einen Blick.`, `Hey everyone, TFT patch ${p.id} is out! I've neatly prepared it for you – every change at a glance.`)
+  : L(`Hey Leute, hier ist TFT Patch ${p.id}! Ich hab ihn für euch übersichtlich aufbereitet – alle Änderungen auf einen Blick.`, `Hey everyone, here's TFT patch ${p.id}! I've neatly prepared it for you – every change at a glance.`);
 function patchHero(p){
   // B-Patches: Gruppe „PATCH-AKTUALISIERUNG · 28. SEPTEMBER · 24. SEPTEMBER“ → Daten in zeitlicher Reihenfolge
   const bp = (p.notes || []).find(s=>/PATCH-AKTUALISIERUNG|MID-PATCH/i.test(s.grp || ''));
   const bpDates = bp ? bp.grp.split('·').slice(1).map(x=>secLabel(x.trim())).filter(Boolean).reverse() : [], and = L(' und ', ' and ');
-  const hey = p===CURRENT_PATCH ? L('Hey Leute, der neue Patch ist draußen!', 'Hey everyone, the new patch is out!') : L(`Hey Leute, hier ist Patch ${p.id}!`, `Hey everyone, here's patch ${p.id}!`);
-  const msg = `${hey} ${L('Ich hab ihn für euch übersichtlich aufbereitet – alle Änderungen auf einen Blick.', "I've neatly prepared it for you – every change at a glance.")}`
+  const msg = patchIntro(p)
     + (!bp ? '' : ' ' + (bpDates.length > 1 ? L(`Die B-Patches vom ${bpDates.join(and)} sind schon mit drin.`, `The B-patches from ${bpDates.join(and)} are already included.`)
       : bpDates.length ? L(`Der B-Patch vom ${bpDates[0]} ist schon mit drin.`, `The B-patch from ${bpDates[0]} is already included.`) : L('Die B-Patch-Änderungen sind schon mit drin.', 'The B-patch changes are already included.')));
   return `<section class="pde"${p.img ? ` style="--img:url('${esc(p.img)}?w=1280&fm=webp');--pos:${esc(patchFocus(p))}"` : ''}>
@@ -3131,7 +3133,7 @@ function patchHero(p){
       <span class="pde-av"><img src="${PATCH_AUTHOR.img}" alt="Claudio „CrazYSlayt“" width="50" height="50"><img class="pde-emb" src="${rankImg(rankBy.challenger)}" alt="" width="22" height="22"></span>
       <span class="pde-who"><span>${L('Von', 'By')} <b>${L('Claudio „CrazYSlayt“', 'Claudio "CrazYSlayt"')}</b> · TFT Challenger · TFTClimb Coach</span><small>${fmtDate(p.date)}</small></span>
     </a>
-    <p class="pde-txt">${esc(msg)}</p>
+    <p class="pde-txt" data-meta>${esc(msg)}</p>
   </section>`;
 }
 function renderPatches(sub){
@@ -3880,8 +3882,7 @@ function pageMeta(page, sub){
       'Apply for TFT coaching at TFTClimb: fill in the form and request a free intro call with our coaches.')];
     case 'patches': {
       const p = patchBySlug[sub];
-      if(p) return [L(`TFT Patch ${p.id} – alle Änderungen`, `TFT Patch ${p.id} – All Changes`), L(`TFT Patch ${p.id} vom ${fmtDate(p.date)} übersichtlich aufbereitet: alle Änderungen an Champions, Traits, Items und Augments.`,
-        `TFT patch ${p.id} from ${fmtDate(p.date)} neatly prepared: every change to champions, traits, items and augments.`)];
+      if(p) return [L(`TFT Patch ${p.id} – alle Änderungen`, `TFT Patch ${p.id} – All Changes`), patchIntro(p)];
       return [L('TFT Patch Notes – alle Änderungen', 'TFT Patch Notes – All Changes'), L('Alle TFT Patches übersichtlich aufbereitet: jede Änderung an Champions, Traits, Items und Augments auf einen Blick.',
         'All TFT patches neatly prepared: every change to champions, traits, items and augments at a glance.')];
     }
@@ -3930,6 +3931,20 @@ function pageMeta(page, sub){
     default: return [L('Seite nicht gefunden', 'Page not found'), '', true];
   }
 }
+// Der Meta-Text steht sichtbar als Einleitung direkt unter der H1, Wort für Wort gleich – so liegt bei uns, was Google als Beschreibung zeigt.
+// Steht dort schon ein Einleitungssatz, ersetzt ihn der Meta-Text; Rechtstexte (data-keep) bleiben, der Meta-Text kommt davor.
+let META_DESC = '';
+function metaLead(desc){
+  const pg = document.querySelector('.page.active'); if(!pg || !desc) return;
+  const vis = el => el.getClientRects().length > 0;
+  if([...pg.querySelectorAll('[data-meta]')].some(el=>vis(el) && el.textContent.includes(desc))) return;   // schon da (z. B. Patch-Ansage)
+  const h1 = [...pg.querySelectorAll('h1, [data-h1]')].find(vis); if(!h1) return;
+  let ref = h1.parentElement.classList.contains('dsh-title') ? h1.parentElement : h1, n = ref.nextElementSibling;   // Dashboard: unter der Titelzeile
+  while(n && n.matches('.cv-sub')){ ref = n; n = n.nextElementSibling; }   // kurze Unterzeile (Bibliothek) bleibt darüber
+  let p = n && n.tagName === 'P' && !n.matches('[data-keep], .updated, .pd-lang') ? n : null;
+  if(!p){ p = document.createElement('p'); p.className = 'meta-lead'; ref.after(p); }
+  p.setAttribute('data-meta', ''); p.textContent = desc;
+}
 function headTag(sel, make){ let el = document.head.querySelector(sel); if(!el){ el = make(); document.head.appendChild(el); } return el; }
 function setMeta(page, sub){
   let [title, desc, noindex] = pageMeta(page, sub);
@@ -3937,6 +3952,7 @@ function setMeta(page, sub){
   document.title = page==='home' ? title : title + ' | TFTClimb';
   if(desc) headTag('meta[name="description"]', ()=>Object.assign(document.createElement('meta'), {name:'description'})).content = desc;
   headTag('meta[name="robots"]', ()=>Object.assign(document.createElement('meta'), {name:'robots'})).content = noindex ? 'noindex' : 'index, follow';
+  META_DESC = noindex ? '' : desc || ''; metaLead(META_DESC);
   if(FILE_MODE) return;
   if(noindex){ const c = document.head.querySelector('link[rel="canonical"]'); if(c) c.remove(); return; }
   // kanonische Adresse: eine Adresse pro Inhalt (z. B. /bibliothek statt /bibliothek/champions, Builder ohne Team-Code)
@@ -4076,7 +4092,7 @@ function route(){
   closeModal(); window.scrollTo(0,0);
   if(ND) ndRoute(page, navKey);
   setMeta(page, sub);
-  h1Sync(); requestAnimationFrame(()=>requestAnimationFrame(h1Sync));   // zweiter Lauf für Inhalte, die erst im nächsten Bild entstehen
+  h1Sync(); requestAnimationFrame(()=>requestAnimationFrame(()=>{ h1Sync(); metaLead(META_DESC); }));   // zweiter Lauf für Inhalte, die erst im nächsten Bild entstehen
 }
 window.addEventListener(FILE_MODE ? 'hashchange' : 'popstate', route);
 

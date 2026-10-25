@@ -17,7 +17,7 @@
     -Version 16.20     bestimmte CommunityDragon-Version statt der neuesten
     -ItemPrefix DA     Präfix der Set-Items, falls die automatische Erkennung danebenliegt
     -OnlyRanks         nur die Rangverteilung aktualisieren (dauert ein paar Sekunden)
-    -Publish           danach den Ordner data automatisch committen und zu GitHub hochladen (für die geplante Aufgabe)
+    -Publish           danach den Ordner data (und die Startseiten-Kopfdaten in index.html) automatisch committen und zu GitHub hochladen (für die geplante Aufgabe)
   Patches: Die Patch-Liste kommt von Riot (teamfighttactics.leagueoflegends.com). Pro Patch wird ein Datenstand in
   data\history\ abgelegt; fehlende Patches des Sets werden aus älteren CommunityDragon-Versionen nachgeholt.
   Daraus entsteht data\patches.js mit allen erkannten Änderungen. Eigene Kommentare: data\patch-kommentare.js.
@@ -575,17 +575,25 @@ UpdateCutoffs
 # ======================= 5. Patches: Liste von Riot, Archiv pro Patch, erkannte Änderungen =======================
 UpdatePatches $liveSet
 
-# ======================= 6. Optional: automatisch veröffentlichen (nur der Ordner data) =======================
+# ======================= 5b. Kopfdaten für Suchmaschinen: data\seo-meta.json (+ Startseite in index.html) =======================
+# Liest Titel, Meta-Text, canonical usw. jeder Seite aus der fertigen Seite (tools\seo-meta.js) – neue Patches/Daten sind so sofort dabei
+Step 'Kopfdaten für Suchmaschinen …'
+$node = (Get-Command node -ErrorAction SilentlyContinue).Source
+if (-not $node -and (Test-Path 'D:\Program Files\nodejs\node.exe')) { $node = 'D:\Program Files\nodejs\node.exe' }
+if (-not $node) { Warn 'Node.js nicht gefunden – Kopfdaten nicht aktualisiert.' }
+else { & $node (Join-Path $root 'tools\seo-meta.js'); if ($LASTEXITCODE -ne 0) { Warn 'Kopfdaten konnten nicht erzeugt werden – die alten bleiben bestehen.' } }
+
+# ======================= 6. Optional: automatisch veröffentlichen (Ordner data und die Startseiten-Kopfdaten in index.html) =======================
 if ($Publish) {
   Step 'Veröffentlichen …'
   $git = Join-Path $env:LOCALAPPDATA 'PortableGit\cmd\git.exe'
   if (-not (Test-Path $git)) { Warn 'Git nicht gefunden – nicht veröffentlicht.' }
   else {
     Push-Location $root
-    & $git add -- data
-    & $git diff --cached --quiet -- data
+    & $git add -- data index.html
+    & $git diff --cached --quiet -- data index.html
     if ($LASTEXITCODE -ne 0) {
-      & $git commit -q -m "Automatisches Daten-Update $today" -- data
+      & $git commit -q -m "Automatisches Daten-Update $today" -- data index.html
       $env:GCM_INTERACTIVE = 'never'; & $git push -q
       if ($LASTEXITCODE -eq 0) { Write-Host '  Neue Daten veröffentlicht.' -ForegroundColor Green } else { Warn 'Hochladen fehlgeschlagen (Anmeldung?) – beim nächsten Mal "veröffentlichen" sagen.' }
     } else { Write-Host '  Keine neuen Daten – nichts zu veröffentlichen.' }

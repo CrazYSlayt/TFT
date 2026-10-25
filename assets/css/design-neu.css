@@ -502,6 +502,7 @@ body.nd-mini .nds-vi{display:none}
 .nd #rk-list:not(.rkx-mode-hex) .rk-table{display:grid}
 .nd #rk-list:not(.rkx-mode-hex) .rkx-hex{display:none}
 .nd .rk-hero p{display:none}
+.nd .rk-hero p[data-meta]{display:block;margin:10px auto 4px}   /* sichtbarer Meta-Text bleibt */
 .rkx{--w:clamp(150px,13vw,200px);--g:30px}
 .rkx-tabs{display:flex;width:fit-content;gap:4px;margin:0 auto 40px;padding:4px;border-radius:12px;background:rgba(15,20,35,.72);border:1px solid rgba(148,180,255,.18)}
 .rkx-tabs button{background:none;border:0;padding:7px 18px;border-radius:9px;color:#b9c3dd;font:inherit;font-weight:600;font-size:.88rem;cursor:pointer}
@@ -1045,3 +1046,12 @@ html.nd{scrollbar-gutter:stable}
 /* ---------- Kursive Verlaufs-Überschriften: der letzte Buchstabe ragt schräg bis 0,07em über den Textkasten hinaus, der Verlauf
    (background-clip:text) endet aber am Kasten – ohne Innenabstand wirkt der Buchstabe rechts abgeschnitten ---------- */
 .nd .page-head h1,.nd .rk-hero h1,.nd .cs-h1,.nd h1.tool-h1 .th-key,.nd h1.chp-h1 .th-key,.cv-h1,.gd-soon b,.nd .cs-side-h b i,.csf-brand b i,.nd .dsh-title h1,.nd .pde-h1 span{padding-left:.02em;padding-right:.1em}
+
+/* ---------- Sichtbarer Meta-Text: Einleitung direkt unter der H1 (gleich der Meta-Beschreibung für Google) ---------- */
+.meta-lead{max-width:680px;margin:8px auto 0;color:#b9c3dd;line-height:1.55}
+.nd #page-tierlist .page-head>p[data-meta]{display:block;max-width:680px;margin:10px auto 16px}
+.nd .cv-head .meta-lead{margin:10px auto 18px}
+.chp-head .meta-lead{max-width:640px;margin:0 0 12px}
+.nd .dsh .meta-lead,.nd #dshApp>.meta-lead{max-width:none;margin:-6px 2px 16px;color:#9fb0c8;font-size:.95rem}
+.nd .mt-head .meta-lead{margin-top:10px}
+.meta-lead + p[data-keep]{margin-top:12px}
