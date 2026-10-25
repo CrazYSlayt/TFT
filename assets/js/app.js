@@ -8,7 +8,19 @@ const L = (de, en) => EN ? en : de;   // kurze Texte direkt im Code übersetzen
 const ND = document.documentElement.classList.contains('nd');   // Vorschau neues Design (?design=neu, siehe index.html)
 const rawPath = () => (FILE_MODE ? location.hash.replace(/^#/, '') : location.pathname) || '/';
 const curPath = () => { const p = rawPath(); return EN ? (p.replace(/^\/en(?=\/|$)/, '') || '/') : p; };
-const withLang = p => EN && /^\/(?!en(\/|$)|api\/|assets\/|data\/)/.test(p) ? '/en' + p : (EN && p === '/' ? '/en/' : p);
+// Sprechende Adressen für Google: das Keyword steht in der Adresse (/tools/tft-item-drop-chance), intern bleiben die kurzen Schlüssel (drops).
+// Alte Adressen leiten weiter – online per 301 (vercel.json), in der Seite über seoPath(). Gleiche Liste in api/sitemap.js
+const TOOL_SLUG = {rolldown:'tft-rolldown-rechner', drops:'tft-item-drop-chance', tierlist:'tft-tierlist-maker', simulator:'tft-kampf-simulator', dps:'tft-dps-vergleich', augments:'tft-augment-vorhersage'};
+const CS_SLUG = {shop:'tft-shop-odds', augments:'tft-augment-stufen', orbs:'tft-loot-orbs', loot:'tft-loot-verteilung', damage:'tft-spielerschaden', emblems:'tft-embleme', solo:'tft-stage-1-solo', 'patch-schedule':'tft-patch-plan', carousel:'tft-karussell'};   // sonst „tft-“ + Schlüssel
+const GUIDE_SLUG = {encounters:'tft-encounters'};
+const BUILDER_PATH = '/tft-team-builder';
+const toolHref = k => '/tools/' + (TOOL_SLUG[k] || k), csHref = id => '/cheatsheet/' + (CS_SLUG[id] || 'tft-' + id);
+const unslug = (map, s) => (Object.entries(map).find(([, v])=>v === s) || [s])[0];
+const seoPath = p => p.replace(/^\/builder(?=[/?#]|$)/, BUILDER_PATH)
+  .replace(/^\/tools\/([^/?#]+)/, (m, k)=>TOOL_SLUG[k] ? toolHref(k) : m)
+  .replace(/^\/cheatsheet\/([^/?#]+)/, (m, k)=>/^tft-/.test(k) ? m : csHref(k))
+  .replace(/^\/guides\/([^/?#]+)/, (m, k)=>GUIDE_SLUG[k] ? '/guides/' + GUIDE_SLUG[k] : m);
+const withLang = p => { p = seoPath(p); return EN && /^\/(?!en(\/|$)|api\/|assets\/|data\/)/.test(p) ? '/en' + p : (EN && p === '/' ? '/en/' : p); };
 function setUrl(path){ path = withLang(path); history.replaceState(null, '', FILE_MODE ? '#' + path : path); }
 function go(path){
   path = withLang(path);
@@ -113,7 +125,7 @@ const testimonials = [
 ];
 
 const guides = [
-  {t:'TFT Encounters',s:'Neu · Set 18',col:'linear-gradient(160deg,#8b5cf6,#3b0764)',href:'/guides/encounters',d:'Alle Encounters mit Chance pro Spiel – und welche Comp du auf Ambosse, Gold- und Prismatic-Augments oder besondere Start-Units spielst.',x:'Mit Einschätzung von Challenger-Spielern.'},
+  {t:'TFT Encounters',s:'Neu · Set 18',col:'linear-gradient(160deg,#8b5cf6,#3b0764)',href:'/guides/tft-encounters',d:'Alle Encounters mit Chance pro Spiel – und welche Comp du auf Ambosse, Gold- und Prismatic-Augments oder besondere Start-Units spielst.',x:'Mit Einschätzung von Challenger-Spielern.'},
   {t:'Wisp-Guide',s:'Kostenlos · 5 Kapitel',col:'linear-gradient(160deg,#f7166e,#7a0b3a)',d:'Wann du Wisps kaufst, welche Upgrades sich lohnen und wie du sie mit deiner Econ verbindest.',x:'Mit Checkliste für die nächsten drei Partien.'},
   {t:'Rank-Up-Training',s:'Kostenlos · Übungen',col:'linear-gradient(160deg,#2ee6d6,#0b5f5a)',d:'Finde eine Gewohnheit, an der du arbeiten willst: Rollen, Leveln oder Positionieren — mit einer klaren Mission pro Partie.',x:'Klein anfangen. Autopilot hat schon genug Partien gespielt.'},
 ];
@@ -386,7 +398,7 @@ function renderCompPage(key){
         ${augTxt ? `<details><summary>${L('Welche Augments passen?', 'Which augments fit?')}</summary><p>${L(`Am besten passen Augments der Art ${esc(augTxt)}.`, `Augments of these types fit best: ${esc(augTxt)}.`)}</p></details>` : ''}
         <details><summary>${L(`Wie stark ist ${esc(c.name)}?`, `How strong is ${esc(c.name)}?`)}</summary><p>${L(`In unserer TFT Tierlist für Set ${S} steht ${esc(c.name)} auf ${tierTxt}.`, `In our TFT tier list for Set ${S}, ${esc(c.name)} is rated ${tierTxt}.`)}${TL_PATCH ? ' ' + L(`Stand: Patch ${TL_PATCH}.`, `As of patch ${TL_PATCH}.`) : ''}</p></details>
         <h3>${L('Weiterlesen', 'Read more')}</h3>
-        <ul class="ts-links"><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="${champHref(c.carry)}">${esc(c.carry)}</a></li><li><a href="/tools/dps">${L('DPS-Vergleich', 'DPS Comparison')}</a></li><li><a href="/tools/rolldown">${L('Rolldown-Rechner', 'Rolldown calculator')}</a></li></ul>
+        <ul class="ts-links"><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="${champHref(c.carry)}">${esc(c.carry)}</a></li><li><a href="/tools/tft-dps-vergleich">${L('DPS-Vergleich', 'DPS Comparison')}</a></li><li><a href="/tools/tft-rolldown-rechner">${L('Rolldown-Rechner', 'Rolldown calculator')}</a></li></ul>
       </aside>
     </section>`;
 }
@@ -519,8 +531,11 @@ document.addEventListener('click', e=>{
 });
 
 /* tierlist tabs */
+// eigene H1 je Reiter, weil jeder Reiter eine eigene Adresse für Google ist (/tierlist/items …)
+const TL_H1 = {comps:['TFT Tierlist', 'TFT Tier List'], items:['TFT Item-Tierlist', 'TFT Item Tier List'], augments:['TFT Augment-Tierlist', 'TFT Augment Tier List'], holds:['TFT Holds-Tierlist', 'TFT Holds Tier List']};
 function setTab(tab){
   ['comps','items','augments','holds'].forEach(t=>{ $('#tl-'+t).hidden = t!==tab; });
+  const h1 = $('#page-tierlist .page-head :is(h1, [data-h1])'); if(h1) h1.innerHTML = `${L(...TL_H1[tab])} <em class="serif">Set <span data-setno>${TFT_DATA.set}</span></em>`;
   $('#tlTabs').querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   if(tlTab!==tab){ tlTab = tab; buddyNext('tierlist', true); }
 }
@@ -700,11 +715,11 @@ let bHist = [], bRedo = [], bLast = null, bRestoring = false;
 const sideBoard = s => s==='e' ? eBoard : bBoard;
 const sideAugs = s => s==='e' ? eAugs : bAugs;
 try { bEnemy = localStorage.getItem(BUILDER_ENEMY_KEY)==='1'; } catch(e){}
-// Dieselbe Oberfläche dient auch dem Kampf-Simulator (/tools/simulator) – mit eigenem Speicherstand und immer mit Gegner
+// Dieselbe Oberfläche dient auch dem Kampf-Simulator (/tools/tft-kampf-simulator) – mit eigenem Speicherstand und immer mit Gegner
 const SIM_KEY = 'tftfreaks_sim_v1_' + TFT_DATA.set;
 let bMode = 'builder';
 const bKey = () => bMode==='sim' ? SIM_KEY : BUILDER_KEY;
-const bBase = () => bMode==='sim' ? '/tools/simulator' : '/builder';
+const bBase = () => bMode==='sim' ? '/tools/tft-kampf-simulator' : '/tft-team-builder';
 function bSetMode(mode){
   if(mode===bMode) return;
   bMode = mode; bLoaded = false; bCtx = null; bSel = null;
@@ -875,7 +890,7 @@ function renderBuilderCtx(){
 }
 function builderRoute(sub, code2, mode){
   bSetMode(mode || 'builder');
-  // Links: /builder/<Set>/<Code> bzw. /tools/simulator/<Set>/<Code> – gehört der Link zu einem anderen Set, wird dorthin gewechselt
+  // Links: /builder/<Set>/<Code> bzw. /tools/tft-kampf-simulator/<Set>/<Code> – gehört der Link zu einem anderen Set, wird dorthin gewechselt
   if(sub && /^\d+$/.test(sub)){ if(+sub !== TFT_DATA.set){ try { localStorage.setItem('tftfreaks_set', sub); } catch(e){} location.reload(); return; } sub = code2 || ''; if(!sub) setUrl(bBase()); }
   if(sub){ bApplyState(bDecode(sub)); bCtx = null; bResetHistory(); setUrl(bBase()); }
   else if(!bLoaded){
@@ -898,7 +913,7 @@ function openInBuilder(c, ctx){
   bAugs = (c.augs||[]).filter(id=>augById[id]).slice(0,3);
   bAlt = [(c.alt||[])[0] ? c.alt[0].u : null, (c.alt||[])[1] ? c.alt[1].u : null];
   bActive = 'm'; bCtx = ctx || null; bLoaded = true; bResetHistory();
-  if(curPath()==='/builder') builderRoute(); else go('/builder');
+  if(curPath()==='/tft-team-builder') builderRoute(); else go('/tft-team-builder');
 }
 // Aktionen
 function bPlace(side, h, name){ sideBoard(side)[h] = {u:name, s:1, i:[]}; }
@@ -970,8 +985,8 @@ document.addEventListener('click', e=>{
   if(id==='bCopyCode'){ bCopy(bEncode() || '(leer)', 'Team-Code kopiert!'); return; }
   if(id==='bImport'){
     const v = prompt('Team-Code oder Link einfügen:'); if(!v) return;
-    // akzeptiert neue Links (…/builder/18/Code, …/tools/simulator/18/Code), alte Links (…#/builder/18/Code) und reine Codes
-    const lm = v.trim().match(/\/(?:builder|tools\/simulator)\/(.+)$/);
+    // akzeptiert neue Links (…/builder/18/Code, …/tools/tft-kampf-simulator/18/Code), alte Links (…#/builder/18/Code) und reine Codes
+    const lm = v.trim().match(/\/(?:builder|tft-team-builder|tools\/simulator|tools\/tft-kampf-simulator)\/(.+)$/);
     let code = lm ? lm[1] : v.trim();
     const sm = code.match(/^(\d+)\/(.*)$/);
     if(sm){ if(+sm[1] !== TFT_DATA.set){ if(confirm(`Dieser Link gehört zu Set ${sm[1]}. Jetzt zu Set ${sm[1]} wechseln?`)){ try { localStorage.setItem('tftfreaks_set', sm[1]); } catch(e){} setUrl(bBase() + '/' + code); location.reload(); } return; } code = sm[2]; }
@@ -1381,8 +1396,8 @@ function renderSetSwitcher(){
 }
 function pickSet(n){
   try { localStorage.setItem('tftfreaks_set', String(n)); } catch(e){}
-  if(curPath().startsWith('/builder/')) setUrl('/builder');
-  if(curPath().startsWith('/tools/simulator/')) setUrl('/tools/simulator');
+  if(curPath().startsWith('/tft-team-builder/')) setUrl('/tft-team-builder');
+  if(curPath().startsWith('/tools/tft-kampf-simulator/')) setUrl('/tools/tft-kampf-simulator');
   location.reload();
 }
 function toggleSetMenu(open){
@@ -1547,7 +1562,7 @@ function setLib(tab){
     let h = $('#ndLibHead');
     if(!h){ $('#page-library>.wrap').insertAdjacentHTML('afterbegin', '<div class="cv-head" id="ndLibHead"></div>'); h = $('#ndLibHead'); }
     const all = {items:L('Alle Items', 'All items'), traits:L('Alle Traits', 'All traits')}[tab] || '';
-    h.innerHTML = `<div class="cv-crumb">Home / ${L('Bibliothek', 'Library')} / ${LIB_LABEL[tab]}</div><div class="cv-h1" role="heading" aria-level="2"><span>TFT</span> ${LIB_LABEL[tab]}</div><p class="cv-sub">${all} · Set ${TFT_DATA.set}</p>`;
+    h.innerHTML = `<div class="cv-crumb">Home / ${L('Bibliothek', 'Library')} / ${LIB_LABEL[tab]}</div><h1 class="cv-h1"><span>TFT</span> ${LIB_LABEL[tab]}</h1><p class="cv-sub">${all} · Set ${TFT_DATA.set}</p>`;
   }
   if(libTab!==tab){ libTab = tab; buddyNext('bibliothek', true); }
 }
@@ -1816,7 +1831,7 @@ function renderChampPage(slug){
           <h1 class="chp-h1"><span class="th-key">${esc(n)}</span> TFT Build: Items, Comps &amp; Fähigkeit</h1>
           <div class="chp-tags"><span class="chp-cost"><span class="coin"></span>${c.c} Gold</span>${rangeLabel(n) ? `<span class="ch-rng ${isMelee(n) ? 'melee' : 'ranged'}">${rangeLabel(n)}</span>` : ''}${c.t.map(t=>`<span class="chp-tr">${traitHex(t, 'base', 20)}${esc(t)}</span>`).join('')}</div>
           <p class="chp-lead">${esc(n)} ist ein ${c.c}-Kosten-Champion aus TFT Set ${S}.</p>
-          <div class="chp-acts">${dpsOk(n) ? `<a class="btn btn-primary" href="/tools/dps?c=${champSlug(n)}">Builds im DPS-Vergleich testen</a>` : ''}<a class="btn btn-ghost" href="/bibliothek/champions">Alle Champions</a></div>
+          <div class="chp-acts">${dpsOk(n) ? `<a class="btn btn-primary" href="/tools/tft-dps-vergleich?c=${champSlug(n)}">Builds im DPS-Vergleich testen</a>` : ''}<a class="btn btn-ghost" href="/bibliothek/champions">Alle Champions</a></div>
         </div>
       </div>
     </section>
@@ -1853,7 +1868,7 @@ function renderChampPage(slug){
         <details><summary>Wie viel kostet ${esc(n)} in TFT?</summary><p>${esc(n)} kostet ${c.c} Gold. Für ★★ brauchst du 3 Kopien, für ★★★ 9 Kopien.</p></details>
         <details><summary>In welchen Comps spielt man ${esc(n)}?</summary><p>${cs.length ? cs.slice(0, 4).map(x=>`${esc(x.name)} (${x.tier})`).join(', ') : `${esc(n)} ist gerade in keiner Comp unserer Tierlist.`}</p></details>
         <h3>Weitere Tools</h3>
-        <ul class="ts-links">${dpsOk(n) ? `<li><a href="/tools/dps?c=${champSlug(n)}">DPS-Vergleich</a></li>` : ''}<li><a href="/tools/rolldown">Rolldown-Rechner</a></li><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="/builder">Team Builder</a></li></ul>
+        <ul class="ts-links">${dpsOk(n) ? `<li><a href="/tools/tft-dps-vergleich?c=${champSlug(n)}">DPS-Vergleich</a></li>` : ''}<li><a href="/tools/tft-rolldown-rechner">Rolldown-Rechner</a></li><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="/tft-team-builder">Team Builder</a></li></ul>
       </aside>
     </section>`;
 }
@@ -2079,9 +2094,9 @@ const srIc = ic => `<span class="sr-ic">${ic}</span>`;
 function searchPagesBuild(){
   const tools = [...document.querySelectorAll('#page-tools .tc')].map(a=>{ const href = a.getAttribute('href'), ph = a.querySelector('.tc-ph');
     return {label:a.querySelector('h3').textContent.trim(), alt:a.querySelector('.tc-text').textContent + ' ' + href, type:'Tool', html:srIc(ph ? ph.innerHTML : ''), go:()=>{closeSearch();go(href);}}; });
-  tools.push({label:'Team Builder', alt:'builder board planer planner', type:'Tool', html:srIc(csSvg('<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 7.5l4 2.3v4.4L12 16.5l-4-2.3V9.8z"/>')), go:()=>{closeSearch();go('/builder');}});
+  tools.push({label:'Team Builder', alt:'builder board planer planner', type:'Tool', html:srIc(csSvg('<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 7.5l4 2.3v4.4L12 16.5l-4-2.3V9.8z"/>')), go:()=>{closeSearch();go('/tft-team-builder');}});
   const sheets = csList().map(([id])=>{ const m = CS_META[id] || {};
-    return {label:csName(id), alt:[...(m.s || []), ...(m.h || []), ...(m.d || []), id].join(' '), type:'Cheatsheet', html:srIc(csIco(id)), go:()=>{closeSearch();go('/cheatsheet/' + id);}}; });
+    return {label:csName(id), alt:[...(m.s || []), ...(m.h || []), ...(m.d || []), id].join(' '), type:'Cheatsheet', html:srIc(csIco(id)), go:()=>{closeSearch();go(csHref(id));}}; });
   return [...tools, ...sheets];
 }
 const searchAll = () => [...(searchPages || (searchPages = searchPagesBuild())), ...searchIndex,
@@ -2137,7 +2152,7 @@ const NAV = [
   {r:'home', h:'/', l:'Home', mascot:true},
   {r:'tierlist', h:'/tierlist', l:'Tierlist', s:'tier', badge: mainComps.length ? TL_PATCH : (setStatus()==='pbe' ? 'PBE' : '')},
   {r:'bibliothek', h:'/bibliothek', l:'Bibliothek', s:'lib'},
-  {r:'builder', h:'/builder', l:'Team Builder', s:'builder'},
+  {r:'builder', h:'/tft-team-builder', l:'Team Builder', s:'builder'},
   {r:'ranks', h:'/ranks', l:'Ranks', s:'rank'},
   {r:'tools', h:'/tools', l:'Tools', s:'tools', badge:'Neu'},
   {r:'coaching', h:'/coaching', l:'Coaching', s:'coach'},
@@ -2213,7 +2228,7 @@ function tnUpdate(key){   // key = aktuelles Tool ('' = keins → Kreise aus)
     nav.hidden = i < 0; if(i < 0) return;
     [[-1, '.mt-prev', L('Vorheriges Tool', 'Previous tool')], [1, '.mt-next', L('Nächstes Tool', 'Next tool')]].forEach(([d, s, label])=>{
       const [k, name] = TOOL_NAV[(i + d + n) % n], a = nav.querySelector(s), img = a.querySelector('.pn-av');
-      a.setAttribute('href', '/tools/' + k); a.title = name; a.setAttribute('aria-label', `${label}: ${name}`);
+      a.setAttribute('href', toolHref(k)); a.title = name; a.setAttribute('aria-label', `${label}: ${name}`);
       img.removeAttribute('data-src'); img.src = `assets/tools/thumb/${k}.webp`;
     });
   });
@@ -2229,6 +2244,7 @@ function tnEqualize(){
   const box = document.createElement('div'); box.setAttribute('data-noi18n', ''); box.style.cssText = `position:absolute;left:0;top:0;width:${cur.offsetWidth}px;visibility:hidden;pointer-events:none`;
   wrap.appendChild(box);
   const max = Math.max(...heads.map(h=>{ const c = h.cloneNode(true); c.querySelectorAll('.buddy, .mt-nav').forEach(x=>x.remove()); c.removeAttribute('id'); c.classList.add('art-on');   // jedes Tool hat sein Heimer-Bild
+    c.querySelectorAll('[data-h1]').forEach(x=>h1Swap(x, 'h1'));   // versteckte Tools tragen ihre Überschrift als <div> (h1Sync) – zum Messen wie sichtbar
     box.appendChild(c);
     // zu langer Tool-Name (z. B. auf Englisch): Schrift so weit verkleinern, dass er wie die anderen in eine Zeile passt
     const k = c.querySelector('.th-key');
@@ -2541,7 +2557,7 @@ function renderTools(sub, a, b){
     if(c && dps.champ !== c.n) dpsSetChamp(c.n);
   }
 }
-/* ================= AUGMENT-VORHERSAGE (/tools/augments) ================= */
+/* ================= AUGMENT-VORHERSAGE (/tools/tft-augment-vorhersage) ================= */
 // Input: die Augment-Stufen, die du schon gesehen hast (2-1, 3-2, 4-2). Output: was als Nächstes kommt, Prismatic-Chance, wahrscheinlichste Verläufe.
 // Gleiche Daten wie der Augment-Baum im Cheatsheet (CS.augments.seq); der kleine Baum in der Output-Box zeigt dieselbe Auswahl und lässt sich auch anklicken.
 // Die Auswahl steht in der Adresse (?a=SG), damit man sie teilen kann
@@ -2762,16 +2778,16 @@ function tmDecode(code){
 function tmLoad(){ try{ const s = JSON.parse(localStorage.getItem(TM_KEY)); if(s && Array.isArray(s.rows) && s.rows.length) return s; }catch(e){} return TM_DEFAULT(); }
 function tmSave(){ if(tmShared) return; try{ localStorage.setItem(TM_KEY, JSON.stringify(tm)); }catch(e){} }
 // Änderung an einer geteilten Tierlist → wird zur eigenen Kopie
-function tmChanged(){ if(tmShared){ tmShared = false; setUrl('/tools/tierlist'); } tmSave(); tmRender(); }
+function tmChanged(){ if(tmShared){ tmShared = false; setUrl('/tools/tft-tierlist-maker'); } tmSave(); tmRender(); }
 function tmToast(msg){ const t = $('#tmToast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tmToast.h); tmToast.h = setTimeout(()=>t.classList.remove('show'), 2200); }
 
 function tmRoute(a, b){
-  // geteilte Links: /tools/tierlist/<Set>/<Code>
+  // geteilte Links: /tools/tft-tierlist-maker/<Set>/<Code>
   if(a && /^\d+$/.test(a) && b){
     if(+a !== TFT_DATA.set){ try { localStorage.setItem('tftfreaks_set', a); } catch(e){} location.reload(); return; }
     const st = tmDecode(b);
     if(st){ tm = st; tmShared = true; tmMode = 'view'; }
-    else { setUrl('/tools/tierlist'); }
+    else { setUrl('/tools/tft-tierlist-maker'); }
   } else if(!tm || tmShared){ tm = tmLoad(); tmShared = false; }
   if(!tmBuilt) tmBuild();
   tmRender();
@@ -2799,7 +2815,7 @@ function tmBuild(){
     <div class="tm-toast" id="tmToast" role="status"></div>
   </div>`;
   const app = $('#tmApp');
-  $('#tmTitle').addEventListener('input', e=>{ tm.title = e.target.value; if(tmShared){ tmShared = false; setUrl('/tools/tierlist'); $('#tmShared').hidden = true; } tmSave(); });
+  $('#tmTitle').addEventListener('input', e=>{ tm.title = e.target.value; if(tmShared){ tmShared = false; setUrl('/tools/tft-tierlist-maker'); $('#tmShared').hidden = true; } tmSave(); });
   $('#tmMode').addEventListener('click', e=>{ const b = e.target.closest('[data-mode]'); if(!b) return; tmMode = b.dataset.mode; tmSel = null; tmRender(); });
   $('#tmCopyOwn').addEventListener('click', ()=>{ tmMode = 'build'; tmChanged(); tmToast('Kopie angelegt – deine Änderungen werden gespeichert.'); });
   $('#tmTabs').addEventListener('click', e=>{ const b = e.target.closest('[data-tab]'); if(!b) return; tmTab = b.dataset.tab; tmRenderPool(); });
@@ -2810,7 +2826,7 @@ function tmBuild(){
   // Zurücksetzen: Ausgangszustand mit S, A, B, C, X und Standardfarben – auch Titel und Einträge sind danach weg
   $('#tmReset').addEventListener('click', ()=>{ if(!confirm('Tierlist komplett zurücksetzen? Reihen, Farben, Titel und alle Einträge gehen auf den Anfang zurück.')) return; tm = TM_DEFAULT(); tmSel = null; tmChanged(); tmToast('Zurückgesetzt – wieder S, A, B, C und X.'); });
   $('#tmShare').addEventListener('click', ()=>{
-    const url = siteUrl('/tools/tierlist/' + TFT_DATA.set + '/' + tmEncode(tm));
+    const url = siteUrl('/tools/tft-tierlist-maker/' + TFT_DATA.set + '/' + tmEncode(tm));
     const ok = ()=>tmToast('Link kopiert – wer ihn öffnet, sieht deine Tierlist.');
     if(navigator.clipboard) navigator.clipboard.writeText(url).then(ok, ()=>prompt('Link kopieren:', url)); else prompt('Link kopieren:', url);
   });
@@ -3081,6 +3097,26 @@ function patchRowHTML(r){
   const [s, l, o, n] = r;
   return `<li class="pn-row">${patchIcon(s) || '<span class="pn-ic pn-dot"></span>'}<div class="pn-txt">${s ? `<b>${esc(s)}</b>` : ''}${l ? `<span class="pn-l">${esc(l)}</span>` : ''}<span class="pn-v">${o ? `<span class="pn-old">${esc(o)}</span><span class="pn-arr">⇒</span>` : ''}<span class="pn-new">${esc(n)}</span></span></div></li>`;
 }
+// Kopf der Patch-Seite: Patch-Nummer groß, rechts eine Nachricht von CrazYSlayt an die Besucher (Foto + Sprechblase, Klick auf Foto/Name → Profil)
+const PATCH_AUTHOR = {img:'assets/img/team-claudio.jpg', href:'/about/crazyslayt'};
+function patchHero(p){
+  // B-Patches: Gruppe „PATCH-AKTUALISIERUNG · 28. SEPTEMBER · 24. SEPTEMBER“ → Daten in zeitlicher Reihenfolge
+  const bp = (p.notes || []).find(s=>/PATCH-AKTUALISIERUNG|MID-PATCH/i.test(s.grp || ''));
+  const bpDates = bp ? bp.grp.split('·').slice(1).map(x=>secLabel(x.trim())).filter(Boolean).reverse() : [], and = L(' und ', ' and ');
+  const hey = p===CURRENT_PATCH ? L('Hey Leute, der neue Patch ist draußen!', 'Hey everyone, the new patch is out!') : L(`Hey Leute, hier ist Patch ${p.id}!`, `Hey everyone, here's patch ${p.id}!`);
+  const msg = `${hey} ${L('Ich hab ihn für euch übersichtlich aufbereitet – alle Änderungen auf einen Blick.', "I've neatly prepared it for you – every change at a glance.")}`
+    + (!bp ? '' : ' ' + (bpDates.length > 1 ? L(`Die B-Patches vom ${bpDates.join(and)} sind schon mit drin.`, `The B-patches from ${bpDates.join(and)} are already included.`)
+      : bpDates.length ? L(`Der B-Patch vom ${bpDates[0]} ist schon mit drin.`, `The B-patch from ${bpDates[0]} is already included.`) : L('Die B-Patch-Änderungen sind schon mit drin.', 'The B-patch changes are already included.')));
+  return `<section class="pde"${p.img ? ` style="--img:url('${esc(p.img)}?w=1280&fm=webp');--pos:${esc(patchFocus(p))}"` : ''}>
+    <div class="pde-kick"><span>Set ${esc(p.set)}</span>${p===CURRENT_PATCH ? `<span class="live">${L('Aktueller Patch', 'Current patch')}</span>` : ''}</div>
+    <h1 class="pde-h1">TFT Patch <span>${esc(p.id)}</span></h1>
+    <a class="pde-by" href="${PATCH_AUTHOR.href}">
+      <span class="pde-av"><img src="${PATCH_AUTHOR.img}" alt="Claudio „CrazYSlayt“" width="50" height="50"><img class="pde-emb" src="${rankImg(rankBy.challenger)}" alt="" width="22" height="22"></span>
+      <span class="pde-who"><span>${L('Von', 'By')} <b>${L('Claudio „CrazYSlayt“', 'Claudio "CrazYSlayt"')}</b> · TFT Challenger · TFTClimb Coach</span><small>${fmtDate(p.date)}</small></span>
+    </a>
+    <p class="pde-txt">${esc(msg)}</p>
+  </section>`;
+}
 function renderPatches(sub){
   const app = $('#patchesApp');
   if(!PATCHES.length){ app.innerHTML = `<div class="page-head"><div class="crumb">Home / Patches</div><h1>TFT <em class="serif">Patches</em></h1></div>` + ornnSays('Hmph. Die Patchliste ist noch nicht geschmiedet – das Update-Skript holt sie beim nächsten Lauf.'); return; }
@@ -3088,7 +3124,7 @@ function renderPatches(sub){
   if(!p){
     const sets = [...new Set(PATCHES.map(x=>x.set))];
     app.innerHTML = `<div class="page-head"><div class="crumb">Home / Patches</div><h1>TFT <em class="serif">Patches</em></h1>
-      <p>Alle Patches mit den offiziellen Änderungen von Riot – automatisch aktualisiert, sobald ein neuer Patch erscheint (alle zwei Wochen, meist dienstags).</p></div>`
+      <p>${L('Alle Patches für euch aufbereitet: jede Änderung übersichtlich nach Champions, Traits, Items und Augments sortiert – neu, sobald ein Patch erscheint (alle zwei Wochen, meist dienstags).', 'Every patch prepared for you: each change neatly sorted by champions, traits, items and augments – updated as soon as a patch drops (every two weeks, usually on Tuesdays).')}</p></div>`
       + sets.map(st=>`<div class="pt-set"><h2>Set ${st}</h2><div class="pt-grid">${PATCHES.filter(x=>x.set===st).map(x=>{
         const cur = x===CURRENT_PATCH, cnt = patchCount(x), note = PATCH_NOTES[x.id];
         return `<a class="pt-card${cur?' cur':''}" href="/patches/${patchSlug(x.id)}">
@@ -3096,24 +3132,21 @@ function renderPatches(sub){
           <div class="pt-body"><small>${fmtDate(x.date)}</small><h3>Patch ${esc(x.id)}</h3><p>${esc(x.teaser || '')}</p>
           <div class="pt-meta">${cnt ? `<span>${cnt} Änderungen</span>` : ''}${note ? '<span class="hl">mit Einschätzung</span>' : ''}${x.lang==='en' && !EN ? '<span>vorerst auf Englisch</span>' : ''}</div></div></a>`;
       }).join('')}</div></div>`).join('')
-      + `<p class="note">Quelle: offizielle Patchnotes von Riot Games. Die Änderungen werden automatisch übernommen – die vollständigen Texte findest du jeweils bei Riot.</p>`;
+      + `<p class="note">${L('Quelle: offizielle Patchnotes von Riot Games, für euch übersichtlich aufbereitet.', 'Source: official patch notes by Riot Games, neatly prepared for you.')}</p>`;
     return;
   }
   const i = PATCHES.indexOf(p), newer = PATCHES[i-1], older = PATCHES[i+1];
   const grps = []; (p.notes || []).forEach(s=>{ let g = grps.find(x=>x.g===s.grp); if(!g){ g = {g:s.grp, secs:[]}; grps.push(g); } g.secs.push(s); });
   const note = PATCH_NOTES[p.id];
   app.innerHTML = `<div class="page-head"><div class="crumb"><a href="/patches">Patches</a> / ${esc(p.id)}</div></div>
-    <div class="pd-hero"${p.img ? ` style="--img:url('${esc(p.img)}?w=1280&fm=webp');--pos:${esc(patchFocus(p))}"` : ''}><div>
-      <small>${fmtDate(p.date)}${p===CURRENT_PATCH ? ' · <b>Aktueller Patch</b>' : ''}</small><h1>Patch <em class="serif">${esc(p.id)}</em></h1>
-      ${p.teaser ? `<blockquote>${esc(p.teaser)}<cite>– Riot Games</cite></blockquote>` : ''}
-      ${p.lang==='en' && !EN ? '<p class="pd-lang">Riot hat die deutschen Patchnotes noch nicht veröffentlicht – bis dahin siehst du hier die englische Fassung.</p>' : ''}
-      <a class="btn btn-primary" href="${esc(p.url)}" target="_blank" rel="noopener">Komplette Patchnotes bei Riot ↗</a></div></div>
+    ${patchHero(p)}
+    ${p.lang==='en' && !EN ? '<p class="pd-lang">Riot hat die deutschen Patchnotes noch nicht veröffentlicht – bis dahin siehst du hier die englische Fassung.</p>' : ''}
     ${note ? `<div class="card pd-note"><h3>Einschätzung von TFTClimb</h3>${String(note).split(/\n{2,}/).map(t=>`<p>${esc(t).replace(/\n/g,'<br>')}</p>`).join('')}</div>` : ''}
     ${grps.length ? `<input class="input pd-search" id="pdSearch" placeholder="Champion, Trait, Item oder Augment suchen …" aria-label="Änderungen durchsuchen">
     <div id="pdList">${grps.map(g=>`<section class="pd-grp">${g.g ? `<h2>${esc(grpLabel(g.g))}</h2>` : ''}${g.secs.map(s=>`<div class="card pd-sec"><h3>${esc(secLabel(s.sec))}</h3><ul>${s.ch.map(patchRowHTML).join('')}</ul></div>`).join('')}</section>`).join('')}</div>`
       : viSays('Für diesen Patch habe ich keine einzelnen Änderungen gefunden – schau direkt in die Patchnotes bei Riot.')}
     <div class="pd-nav">${older ? `<a class="btn btn-ghost" href="/patches/${patchSlug(older.id)}">← Patch ${esc(older.id)}</a>` : '<span></span>'}${newer ? `<a class="btn btn-ghost" href="/patches/${patchSlug(newer.id)}">Patch ${esc(newer.id)} →</a>` : ''}</div>
-    <p class="note">Änderungen automatisch aus den offiziellen Patchnotes von Riot Games übernommen. Maßgeblich sind die vollständigen Notizen bei Riot.</p>`;
+    <p class="note">${L('Quelle: offizielle Patchnotes von Riot Games, für euch übersichtlich aufbereitet. Im Zweifel gilt das', 'Source: official patch notes by Riot Games, neatly prepared for you. If in doubt, the')} <a href="${esc(p.url)}" target="_blank" rel="noopener">${L('Original bei Riot', 'original at Riot applies')}</a>.</p>`;
   const s = $('#pdSearch');
   if(s) s.addEventListener('input', ()=>{
     const q = s.value.toLowerCase().trim();
@@ -3265,7 +3298,7 @@ function csSections(){
     const rows = lv.map(([l, r])=>{ const mx = Math.max(...r), xp = (SHOP.xp || [])[l - 1];
       return `<tr class="${l===8 ? 'sel' : ''}"><td class="cso-xp">${xp ? `<span>+${xp}</span>` : ''}</td><td class="cso-lv">Level ${l}</td>${r.map((o, c)=>o ? `<td class="t${c+1}${o===mx ? ' top' : ''}" style="--o:${(0.5 + o / colMax[c] * 0.5).toFixed(2)}">${o}${L(' %', '%')}</td>` : '<td class="cso-0">–</td>').join('')}</tr>`; }).join('');
     out.push(['shop', L('Shop-Chancen, Pool & XP', 'Shop odds, pool & XP'), `<div class="cs-wrap"><table class="cs-table cs-hm cso"><thead>${head}</thead><tbody>${rows}</tbody></table></div>
-      <p class="cs-note cs-after">${L('Chance pro Shop-Slot. Fett: die wahrscheinlichsten Kosten auf diesem Level. Die Zahl zwischen zwei Levels ist die XP bis zum nächsten Level – jede Runde gibt es 2 XP gratis, 4 Gold kaufen 4 XP. Treffer-Chancen rechnet der', 'Chance per shop slot. Bold: the most likely cost at that level. The number between two levels is the XP to the next level – you get 2 free XP every round, 4 gold buys 4 XP. Hit chances are in the')} <a href="/tools/rolldown">${L('Rolldown-Rechner', 'rolldown calculator')}</a>.</p>`]);
+      <p class="cs-note cs-after">${L('Chance pro Shop-Slot. Fett: die wahrscheinlichsten Kosten auf diesem Level. Die Zahl zwischen zwei Levels ist die XP bis zum nächsten Level – jede Runde gibt es 2 XP gratis, 4 Gold kaufen 4 XP. Treffer-Chancen rechnet der', 'Chance per shop slot. Bold: the most likely cost at that level. The number between two levels is the XP to the next level – you get 2 free XP every round, 4 gold buys 4 XP. Hit chances are in the')} <a href="/tools/tft-rolldown-rechner">${L('Rolldown-Rechner', 'rolldown calculator')}</a>.</p>`]);
   }
   if(CS.augments){
     // Baum wie im Spiel: 1. Augment → 2. Augment (Chance, wenn das 1. so kam) → 3. Augment → Chance für genau diese Reihenfolge
@@ -3282,7 +3315,7 @@ function csSections(){
     const headRow = [[L('1. Augment', '1st augment'), '2-1'], [L('2. Augment', '2nd augment'), '3-2'], [L('3. Augment', '3rd augment'), '4-2'], [L('Chance', 'Odds'), '']].map(([t, s], i)=>`<div class="csa-h" style="grid-column:${i + 1}">${t}${s ? ` <small>${s}</small>` : ''}</div>`).join('');
     const {tree, legend} = atgTreeHTML();
     out.push(['augments', L('Augment-Stufen (2-1 · 3-2 · 4-2)', 'Augment tiers (2-1 · 3-2 · 4-2)'), `<div class="cst-tree">${legend}${tree}</div><div class="cst-table cs-wrap"><div class="csa">${headRow}${cells}</div></div>
-      <p class="cs-note cs-after">${L('Mindestens ein Prismatic pro Partie', 'At least one prismatic per game')}: <b>${csPct(prism)}</b> · ${L('Für deine Partie:', 'For your game:')} <a href="/tools/augments">${L('Augment-Vorhersage', 'Augment prediction')} →</a></p>` + csSrc(CS.augments.src)]);
+      <p class="cs-note cs-after">${L('Mindestens ein Prismatic pro Partie', 'At least one prismatic per game')}: <b>${csPct(prism)}</b> · ${L('Für deine Partie:', 'For your game:')} <a href="/tools/tft-augment-vorhersage">${L('Augment-Vorhersage', 'Augment prediction')} →</a></p>` + csSrc(CS.augments.src)]);
   }
   if(ENCS.length){
     const rows = [...ENCS].sort((a,b)=>b.w - a.w).map(e=>{ const src = csChampPic(e.ch);
@@ -3320,7 +3353,7 @@ function csSections(){
     const lg = (ic, txt) => `<span class="csx-lg">${ic}<span>${txt}</span></span>`;
     const legend = `<div class="csx-legend">${lg(csAnvil('component'), L(CS_ANVIL.component[0], CS_ANVIL.component[1]))}${lg(csAnvil('completed'), L(CS_ANVIL.completed[0], CS_ANVIL.completed[1]))}${lg(csAnvil('artifact'), L(CS_ANVIL.artifact[0], CS_ANVIL.artifact[1]))}${lg(csSpatPan(), L('Pfannenwender oder Bratpfanne', 'Spatula or Frying Pan'))}${lg(csChamp(4, 1), L('zufälliger Champion – Farbe = Kosten', 'random champion – colour = cost'))}</div>`;
     const html = (small ? `<div class="csx-grid csx-4 csx-compact">${small}</div>` : '') + `<div class="csx-grid csx-3 csx-compact"${small ? ' style="margin-top:10px"' : ''}>${big}</div>` + legend;
-    out.push(['orbs', L('Loot-Orbs', 'Loot orbs'), `${html}<p class="cs-note cs-after">${L('Welche Komponente als Nächstes kommt, zeigt die', 'Which component drops next is shown in the')} <a href="/tools/drops">${L('Item-Drop-Chance', 'Item Drop Chance')}</a>.</p>` + csSrc(TFT_CUSTOM_SET.loot.orbSrc || TFT_CUSTOM_SET.loot.source)]);
+    out.push(['orbs', L('Loot-Orbs', 'Loot orbs'), `${html}<p class="cs-note cs-after">${L('Welche Komponente als Nächstes kommt, zeigt die', 'Which component drops next is shown in the')} <a href="/tools/tft-item-drop-chance">${L('Item-Drop-Chance', 'Item Drop Chance')}</a>.</p>` + csSrc(TFT_CUSTOM_SET.loot.orbSrc || TFT_CUSTOM_SET.loot.source)]);
   }
   // Beute aus den Creep-Runden pro Stage: [Silber, Blau, Gold, Prisma, Komponenten, Komponenten-Amboss, aufgewertet, Chance]
   const loot = TFT_CUSTOM_SET.loot;
@@ -3567,7 +3600,7 @@ const CS_IC_TRAIT = '<path d="M12 3c2.5 3 6 4 8 4-1 6-3.5 10.5-8 14-4.5-3.5-7-8-
 const CS_TAB_IC = ['<path d="M13 2.5L5 13.5h6.2L10 21.5l9-11.5h-6.4z"/>', '<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>', '<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/>', CS_IC_TRAIT, '<circle cx="5.5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18.5" cy="12" r="1.6"/>'];
 function csCard(id, k=0){   // k = Position im Reiter: ab der 10. Karte ausgeblendet, die 9. nur bei 3 Spalten
   const m = CS_META[id] || {};
-  return `<a class="cs-card${k >= 9 ? ' xtra' : k === 8 ? ' n9' : ''}" href="/cheatsheet/${id}"><span class="cs-card-ic">${csIco(id)}</span><span class="cs-card-tx"><b>${esc(csName(id))}</b>${m.st ? `<small><i class="cs-card-st">Stage ${esc(m.st)}</i></small>` : m.h ? `<small>${L(m.h[0], m.h[1])}</small>` : ''}</span>${csSvg('<path d="M9 6l6 6-6 6"/>', 2.4)}</a>`;
+  return `<a class="cs-card${k >= 9 ? ' xtra' : k === 8 ? ' n9' : ''}" href="${csHref(id)}"><span class="cs-card-ic">${csIco(id)}</span><span class="cs-card-tx"><b>${esc(csName(id))}</b>${m.st ? `<small><i class="cs-card-st">Stage ${esc(m.st)}</i></small>` : m.h ? `<small>${L(m.h[0], m.h[1])}</small>` : ''}</span>${csSvg('<path d="M9 6l6 6-6 6"/>', 2.4)}</a>`;
 }
 function csHome(secs){
   const has = id=>secs.some(s=>s[0]===id);
@@ -3611,7 +3644,7 @@ function csPanel([id, t, html], flat){
     : `<div class="csp-tabs" role="tablist">${html.tabs.map(([l, ic], i)=>`<button type="button" role="tab" class="${i ? '' : 'on'}" data-cstab="${i}" aria-selected="${!i}">${csSvg(ic, 2)}${l}<span></span></button>`).join('')}</div>${html.tabs.map(([, , h], i)=>`<div class="csp-pane"${i ? ' hidden' : ''}>${h}</div>`).join('')}`;
   const tip = m.tip ? m.tip() : '';
   const i = flat.indexOf(id), rel = [flat[(i + 1) % flat.length], flat[(i + 2) % flat.length]].filter(x=>x && x!==id);
-  const cards = rel.map(r=>{ const rm = CS_META[r] || {}, pv = csPreview(r); return `<a class="csp-card" href="/cheatsheet/${r}"><div class="csp-card-h">${csIco(r)}<div><b>${csName(r)}</b><small>${rm.h ? L(rm.h[0], rm.h[1]) : ''}</small></div></div>${pv ? `<div class="csp-prev">${pv}</div>` : ''}<span class="csp-more">${L('Ansehen', 'View')} →</span></a>`; }).join('');
+  const cards = rel.map(r=>{ const rm = CS_META[r] || {}, pv = csPreview(r); return `<a class="csp-card" href="${csHref(r)}"><div class="csp-card-h">${csIco(r)}<div><b>${csName(r)}</b><small>${rm.h ? L(rm.h[0], rm.h[1]) : ''}</small></div></div>${pv ? `<div class="csp-prev">${pv}</div>` : ''}<span class="csp-more">${L('Ansehen', 'View')} →</span></a>`; }).join('');
   const framed = ND;
   const main = framed
     ? `<div class="csf"><div class="csf-box"><svg class="csf-svg" aria-hidden="true"></svg><div class="csf-hd"><h2 class="csf-title">${csName(id)}</h2><span class="csf-brand">${csHex}<b>Cheat<i>sheet</i></b></span></div><div class="csf-body">${body}</div></div>
@@ -3665,7 +3698,7 @@ function renderCheats(sub){
     const GIC = ['<rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M4 10h16M10 4v16"/>', '<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 8.2l1.1 2.4 2.6.3-1.9 1.8.5 2.6L12 14l-2.3 1.3.5-2.6-1.9-1.8 2.6-.3z"/>', CS_IC_TRAIT, '<circle cx="6" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/>'];
     const side = CS_GROUPS.map(([g, ids], gi)=>{
       ids = ids.filter(id=>secs.some(s=>s[0]===id));
-      const links = ids.map(id=>`<a class="cs-tile" href="/cheatsheet/${id}" data-cs="${id}"><span class="cs-ti">${csIco(id)}</span><span>${csName(id)}</span></a>`).join('');
+      const links = ids.map(id=>`<a class="cs-tile" href="${csHref(id)}" data-cs="${id}"><span class="cs-ti">${csIco(id)}</span><span>${csName(id)}</span></a>`).join('');
       return links ? `<div class="cs-group closed" data-g="${gi}"><button type="button" class="cs-gh" aria-expanded="false"><span class="cs-gi">${csSvg(GIC[gi], 1.9)}</span><span class="cs-gt">${L(g[0], g[1])}</span><span class="cs-gn">${ids.length}</span>${csSvg('<path d="M6 9l6 6 6-6"/>', 2.4)}<span></span></button><div class="cs-menu">${links}</div></div>` : '';
     }).join('');
     box.innerHTML = `<div class="cs-head"><img class="cs-vk" src="assets/img/mascot-velkoz.webp" alt="" width="560" height="465">
@@ -3693,7 +3726,7 @@ function renderCheats(sub){
         <details><summary>${L('Wie viel Schaden bekomme ich nach einer Niederlage?', 'How much damage do I take after a loss?')}</summary><p>${L('Den Stage-Schaden plus 1 für jede gegnerische Unit, die den Kampf überlebt.', 'The stage damage plus 1 for every enemy unit that survives the fight.')}</p></details>
         <details><summary>${L('Wie baue ich ein Emblem?', 'How do I build an emblem?')}</summary><p>${L('Pfannenwender oder Bratpfanne plus eine Komponente. Welches Emblem dabei entsteht, steht in der Tabelle Emblem-Rezepte.', 'Spatula or Frying Pan plus a component. Which emblem you get is listed in the emblem recipes table.')}</p></details>
         <h3>${L('Weiterlesen', 'Read more')}</h3>
-        <ul class="ts-links"><li><a href="/tools/rolldown">${L('Rolldown-Rechner', 'Rolldown calculator')}</a></li><li><a href="/tools/drops">${L('Item-Drop-Chance', 'Item Drop Chance')}</a></li><li><a href="/bibliothek/items">${L('Item-Bibliothek', 'Item library')}</a></li></ul>
+        <ul class="ts-links"><li><a href="/tools/tft-rolldown-rechner">${L('Rolldown-Rechner', 'Rolldown calculator')}</a></li><li><a href="/tools/tft-item-drop-chance">${L('Item-Drop-Chance', 'Item Drop Chance')}</a></li><li><a href="/bibliothek/items">${L('Item-Bibliothek', 'Item library')}</a></li></ul>
       </aside>
     </section>`;
     box.dataset.done = '1';
@@ -3715,7 +3748,7 @@ function renderCheats(sub){
       side.scrollTop += tr.top - sr.top + tr.height / 2 - (side.clientHeight + hd) / 2; };
     if(!fromSide){ mid(); setTimeout(mid, 150); }   // zweiter Durchlauf, falls Schrift/Bilder die Höhen noch verschieben
   }
-  $('#csH1').innerHTML = cur ? '<span class="cs-sr">TFT Cheatsheet: </span>' + esc(csName(cur[0])) : 'TFT <em>Cheatsheets</em>';
+  $('#csH1').innerHTML = cur ? 'TFT ' + esc(csName(cur[0])) : 'TFT <em>Cheatsheets</em>';
   $('#csLead').textContent = m && m.h ? L(m.h[0], m.h[1]) : L(`Jede Zahl an einem Ort – dein Nachschlagewerk für Set ${S}.`, `Every number in one place – your quick reference for Set ${S}.`);
   $('#csCrumb').innerHTML = `Home / <a href="/cheatsheet">Cheatsheet</a>${cur ? ' / ' + esc(csName(cur[0])) : ''}`;
 }
@@ -3732,7 +3765,7 @@ document.addEventListener('click', e=>{
   if(row) row.parentNode.querySelectorAll('tr').forEach(r=>r.classList.toggle('sel', r===row));
 });
 document.addEventListener('input', e=>{ if(e.target.id==='csSearch') csFilter(e.target.value); if(e.target.id==='csHeroQ') csHomeSearch(e.target.value); });
-document.addEventListener('submit', e=>{ if(e.target.id!=='csHeroForm') return; e.preventDefault(); const h = csHomeSearch($('#csHeroQ').value); if(h && h.length) go('/cheatsheet/' + h[0]); });
+document.addEventListener('submit', e=>{ if(e.target.id!=='csHeroForm') return; e.preventDefault(); const h = csHomeSearch($('#csHeroQ').value); if(h && h.length) go(csHref(h[0])); });
 // Augment-Baum: gewählten Ast hervorheben (Weg dorthin + alles darunter) und die Blatt-Prozente auf diese Lage umrechnen
 function atgMark(svg, k){
   svg.classList.toggle('hl', !!k);
@@ -3761,69 +3794,123 @@ document.addEventListener('keydown', e=>{   // „/“ springt ins Suchfeld, Esc
 
 /* ================= SEITENTITEL & SUCHMASCHINEN ================= */
 // Pro Seite: [Titel, Beschreibung]. Seiten ohne eigenen Inhalt (Platzhalter, Redaktion, 404) werden nicht indexiert.
+// Beschreibung: höchstens 134 Zeichen und enthält immer das Keyword der Seite (wie H1 und Adresse).
+// Bei Namen unterschiedlicher Länge (Champions, Comps, Cheatsheets) nimmt fit() die erste Variante, die passt.
+const META_MAX = 134;
+const fit = (...c) => c.find(x=>x.length <= META_MAX) || c[c.length - 1].slice(0, META_MAX - 1).replace(/\s+\S*$/, '') + '…';
+const TITLE_MAX = 60 - ' | TFTClimb'.length;   // Google zeigt etwa 60 Zeichen
+const fitT = (...c) => c.find(x=>x.length <= TITLE_MAX) || c[c.length - 1];
+const kwNorm = s => String(s).toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9äöüß]+/g, ' ').trim();
 function pageMeta(page, sub){
-  const S = `Set ${TFT_DATA.set}`, P = TL_PATCH ? ` (Patch ${TL_PATCH})` : '', rk = rankBy[sub];
+  const S = `Set ${TFT_DATA.set}`, P = TL_PATCH ? ` (Patch ${TL_PATCH})` : '', PS = TL_PATCH ? `Patch ${TL_PATCH}` : S, rk = rankBy[sub];
   switch(page){
-    case 'home': return ['TFTClimb – TFT Tierlist, Comps & Coaching', `Aktuelle TFT Tierlist für ${S}${P}: die besten Comps mit Items, Augments und Aufstellung – dazu Coaching von Challenger-Spielern.`];
+    case 'home': return [L('TFTClimb – TFT Tierlist, Comps & Coaching', 'TFTClimb – TFT Tier List, Comps & Coaching'), L(`TFT Tierlist für ${S} von Challenger-Spielern: die besten Comps mit Items, Augments und Aufstellung – dazu Tools und Coaching.`,
+      `TFT tier list for ${S} by Challenger players: the best comps with items, augments and positioning – plus tools and coaching.`)];
     case 'tierlist':
-      if(sub==='items') return [`TFT Item-Tierlist ${S}${P}`, `Welche Items sind in TFT ${S} am stärksten? Item-Tierlist mit kombinierten Items, Lichtversionen und Artefakten.`];
-      if(sub==='augments') return [`TFT Augment-Tierlist ${S}${P}`, `Die besten Augments in TFT ${S} – sortiert nach Silber, Gold und Prismatisch.`];
-      if(sub==='holds') return [`TFT Holds ${S}${P} – welche Units du früh hältst`, `Welche 1-, 2- und 3-Kosten-Champions lohnen sich in TFT ${S} von 1-1 bis 1-3 zu halten? Holds-Tierlist von S bis C.`];
-      return [`TFT Tierlist ${S}${P} – die besten Comps`, `Die besten TFT Comps für ${S}${P}: Tierlist mit Aufstellung, Items, Augments und Spielplan für jede Comp.`];
+      if(sub==='items') return [L(`TFT Item-Tierlist ${PS}`, `TFT Item Tier List ${PS}`), L(`TFT Item-Tierlist ${S}: die stärksten kombinierten Items, Lichtversionen, Artefakte und Embleme – bewertet von S bis C.`,
+        `TFT item tier list ${S}: the strongest combined items, radiant items, artifacts and emblems – rated from S to C.`)];
+      if(sub==='augments') return [L(`TFT Augment-Tierlist ${PS}`, `TFT Augment Tier List ${PS}`), L(`TFT Augment-Tierlist ${S}: die besten Silber-, Gold- und Prismatic-Augments für 2-1, 3-2 und 4-2 – bewertet von S bis C.`,
+        `TFT augment tier list ${S}: the best silver, gold and prismatic augments for 2-1, 3-2 and 4-2 – rated from S to C.`)];
+      if(sub==='holds') return [L(`TFT Holds-Tierlist ${PS}`, `TFT Holds Tier List ${PS}`), L(`TFT Holds-Tierlist ${S}: welche 1-, 2- und 3-Kosten-Champions du von 1-1 bis 1-3 halten solltest – bewertet von S bis C.`,
+        `TFT holds tier list ${S}: which 1, 2 and 3 cost champions to hold from 1-1 to 1-3 – rated from S to C.`)];
+      return [L(`TFT Tierlist ${PS} – die besten Comps`, `TFT Tier List ${PS} – the Best Comps`), L(`TFT Tierlist ${S}${P}: die besten Comps von S bis C – mit Aufstellung, Items, Augments und Spielplan für jede Comp.`,
+        `TFT tier list ${S}${P}: the best comps from S to C – with positioning, items, augments and game plan for every comp.`)];
     case 'bibliothek':
-      if(sub==='items') return [`TFT Items ${S} – Rezepte & Werte`, `Alle Items in TFT ${S}: Rezepte, Komponenten, Lichtversionen, Artefakte und Embleme mit ihren Werten.`];
-      if(sub==='traits') return [`TFT Traits ${S} – Stufen & Units`, `Alle Traits in TFT ${S}: Ursprünge und Klassen mit Stufen, Effekten und den passenden Units.`];
-      return [`TFT Champions ${S} – Kosten & Traits`, `Alle ${champions.length} Champions in TFT ${S} mit Kosten und Traits.`];
-    case 'ranks':
-      if(rk) return [`TFT Rang ${rk.n} – Spielerverteilung`, `Wie viele Spieler sind in TFT ${rk.n}? Verteilung nach Divisionen und Vergleich mit den anderen Rängen.`];
-      return ['TFT Ränge & Spielerverteilung', 'Alle TFT Ränge von Eisen bis Challenger mit Divisionen – und wie viel Prozent der Spieler in jedem Rang stehen.'];
+      if(sub==='items') return [L(`TFT Items ${S} – Rezepte & Werte`, `TFT Items ${S} – Recipes & Stats`), L(`Alle TFT Items in ${S}: Rezepte, Komponenten, Lichtversionen, Artefakte und Embleme mit ihren Werten auf einen Blick.`,
+        `All TFT items in ${S}: recipes, components, radiant items, artifacts and emblems with their stats at a glance.`)];
+      if(sub==='traits') return [L(`TFT Traits ${S} – Stufen & Units`, `TFT Traits ${S} – Tiers & Units`), L(`Alle TFT Traits in ${S}: Ursprünge und Klassen mit Stufen, Effekten und den passenden Champions auf einen Blick.`,
+        `All TFT traits in ${S}: origins and classes with tiers, effects and the matching champions at a glance.`)];
+      return [L(`TFT Champions ${S} – Kosten & Traits`, `TFT Champions ${S} – Cost & Traits`), L(`Alle ${champions.length} TFT Champions in ${S}: Kosten, Traits und Fähigkeiten – mit den besten Items und Builds aus unserer Tierlist.`,
+        `All ${champions.length} TFT champions in ${S}: cost, traits and abilities – with the best items and builds from our tier list.`)];
+    case 'ranks': {
+      if(rk){ const apex = ['master', 'grandmaster', 'challenger'].includes(sub), en = tr(rk.n);
+        return [L(`TFT Rang ${rk.n} – Spielerverteilung`, `TFT Rank ${en} – Player Distribution`), L(fit(`TFT Rang ${rk.n}: wie viel Prozent aller Spieler in ${rk.n} stehen${apex ? '' : ', aufgeteilt auf die Divisionen IV bis I'} – im Vergleich zu allen Rängen.`,
+          `TFT Rang ${rk.n}: wie viel Prozent aller Spieler in ${rk.n} stehen${apex ? '' : ', aufgeteilt auf die Divisionen IV bis I'} – im Vergleich.`),
+          fit(`TFT rank ${en}: what percentage of all players is in ${en}${apex ? '' : ', split into divisions IV to I'} – compared to every other rank.`,
+          `TFT rank ${en}: what percentage of all players is in ${en}${apex ? '' : ', split into divisions IV to I'} – compared to all ranks.`))]; }
+      return [L('TFT Ränge & Spielerverteilung', 'TFT Ranks & Player Distribution'), L('Alle TFT Ränge von Eisen bis Challenger mit Divisionen – und wie viel Prozent der Spieler in jedem Rang stehen.',
+        'All TFT ranks from Iron to Challenger with divisions – and what percentage of players is in each rank.')];
+    }
     case 'champion': {
       const c = champBySlug[sub];
       if(!c) return ['Champion nicht gefunden', '', true];
-      return [`${c.n} TFT Build ${S} – Items, Comps & Fähigkeit`, `${c.n} in TFT ${S}: die besten Items, Comps und Traits, dazu Fähigkeit und Werte des ${c.c}-Kosten-Champions – mit Builds aus unserer Challenger-Tierlist.`];
+      return [`${c.n} TFT Build ${S} – Items & Comps`, L(fit(`${c.n} TFT Build für ${S}: die besten Items, Comps und Traits, dazu Fähigkeit und Werte – mit Builds aus unserer Challenger-Tierlist.`,
+        `${c.n} TFT Build für ${S}: die besten Items, Comps und Traits, dazu Fähigkeit und Werte – aus unserer Tierlist.`),
+        fit(`${c.n} TFT build for ${S}: the best items, comps and traits, plus ability and stats – with builds from our Challenger tier list.`,
+        `${c.n} TFT build for ${S}: the best items, comps and traits, plus ability and stats – from our tier list.`))];
     }
     case 'comp': {
       const c = compByKey[sub];
       if(!c) return ['Comp nicht gefunden', '', true];
-      const its = compItemsOf(c, c.carry).map(it=>it.en).join(', '), tierTxt = c.tier === 'X' ? 'situativ' : c.tier + '-Tier';
-      return [L(`${c.name} – TFT Comp Guide ${S}${P}`, `${c.name} – TFT Comp Guide ${S}${P}`),
-        L(`So spielst du ${c.name} in TFT ${S}: Aufstellung, Items${its ? ` für ${c.carry} (${its})` : ''}, Augments und Spielplan – ${tierTxt} in unserer Tierlist.`,
-          `How to play ${c.name} in TFT ${S}: positioning, items${its ? ` for ${c.carry} (${its})` : ''}, augments and game plan – ${c.tier === 'X' ? 'situational' : c.tier + '-tier'} in our tier list.`)];
+      const tDe = c.tier === 'X' ? 'situativ' : c.tier + '-Tier', tEn = c.tier === 'X' ? 'situational' : c.tier + '-tier';
+      return [L(`${c.name} – TFT Comp Guide ${S}`, `${c.name} – TFT Comp Guide ${S}`), L(fit(`${c.name} TFT Comp Guide (${S}): Aufstellung, Items für ${c.carry}, Augments und Spielplan – ${tDe} in unserer Tierlist.`,
+        `${c.name} TFT Comp Guide (${S}): Aufstellung, Items für ${c.carry}, Augments und Spielplan – ${tDe}.`, `${c.name} TFT Comp Guide: Aufstellung, Items, Augments und Spielplan – ${tDe}.`),
+        fit(`${c.name} TFT comp guide (${S}): positioning, items for ${c.carry}, augments and game plan – ${tEn} in our tier list.`,
+        `${c.name} TFT comp guide (${S}): positioning, items for ${c.carry}, augments and game plan – ${tEn}.`, `${c.name} TFT comp guide: positioning, items, augments and game plan – ${tEn}.`))];
     }
-    case 'builder': return [`TFT Team Builder ${S} – Board planen & teilen`, `Kostenloser TFT Team Builder für ${S}: Units platzieren, Items verteilen, aktive Traits prüfen und dein Board als Link oder Team-Code teilen.`];
-    case 'coaching': return ['TFT Coaching von Challenger-Spielern', 'TFT Coaching auf Deutsch und Englisch: Fundamentals und VOD-Review mit Challenger-Coaches. Kostenloses Kennenlernen, Einzelstunde 30 €, Set-Pass und VIP-Mentoring für das ganze Set.'];
+    case 'builder': return [L(`TFT Team Builder ${S} – Board planen & teilen`, `TFT Team Builder ${S} – Plan & Share Boards`), L(`Kostenloser TFT Team Builder für ${S}: Units platzieren, Items verteilen, aktive Traits sehen und dein Board als Link teilen.`,
+      `Free TFT Team Builder for ${S}: place units, add items, see active traits and share your board as a link.`)];
+    case 'coaching': return [L('TFT Coaching von Challenger-Spielern', 'TFT Coaching from Challenger Players'), L('TFT Coaching von Challengern auf Deutsch und Englisch: Fundamentals und VOD-Review – das Kennenlernen ist kostenlos.',
+      'TFT coaching from Challengers in German and English: fundamentals and VOD review – the intro call is free.')];
     case 'about':
-      if(sub==='crazyslayt') return ['CrazYSlayt – TFT Challenger & Founder', 'Claudio „CrazYSlayt“: Challenger seit Set 15, Founder von TFTClimb und Coach seit Set 17.'];
-      if(sub==='humbadobo') return ['humbadobo – TFT Challenger & Coach', 'Romano „humbadobo“: Challenger seit Set 15, Peak 1.447 LP und Coach bei TFTClimb.'];
-      return ['Meet the Team', 'Das Team hinter TFTClimb: Challenger-Spieler, Coaches – und Vi.'];
-    case 'apply': return ['Coaching anfragen', 'Frag ein kostenloses Kennenlernen für dein TFT Coaching an.'];
+      if(sub==='crazyslayt') return ['CrazYSlayt – TFT Challenger & Founder', L('Claudio „CrazYSlayt“: TFT Challenger seit Set 15, Founder von TFTClimb und Coach seit Set 17 – Profil, Ränge und Coaching.',
+        'Claudio "CrazYSlayt": TFT Challenger since Set 15, founder of TFTClimb and coach since Set 17 – profile, ranks and coaching.')];
+      if(sub==='humbadobo') return ['humbadobo – TFT Challenger & Coach', L('Romano „humbadobo“: TFT Challenger seit Set 15 mit Peak 1.447 LP und Coach bei TFTClimb – Profil, Ränge und Coaching.',
+        'Romano "humbadobo": TFT Challenger since Set 15 with a peak of 1,447 LP and coach at TFTClimb – profile, ranks and coaching.')];
+      return ['Meet the Team', L('Meet the Team: die Challenger-Spieler und Coaches hinter TFTClimb – wer wir sind, was wir spielen und wie wir coachen.',
+        'Meet the team: the Challenger players and coaches behind TFTClimb – who we are, what we play and how we coach.')];
+    case 'apply': return [L('TFT Coaching anfragen', 'Request TFT Coaching'), L('Bewerbung fürs TFT Coaching bei TFTClimb: Formular ausfüllen und ein kostenloses Kennenlernen mit unseren Coaches anfragen.',
+      'Apply for TFT coaching at TFTClimb: fill in the form and request a free intro call with our coaches.')];
     case 'patches': {
       const p = patchBySlug[sub];
-      if(p) return [`TFT Patch ${p.id} – alle Änderungen`, L(`Alle Änderungen aus TFT Patch ${p.id} (${fmtDate(p.date)}) auf einen Blick: Champions, Traits, Items und Augments. ${p.teaser || ''}`, `All changes from TFT patch ${p.id} (${fmtDate(p.date)}) at a glance: champions, traits, items and augments. ${p.teaser || ''}`).trim()];
-      return ['TFT Patch Notes – alle Änderungen', 'Alle TFT Patches mit den offiziellen Änderungen von Riot: Champions, Traits, Items und Augments – automatisch aktuell.'];
+      if(p) return [L(`TFT Patch ${p.id} – alle Änderungen`, `TFT Patch ${p.id} – All Changes`), L(`TFT Patch ${p.id} vom ${fmtDate(p.date)} übersichtlich aufbereitet: alle Änderungen an Champions, Traits, Items und Augments.`,
+        `TFT patch ${p.id} from ${fmtDate(p.date)} neatly prepared: every change to champions, traits, items and augments.`)];
+      return [L('TFT Patch Notes – alle Änderungen', 'TFT Patch Notes – All Changes'), L('Alle TFT Patches übersichtlich aufbereitet: jede Änderung an Champions, Traits, Items und Augments auf einen Blick.',
+        'All TFT patches neatly prepared: every change to champions, traits, items and augments at a glance.')];
     }
-    case 'impressum': return ['Impressum', 'Impressum von TFTClimb.'];
-    case 'datenschutz': return ['Datenschutzerklärung', 'Datenschutzerklärung von TFTClimb.'];
+    case 'impressum': return [L('Impressum', 'Legal Notice'), L('Impressum von TFTClimb: Anbieter, Kontakt und Verantwortlicher für die Inhalte der TFT Seite tftclimb.com.',
+      'Legal notice of TFTClimb: provider, contact and the person responsible for the content of the TFT site tftclimb.com.')];
+    case 'datenschutz': return [L('Datenschutzerklärung', 'Privacy Policy'), L('Datenschutzerklärung von TFTClimb: welche Daten wir erheben, wie wir Google Analytics nutzen und welche Rechte du hast.',
+      'Privacy policy of TFTClimb: what data we collect, how we use Google Analytics and what rights you have.')];
     case 'cheatsheet': {
       const cs = csList().find(s=>s[0]===sub), m = cs && CS_META[cs[0]];
-      if(cs) return [`TFT ${cs[1].replace(/ \(.*\)$/, '')} ${S}${P}`, L(`${cs[1]} in TFT ${S}: ${m.d[0]}. Alle Werte als Tabelle – Teil des TFTClimb Cheatsheets mit Shop-Chancen, Augments, Encounters und mehr.`, `${cs[1]} in TFT ${S}: ${m.d[1].toLowerCase()}. Every number in one table – part of the TFTClimb cheatsheet with shop odds, augments, encounters and more.`)];
+      if(cs){
+        const nm = cs[1].replace(/ \(.*\)$/, ''), title = fitT(`TFT ${nm} ${S} – Cheatsheet`, `TFT ${nm} ${S}`, `TFT ${nm}`);
+        if(cs[0]==='shop') return [`TFT Shop Odds & XP ${S} – Cheatsheet`, L(`TFT Shop Odds & XP für ${S}: Shop-Chancen pro Level, Pool-Größen und XP bis zum nächsten Level – übersichtlich als Tabelle.`,
+          `TFT shop odds & XP for ${S}: shop odds per level, pool sizes and XP to the next level – neatly in one table.`)];
+        // Keyword aus der Adresse fehlt im deutschen Namen (z. B. „Wir halten zusammen“ ↔ tft-we-stick-together): englischen Namen dazuschreiben
+        const de = m.s[0], en = m.s[1], kw = kwNorm(csHref(cs[0]).split('/').pop().replace(/^tft-/, ''));
+        const has = (s, k) => ` ${kwNorm(s)} `.includes(` ${k} `), nameDe = !has(de, kw) && has(en, kw) ? `${de} (${en})` : de, d = m.d;
+        return [title, L(fit(`TFT ${nameDe} für ${S}: ${d[0]}. Alle Werte übersichtlich als Tabelle im TFTClimb Cheatsheet.`, `TFT ${nameDe} für ${S}: ${d[0]} – übersichtlich als Tabelle.`, `TFT ${nameDe}: ${d[0]} als Tabelle.`),
+          fit(`TFT ${en} for ${S}: ${d[1].charAt(0).toLowerCase() + d[1].slice(1)}. Every number neatly in one table in the TFTClimb cheatsheet.`, `TFT ${en} for ${S}: ${d[1].charAt(0).toLowerCase() + d[1].slice(1)} – neatly in one table.`))];
+      }
     }
-    return [L(`TFT Cheatsheet ${S}${P} – Shop-Chancen, Augments & Encounters`, `TFT Cheatsheet ${S}${P} – shop odds, augments & encounters`), L(`Alle Zahlen für TFT ${S} auf einer Seite: Shop-Chancen und XP pro Level, Augment-Stufen, Encounter-Chancen, Spielerschaden, Loot-Orbs und Emblem-Rezepte.`, `Every number for TFT ${S} on one page: shop odds and XP per level, augment tiers, encounter odds, player damage, loot orbs and emblem recipes.`)];
-    case 'bedingungen': return ['Widerruf & Bedingungen', 'Widerrufsbelehrung, Muster-Widerrufsformular und Bedingungen für das TFT Coaching bei TFTClimb – Einzelstunde, Set-Pass und VIP-Mentoring.'];
+    return [`TFT Cheatsheets ${S} – Shop Odds & Augments`, L(`TFT Cheatsheets für ${S}: Shop Odds, Augment-Stufen, Encounters, Loot-Orbs, Spielerschaden und mehr – alle Zahlen auf einen Blick.`,
+      `TFT cheatsheets for ${S}: shop odds, augment tiers, encounters, loot orbs, player damage and more – every number at a glance.`)];
+    case 'bedingungen': return [L('Widerruf & Bedingungen', 'Withdrawal & Terms'), L('Widerruf & Bedingungen für das TFT Coaching bei TFTClimb: Widerrufsbelehrung, Muster-Formular und Regeln für alle Pakete.',
+      'Withdrawal & terms for TFT coaching at TFTClimb: withdrawal policy, model form and the rules for every package.')];
     case 'guides':
-      if(GUIDES_LIVE && sub==='encounters') return [`TFT Encounters ${S} – welche Comp du spielen solltest`, `Alle TFT Encounters in ${S}: was sie machen, wie oft sie pro Spiel kommen und welche Comps du darauf spielst – Ambosse, Gold- und Prismatic-Augments, Start-Units.`];
-      return ['TFT Guides', '', true];
+      if(GUIDES_LIVE && sub==='encounters') return [`TFT Encounters Guide ${S}`, L(`TFT Encounters Guide für ${S}: was jeder Encounter macht, wie oft er kommt und welche Comp du darauf spielst.`,
+        `TFT encounters guide for ${S}: what each encounter does, how often it shows up and which comp to play on it.`)];
+      return ['TFT Guides', L(`TFT Guides von Challenger-Spielern für ${S}: Strategien, Comps und Encounters – bald hier auf TFTClimb.`, `TFT guides from Challenger players for ${S}: strategies, comps and encounters – coming soon to TFTClimb.`), true];
     case 'tools':
-      if(sub==='augments') return [L(`TFT Augment-Vorhersage ${S}${P} – welche Augment-Stufe kommt als Nächstes?`, `TFT augment prediction ${S}${P} – which augment tier comes next?`), L(`Silber, Gold oder Prismatisch? Gib deine Augment-Stufen von 2-1 und 3-2 ein und sieh, was in TFT ${S} als Nächstes kommt – mit der Chance auf ein Prismatic-Augment.`, `Silver, gold or prismatic? Enter your augment tiers from 2-1 and 3-2 and see what comes next in TFT ${S} – including your odds of a prismatic augment.`)];
-      if(sub==='tierlist') return [`TFT Tierlist-Maker ${S} – eigene Tierlist erstellen & teilen`, `Kostenloser TFT Tierlist-Maker für ${S}: Champions, Items, Artefakte, Embleme und Augments per Drag & Drop ranken und deine Tierlist als Link teilen.`];
-      if(sub==='rolldown') return [`TFT Rolldown-Rechner ${S} – Odds & Chancen pro Level`, `Wie wahrscheinlich triffst du deine Units? TFT Rolldown-Rechner für ${S} mit Shop-Odds pro Level, Pool-Größen und dem Vergleich: jetzt rollen oder erst leveln.`];
-      if(sub==='drops') return [`TFT Item-Drop-Chance ${S} – nächste Komponente berechnen`, `Trag deine Item-Drops aus den Creep-Runden ein und sieh die Chancen für die nächsten Komponenten in TFT ${S} – mit Gold- und Prismatic-Orb-Chancen pro Stage.`];
-      if(sub==='dps') return [`TFT DPS-Vergleich ${S} – Item-Builds & Schaden vergleichen`, `Welcher Item-Build macht am meisten Schaden? Kostenloser TFT DPS-Vergleich für ${S}: bis zu vier Builds eines Champions über 30 Sekunden im Graph vergleichen.`];
-      if(sub==='simulator') return [`TFT Kampf-Simulator ${S} – Teams gegeneinander testen`, `Lass zwei TFT Teams für ${S} gegeneinander kämpfen: Laufwege, Ziele, Fähigkeiten und Sprünge Schritt für Schritt – mit Items, Sternen, Traits und Augments.`];
-      return [`TFT Tools ${S} – Rolldown-Rechner, DPS-Vergleich & Tierlist-Maker`, `Kostenlose TFT Tools für ${S}: Rolldown-Rechner mit Shop-Odds, DPS-Vergleich für Item-Builds, Item-Drop-Chance, Tierlist-Maker und Kampf-Simulator.`];
+      if(sub==='augments') return [L(`TFT Augment-Vorhersage ${S} – nächste Stufe`, `TFT Augment Prediction ${S} – Next Tier`), L(`TFT Augment-Vorhersage für ${S}: Silber, Gold oder Prismatisch? Sieh, welche Augment-Stufe als Nächstes am wahrscheinlichsten kommt.`,
+        `TFT augment prediction for ${S}: silver, gold or prismatic? See which augment tier is most likely to come next.`)];
+      if(sub==='tierlist') return [L(`TFT Tierlist-Maker ${S} – eigene Tierlist`, `TFT Tier List Maker ${S} – Your Own List`), L(`Kostenloser TFT Tierlist-Maker für ${S}: Champions, Items und Augments per Drag & Drop ranken und deine Tierlist als Link teilen.`,
+        `Free TFT tier list maker for ${S}: rank champions, items and augments by drag & drop and share your tier list as a link.`)];
+      if(sub==='rolldown') return [L(`TFT Rolldown-Rechner ${S} – Odds pro Level`, `TFT Rolldown Calculator ${S} – Odds per Level`), L(`TFT Rolldown-Rechner für ${S}: Wie wahrscheinlich triffst du deine Units? Mit Shop-Odds pro Level, Pool-Größen und Gold-Bedarf.`,
+        `TFT rolldown calculator for ${S}: how likely are you to hit your units? With shop odds per level, pool sizes and gold needed.`)];
+      if(sub==='drops') return [L(`TFT Item-Drop-Chance ${S} – nächste Komponente`, `TFT Item Drop Chance ${S} – Next Component`), L(`TFT Item-Drop-Chance für ${S}: Trag deine Drops aus den Creep-Runden ein und sieh, welche Komponente als Nächstes kommt.`,
+        `TFT item drop chance for ${S}: enter your drops from the creep rounds and see which component comes next.`)];
+      if(sub==='dps') return [L(`TFT DPS-Vergleich ${S} – Builds vergleichen`, `TFT DPS Comparison ${S} – Compare Builds`), L(`TFT DPS-Vergleich für ${S}: Vergleich bis zu vier Item-Builds eines Champions und sieh, welcher am meisten Schaden macht.`,
+        `TFT DPS comparison for ${S}: compare up to four item builds of a champion and see which one deals the most damage.`)];
+      if(sub==='simulator') return [L(`TFT Kampf-Simulator ${S} – Teams testen`, `TFT Fight Simulator ${S} – Test Teams`), L(`TFT Kampf-Simulator für ${S}: Lass zwei Teams gegeneinander kämpfen und sieh Laufwege, Ziele und Fähigkeiten Schritt für Schritt.`,
+        `TFT fight simulator for ${S}: let two teams fight each other and see paths, targets and abilities step by step.`)];
+      return [L(`TFT Tools ${S} – Rolldown, DPS & Tierlist`, `TFT Tools ${S} – Rolldown, DPS & Tier List`), L(`Kostenlose TFT Tools für ${S}: Rolldown-Rechner, DPS-Vergleich, Item-Drop-Chance, Augment-Vorhersage und Tierlist-Maker.`,
+        `Free TFT tools for ${S}: rolldown calculator, DPS comparison, item drop chance, augment prediction and tier list maker.`)];
     case 'news': return ['TFT News', '', true];
     case 'admin': return ['Redaktion', '', true];
-    default: return ['Seite nicht gefunden', '', true];
+    default: return [L('Seite nicht gefunden', 'Page not found'), '', true];
   }
 }
 function headTag(sel, make){ let el = document.head.querySelector(sel); if(!el){ el = make(); document.head.appendChild(el); } return el; }
@@ -3837,7 +3924,7 @@ function setMeta(page, sub){
   if(noindex){ const c = document.head.querySelector('link[rel="canonical"]'); if(c) c.remove(); return; }
   // kanonische Adresse: eine Adresse pro Inhalt (z. B. /bibliothek statt /bibliothek/champions, Builder ohne Team-Code)
   const keep = {cheatsheet:csList().map(s=>s[0]), guides:['encounters'], tierlist:['items','augments','holds'], bibliothek:['items','traits'], tools:['rolldown','tierlist','simulator','drops','dps','augments'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
-  const path = page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : page==='comp' ? compHref(compByKey[sub]) : '/' + page + (keep.includes(sub) ? '/' + sub : '');
+  const path = page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : page==='comp' ? compHref(compByKey[sub]) : seoPath('/' + page + (keep.includes(sub) ? '/' + sub : ''));
   headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + withLang(path);
   // beide Sprachfassungen für Suchmaschinen verknüpfen
   [['de', path], ['en', '/en' + path], ['x-default', path]].forEach(([l, p])=>{ headTag(`link[rel="alternate"][hreflang="${l}"]`, ()=>Object.assign(document.createElement('link'), {rel:'alternate', hreflang:l})).href = location.origin + p; });
@@ -3876,6 +3963,9 @@ function setLd(page, sub, tool, title, desc, url, path){
     const qa = [...document.querySelectorAll(page==='champion' ? '#chPage .tool-seo details' : page==='comp' ? '#compPage .tool-seo details' : page==='cheatsheet' ? '#csPage .tool-seo details' : `#page-guides .gd-view[data-guide="${sub}"] .tool-seo details`)].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}}));
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
   }
+  const pt = page==='patches' && patchBySlug[sub];   // Patch-Seite als Artikel mit CrazYSlayt als Autor
+  if(pt) graph.push({'@type':'Article', headline:title.split(' | ')[0], description:desc, datePublished:pt.date, inLanguage:EN ? 'en' : 'de', mainEntityOfPage:url, publisher:org,
+    ...(pt.img ? {image:pt.img} : {}), author:{'@type':'Person', name:'Claudio "CrazYSlayt"', alternateName:'CrazYSlayt', jobTitle:'TFT Challenger & TFTClimb Coach', url:location.origin + withLang(PATCH_AUTHOR.href)}});
   let el = document.getElementById('ldPage');
   if(!el){ el = document.createElement('script'); el.type = 'application/ld+json'; el.id = 'ldPage'; document.head.appendChild(el); }
   el.textContent = JSON.stringify({'@context':'https://schema.org', '@graph':graph});
@@ -3897,11 +3987,28 @@ document.addEventListener('click', e=>{
   e.preventDefault(); go(p);
 });
 
+// Eine H1 pro Adresse: Alle Seiten und Ansichten liegen gleichzeitig im HTML (ausgeblendet). Damit Google pro Adresse genau
+// eine Überschrift sieht, ist nur die sichtbare eine <h1> – ausgeblendete (andere Tools, Coach-Profile, Seiten) werden zu <div data-h1>
+function h1Swap(el, tag){ const n = document.createElement(tag); [...el.attributes].forEach(a=>n.setAttribute(a.name, a.value)); while(el.firstChild) n.appendChild(el.firstChild); el.replaceWith(n); return n; }
+function h1Sync(){
+  document.querySelectorAll('h1, [data-h1]').forEach(el=>{
+    const show = !!el.closest('.page.active') && !el.closest('[hidden], [data-slide]') && el.getClientRects().length > 0;
+    if(show && el.tagName !== 'H1') h1Swap(el, 'h1').removeAttribute('data-h1');
+    else if(!show && el.tagName === 'H1') h1Swap(el, 'div').setAttribute('data-h1', '');
+  });
+}
 function route(){
   // lokal: normale Sprunganker (z. B. #main) nicht als Seite behandeln
   if(FILE_MODE && location.hash && !location.hash.startsWith('#/') && document.querySelector('.page.active')) return;
-  const parts = curPath().split('?')[0].replace(/^\/+/,'').split('/');
+  const cp = curPath(), cpPath = cp.split('?')[0], seo = seoPath(cpPath);
+  if(seo !== cpPath) setUrl(seo + (FILE_MODE ? (cp.includes('?') ? cp.slice(cp.indexOf('?')) : '') : location.search));   // alte Adresse → sprechende Adresse
+  const parts = seo.replace(/^\/+/,'').split('/');
   let page = parts[0] || 'home', sub = parts[1];
+  // sprechende Adressen auf die internen Schlüssel zurückführen
+  if('/' + page === BUILDER_PATH) page = 'builder';
+  if(sub && page==='tools') sub = unslug(TOOL_SLUG, sub);
+  if(sub && page==='cheatsheet'){ const k = unslug(CS_SLUG, sub); sub = k !== sub ? k : sub.replace(/^tft-/, ''); }
+  if(sub && page==='guides') sub = unslug(GUIDE_SLUG, sub);
   // Champion-Seiten: /champions/<name>
   if(page==='champions' && sub){ page = 'champion'; }
   // Comp-Seiten: /comps/<name>, /comps allein = Tierlist
@@ -3948,6 +4055,7 @@ function route(){
   closeModal(); window.scrollTo(0,0);
   if(ND) ndRoute(page, navKey);
   setMeta(page, sub);
+  h1Sync(); requestAnimationFrame(()=>requestAnimationFrame(h1Sync));   // zweiter Lauf für Inhalte, die erst im nächsten Bild entstehen
 }
 window.addEventListener(FILE_MODE ? 'hashchange' : 'popstate', route);
 
@@ -4146,6 +4254,7 @@ function renderDash(){
   const live = `<i class="sb-dot${ST_CUT_LIVE ? ' live' : ''}" title="${ST_CUT_LIVE ? L('Live-Daten', 'Live data') : L('Gespeicherter Stand', 'Saved data')}"></i>`;
   const lpStat = (key, v, tier, label) => `<a class="dsh-lp" href="/ranks/${tier.k}"><img src="${rankImg(tier)}" alt=""><span><b data-dlp="${v || 0}" data-key="${key}">${v ? fmt(v) + ' LP' : '–'}</b><small>${live}${label}</small></span></a>`;
   box.innerHTML = `
+    <div class="dsh-title"><h1>${L('TFT Tierlist, Comps', 'TFT Tier List, Comps')} <em>&amp; Coaching</em></h1><span>Set ${TFT_DATA.set}${P ? ' · Patch ' + esc(P.id) : ''} · ${L('von Challenger-Spielern', 'by Challenger players')}</span></div>
     <section class="dsh-card dsh-hero dsh-bar">
       <div class="dsh-hi"><img class="dsh-vihi" src="assets/img/mascot-vi-look.webp" alt="Vi" width="520" height="624"><div class="dsh-bubble"><b>${L('BEREIT FÜR<br>DEN CLIMB?', 'READY FOR<br>THE CLIMB?')}</b></div></div>
       <div class="dsh-stats">
@@ -4176,11 +4285,11 @@ function renderDash(){
       <section class="dsh-card dsh-tools"><img class="dsh-heimer" src="assets/img/mascot-heimer-wave.webp" alt="">
         <div class="dsh-h"><h2>Tools</h2><a href="/tools">${L('Alle Tools', 'All tools')} →</a></div>
         <div class="dsh-tlist">${[
-          ['/tools/rolldown', 'rolldown', L('Rolldown-Rechner', 'Rolldown calculator'), L('Rollen oder leveln?', 'Roll or level?')],
-          ['/tools/dps', 'dps', L('DPS-Vergleich', 'DPS Comparison'), L('Item-Builds vergleichen', 'Compare item builds')],
-          ['/tools/drops', 'drops', L('Item-Drop-Chance', 'Item Drop Chance'), L('Was droppt als Nächstes?', 'What drops next?')],
-          ['/tools/tierlist', 'tierlist', 'Tierlist-Maker', L('Eigene Tierlist bauen', 'Build your own tier list')],
-          ['/builder', 'simulator', 'Team Builder', L('Board planen & teilen', 'Plan & share boards')]
+          ['/tools/tft-rolldown-rechner', 'rolldown', L('Rolldown-Rechner', 'Rolldown calculator'), L('Rollen oder leveln?', 'Roll or level?')],
+          ['/tools/tft-dps-vergleich', 'dps', L('DPS-Vergleich', 'DPS Comparison'), L('Item-Builds vergleichen', 'Compare item builds')],
+          ['/tools/tft-item-drop-chance', 'drops', L('Item-Drop-Chance', 'Item Drop Chance'), L('Was droppt als Nächstes?', 'What drops next?')],
+          ['/tools/tft-tierlist-maker', 'tierlist', 'Tierlist-Maker', L('Eigene Tierlist bauen', 'Build your own tier list')],
+          ['/tft-team-builder', 'simulator', 'Team Builder', L('Board planen & teilen', 'Plan & share boards')]
         ].map(([h, img, t, d])=>`<a href="${h}"><img src="assets/tools/thumb/${img}.webp" alt="" width="34" height="34" loading="lazy"><span><b>${t}</b><small>${d}</small></span></a>`).join('')}</div></section>
     </div>`;
   const f = box.querySelector('.dsh-ts'); if(f) f.classList.add('on');

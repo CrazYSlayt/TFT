@@ -1283,7 +1283,7 @@ window.I18N_EN = {
   "Vorhersage": "Prediction",
   "TFT Augment-Vorhersage": "TFT augment prediction",
   "/ Augment-Vorhersage": "/ Augment prediction",
-  "TFT Augment-Vorhersage:": "TFT augment prediction:",
+  "TFT Augment-Vorhersage:": "TFT Augment Prediction:",
   "Welche Stufe kommt als Nächstes?": "Which tier comes next?",
   "{0}, {1} oder Prisma? Sieh, was als Nächstes kommt.": "{0}, {1} or prismatic? See what comes next.",
   "{0}, {1} oder Prismatisch? Gib deine Augment-Stufen ein und sieh, was als Nächstes kommt.": "{0}, {1} or prismatic? Enter your augment tiers and see what comes next.",
@@ -1342,5 +1342,10 @@ window.I18N_EN = {
   "{0} Gold + Meisterwerk-Aufwertung": "{0} gold + masterwork upgrade",
   "2-5 5 Riftsbeast und evtl. bei 3-2 7 Riftbeasts für Tempo und stage 3 zu gewinnen. Sonst bot 4 gefahr.": "Go 5 Riftbeasts on 2-5 and maybe 7 Riftbeasts on 3-2 for tempo and to win stage 3. Otherwise you risk a bottom 4.",
   "Early Learnings oder No Scout No Pivot macht die Comp eine Tier besser.": "Early Learnings or No Scout No Pivot makes the comp one tier better.",
-  "Man braucht so viele Artifacts, die man kriegen kann.": "You need as many artifacts as you can get."
+  "Man braucht so viele Artifacts, die man kriegen kann.": "You need as many artifacts as you can get.",
+  "TFT Tools:": "TFT Tools:",
+  "Kostenlose Rechner für Set": "Free Calculators for Set",
+  "Welche Komponente kommt?": "Which component comes next?",
+  "Welcher Item-Build gewinnt?": "Which item build wins?",
+  "Welche Stufe kommt?": "Which tier comes next?"
 };

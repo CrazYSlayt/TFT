@@ -3,22 +3,26 @@
 const fs = require('fs');
 const path = require('path');
 
+// Sprechende Adressen mit Keyword – gleiche Liste wie in assets/js/app.js (TOOL_SLUG, CS_SLUG, BUILDER_PATH)
+const TOOL_SLUG = {rolldown: 'tft-rolldown-rechner', drops: 'tft-item-drop-chance', tierlist: 'tft-tierlist-maker', simulator: 'tft-kampf-simulator', dps: 'tft-dps-vergleich', augments: 'tft-augment-vorhersage'};
+const CS_SLUG = {shop: 'tft-shop-odds', augments: 'tft-augment-stufen', orbs: 'tft-loot-orbs', loot: 'tft-loot-verteilung', damage: 'tft-spielerschaden', emblems: 'tft-embleme', solo: 'tft-stage-1-solo', 'patch-schedule': 'tft-patch-plan', carousel: 'tft-karussell'};
+const csPath = id => '/cheatsheet/' + (CS_SLUG[id] || 'tft-' + id);
+
 const PAGES = [
   '/',
   '/tierlist', '/tierlist/items', '/tierlist/augments', '/tierlist/holds',
-  '/tools', '/tools/rolldown', '/tools/dps', '/tools/drops',
-  '/tools/tierlist', '/tools/simulator', '/tools/augments', '/builder',
+  '/tools', ...Object.values(TOOL_SLUG).map(s => '/tools/' + s), '/tft-team-builder',
   '/bibliothek', '/bibliothek/items', '/bibliothek/traits',
   '/ranks',
   ...['iron', 'bronze', 'silver', 'gold', 'platinum', 'emerald', 'diamond', 'master', 'grandmaster', 'challenger'].map(k => '/ranks/' + k),
   '/patches',
   '/cheatsheet',
-  ...['shop', 'augments', 'encounters', 'damage', 'orbs', 'loot', 'gold-subscription', 'reroll-subscription', 'emblems', 'solo'].map(k => '/cheatsheet/' + k),
+  ...['shop', 'augments', 'encounters', 'damage', 'orbs', 'loot', 'gold-subscription', 'reroll-subscription', 'emblems', 'solo'].map(csPath),
   // Augment-Tabellen (ids wie in data/custom-<Set>.js → cheats.augTables)
   ...['trait-ladder', 'we-stick-together', 'loaded-dice', 'blossoms-call', 'expedition', 'booster-pack', 'frontline-foundation', 'backline-blueprint', 'warpath',
-    'slightly-magic-roll', 'magic-roll', 'expected-unexpectedness', 'call-to-chaos', 'golden-egg', 'missed-connections', 'slice-of-life', 'hard-commit', 'solo-leveling'].map(k => '/cheatsheet/' + k),
+    'slightly-magic-roll', 'magic-roll', 'expected-unexpectedness', 'call-to-chaos', 'golden-egg', 'missed-connections', 'slice-of-life', 'hard-commit', 'solo-leveling'].map(csPath),
   // Attribut-Tabellen und Patch-Plan (cheats.traitTables / patchSchedule)
-  ...['prismatic-traits', 'coven', 'riftbeast', 'blackthorn', 'fae', 'primal', 'avatar-lux', 'sprykin', 'patch-schedule'].map(k => '/cheatsheet/' + k),
+  ...['prismatic-traits', 'coven', 'riftbeast', 'blackthorn', 'fae', 'primal', 'avatar-lux', 'sprykin', 'patch-schedule'].map(csPath),
   '/coaching', '/apply',
   '/about', '/about/crazyslayt', '/about/humbadobo',
   '/impressum', '/datenschutz', '/bedingungen',

@@ -1,17 +1,160 @@
 {
   "functions": {
-    "api/sitemap.js": { "includeFiles": "{data/*.js,tierlist-data-*.js}" }
+    "api/sitemap.js": {
+      "includeFiles": "{data/*.js,tierlist-data-*.js}"
+    }
   },
   "headers": [
-    { "source": "/assets/fonts/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
-    { "source": "/assets/(img|tools|brand|icons|augments|plants)/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }] }
+    {
+      "source": "/assets/fonts/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(img|tools|brand|icons|augments|plants)/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=604800"
+        }
+      ]
+    }
   ],
   "redirects": [
-    { "source": "/:path*", "has": [{ "type": "host", "value": "tft-lovat.vercel.app" }], "destination": "https://www.tftclimb.com/:path*", "permanent": true }
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "tft-lovat.vercel.app"
+        }
+      ],
+      "destination": "https://www.tftclimb.com/:path*",
+      "permanent": true
+    },
+    { "source": "/tools/rolldown", "destination": "/tools/tft-rolldown-rechner", "permanent": true },
+    { "source": "/en/tools/rolldown", "destination": "/en/tools/tft-rolldown-rechner", "permanent": true },
+    { "source": "/tools/rolldown/:rest*", "destination": "/tools/tft-rolldown-rechner/:rest*", "permanent": true },
+    { "source": "/en/tools/rolldown/:rest*", "destination": "/en/tools/tft-rolldown-rechner/:rest*", "permanent": true },
+    { "source": "/tools/drops", "destination": "/tools/tft-item-drop-chance", "permanent": true },
+    { "source": "/en/tools/drops", "destination": "/en/tools/tft-item-drop-chance", "permanent": true },
+    { "source": "/tools/drops/:rest*", "destination": "/tools/tft-item-drop-chance/:rest*", "permanent": true },
+    { "source": "/en/tools/drops/:rest*", "destination": "/en/tools/tft-item-drop-chance/:rest*", "permanent": true },
+    { "source": "/tools/tierlist", "destination": "/tools/tft-tierlist-maker", "permanent": true },
+    { "source": "/en/tools/tierlist", "destination": "/en/tools/tft-tierlist-maker", "permanent": true },
+    { "source": "/tools/tierlist/:rest*", "destination": "/tools/tft-tierlist-maker/:rest*", "permanent": true },
+    { "source": "/en/tools/tierlist/:rest*", "destination": "/en/tools/tft-tierlist-maker/:rest*", "permanent": true },
+    { "source": "/tools/simulator", "destination": "/tools/tft-kampf-simulator", "permanent": true },
+    { "source": "/en/tools/simulator", "destination": "/en/tools/tft-kampf-simulator", "permanent": true },
+    { "source": "/tools/simulator/:rest*", "destination": "/tools/tft-kampf-simulator/:rest*", "permanent": true },
+    { "source": "/en/tools/simulator/:rest*", "destination": "/en/tools/tft-kampf-simulator/:rest*", "permanent": true },
+    { "source": "/tools/dps", "destination": "/tools/tft-dps-vergleich", "permanent": true },
+    { "source": "/en/tools/dps", "destination": "/en/tools/tft-dps-vergleich", "permanent": true },
+    { "source": "/tools/dps/:rest*", "destination": "/tools/tft-dps-vergleich/:rest*", "permanent": true },
+    { "source": "/en/tools/dps/:rest*", "destination": "/en/tools/tft-dps-vergleich/:rest*", "permanent": true },
+    { "source": "/tools/augments", "destination": "/tools/tft-augment-vorhersage", "permanent": true },
+    { "source": "/en/tools/augments", "destination": "/en/tools/tft-augment-vorhersage", "permanent": true },
+    { "source": "/tools/augments/:rest*", "destination": "/tools/tft-augment-vorhersage/:rest*", "permanent": true },
+    { "source": "/en/tools/augments/:rest*", "destination": "/en/tools/tft-augment-vorhersage/:rest*", "permanent": true },
+    { "source": "/builder", "destination": "/tft-team-builder", "permanent": true },
+    { "source": "/en/builder", "destination": "/en/tft-team-builder", "permanent": true },
+    { "source": "/builder/:rest*", "destination": "/tft-team-builder/:rest*", "permanent": true },
+    { "source": "/en/builder/:rest*", "destination": "/en/tft-team-builder/:rest*", "permanent": true },
+    { "source": "/cheatsheet/shop", "destination": "/cheatsheet/tft-shop-odds", "permanent": true },
+    { "source": "/en/cheatsheet/shop", "destination": "/en/cheatsheet/tft-shop-odds", "permanent": true },
+    { "source": "/cheatsheet/augments", "destination": "/cheatsheet/tft-augment-stufen", "permanent": true },
+    { "source": "/en/cheatsheet/augments", "destination": "/en/cheatsheet/tft-augment-stufen", "permanent": true },
+    { "source": "/cheatsheet/encounters", "destination": "/cheatsheet/tft-encounters", "permanent": true },
+    { "source": "/en/cheatsheet/encounters", "destination": "/en/cheatsheet/tft-encounters", "permanent": true },
+    { "source": "/cheatsheet/damage", "destination": "/cheatsheet/tft-spielerschaden", "permanent": true },
+    { "source": "/en/cheatsheet/damage", "destination": "/en/cheatsheet/tft-spielerschaden", "permanent": true },
+    { "source": "/cheatsheet/orbs", "destination": "/cheatsheet/tft-loot-orbs", "permanent": true },
+    { "source": "/en/cheatsheet/orbs", "destination": "/en/cheatsheet/tft-loot-orbs", "permanent": true },
+    { "source": "/cheatsheet/loot", "destination": "/cheatsheet/tft-loot-verteilung", "permanent": true },
+    { "source": "/en/cheatsheet/loot", "destination": "/en/cheatsheet/tft-loot-verteilung", "permanent": true },
+    { "source": "/cheatsheet/gold-subscription", "destination": "/cheatsheet/tft-gold-subscription", "permanent": true },
+    { "source": "/en/cheatsheet/gold-subscription", "destination": "/en/cheatsheet/tft-gold-subscription", "permanent": true },
+    { "source": "/cheatsheet/reroll-subscription", "destination": "/cheatsheet/tft-reroll-subscription", "permanent": true },
+    { "source": "/en/cheatsheet/reroll-subscription", "destination": "/en/cheatsheet/tft-reroll-subscription", "permanent": true },
+    { "source": "/cheatsheet/emblems", "destination": "/cheatsheet/tft-embleme", "permanent": true },
+    { "source": "/en/cheatsheet/emblems", "destination": "/en/cheatsheet/tft-embleme", "permanent": true },
+    { "source": "/cheatsheet/solo", "destination": "/cheatsheet/tft-stage-1-solo", "permanent": true },
+    { "source": "/en/cheatsheet/solo", "destination": "/en/cheatsheet/tft-stage-1-solo", "permanent": true },
+    { "source": "/cheatsheet/carousel", "destination": "/cheatsheet/tft-karussell", "permanent": true },
+    { "source": "/en/cheatsheet/carousel", "destination": "/en/cheatsheet/tft-karussell", "permanent": true },
+    { "source": "/cheatsheet/trait-ladder", "destination": "/cheatsheet/tft-trait-ladder", "permanent": true },
+    { "source": "/en/cheatsheet/trait-ladder", "destination": "/en/cheatsheet/tft-trait-ladder", "permanent": true },
+    { "source": "/cheatsheet/we-stick-together", "destination": "/cheatsheet/tft-we-stick-together", "permanent": true },
+    { "source": "/en/cheatsheet/we-stick-together", "destination": "/en/cheatsheet/tft-we-stick-together", "permanent": true },
+    { "source": "/cheatsheet/loaded-dice", "destination": "/cheatsheet/tft-loaded-dice", "permanent": true },
+    { "source": "/en/cheatsheet/loaded-dice", "destination": "/en/cheatsheet/tft-loaded-dice", "permanent": true },
+    { "source": "/cheatsheet/blossoms-call", "destination": "/cheatsheet/tft-blossoms-call", "permanent": true },
+    { "source": "/en/cheatsheet/blossoms-call", "destination": "/en/cheatsheet/tft-blossoms-call", "permanent": true },
+    { "source": "/cheatsheet/expedition", "destination": "/cheatsheet/tft-expedition", "permanent": true },
+    { "source": "/en/cheatsheet/expedition", "destination": "/en/cheatsheet/tft-expedition", "permanent": true },
+    { "source": "/cheatsheet/booster-pack", "destination": "/cheatsheet/tft-booster-pack", "permanent": true },
+    { "source": "/en/cheatsheet/booster-pack", "destination": "/en/cheatsheet/tft-booster-pack", "permanent": true },
+    { "source": "/cheatsheet/frontline-foundation", "destination": "/cheatsheet/tft-frontline-foundation", "permanent": true },
+    { "source": "/en/cheatsheet/frontline-foundation", "destination": "/en/cheatsheet/tft-frontline-foundation", "permanent": true },
+    { "source": "/cheatsheet/backline-blueprint", "destination": "/cheatsheet/tft-backline-blueprint", "permanent": true },
+    { "source": "/en/cheatsheet/backline-blueprint", "destination": "/en/cheatsheet/tft-backline-blueprint", "permanent": true },
+    { "source": "/cheatsheet/warpath", "destination": "/cheatsheet/tft-warpath", "permanent": true },
+    { "source": "/en/cheatsheet/warpath", "destination": "/en/cheatsheet/tft-warpath", "permanent": true },
+    { "source": "/cheatsheet/slightly-magic-roll", "destination": "/cheatsheet/tft-slightly-magic-roll", "permanent": true },
+    { "source": "/en/cheatsheet/slightly-magic-roll", "destination": "/en/cheatsheet/tft-slightly-magic-roll", "permanent": true },
+    { "source": "/cheatsheet/magic-roll", "destination": "/cheatsheet/tft-magic-roll", "permanent": true },
+    { "source": "/en/cheatsheet/magic-roll", "destination": "/en/cheatsheet/tft-magic-roll", "permanent": true },
+    { "source": "/cheatsheet/expected-unexpectedness", "destination": "/cheatsheet/tft-expected-unexpectedness", "permanent": true },
+    { "source": "/en/cheatsheet/expected-unexpectedness", "destination": "/en/cheatsheet/tft-expected-unexpectedness", "permanent": true },
+    { "source": "/cheatsheet/call-to-chaos", "destination": "/cheatsheet/tft-call-to-chaos", "permanent": true },
+    { "source": "/en/cheatsheet/call-to-chaos", "destination": "/en/cheatsheet/tft-call-to-chaos", "permanent": true },
+    { "source": "/cheatsheet/golden-egg", "destination": "/cheatsheet/tft-golden-egg", "permanent": true },
+    { "source": "/en/cheatsheet/golden-egg", "destination": "/en/cheatsheet/tft-golden-egg", "permanent": true },
+    { "source": "/cheatsheet/missed-connections", "destination": "/cheatsheet/tft-missed-connections", "permanent": true },
+    { "source": "/en/cheatsheet/missed-connections", "destination": "/en/cheatsheet/tft-missed-connections", "permanent": true },
+    { "source": "/cheatsheet/slice-of-life", "destination": "/cheatsheet/tft-slice-of-life", "permanent": true },
+    { "source": "/en/cheatsheet/slice-of-life", "destination": "/en/cheatsheet/tft-slice-of-life", "permanent": true },
+    { "source": "/cheatsheet/hard-commit", "destination": "/cheatsheet/tft-hard-commit", "permanent": true },
+    { "source": "/en/cheatsheet/hard-commit", "destination": "/en/cheatsheet/tft-hard-commit", "permanent": true },
+    { "source": "/cheatsheet/solo-leveling", "destination": "/cheatsheet/tft-solo-leveling", "permanent": true },
+    { "source": "/en/cheatsheet/solo-leveling", "destination": "/en/cheatsheet/tft-solo-leveling", "permanent": true },
+    { "source": "/cheatsheet/prismatic-traits", "destination": "/cheatsheet/tft-prismatic-traits", "permanent": true },
+    { "source": "/en/cheatsheet/prismatic-traits", "destination": "/en/cheatsheet/tft-prismatic-traits", "permanent": true },
+    { "source": "/cheatsheet/coven", "destination": "/cheatsheet/tft-coven", "permanent": true },
+    { "source": "/en/cheatsheet/coven", "destination": "/en/cheatsheet/tft-coven", "permanent": true },
+    { "source": "/cheatsheet/riftbeast", "destination": "/cheatsheet/tft-riftbeast", "permanent": true },
+    { "source": "/en/cheatsheet/riftbeast", "destination": "/en/cheatsheet/tft-riftbeast", "permanent": true },
+    { "source": "/cheatsheet/blackthorn", "destination": "/cheatsheet/tft-blackthorn", "permanent": true },
+    { "source": "/en/cheatsheet/blackthorn", "destination": "/en/cheatsheet/tft-blackthorn", "permanent": true },
+    { "source": "/cheatsheet/fae", "destination": "/cheatsheet/tft-fae", "permanent": true },
+    { "source": "/en/cheatsheet/fae", "destination": "/en/cheatsheet/tft-fae", "permanent": true },
+    { "source": "/cheatsheet/primal", "destination": "/cheatsheet/tft-primal", "permanent": true },
+    { "source": "/en/cheatsheet/primal", "destination": "/en/cheatsheet/tft-primal", "permanent": true },
+    { "source": "/cheatsheet/avatar-lux", "destination": "/cheatsheet/tft-avatar-lux", "permanent": true },
+    { "source": "/en/cheatsheet/avatar-lux", "destination": "/en/cheatsheet/tft-avatar-lux", "permanent": true },
+    { "source": "/cheatsheet/sprykin", "destination": "/cheatsheet/tft-sprykin", "permanent": true },
+    { "source": "/en/cheatsheet/sprykin", "destination": "/en/cheatsheet/tft-sprykin", "permanent": true },
+    { "source": "/cheatsheet/patch-schedule", "destination": "/cheatsheet/tft-patch-plan", "permanent": true },
+    { "source": "/en/cheatsheet/patch-schedule", "destination": "/en/cheatsheet/tft-patch-plan", "permanent": true },
+    { "source": "/guides/encounters", "destination": "/guides/tft-encounters", "permanent": true },
+    { "source": "/en/guides/encounters", "destination": "/en/guides/tft-encounters", "permanent": true }
   ],
   "rewrites": [
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
-    { "source": "/robots.txt", "destination": "/api/robots" },
-    { "source": "/((?!api/|assets/|data/|tools/[^/]*\\.|tierlist-data-|robots\\.txt|riot\\.txt|sitemap\\.xml|TFT\\.html).*)", "destination": "/index.html" }
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/api/robots"
+    },
+    {
+      "source": "/((?!api/|assets/|data/|tools/[^/]*\\.|tierlist-data-|robots\\.txt|riot\\.txt|sitemap\\.xml|TFT\\.html).*)",
+      "destination": "/index.html"
+    }
   ]
 }
