@@ -3939,7 +3939,7 @@ function metaLead(desc){
   const vis = el => el.getClientRects().length > 0;
   if([...pg.querySelectorAll('[data-meta]')].some(el=>vis(el) && el.textContent.includes(desc))) return;   // schon da (z. B. Patch-Ansage)
   const h1 = [...pg.querySelectorAll('h1, [data-h1]')].find(vis); if(!h1) return;
-  let ref = h1.parentElement.classList.contains('dsh-title') ? h1.parentElement : h1, n = ref.nextElementSibling;   // Dashboard: unter der Titelzeile
+  let ref = h1, n = ref.nextElementSibling;   // Dashboard: in der Titelzeile rechts neben der H1 (CSS .dsh-title)
   while(n && n.matches('.cv-sub')){ ref = n; n = n.nextElementSibling; }   // kurze Unterzeile (Bibliothek) bleibt darüber
   let p = n && n.tagName === 'P' && !n.matches('[data-keep], .updated, .pd-lang') ? n : null;
   if(!p){ p = document.createElement('p'); p.className = 'meta-lead'; ref.after(p); }
@@ -4295,7 +4295,7 @@ function renderDash(){
   const live = `<i class="sb-dot${ST_CUT_LIVE ? ' live' : ''}" title="${ST_CUT_LIVE ? L('Live-Daten', 'Live data') : L('Gespeicherter Stand', 'Saved data')}"></i>`;
   const lpStat = (key, v, tier, label) => `<a class="dsh-lp" href="/ranks/${tier.k}"><img src="${rankImg(tier)}" alt=""><span><b data-dlp="${v || 0}" data-key="${key}">${v ? fmt(v) + ' LP' : '–'}</b><small>${live}${label}</small></span></a>`;
   box.innerHTML = `
-    <div class="dsh-title"><h1>${L('TFT Tierlist, Comps', 'TFT Tier List, Comps')} <em>&amp; Coaching</em></h1><span>Set ${TFT_DATA.set}${P ? ' · Patch ' + esc(P.id) : ''} · ${L('von Challenger-Spielern', 'by Challenger players')}</span></div>
+    <div class="dsh-title"><h1>${L('TFT Tierlist, Comps', 'TFT Tier List, Comps')} <em>&amp; Coaching</em></h1></div>
     <section class="dsh-card dsh-hero dsh-bar">
       <div class="dsh-hi"><img class="dsh-vihi" src="assets/img/mascot-vi-look.webp" alt="Vi" width="520" height="624"><div class="dsh-bubble"><b>${L('BEREIT FÜR<br>DEN CLIMB?', 'READY FOR<br>THE CLIMB?')}</b></div></div>
       <div class="dsh-stats">
