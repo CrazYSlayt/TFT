@@ -51,7 +51,7 @@ function ndShellHTML(en){
   // aktiven Punkt vorab aus der Adresse markieren – route() in app.js setzt ihn danach genau
   const raw = (location.protocol === 'file:' ? location.hash.replace(/^#/, '') : location.pathname) || '/';
   const first = raw.replace(/^\/en(?=\/|$)/, '').replace(/^\/+/, '').split(/[/?]/)[0];
-  const alias = {'': 'home', champions: 'bibliothek', items: 'bibliothek', traits: 'bibliothek', augments: 'tierlist', apply: 'coaching'};
+  const alias = {'': 'home', champions: 'bibliothek', items: 'bibliothek', traits: 'bibliothek', augments: 'tierlist', apply: 'coaching', 'tier-list': 'tierlist', library: 'bibliothek'};   // auch englische Adressen
   const key = first in alias ? alias[first] : first;
   document.querySelectorAll('#ndTop [data-nd], #ndSide [data-nd]').forEach(a=>a.classList.toggle('on', a.dataset.nd===key));
   // Ladebalken: läuft per CSS-Animation (auch während app.js rechnet), am Ende auf volle Breite und ausblenden

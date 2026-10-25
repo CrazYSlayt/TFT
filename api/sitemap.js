@@ -7,6 +7,19 @@ const path = require('path');
 const TOOL_SLUG = {rolldown: 'tft-rolldown-rechner', drops: 'tft-item-drop-chance', tierlist: 'tft-tierlist-maker', simulator: 'tft-kampf-simulator', dps: 'tft-dps-vergleich', augments: 'tft-augment-vorhersage'};
 const CS_SLUG = {shop: 'tft-shop-odds', augments: 'tft-augment-stufen', orbs: 'tft-loot-orbs', loot: 'tft-loot-verteilung', damage: 'tft-spielerschaden', emblems: 'tft-embleme', solo: 'tft-stage-1-solo', 'patch-schedule': 'tft-patch-plan', carousel: 'tft-karussell'};
 const csPath = id => '/cheatsheet/' + (CS_SLUG[id] || 'tft-' + id);
+// Englische Adressen – gleiche Tabellen wie in app.js (TOOL_SLUG_EN, CS_SLUG_EN, PAGE_EN, langPath)
+const TOOL_SLUG_EN = {rolldown: 'tft-rolldown-calculator', drops: 'tft-item-drop-chance', tierlist: 'tft-tier-list-maker', simulator: 'tft-fight-simulator', dps: 'tft-dps-comparison', augments: 'tft-augment-prediction'};
+const CS_SLUG_EN = {shop: 'tft-shop-odds', augments: 'tft-augment-tiers', orbs: 'tft-loot-orbs', loot: 'tft-loot-distribution', damage: 'tft-player-damage', emblems: 'tft-emblems', solo: 'tft-solo-stage-1', 'patch-schedule': 'tft-patch-schedule', carousel: 'tft-carousel'};
+const PAGE_EN = {tierlist: 'tier-list', bibliothek: 'library', impressum: 'legal-notice', datenschutz: 'privacy-policy', bedingungen: 'terms'};
+const keyOf = (map, slug) => (Object.entries(map).find(([, v]) => v === slug) || [slug])[0];
+function enPath(p) {
+  if (p === '/') return '/en/';
+  const s = p.split('/');
+  if (s[1] === 'tools' && s[2]) { const k = keyOf(TOOL_SLUG, s[2]); if (TOOL_SLUG_EN[k]) s[2] = TOOL_SLUG_EN[k]; }
+  if (s[1] === 'cheatsheet' && s[2]) { const k = keyOf(CS_SLUG, s[2]); s[2] = CS_SLUG_EN[k] || (k !== s[2] ? 'tft-' + k : s[2]); }
+  if (PAGE_EN[s[1]]) s[1] = PAGE_EN[s[1]];
+  return '/en' + s.join('/');
+}
 
 const PAGES = [
   '/',
@@ -69,15 +82,17 @@ function compPages(){
 
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
-// Schlicht wie üblich: nur die Adressen, erst alle deutschen, dann alle englischen Seiten.
-// Die Sprachverweise (hreflang) stehen im Kopf jeder Seite (app.js), Priorität/Häufigkeit wertet Google nicht mehr aus.
+// Erst alle deutschen, dann alle englischen Seiten. Jeder Eintrag nennt beide Sprachfassungen (hreflang) –
+// so ordnet Google die deutsche und die englische Seite einander zu (zusätzlich zu den Verweisen im Kopf jeder Seite, app.js).
 module.exports = (req, res) => {
   let host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
   if (host === 'tftclimb.com') host = 'www.tftclimb.com';   // immer die kanonische Domain
   const base = (req.headers['x-forwarded-proto'] || 'https') + '://' + host;
   const paths = [...PAGES, ...compPages(), ...champions(), ...patches()];
-  const urls = [...paths.map(p => base + p), ...paths.map(p => base + (p === '/' ? '/en/' : '/en' + p))];
+  const alt = p => ['de', p, 'en', enPath(p), 'x-default', p].reduce((s, v, i, a) => i % 2 ? s : s + `\n    <xhtml:link rel="alternate" hreflang="${v}" href="${esc(base + a[i + 1])}"/>`, '');
+  const entry = (loc, p) => `  <url><loc>${esc(base + loc)}</loc>${alt(p)}\n  </url>`;
+  const urls = [...paths.map(p => entry(p, p)), ...paths.map(p => entry(enPath(p), p))];
   res.setHeader('Content-Type', 'application/xml; charset=utf-8');
   res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=86400');
-  res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(u => `  <url><loc>${esc(u)}</loc></url>`).join('\n')}\n</urlset>\n`);
+  res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls.join('\n')}\n</urlset>\n`);
 };

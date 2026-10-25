@@ -7,12 +7,28 @@ const LANG = window.TFT_LANG === 'en' ? 'en' : 'de', EN = LANG === 'en', LOC = E
 const L = (de, en) => EN ? en : de;   // kurze Texte direkt im Code übersetzen
 const ND = document.documentElement.classList.contains('nd');   // Vorschau neues Design (?design=neu, siehe index.html)
 const rawPath = () => (FILE_MODE ? location.hash.replace(/^#/, '') : location.pathname) || '/';
-const curPath = () => { const p = rawPath(); return EN ? (p.replace(/^\/en(?=\/|$)/, '') || '/') : p; };
+// interner Pfad = deutscher Pfad ohne /en (englische Adressen werden über fromEn() auf die deutschen zurückgeführt)
+const curPath = () => { const p = rawPath(); return fromEn(EN ? (p.replace(/^\/en(?=\/|$)/, '') || '/') : p); };
 // Sprechende Adressen für Google: das Keyword steht in der Adresse (/tools/tft-item-drop-chance), intern bleiben die kurzen Schlüssel (drops).
-// Alte Adressen leiten weiter – online per 301 (vercel.json), in der Seite über seoPath(). Gleiche Liste in api/sitemap.js
+// Alte Adressen leiten weiter – online per 301 (vercel.json), in der Seite über seoPath(). Gleiche Listen in api/sitemap.js
 const TOOL_SLUG = {rolldown:'tft-rolldown-rechner', drops:'tft-item-drop-chance', tierlist:'tft-tierlist-maker', simulator:'tft-kampf-simulator', dps:'tft-dps-vergleich', augments:'tft-augment-vorhersage'};
 const CS_SLUG = {shop:'tft-shop-odds', augments:'tft-augment-stufen', orbs:'tft-loot-orbs', loot:'tft-loot-verteilung', damage:'tft-spielerschaden', emblems:'tft-embleme', solo:'tft-stage-1-solo', 'patch-schedule':'tft-patch-plan', carousel:'tft-karussell'};   // sonst „tft-“ + Schlüssel
 const GUIDE_SLUG = {encounters:'tft-encounters'};
+// Englische Seite: eigene englische Adressen mit englischem Keyword (/en/tools/tft-rolldown-calculator, /en/library …).
+// toEn() macht aus einem internen (deutschen) Pfad den englischen, fromEn() umgekehrt
+const TOOL_SLUG_EN = {rolldown:'tft-rolldown-calculator', drops:'tft-item-drop-chance', tierlist:'tft-tier-list-maker', simulator:'tft-fight-simulator', dps:'tft-dps-comparison', augments:'tft-augment-prediction'};
+const CS_SLUG_EN = {shop:'tft-shop-odds', augments:'tft-augment-tiers', orbs:'tft-loot-orbs', loot:'tft-loot-distribution', damage:'tft-player-damage', emblems:'tft-emblems', solo:'tft-solo-stage-1', 'patch-schedule':'tft-patch-schedule', carousel:'tft-carousel'};
+const PAGE_EN = {tierlist:'tier-list', bibliothek:'library', impressum:'legal-notice', datenschutz:'privacy-policy', bedingungen:'terms'};
+function langPath(p, en){   // en = true: deutsch → englisch, false: englisch → deutsch
+  const i = p.search(/[?#]/), rest = i < 0 ? '' : p.slice(i), s = (i < 0 ? p : p.slice(0, i)).split('/');
+  const [pages, tools, csFrom, csTo] = en ? [PAGE_EN, [TOOL_SLUG, TOOL_SLUG_EN], CS_SLUG, CS_SLUG_EN] : [Object.fromEntries(Object.entries(PAGE_EN).map(([a, b])=>[b, a])), [TOOL_SLUG_EN, TOOL_SLUG], CS_SLUG_EN, CS_SLUG];
+  if(s[1]==='tools' && s[2]){ const k = unslug(tools[0], s[2]); if(tools[1][k]) s[2] = tools[1][k]; }
+  if(s[1]==='cheatsheet' && s[2]){ const k = unslug(csFrom, s[2]); if(k !== s[2]) s[2] = csTo[k] || 'tft-' + k; }
+  if(pages[s[1]]) s[1] = pages[s[1]];
+  return s.join('/') + rest;
+}
+function toEn(p){ return langPath(p, true); }
+function fromEn(p){ return langPath(p, false); }
 const BUILDER_PATH = '/tft-team-builder';
 const toolHref = k => '/tools/' + (TOOL_SLUG[k] || k), csHref = id => '/cheatsheet/' + (CS_SLUG[id] || 'tft-' + id);
 const unslug = (map, s) => (Object.entries(map).find(([, v])=>v === s) || [s])[0];
@@ -20,7 +36,8 @@ const seoPath = p => p.replace(/^\/builder(?=[/?#]|$)/, BUILDER_PATH)
   .replace(/^\/tools\/([^/?#]+)/, (m, k)=>TOOL_SLUG[k] ? toolHref(k) : m)
   .replace(/^\/cheatsheet\/([^/?#]+)/, (m, k)=>/^tft-/.test(k) ? m : csHref(k))
   .replace(/^\/guides\/([^/?#]+)/, (m, k)=>GUIDE_SLUG[k] ? '/guides/' + GUIDE_SLUG[k] : m);
-const withLang = p => { p = seoPath(p); return EN && /^\/(?!en(\/|$)|api\/|assets\/|data\/)/.test(p) ? '/en' + p : (EN && p === '/' ? '/en/' : p); };
+const enPath = p => p === '/' ? '/en/' : '/en' + toEn(seoPath(p));   // englische Adresse zu einem internen Pfad
+const withLang = p => { p = seoPath(p); return EN && /^\/(?!en(\/|$)|api\/|assets\/|data\/)/.test(p) ? '/en' + toEn(p) : (EN && p === '/' ? '/en/' : p); };
 function setUrl(path){ path = withLang(path); history.replaceState(null, '', FILE_MODE ? '#' + path : path); }
 function go(path){
   path = withLang(path);
@@ -3927,7 +3944,10 @@ function setMeta(page, sub){
   const path = page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : page==='comp' ? compHref(compByKey[sub]) : seoPath('/' + page + (keep.includes(sub) ? '/' + sub : ''));
   headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + withLang(path);
   // beide Sprachfassungen für Suchmaschinen verknüpfen
-  [['de', path], ['en', '/en' + path], ['x-default', path]].forEach(([l, p])=>{ headTag(`link[rel="alternate"][hreflang="${l}"]`, ()=>Object.assign(document.createElement('link'), {rel:'alternate', hreflang:l})).href = location.origin + p; });
+  [['de', path], ['en', enPath(path)], ['x-default', path]].forEach(([l, p])=>{ headTag(`link[rel="alternate"][hreflang="${l}"]`, ()=>Object.assign(document.createElement('link'), {rel:'alternate', hreflang:l})).href = location.origin + p; });
+  // Sprachumschalter zeigen auf die Gegenstück-Adresse dieser Seite
+  document.querySelectorAll('a[hreflang="de"]').forEach(a=>a.setAttribute('href', path));
+  document.querySelectorAll('a[hreflang="en"]').forEach(a=>a.setAttribute('href', enPath(path)));
   // Vorschau beim Teilen (Discord, WhatsApp, X …)
   const url = location.origin + withLang(path), tool = page==='tools' ? (sub && keep.includes(sub) ? sub : 'overview') : page==='builder' ? 'builder' : '';
   const chN = page==='champion' ? champBySlug[sub].n : page==='comp' ? compByKey[sub].carry : '';   // Vorschaubild: Champion bzw. Carry der Comp
@@ -4001,7 +4021,8 @@ function route(){
   // lokal: normale Sprunganker (z. B. #main) nicht als Seite behandeln
   if(FILE_MODE && location.hash && !location.hash.startsWith('#/') && document.querySelector('.page.active')) return;
   const cp = curPath(), cpPath = cp.split('?')[0], seo = seoPath(cpPath);
-  if(seo !== cpPath) setUrl(seo + (FILE_MODE ? (cp.includes('?') ? cp.slice(cp.indexOf('?')) : '') : location.search));   // alte Adresse → sprechende Adresse
+  // alte Adresse oder Adresse in der anderen Sprachform (z. B. /en/tools/tft-rolldown-rechner) → richtige Adresse dieser Sprache
+  if(withLang(seo) !== (rawPath().split('?')[0] || '/') && !(seo === '/' && EN)) setUrl(seo + (FILE_MODE ? (cp.includes('?') ? cp.slice(cp.indexOf('?')) : '') : location.search));
   const parts = seo.replace(/^\/+/,'').split('/');
   let page = parts[0] || 'home', sub = parts[1];
   // sprechende Adressen auf die internen Schlüssel zurückführen
@@ -4135,22 +4156,26 @@ function i18nNode(root){
     if(n.nodeType === 3){ const v = trStr(n.nodeValue); if(v !== null){ const lead = n.nodeValue.match(/^\s*/)[0], tail = n.nodeValue.match(/\s*$/)[0]; n.nodeValue = lead + v + tail; } }
     else {
       for(const a of I18N_ATTRS){ const x = n.getAttribute(a); if(x){ const v = trStr(x); if(v !== null) n.setAttribute(a, v); } }
-      if(EN && n.tagName === 'A'){ const h = n.getAttribute('href'); if(h && h[0] === '/' && h[1] !== '/'){ const w = withLang(h); if(w !== h) n.setAttribute('href', w); } }
     }
   } while((n = tw.nextNode()));
   // Textfelder überspringt der Walker samt Inhalt – ihre Platzhalter trotzdem übersetzen
   root.querySelectorAll('textarea[placeholder]').forEach(t=>{ if(!t.closest('[data-noi18n]')){ const v = trStr(t.placeholder); if(v !== null) t.placeholder = v; } });
 }
+// Englische Seite: jeder interne Link zeigt auf die englische Adresse – auch in Bereichen ohne Übersetzung (z. B. Dashboard).
+// Die Sprachumschalter (hreflang) behalten ihr Ziel
+function enHref(a){ const h = a.getAttribute('href'); if(h && h[0] === '/' && h[1] !== '/' && !a.hasAttribute('hreflang')){ const w = withLang(h); if(w !== h) a.setAttribute('href', w); } }
+function enHrefs(root){ if(!EN || root.nodeType !== 1) return; if(root.tagName === 'A') enHref(root); root.querySelectorAll('a[href]').forEach(enHref); }
 function i18nStart(){
   if(!EN && !I18N_HARVEST) return;
-  i18nNode(document.body);
+  i18nNode(document.body); enHrefs(document.body);
   new MutationObserver(list=>{ for(const m of list){
-    if(m.type === 'childList') m.addedNodes.forEach(i18nNode);
+    if(m.type === 'childList') m.addedNodes.forEach(n=>{ i18nNode(n); enHrefs(n); });
     else if(m.type === 'characterData') i18nNode(m.target);
     else if(m.type === 'attributes'){   // nur das geänderte Attribut prüfen, nicht den ganzen Inhalt
-      const el = m.target, a = m.attributeName, x = el.getAttribute(a); if(!x || el.closest('[data-noi18n]')) continue;
-      if(a === 'href'){ if(EN && el.tagName === 'A' && x[0] === '/' && x[1] !== '/'){ const w = withLang(x); if(w !== x) el.setAttribute('href', w); } }
-      else { const v = trStr(x); if(v !== null) el.setAttribute(a, v); }
+      const el = m.target, a = m.attributeName, x = el.getAttribute(a);
+      if(a === 'href'){ if(el.tagName === 'A') enHref(el); continue; }
+      if(!x || el.closest('[data-noi18n]')) continue;
+      const v = trStr(x); if(v !== null) el.setAttribute(a, v);
     }
   } }).observe(document.body, {childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['title','placeholder','aria-label','alt','href']});
   // Meldungen in Dialogen ebenfalls übersetzen
@@ -4167,11 +4192,11 @@ const FLAG_US = '<svg class="tl-flag" viewBox="0 0 190 100" aria-hidden="true"><
   + [0,2,4,6,8,10,12].map(i=>`<path fill="#B22234" d="M0 ${(i*100/13).toFixed(2)}h190v${(100/13).toFixed(2)}H0z"/>`).join('')
   + '<path fill="#3C3B6E" d="M0 0h76v53.85H0z"/><g fill="#fff">'
   + [0,1,2,3].map(r=>[0,1,2,3,4].map(c=>`<circle cx="${9 + c*14.5 + (r%2)*7}" cy="${8 + r*12.5}" r="3"/>`).join('')).join('') + '</g></svg>';
-$('#openSearch').insertAdjacentHTML('beforebegin', `<a class="tb-lang${EN ? ' is-en' : ''}" id="langBtn" href="${EN ? curPath() : '/en' + (curPath()==='/' ? '/' : curPath())}" hreflang="${EN ? 'de' : 'en'}" role="switch" aria-checked="${EN}" title="${EN ? 'Deutsche Version' : 'English version'}" aria-label="Deutsch / English" data-noi18n><i class="tl-knob"></i><span class="tl-opt tl-de">${FLAG_DE}<b>DE</b></span><span class="tl-opt tl-en">${FLAG_US}<b>EN</b></span></a>`);
+$('#openSearch').insertAdjacentHTML('beforebegin', `<a class="tb-lang${EN ? ' is-en' : ''}" id="langBtn" href="${EN ? curPath() : enPath(curPath())}" hreflang="${EN ? 'de' : 'en'}" role="switch" aria-checked="${EN}" title="${EN ? 'Deutsche Version' : 'English version'}" aria-label="Deutsch / English" data-noi18n><i class="tl-knob"></i><span class="tl-opt tl-de">${FLAG_DE}<b>DE</b></span><span class="tl-opt tl-en">${FLAG_US}<b>EN</b></span></a>`);
 $('#langBtn').addEventListener('click', e=>{
   e.preventDefault(); e.stopPropagation();
   try { localStorage.setItem('tftfreaks_lang', EN ? 'de' : 'en'); } catch(_){}
-  const p = curPath(), to = (EN ? p : '/en' + (p === '/' ? '/' : p)) + location.search;
+  const p = curPath(), to = (EN ? p : enPath(p)) + location.search;
   e.currentTarget.classList.toggle('is-en', !EN);   // Regler erst rüberschieben, dann wechseln
   const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   setTimeout(()=>{ location.href = to; }, still ? 0 : 220);
@@ -4187,7 +4212,7 @@ function ndInit(){
   if(!$('#ndTop')) document.body.insertAdjacentHTML('afterbegin', ndShellHTML(EN));   // normalerweise schon von shell.js gebaut
   // Set- und Sprachschalter aus der alten Kopfzeile übernehmen (Funktionen bleiben erhalten)
   // Sprache: nur die Flagge, ein Klick öffnet ein kleines Menü
-  const p0 = curPath(), deHref = p0, enHref = '/en' + (p0 === '/' ? '/' : p0);
+  const p0 = curPath(), deHref = p0, enHref = enPath(p0);
   const lang = `<div class="nd-lang" id="ndLang"><button type="button" class="nd-lang-btn" aria-haspopup="true" aria-expanded="false" aria-label="${L('Sprache', 'Language')}" title="${L('Sprache', 'Language')}">${EN ? FLAG_US : FLAG_DE}<svg class="nd-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg><span></span></button>
     <div class="nd-lang-menu" role="menu"><a role="menuitemradio" aria-checked="${!EN}" href="${deHref}" hreflang="de" data-lang="de" data-noi18n>${FLAG_DE}Deutsch</a><a role="menuitemradio" aria-checked="${EN}" href="${enHref}" hreflang="en" data-lang="en" data-noi18n>${FLAG_US}English</a></div></div>`;
   const slot = $('#ndSlot'); slot.insertAdjacentHTML('afterend', lang); slot.replaceWith($('#setSw'));
@@ -4197,7 +4222,7 @@ function ndInit(){
   nl.querySelectorAll('[data-lang]').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); const l = a.dataset.lang;
     try { localStorage.setItem('tftfreaks_lang', l); } catch(_){}
     if((l === 'en') === EN){ nl.classList.remove('open'); return; }
-    const cp = curPath(); location.href = (l === 'en' ? '/en' + (cp === '/' ? '/' : cp) : cp) + location.search; }, true));
+    const cp = curPath(); location.href = (l === 'en' ? enPath(cp) : cp) + location.search; }, true));
   // Meet the Team: Player Cards nebeneinander (gleicher Stil wie im Dashboard, nur größer)
   const ml = document.querySelector('#page-about .mt-list');
   if(ml){
