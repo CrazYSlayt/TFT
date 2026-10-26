@@ -142,7 +142,7 @@ const testimonials = [
 ];
 
 const guides = [
-  {t:'TFT Encounters',s:'Neu · Set 18',col:'linear-gradient(160deg,#8b5cf6,#3b0764)',href:'/guides/tft-encounters',d:'Alle Encounters mit Chance pro Spiel – und welche Comp du auf Ambosse, Gold- und Prismatic-Augments oder besondere Start-Units spielst.',x:'Mit Einschätzung von Challenger-Spielern.'},
+  {t:'TFT Encounters',s:'Neu · Set 18',col:'linear-gradient(160deg,#8b5cf6,#3b0764)',href:'/guides/tft-encounters',d:'Alle Encounters mit Chance pro Spiel – und welche Comp du auf Ambosse, Gold-Augments, prismatische Augments oder besondere Start-Units spielst.',x:'Mit Einschätzung von Challenger-Spielern.'},
   {t:'Wisp-Guide',s:'Kostenlos · 5 Kapitel',col:'linear-gradient(160deg,#f7166e,#7a0b3a)',d:'Wann du Wisps kaufst, welche Upgrades sich lohnen und wie du sie mit deiner Econ verbindest.',x:'Mit Checkliste für die nächsten drei Partien.'},
   {t:'Rank-Up-Training',s:'Kostenlos · Übungen',col:'linear-gradient(160deg,#2ee6d6,#0b5f5a)',d:'Finde eine Gewohnheit, an der du arbeiten willst: Rollen, Leveln oder Positionieren — mit einer klaren Mission pro Partie.',x:'Klein anfangen. Autopilot hat schon genug Partien gespielt.'},
 ];
@@ -2576,7 +2576,7 @@ function renderTools(sub, a, b){
   }
 }
 /* ================= AUGMENT-VORHERSAGE (/tools/tft-augment-vorhersage) ================= */
-// „Deine Angaben“: die Augment-Stufen, die du schon gesehen hast (2-1, 3-2, 4-2). „Dein Ergebnis“: was als Nächstes kommt, Prismatic-Chance, wahrscheinlichste Verläufe.
+// „Deine Angaben“: die Augment-Stufen, die du schon gesehen hast (2-1, 3-2, 4-2). „Dein Ergebnis“: was als Nächstes kommt, Chance auf ein prismatisches Augment, wahrscheinlichste Verläufe.
 // Gleiche Daten wie der Augment-Baum im Cheatsheet (CS.augments.seq); der kleine Baum in der Ergebnis-Box zeigt dieselbe Auswahl und lässt sich auch anklicken.
 // Die Auswahl steht in der Adresse (?a=SG), damit man sie teilen kann
 const AG_ST = ['2-1', '3-2', '4-2'];
@@ -2605,7 +2605,7 @@ function agInput(){
       <div class="ag-opts">${'SGP'.split('').map(l=>{ const ok = i <= k.length && agSum(k.slice(0, i) + l) > 0, on = k[i] === l;
         return `<button type="button" class="ag-opt ${CS_AUG[l][0]}${on ? ' on' : ''}${ok ? '' : ' lock'}" data-i="${i}" data-l="${l}"${ok ? ` aria-pressed="${on}"${on ? ` title="${L('Nochmal klicken nimmt die Auswahl zurück', 'Click again to undo')}"` : ''}` : ` disabled title="${i > k.length ? L('Erst das Augment davor wählen', 'Pick the augment before first') : L('Kommt nach deinen bisherigen Augments nicht vor', 'Does not occur after your previous augments')}"`}><span class="ag-cbg"></span>${agFr(l, 'ag-fr')}<span class="ag-cin">${ok ? agHex(l) : agLock()}<b>${agName(l)}</b></span></button>`; }).join('')}</div></div>`).join('')}</div>`;
 }
-// Dein Ergebnis: oben die Prismatic-Chance, darunter immer alle drei Augments. Offene zeigen die Chancen nach deinen bisherigen Augments,
+// Dein Ergebnis: oben die Chance auf ein prismatisches Augment, darunter immer alle drei Augments. Offene zeigen die Chancen nach deinen bisherigen Augments,
 // gewählte bleiben stehen: deine Wahl ist hervorgehoben (mit der Chance, die sie vorher hatte), die anderen Stufen treten zurück
 function agOutput(){
   const k = ag.k, n = k.length, W = agSum(''), wk = agSum(k), seq = CS.augments.seq;
@@ -2617,7 +2617,7 @@ function agOutput(){
   if(n === 3){ const rank = [...seq].sort((a, b)=>b[1] - a[1]).findIndex(x=>x[0] === k) + 1;
     main += `<div class="ag-sec"><h3>${L('Deine Reihenfolge', 'Your order')}</h3><div class="ag-done"><span class="ag-path">${k.split('').map(agHex).join('<i></i>')}</span>
       <p>${L(`Kommt in <b>${agPct(wk / W * 100)}</b> aller Partien vor – Platz ${rank} von ${seq.length} Reihenfolgen.`, `Happens in <b>${agPct(wk / W * 100)}</b> of all games – rank ${rank} of ${seq.length} orders.`)}</p></div></div>`; }
-  const kpi = `<div class="ag-kpi${k.includes('P') ? ' got' : ''}"><span>${agHex('P')}</span><div><small>${L('Mindestens ein Prismatic in dieser Partie', 'At least one prismatic this game')}</small>
+  const kpi = `<div class="ag-kpi${k.includes('P') ? ' got' : ''}"><span>${agHex('P')}</span><div><small>${L('Mindestens ein prismatisches Augment in dieser Partie', 'At least one prismatic this game')}</small>
     <b>${k.includes('P') ? L('Hast du schon', 'Already got one') : agPct(prism)}</b></div></div>`;
   const paths = n < 3 ? seq.filter(x=>x[0].startsWith(k)).sort((a, b)=>b[1] - a[1]).slice(0, 4) : [];
   const pathList = paths.length ? `<div class="ag-sec ag-psec"><h3>${L('Wahrscheinlichste Verläufe', 'Most likely orders')}</h3><div class="ag-paths">${paths.map(([s, w])=>`<div class="ag-pr"><span class="ag-path">${s.split('').map((l, i)=>`<span class="${i < n ? 'kn' : ''}">${agHex(l)}</span>`).join('<i></i>')}</span><b>${agPct(w / wk * 100)}</b></div>`).join('')}</div></div>` : '';
@@ -3065,7 +3065,7 @@ function drRender(){
         ${craft.length ? `<h4 class="dr-h4">Daraus baubar</h4><div class="dr-craft">${craft.map(r=>`<button type="button" data-item="${r.id}" title="${esc(r.en)}">${itImg(r, 38)}<span></span></button>`).join('')}</div>` : ''}
       </section>
     </div>
-    <details class="card dr-more"><summary>Orb-Inhalte (Gold &amp; Prismatic) und Quelle</summary>
+    <details class="card dr-more"><summary>Orb-Inhalte (Gold-Orb &amp; prismatischer Orb) und Quelle</summary>
       <div class="dr-orbgrid">${orbTbl(LOOT.orbs.prism)}${orbTbl(LOOT.orbs.gold)}${orbTbl(LOOT.orbs.gold4)}
         ${LOOT.lbb ? '' : `<div class="dr-orbtbl"><h4>Aufgewertete Runden <small>einmal pro Spiel geheim ausgewürfelt</small></h4><table class="dr-table small"><tbody>${LOOT.upgraded.map(([t, p])=>`<tr><td>${esc(t)}</td><td>${fmtNum(p)} %</td></tr>`).join('')}</tbody></table></div>`}</div>
       ${LOOT.lbb ? `<p class="dr-note">${L('Alle Spieler bekommen dieselbe Menge und Qualität an Orbs, nur der Inhalt unterscheidet sich. Komponenten-Kugeln (mindestens 11, höchstens 15 pro Spiel) sehen aus wie blaue Orbs.', 'All players receive the same quantity and quality of orbs, only the contents vary. Component orbs (minimum 11, maximum 15 per game) look the same as blue orbs.')}</p>` : ''}
@@ -3440,7 +3440,7 @@ function csSections(){
     const headRow = [[L('1. Augment', '1st augment'), '2-1'], [L('2. Augment', '2nd augment'), '3-2'], [L('3. Augment', '3rd augment'), '4-2'], [L('Chance', 'Odds'), '']].map(([t, s], i)=>`<div class="csa-h" style="grid-column:${i + 1}">${t}${s ? ` <small>${s}</small>` : ''}</div>`).join('');
     const {tree, legend} = atgTreeHTML();
     out.push(['augments', L('Augment-Stufen (2-1 · 3-2 · 4-2)', 'Augment tiers (2-1 · 3-2 · 4-2)'), `<div class="cst-tree">${legend}${tree}</div><div class="cst-table cs-wrap"><div class="csa">${headRow}${cells}</div></div>
-      <p class="cs-note cs-after">${L('Mindestens ein Prismatic pro Partie', 'At least one prismatic per game')}: <b>${csPct(prism)}</b> · ${L('Für deine Partie:', 'For your game:')} <a href="/tools/tft-augment-vorhersage">${L('Augment-Vorhersage', 'Augment prediction')} →</a></p>` + csSrc(CS.augments.src)]);
+      <p class="cs-note cs-after">${L('Mindestens ein prismatisches Augment pro Partie', 'At least one prismatic per game')}: <b>${csPct(prism)}</b> · ${L('Für deine Partie:', 'For your game:')} <a href="/tools/tft-augment-vorhersage">${L('Augment-Vorhersage', 'Augment prediction')} →</a></p>` + csSrc(CS.augments.src)]);
   }
   if(ENCS.length){
     const rows = [...ENCS].sort((a,b)=>b.w - a.w).map(e=>{ const src = csChampPic(e.ch);
@@ -3844,11 +3844,11 @@ function renderCheats(sub){
     <section class="tool-seo" aria-labelledby="ts-cs">
       <div class="ts-main">
         <h2 id="ts-cs">${L('Das TFT Cheatsheet für jede Partie', 'The TFT cheatsheet for every game')}</h2>
-        <p>${L(`Viele Entscheidungen in TFT hängen an festen Zahlen: Wann lohnt sich Level 8 für 4-Kosten-Units? Wie wahrscheinlich ist noch ein Prismatic-Augment? Was steckt in einem Gold-Orb? Hier stehen alle Systemwerte von Set ${S} auf einer Seite – zum schnellen Nachschlagen neben dem Spiel.`, `Many decisions in TFT depend on fixed numbers: when is level 8 worth it for 4-cost units? How likely is another prismatic augment? What's inside a gold orb? Here are all system values of Set ${S} on one page – for a quick look next to the game.`)}</p>
+        <p>${L(`Viele Entscheidungen in TFT hängen an festen Zahlen: Wann lohnt sich Level 8 für 4-Kosten-Units? Wie wahrscheinlich ist noch ein prismatisches Augment? Was steckt in einem Gold-Orb? Hier stehen alle Systemwerte von Set ${S} auf einer Seite – zum schnellen Nachschlagen neben dem Spiel.`, `Many decisions in TFT depend on fixed numbers: when is level 8 worth it for 4-cost units? How likely is another prismatic augment? What's inside a gold orb? Here are all system values of Set ${S} on one page – for a quick look next to the game.`)}</p>
       </div>
       <aside class="ts-side">
         <h3>${L('Häufige Fragen', 'FAQ')}</h3>
-        <details><summary>${L('Wie hoch ist die Chance auf ein Prismatic-Augment?', 'What are the odds of a prismatic augment?')}</summary><p>${L('Das erste Augment ist in etwa 9 % der Partien prismatisch. Mindestens ein Prismatic-Augment gibt es in knapp der Hälfte der Partien (etwa 48 %).', 'The first augment is prismatic in about 9% of games. Almost half of all games (about 48%) have at least one prismatic augment.')}</p></details>
+        <details><summary>${L('Wie hoch ist die Chance auf ein prismatisches Augment?', 'What are the odds of a prismatic augment?')}</summary><p>${L('Das erste Augment ist in etwa 9 % der Partien prismatisch. Mindestens ein prismatisches Augment gibt es in knapp der Hälfte der Partien (etwa 48 %).', 'The first augment is prismatic in about 9% of games. Almost half of all games (about 48%) have at least one prismatic augment.')}</p></details>
         <details><summary>${L('Wie viel Schaden bekomme ich nach einer Niederlage?', 'How much damage do I take after a loss?')}</summary><p>${L('Den Stage-Schaden plus 1 für jede gegnerische Unit, die den Kampf überlebt.', 'The stage damage plus 1 for every enemy unit that survives the fight.')}</p></details>
         <details><summary>${L('Wie baue ich ein Emblem?', 'How do I build an emblem?')}</summary><p>${L('Pfannenwender oder Bratpfanne plus eine Komponente. Welches Emblem dabei entsteht, steht in der Tabelle Emblem-Rezepte.', 'Spatula or Frying Pan plus a component. Which emblem you get is listed in the emblem recipes table.')}</p></details>
         <h3>${L('Weiterlesen', 'Read more')}</h3>
@@ -3935,7 +3935,7 @@ function pageMeta(page, sub){
     case 'tierlist':
       if(sub==='items') return [L(`TFT Item-Tierlist ${PS}`, `TFT Item Tier List ${PS}`), L(`TFT Item-Tierlist ${S}: die stärksten kombinierten Items, Lichtversionen, Artefakte und Embleme – bewertet von S bis C.`,
         `TFT item tier list ${S}: the strongest combined items, radiant items, artifacts and emblems – rated from S to C.`)];
-      if(sub==='augments') return [L(`TFT Augment-Tierlist ${PS}`, `TFT Augment Tier List ${PS}`), L(`TFT Augment-Tierlist ${S}: die besten Silber-, Gold- und Prismatic-Augments für 2-1, 3-2 und 4-2 – bewertet von S bis C.`,
+      if(sub==='augments') return [L(`TFT Augment-Tierlist ${PS}`, `TFT Augment Tier List ${PS}`), L(`TFT Augment-Tierlist ${S}: die besten Augments in Silber, Gold und Prismatisch für 2-1, 3-2 und 4-2 – bewertet von S bis C.`,
         `TFT augment tier list ${S}: the best silver, gold and prismatic augments for 2-1, 3-2 and 4-2 – rated from S to C.`)];
       if(sub==='holds') return [L(`TFT Holds-Tierlist ${PS}`, `TFT Holds Tier List ${PS}`), L(`TFT Holds-Tierlist ${S}: welche 1-, 2- und 3-Kosten-Champions du von 1-1 bis 1-3 halten solltest – bewertet von S bis C.`,
         `TFT holds tier list ${S}: which 1, 2 and 3 cost champions to hold from 1-1 to 1-3 – rated from S to C.`)];
