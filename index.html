@@ -489,7 +489,7 @@
     <div class="page-head">
       <div class="crumb">Home / Redaktion</div>
       <h1>Redaktion <em class="serif">Tierlist bearbeiten</em></h1>
-      <p>Comps per Drag &amp; Drop zwischen den Tiers verschieben und anklicken zum Bearbeiten. Items, Augments und Holds bewertest du in ihren Tabs genauso. Änderungen speichern automatisch in diesem Browser. Für die Live-Seite: „Exportieren“ und die Datei <b>tierlist-data-<span data-setno>18</span>.js</b> neben die index.html legen. Jedes Set hat seine eigene Tierlist – das Set wechselst du oben links.</p>
+      <p>Comps per Drag &amp; Drop zwischen den Tiers verschieben und anklicken zum Bearbeiten. Items, Augments und Holds bewertest du in ihren Tabs genauso. Änderungen speichern automatisch in diesem Browser. Für die Live-Seite: „Veröffentlichen“ – nach etwa einer Minute sehen alle Besucher den neuen Stand. „Exportieren“ bleibt als Sicherungskopie. Jedes Set hat seine eigene Tierlist – das Set wechselst du oben links.</p>
     </div>
     <div class="tabs" id="admTabs">
       <button class="tab active" data-adm-tab="comps">Comps</button>
@@ -500,6 +500,8 @@
     </div>
     <div class="adm-bar">
       <button class="btn btn-primary" id="admNew" type="button">+ Neue Comp</button>
+      <button class="btn btn-primary" id="admPublish" type="button">Veröffentlichen</button>
+      <span class="adm-pw" id="admPwBox" hidden><input class="input" type="password" id="admPw" placeholder="Redaktions-Passwort" autocomplete="current-password" aria-label="Redaktions-Passwort"><button class="btn btn-primary" id="admPwGo" type="button">OK</button></span>
       <button class="btn btn-ghost" id="admExport" type="button">Exportieren</button>
       <label class="btn btn-ghost" style="cursor:pointer">Importieren<input type="file" id="admImport" accept=".js,.json" hidden></label>
       <button class="btn btn-ghost" id="admReset" type="button">Entwurf verwerfen</button>

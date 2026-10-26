@@ -594,7 +594,9 @@ if ($Publish) {
     & $git diff --cached --quiet -- data index.html
     if ($LASTEXITCODE -ne 0) {
       & $git commit -q -m "Automatisches Daten-Update $today" -- data index.html
-      $env:GCM_INTERACTIVE = 'never'; & $git push -q
+      $env:GCM_INTERACTIVE = 'never'
+      & $git pull -q --rebase --autostash   # die Redaktion veröffentlicht die Tierlist direkt auf GitHub (api/tierlist.js) – erst deren Stand holen
+      & $git push -q
       if ($LASTEXITCODE -eq 0) { Write-Host '  Neue Daten veröffentlicht.' -ForegroundColor Green } else { Warn 'Hochladen fehlgeschlagen (Anmeldung?) – beim nächsten Mal "veröffentlichen" sagen.' }
     } else { Write-Host '  Keine neuen Daten – nichts zu veröffentlichen.' }
     Pop-Location

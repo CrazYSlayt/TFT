@@ -1214,6 +1214,7 @@ a.mt-card:hover{transform:translateY(-2px);border-color:var(--accent)}
 /* ---------- Redaktion ---------- */
 .adm-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
 .adm-bar .btn{padding:9px 14px;font-size:.86rem}
+.adm-pw{display:inline-flex;gap:6px;align-items:center}.adm-pw[hidden]{display:none}.adm-pw .input{width:200px;padding:8px 12px}   /* Passwort fürs Veröffentlichen */
 .adm-status{margin-left:auto;font-size:.8rem;color:var(--faint)}
 .adm-wrap{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
 .adm-row{display:grid;grid-template-columns:92px 1fr;gap:10px;margin-bottom:10px}

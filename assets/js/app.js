@@ -1216,7 +1216,40 @@ document.addEventListener('change', e=>{
     r.readAsText(e.target.files[0]);
   }
 });
-document.addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target.dataset && e.target.dataset.add){ e.preventDefault(); admAdd(e.target.dataset.add); } });
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && e.target.dataset && e.target.dataset.add){ e.preventDefault(); admAdd(e.target.dataset.add); }
+  if(e.key==='Enter' && e.target.id==='admPw'){ e.preventDefault(); admPwSubmit(); }
+});
+// Stand der Tierlist, wie er veröffentlicht bzw. exportiert wird
+function admData(){
+  admEnsure();
+  return {version:1, set:TFT_DATA.set, patch:adm.patch, updated:adm.updated || new Date().toISOString().slice(0,10), source:adm.source || 'TFTClimb', basedOn:adm.basedOn || '', comps:adm.comps, itemTL:adm.itemTL || ITEM_TL, augTL:adm.augTL || AUG_TL, holdTL:adm.holdTL || HOLD_TL, encTL:adm.encTL || ENC_TL};
+}
+// Veröffentlichen: schickt die Tierlist an /api/tierlist (Vercel-Funktion), die sie als tierlist-data-<Set>.js ins Repository schreibt.
+// Das Passwort bleibt nur für diesen Tab gemerkt (sessionStorage) und wird bei „Passwort falsch“ wieder vergessen.
+const ADM_PW_KEY = 'tftfreaks_admin_pw';
+const admPwGet = () => { try { return sessionStorage.getItem(ADM_PW_KEY) || ''; } catch(e){ return ''; } };
+function admPwAsk(msg){ const box = $('#admPwBox'); box.hidden = false; $('#admPw').value = ''; $('#admPw').focus(); admStatus(msg || 'Redaktions-Passwort eingeben und mit OK veröffentlichen.'); }
+function admPwSubmit(){
+  const v = $('#admPw').value; if(!v) return;
+  try { sessionStorage.setItem(ADM_PW_KEY, v); } catch(e){}
+  $('#admPwBox').hidden = true; admPublish(v);
+}
+async function admPublish(pw){
+  if(FILE_MODE || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)){ admStatus('Veröffentlichen geht nur auf der Live-Seite (tftclimb.com).'); return; }
+  pw = pw || admPwGet(); if(!pw){ admPwAsk(); return; }
+  const data = admData();
+  if(!confirm(`Tierlist für Set ${data.set} mit ${data.comps.length} Comps veröffentlichen? Alle Besucher sehen sie nach etwa einer Minute.`)) return;
+  const btn = $('#admPublish'); btn.disabled = true; admStatus('Wird veröffentlicht …');
+  try {
+    const r = await fetch('/api/tierlist', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw, set:data.set, data})});
+    const j = await r.json().catch(()=>({}));
+    if(r.status === 401){ try { sessionStorage.removeItem(ADM_PW_KEY); } catch(e){} admPwAsk('Passwort falsch – bitte noch einmal eingeben.'); return; }
+    if(!r.ok || !j.ok){ admStatus('Nicht veröffentlicht: ' + (j.error || 'Fehler ' + r.status)); return; }
+    admStatus(`Veröffentlicht ✓ ${j.comps} Comps (Commit ${j.commit}) – in etwa einer Minute für alle sichtbar.`);
+  } catch(e){ admStatus('Nicht veröffentlicht: keine Verbindung.'); }
+  finally { btn.disabled = false; }
+}
 // Klicks
 document.addEventListener('click', e=>{
   if(!e.target.closest || !e.target.closest('#page-admin')) return;
@@ -1240,9 +1273,10 @@ document.addEventListener('click', e=>{
     const c = {slug:'tftf-' + Date.now().toString(36), name:'Neue Comp', tier:'C', sub:'', main:1, sticker:1, style:'4-Cost Fast 8', diff:'MEDIUM', carry:'', board:[], early:[], alt:[], cap:[], carousel:[], augs:[], augTypes:[], plan:'', tips:''};
     adm.comps.push(c); admSel = c.slug; admSave('Neue Comp angelegt'); renderAdminRows(); renderAdminEdit(); return;
   }
+  if(t.id==='admPublish'){ admPublish(); return; }
+  if(t.id==='admPwGo'){ admPwSubmit(); return; }
   if(t.id==='admExport'){
-    admEnsure();
-    const data = {version:1, set:TFT_DATA.set, patch:adm.patch, updated:adm.updated || new Date().toISOString().slice(0,10), source:adm.source || 'TFTClimb', basedOn:adm.basedOn || '', comps:adm.comps, itemTL:adm.itemTL || ITEM_TL, augTL:adm.augTL || AUG_TL, holdTL:adm.holdTL || HOLD_TL, encTL:adm.encTL || ENC_TL};
+    const data = admData();
     const js = '// TFTClimb – Tierlist-Daten, exportiert aus der Redaktion am ' + new Date().toLocaleString(LOC) + '\n// Datei neben die index.html legen, dann sehen alle Besucher diesen Stand.\nwindow.TIERLIST_DATA = ' + JSON.stringify(data) + ';\n';
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([js], {type:'text/javascript'})); a.download = `tierlist-data-${TFT_DATA.set}.js`;
     document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
