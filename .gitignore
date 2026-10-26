@@ -3,3 +3,4 @@ desktop.ini
 .DS_Store
 .vercel
 tools/update-log.txt
+tools/modelle/cache/

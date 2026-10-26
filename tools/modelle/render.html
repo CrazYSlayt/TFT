@@ -1,0 +1,41 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Champion Render</title>
+<style>html,body{margin:0;background:transparent}canvas{display:block}</style></head>
+<body>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+<script type="module">
+// Posiertes Ingame-Modell eines Champions rendern (Daten aus vorbereiten.js + pose.js), Hintergrund transparent.
+// ?d=<datenordner> &pose=posed.json &yaw=Grad &pitch=Grad &size=Pixel &bg=06141e (Vorschau-Hintergrund) &fmt=webp
+import * as THREE from 'three';
+const q = new URLSearchParams(location.search), d = q.get('d'), size = +(q.get('size') || 600), yaw = +(q.get('yaw') || 0), pitch = +(q.get('pitch') || 0);
+const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true, preserveDrawingBuffer: true});
+renderer.setPixelRatio(1); renderer.setSize(size, size); renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.setClearColor(q.get('bg') ? new THREE.Color('#' + q.get('bg')) : 0x000000, q.get('bg') ? 1 : 0);
+document.body.appendChild(renderer.domElement);
+const [man, data] = await Promise.all([fetch(d + '/manifest.json').then(r => r.json()), fetch(d + '/' + (q.get('pose') || 'posed.json')).then(r => r.json())]);
+// Texturen: rohe RGBA-Pixel aus den Spieldateien (oberste Zeile zuerst, passt zu Riots UV-Koordinaten)
+const texCache = {};
+const tex = async t => { if (!t) return null; if (texCache[t.file]) return texCache[t.file];
+  const px = new Uint8Array(await (await fetch(d + '/' + t.file)).arrayBuffer());
+  const x = new THREE.DataTexture(px, t.w, t.h, THREE.RGBAFormat); x.colorSpace = THREE.SRGBColorSpace; x.flipY = false; x.generateMipmaps = true;
+  x.minFilter = THREE.LinearMipmapLinearFilter; x.magFilter = THREE.LinearFilter; x.anisotropy = 8; x.needsUpdate = true; return texCache[t.file] = x; };
+const hide = new Set(man.hide.map(s => s.toLowerCase()));
+const group = new THREE.Group();
+for (const s of data.subs) {
+  if (hide.has(s.name.toLowerCase())) continue;   // im Spiel ausgeblendete Teile (Requisiten, Zweitwaffen …) laut Skin-Datei
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(s.pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(s.uv, 2)); g.setIndex(s.idx);
+  g.computeBoundingBox(); if (g.boundingBox.max.y < -5) continue;   // von der Animation unter den Boden geparkte Teile
+  const map = await tex(man.tex[s.name] || man.defaultTex);
+  group.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({map, side: THREE.DoubleSide})));   // handgemalte Texturen ohne Licht, wie im Spiel; Alphakanal = Leucht-Maske, nicht Durchsichtigkeit
+}
+group.rotation.y = yaw * Math.PI / 180; const scene = new THREE.Scene(); scene.add(group);
+const box = new THREE.Box3().setFromObject(group), ctr = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3());
+const r = Math.max(sz.x, sz.y, sz.z) * .58, cam = new THREE.OrthographicCamera(-r, r, r, -r, -5000, 5000), pr = pitch * Math.PI / 180;
+cam.position.set(ctr.x, ctr.y + Math.sin(pr) * 1000, ctr.z + Math.cos(pr) * 1000); cam.lookAt(ctr);
+renderer.render(scene, cam);
+window.__info = 'Teile ' + group.children.length + ' · Größe ' + sz.toArray().map(Math.round).join('×');
+window.__png = renderer.domElement.toDataURL(q.get('fmt') === 'webp' ? 'image/webp' : 'image/png', .9);
+window.__done = true;
+</script>
+</body></html>
