@@ -2856,12 +2856,13 @@ const rdHue = v => v < 40 ? v / 40 * 22 : v < 70 ? 38 + (v - 40) / 30 * 14 : 115
 const rdColor = v => `hsl(${rdHue(v).toFixed(0)} 85% 60%)`;
 function rdRing(to, label){
   const hero = $('#rdRes .rd-hero'), ring = hero && hero.querySelector('.rd-ring'), num = ring && ring.querySelector('b'); if(!num) return;
-  const from = rdShown.p, set = v => { rdShown.p = v; ring.style.setProperty('--p', v.toFixed(2)); hero.style.setProperty('--rc', rdColor(v)); num.textContent = Math.round(v); };
+  const from = rdShown.p, set = v => { v = Math.max(0, Math.min(100, v)); rdShown.p = v; ring.style.setProperty('--p', v.toFixed(2)); hero.style.setProperty('--rc', rdColor(v)); num.textContent = Math.round(v); };
   cancelAnimationFrame(rdRing.raf);
   const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(still || Math.abs(to - from) < .5){ set(to); num.textContent = label; return; }
   const t0 = performance.now(), dur = 700, ease = x => 1 - Math.pow(1 - x, 3);
-  const step = now => { const k = Math.min(1, (now - t0) / dur); set(from + (to - from) * ease(k)); if(k < 1) rdRing.raf = requestAnimationFrame(step); else num.textContent = label; };
+  // Fortschritt 0 … 1: der Zeitstempel des ersten Bilds kann vor t0 liegen – negativ würde die Kurve über den Startwert hinausschießen
+  const step = now => { const k = Math.max(0, Math.min(1, (now - t0) / dur)); set(from + (to - from) * ease(k)); if(k < 1) rdRing.raf = requestAnimationFrame(step); else num.textContent = label; };
   rdRing.raf = requestAnimationFrame(step);
 }
 
