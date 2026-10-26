@@ -2755,7 +2755,7 @@ img.cs-ric{border-radius:0 !important;object-fit:contain;filter:drop-shadow(0 2p
 .ag-kpi.got b{font-size:1.6rem}
 .ag-sec{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.06)}
 .ag-sec h3{display:flex;align-items:center;gap:10px;margin:0 0 10px;font:italic 800 1.1rem/1 var(--ff-head);text-transform:uppercase;letter-spacing:.03em;color:#e6f6ff}
-/* eine Vorhersage pro offenem Augment; der Balken hinter jeder Zeile zeigt die Chance */
+/* eine Vorhersage pro Augment (gewählte bleiben stehen); der Balken hinter jeder Zeile zeigt die Chance */
 .ag-pg{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:12px;margin-top:14px}
 .ag-pb{min-width:0;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(3,17,27,.45)}
 .ag-pb.next{border-color:rgba(46,230,214,.45);background:linear-gradient(180deg,rgba(46,230,214,.09),rgba(3,17,27,.45) 60%);box-shadow:0 0 18px rgba(46,230,214,.1)}
@@ -2770,6 +2770,14 @@ img.cs-ric{border-radius:0 !important;object-fit:contain;filter:drop-shadow(0 2p
 .ag-pi.top{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tc) 60%,transparent)}
 .ag-pi.top span,.ag-pi.top b{color:#fff}
 .ag-pb.next .ag-pi b{font-size:1.3rem}
+/* gewählte Augments bleiben stehen: deine Wahl leuchtet in ihrer Farbe (mit Haken an der Stufe), die anderen Stufen treten zurück */
+.ag-chip{display:inline-flex;align-items:center;gap:3px}
+.ag-chip svg{width:11px;height:11px;margin-left:-2px}
+.ag-pi.pick{box-shadow:inset 0 0 0 2px var(--tc),0 0 14px color-mix(in srgb,var(--tc) 28%,transparent)}
+.ag-pi.pick::before{width:100%}
+.ag-pi.pick span,.ag-pi.pick b{color:#fff}
+.ag-pi.off{opacity:.38}
+.ag-pi.off::before{filter:grayscale(1)}
 .ag-path{display:inline-flex;align-items:center;gap:2px}
 .ag-path>i{width:12px;height:2px;background:rgba(46,230,214,.45)}
 .ag-path>span{display:inline-flex;opacity:.55}

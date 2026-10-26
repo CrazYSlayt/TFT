@@ -2599,22 +2599,23 @@ const agDist = (k, i) => { const all = CS.augments.seq.filter(x=>x[0].startsWith
 // Deine Angaben: pro Stufe drei Augment-Rahmen. Die gerade fällige Stufe pulsiert leicht, spätere Stufen (und Stufen, die nach deinen Augments nicht vorkommen) sind mit Schloss gesperrt
 function agInput(){
   const k = ag.k;
-  return `<div class="tio-hd"><h2>${L('Deine Angaben', 'Your input')}</h2><button type="button" class="tio-reset" id="agReset" title="${L('Zurücksetzen', 'Reset')}"${k ? '' : ' disabled'}>${csSvg('<path d="M4 4v6h6"/><path d="M20 12a8 8 0 1 1-2.3-5.7L4 10"/>', 2)}<span>${L('Zurücksetzen', 'Reset')}</span></button></div>
+  return `<div class="tio-hd"><h2>${L('Deine Angaben', 'Your input')}</h2><button type="button" class="tio-reset" id="agReset" title="${L('Zurücksetzen', 'Reset')}"${k ? '' : ' disabled'}>${csSvg('<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>', 2.2)}<span>${L('Zurücksetzen', 'Reset')}</span></button></div>
     <p class="tio-hint">${L('Wähl jedes Augment, sobald du es siehst.', 'Pick each augment as soon as you see it.')}</p>
     <div class="ag-rows">${AG_ST.map((st, i)=>`<div class="ag-row ${i < k.length ? 'done' : i === k.length ? 'cur' : 'later'}" role="group" aria-label="${i + 1}. Augment (${st})"><span class="ag-st">${st}</span>
       <div class="ag-opts">${'SGP'.split('').map(l=>{ const ok = i <= k.length && agSum(k.slice(0, i) + l) > 0, on = k[i] === l;
         return `<button type="button" class="ag-opt ${CS_AUG[l][0]}${on ? ' on' : ''}${ok ? '' : ' lock'}" data-i="${i}" data-l="${l}"${ok ? ` aria-pressed="${on}"${on ? ` title="${L('Nochmal klicken nimmt die Auswahl zurück', 'Click again to undo')}"` : ''}` : ` disabled title="${i > k.length ? L('Erst das Augment davor wählen', 'Pick the augment before first') : L('Kommt nach deinen bisherigen Augments nicht vor', 'Does not occur after your previous augments')}"`}><span class="ag-cbg"></span>${agFr(l, 'ag-fr')}<span class="ag-cin">${ok ? agHex(l) : agLock()}<b>${agName(l)}</b></span></button>`; }).join('')}</div></div>`).join('')}</div>`;
 }
-// Dein Ergebnis: oben die Prismatic-Chance, darunter eine Vorhersage pro offenem Augment (am Anfang alle drei, jede Eingabe nimmt eine weg)
+// Dein Ergebnis: oben die Prismatic-Chance, darunter immer alle drei Augments. Offene zeigen die Chancen nach deinen bisherigen Augments,
+// gewählte bleiben stehen: deine Wahl ist hervorgehoben (mit der Chance, die sie vorher hatte), die anderen Stufen treten zurück
 function agOutput(){
   const k = ag.k, n = k.length, W = agSum(''), wk = agSum(k), seq = CS.augments.seq;
   const prism = k.includes('P') ? 100 : seq.filter(x=>x[0].startsWith(k) && x[0].includes('P')).reduce((s, x)=>s + x[1], 0) / wk * 100;
-  let main;
-  if(n < 3) main = `<div class="ag-pg n${3 - n}" style="--n:${3 - n}">${AG_ST.slice(n).map((st, j)=>{ const dist = agDist(k, n + j), top = Math.max(...dist.map(d=>d[1]));
-    return `<div class="ag-pb${j ? '' : ' next'}"><h3><span class="ag-chip">${st}</span>${n + j + 1}. Augment</h3>
-      ${dist.map(([l, p])=>`<div class="ag-pi ${CS_AUG[l][0]}${p === top && p > 0 ? ' top' : ''}" style="--p:${p.toFixed(1)}%">${agHex(l)}<span>${agName(l)}</span><b>${agPct(p)}</b></div>`).join('')}</div>`; }).join('')}</div>`;
-  else { const rank = [...seq].sort((a, b)=>b[1] - a[1]).findIndex(x=>x[0] === k) + 1;
-    main = `<div class="ag-sec"><h3>${L('Deine Reihenfolge', 'Your order')}</h3><div class="ag-done"><span class="ag-path">${k.split('').map(agHex).join('<i></i>')}</span>
+  const check = csSvg('<path d="m5 12.5 4.5 4.5L19 7.5"/>', 3);
+  let main = `<div class="ag-pg n3" style="--n:3">${AG_ST.map((st, i)=>{ const dist = agDist(k.slice(0, Math.min(i, n)), i), top = Math.max(...dist.map(d=>d[1])), done = i < n;
+    return `<div class="ag-pb${done ? ' done' : i === n ? ' next' : ''}"><h3><span class="ag-chip">${done ? check : ''}${st}</span>${i + 1}. Augment</h3>
+      ${dist.map(([l, p])=>`<div class="ag-pi ${CS_AUG[l][0]}${done ? (k[i] === l ? ' pick' : ' off') : p === top && p > 0 ? ' top' : ''}" style="--p:${p.toFixed(1)}%"${done && k[i] === l ? ` title="${L('Deine Wahl', 'Your pick')}"` : ''}>${agHex(l)}<span>${agName(l)}</span><b>${agPct(p)}</b></div>`).join('')}</div>`; }).join('')}</div>`;
+  if(n === 3){ const rank = [...seq].sort((a, b)=>b[1] - a[1]).findIndex(x=>x[0] === k) + 1;
+    main += `<div class="ag-sec"><h3>${L('Deine Reihenfolge', 'Your order')}</h3><div class="ag-done"><span class="ag-path">${k.split('').map(agHex).join('<i></i>')}</span>
       <p>${L(`Kommt in <b>${agPct(wk / W * 100)}</b> aller Partien vor – Platz ${rank} von ${seq.length} Reihenfolgen.`, `Happens in <b>${agPct(wk / W * 100)}</b> of all games – rank ${rank} of ${seq.length} orders.`)}</p></div></div>`; }
   const kpi = `<div class="ag-kpi${k.includes('P') ? ' got' : ''}"><span>${agHex('P')}</span><div><small>${L('Mindestens ein Prismatic in dieser Partie', 'At least one prismatic this game')}</small>
     <b>${k.includes('P') ? L('Hast du schon', 'Already got one') : agPct(prism)}</b></div></div>`;
