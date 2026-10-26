@@ -2308,7 +2308,7 @@ a.champ{text-decoration:none}
 .csx-grid.csx-3{grid-template-columns:repeat(2,minmax(0,1fr))}
 @container (min-width:860px){.csx-grid.csx-4{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @container (min-width:1120px){.csx-grid.csx-3{grid-template-columns:repeat(3,minmax(0,1fr))}}
-/* bei 2 Spalten: die übrige dritte Karte (Prismatic-Orb) über die volle Breite, Zeilen darin zweispaltig */
+/* bei 2 Spalten: die übrige dritte Karte (prismatischer Orb) über die volle Breite, Zeilen darin zweispaltig */
 @container (max-width:859px){
   .csx-3>.csx-card:last-child:nth-child(odd){grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start}
   .csx-3>.csx-card:last-child:nth-child(odd)>.csx-head{grid-column:1/-1}
@@ -2724,7 +2724,7 @@ img.cs-ric{border-radius:0 !important;object-fit:contain;filter:drop-shadow(0 2p
 .ag-cin{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 9%}
 .ag-cin .ag-hx{width:min(24px,34cqi);height:min(24px,34cqi)}
 .ag-cin>svg:not(.ag-hx){width:20px;height:20px;color:#c9d6e0}
-.ag-cin b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:min(.72rem,18cqi);font-weight:800}   /* kleine Karten: Schrift wächst mit der Kartenbreite, „Prismatic“ passt immer */
+.ag-cin b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 min(.8rem,17cqi)/1.1 var(--ff-head);letter-spacing:.02em}   /* kleine Karten: schmale Schrift, wächst mit der Kartenbreite – „Prismatisch“ passt immer */
 .ag-opt:hover:not(:disabled){transform:translateY(-3px)}
 .ag-opt:focus-visible{outline:2px solid var(--tc);outline-offset:4px}
 /* die gerade fällige Stufe pulsiert leicht, die gewählte Karte leuchtet, die nicht gewählten treten zurück, gesperrte tragen ein Schloss */
@@ -2833,7 +2833,8 @@ img.cs-ric{border-radius:0 !important;object-fit:contain;filter:drop-shadow(0 2p
 /* Augment-Vorhersage: die Vorhersagen nebeneinander (mittlere Breite mit drei Vorhersagen: Name über der Zahl), am Handy untereinander */
 .tio-out{container-type:inline-size}
 @container (max-width:419px){.ag-pg{grid-template-columns:minmax(0,1fr)}}
-@container (min-width:420px) and (max-width:599px){
+@container (min-width:640px) and (max-width:719px){.ag-pg.n3 .ag-pi span{font-size:.84rem}}   /* „Prismatisch“ passt gerade noch neben die Zahl */
+@container (min-width:420px) and (max-width:639px){
   .ag-pg.n3 .ag-pb{padding:10px}
   .ag-pg.n3 .ag-pi{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;padding:6px 8px 7px}
   .ag-pg.n3 .ag-pi .ag-hx{grid-row:1 / 3}

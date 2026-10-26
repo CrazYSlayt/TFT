@@ -82,7 +82,7 @@ window.TFT_CUSTOM = {
       blue4: {label:'Blauer Orb', orb:'b', wert:'≈ 8 Gold', note:'ab Stage 4', items:[['4 Gold + zufälliger 4-Kosten', 49], ['2 Gold + 2 zufällige 3-Kosten', 47], ['8 Gold + Umgestalter', 3], ['3 Gold + Champion-Duplikator', 1]]},
       gold: {label:'Gold-Orb', orb:'g', wert:'≈ 14 Gold', items:[['15 Gold', 20], ['Amboss (fertiges Item)', 18], ['4 Gold + Pfannenwender oder Bratpfanne + Umgestalter', 15], ['6 Gold + 2 zufällige 4-Kosten', 15], ['2 Gold + 4 zufällige 3-Kosten', 13], ['1 Gold + Diebeshandschuhe', 10], ['Champion-Duplikator + 6 Gold', 3], ['2 Gold + Champion-Duplikator + kleiner Duplikator', 3], ['5 Gold + 3 zufällige 3-Kosten', 3]], note:'Stage 2–3'},
       gold4: {label:'Gold-Orb', orb:'g', wert:'≈ 18 Gold', items:[['13 Gold + zufälliger 5-Kosten', 21], ['2 Gold + 2 Komponenten-Ambosse', 21], ['10 Gold + 2 zufällige 4-Kosten', 16], ['2 Gold + Amboss (fertiges Item)', 16], ['3 Gold + Diebeshandschuhe', 11], ['8 Gold + Champion-Duplikator', 5], ['7 Gold + 2 zufällige 5-Kosten', 5], ['1 Gold + Komponenten-Amboss + Pfannenwender oder Bratpfanne + Umgestalter', 5]], note:'ab Stage 4'},
-      prism: {label:'Prismatic-Orb', orb:'p', wert:'≈ 40 Gold', items:[['Item-Entferner + 2 Artefakt-Ambosse', 15], ['Meisterwerk-Aufwertung + Item-Entferner + Komponenten-Amboss', 15], ['24 Gold + Meisterwerk-Aufwertung', 15], ['18 Gold + Umgestalter + Amboss (fertig) + Komponenten-Amboss + Pfannenwender', 15], ['18 Gold + Umgestalter + Amboss (fertig) + Komponenten-Amboss + Bratpfanne', 15], ['Lichtgegenstand-Glückstruhe + 10 Gold', 15], ['25 Gold + Item-Entferner + Artefakt-Amboss', 10]], note:'ab Stage 3'}
+      prism: {label:'Prismatischer Orb', orb:'p', wert:'≈ 40 Gold', items:[['Item-Entferner + 2 Artefakt-Ambosse', 15], ['Meisterwerk-Aufwertung + Item-Entferner + Komponenten-Amboss', 15], ['24 Gold + Meisterwerk-Aufwertung', 15], ['18 Gold + Umgestalter + Amboss (fertig) + Komponenten-Amboss + Pfannenwender', 15], ['18 Gold + Umgestalter + Amboss (fertig) + Komponenten-Amboss + Bratpfanne', 15], ['Lichtgegenstand-Glückstruhe + 10 Gold', 15], ['25 Gold + Item-Entferner + Artefakt-Amboss', 10]], note:'ab Stage 3'}
     }
   },
   // Schwarzdorn (Blackthorn): Die Unit auf dem Opferfeld wird vor dem Kampf geopfert.
@@ -117,10 +117,10 @@ window.TFT_CUSTOM = {
     {id:'golden-gala', n:'Golden Gala', ch:'Leona', cat:'augments', w:6, de:'Alle angebotenen Augments sind Gold.', en:'All augments offered are gold.'},
     {id:'golden-prelude', n:'Golden Prelude', ch:'Amumu', cat:'augments', w:4, de:'Das erste Augment ist Gold.', en:'The first augment is gold.'},
     {id:'golden-finale', n:'Golden Finale', ch:'Ivern', cat:'augments', w:4, de:'Das letzte Augment ist Gold.', en:'The last augment is gold.'},
-    {id:'prismatic-opener', n:'Prismatic Prelude', ch:'Morgana', cat:'augments', w:4, de:'Das erste Augment ist Prismatisch.', en:'The first augment is prismatic.'},
-    {id:'prismatic-finisher', n:'Prismatic Finale', ch:'Karma', cat:'augments', w:4, de:'Das letzte Augment ist Prismatisch.', en:'The last augment is prismatic.'},
+    {id:'prismatic-opener', n:'Prismatic Prelude', ch:'Morgana', cat:'augments', w:4, de:'Das erste Augment ist prismatisch.', en:'The first augment is prismatic.'},
+    {id:'prismatic-finisher', n:'Prismatic Finale', ch:'Karma', cat:'augments', w:4, de:'Das letzte Augment ist prismatisch.', en:'The last augment is prismatic.'},
     {id:'scouting-party', n:'Scouting Party', ch:'Teemo', cat:'augments', w:4, de:'Du bekommst +1 Augment-Reroll.', en:'You get +1 augment reroll.'},
-    {id:'prismatic-party', n:'Prismatic Party', ch:'Elder Dragon', cat:'augments', w:2, de:'Alle angebotenen Augments sind Prismatisch.', en:'All augments offered are prismatic.'},
+    {id:'prismatic-party', n:'Prismatic Party', ch:'Elder Dragon', cat:'augments', w:2, de:'Alle angebotenen Augments sind prismatisch.', en:'All augments offered are prismatic.'},
     {id:'2-cost-start', n:'2 Cost Start', ch:'Warwick', cat:'units', w:6, de:'Du startest mit einem zufälligen 2-Kosten-Champion.', en:'You start with a random 2-cost champion.'},
     {id:'upgraded-start', n:'Upgraded Start', ch:'LeBlanc', cat:'units', w:6, de:'Dein Start-Champion ist schon ★★.', en:'Your starting champion is already ★★.'},
     {id:'howling-abyss', n:'Howling Abyss', ch:'Azir', cat:'units', w:6, de:'Du startest mit 5 zufälligen 1-Kosten-Champions.', en:'You start with 5 random 1-cost champions.'},

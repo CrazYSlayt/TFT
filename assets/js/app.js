@@ -1507,8 +1507,8 @@ const BUDDY_LINES = {
   drops(){ return ['Komponenten kommen aus einem Item-Pool. Ich zähle mit, was noch drin ist!',
     'Klick die Komponenten an, sobald sie droppen. Je genauer du bist, desto besser meine Vorhersage.',
     'Vor jeder Creep-Stage kommt von jeder Komponente eine dazu. Ein wunderbar logisches System!',
-    'Prismatic-Orbs gibt es erst ab 3-7. Geduld ist auch eine Wissenschaft!']; },
-  augtool(){ return ['Silber, Gold oder Prisma? Die Wahrscheinlichkeit sagt es dir!', 'Trag dein Augment auf 2-1 ein – den Rest berechne ich.']; },
+    'Prismatische Orbs gibt es erst ab 3-7. Geduld ist auch eine Wissenschaft!']; },
+  augtool(){ return ['Silber, Gold oder Prismatisch? Die Wahrscheinlichkeit sagt es dir!', 'Trag dein Augment auf 2-1 ein – den Rest berechne ich.']; },
   sim(){ return ['Willkommen in meinem Labor! Stell zwei Teams auf und starte das Experiment.',
     'Klick eine Unit an – dann siehst du ihr Ziel, ihren Laufweg und was sie als Nächstes vorhat.',
     'Ein Kampf ist Zufall, hundert Kämpfe sind Statistik. Probier „Siegchance“!']; },
@@ -2586,7 +2586,7 @@ const agSum = p => CS.augments.seq.filter(x=>x[0].startsWith(p)).reduce((s, x)=>
 const agName = l => L(CS_AUG[l][1], CS_AUG[l][2]);
 const agHex = l => `<svg class="ag-hx atg-n atg-${l}" viewBox="0 0 24 24" aria-hidden="true"><polygon class="atg-h" points="12,1.5 21.1,6.75 21.1,17.25 12,22.5 2.9,17.25 2.9,6.75"/></svg>`;
 const agPct = p => (p > 0 && p < 1 ? '<1' : fmtNum(Math.round(p * 10) / 10)) + L(' %', '%');
-// Augment-Rahmen in Silber, Gold und Prisma (eigene Grafiken von CrazYSlayt, assets/icons/tft/augment-frame-*.webp)
+// Augment-Rahmen in Silber, Gold und Prismatisch (eigene Grafiken von CrazYSlayt, assets/icons/tft/augment-frame-*.webp)
 const AG_FR = {S:'silver', G:'gold', P:'prism'};
 const agFrSrc = l => `assets/icons/tft/augment-frame-${AG_FR[l]}.webp`;
 const agFr = (l, cls) => `<img class="${cls}" src="${agFrSrc(l)}" alt="" width="240" height="356">`;
@@ -3017,7 +3017,7 @@ function drRender(){
     const orbName = r => [r[4] && `${r[4]}× ${L('Komponente', 'component')}`, r[0] && `${r[0]}× ${L('Grau', 'gray')}`, r[1] && `${r[1]}× ${L('Blau', 'blue')}`, r[2] && `${r[2]}× Gold`, r[3] && `${r[3]}× ${L('Prismatisch', 'prismatic')}`, r[5] && L('Komponenten-Amboss', 'component anvil')].filter(Boolean).join(' + ');
     const hasUp = all.some(r=>r[6] > 0);   // aufgewertete Runden gibt es nur in der alten tftflow-Tabelle
     loot = `<div class="dr-orbs">
-        <div class="dr-orb prism"><span>Prismatic-Orb</span><b>${drPct(P(r=>r[3] > 0))}</b></div>
+        <div class="dr-orb prism"><span>Prismatischer Orb</span><b>${drPct(P(r=>r[3] > 0))}</b></div>
         <div class="dr-orb gold"><span>Gold-Orb</span><b>${drPct(P(r=>r[2] > 0))}</b></div>
         <div class="dr-orb blue"><span>Blau-Orb</span><b>${drPct(P(r=>r[1] > 0))}</b></div>
         ${hasUp ? `<div class="dr-orb up"><span>Aufgewertet</span><b>${drPct(P(r=>r[6] > 0))}</b></div>` : `<div class="dr-orb gray"><span>${L('Grauer Orb', 'Gray orb')}</span><b>${drPct(P(r=>r[0] > 0))}</b></div>`}
@@ -3365,7 +3365,7 @@ const CS_SHOW_CAROUSEL = false;
 const csPct = p => fmtNum(Math.round(p * 10) / 10) + L(' %', '%');
 const csTable = (head, rows, cls='') => `<div class="cs-wrap"><table class="cs-table ${cls}"><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 const csSrc = s => s && !/little buddy/i.test(s) ? `<p class="cs-src">${L('Quelle', 'Source')}: ${esc(s)}</p>` : '';   // Little Buddy Bot wird nicht als Quelle genannt
-const CS_AUG = {S:['s', 'Silber', 'Silver'], G:['g', 'Gold', 'Gold'], P:['p', 'Prisma', 'Prismatic']};
+const CS_AUG = {S:['s', 'Silber', 'Silver'], G:['g', 'Gold', 'Gold'], P:['p', 'Prismatisch', 'Prismatic']};
 // Spielnahe Darstellung (Vorbild: Little Buddy Bot): große Zahlen, Kostenfarben als Schrift, Symbole statt Fließtext, Einheit direkt am Wert
 // Offizielle Riot-Symbole (assets/icons/tft, aus den Spieldaten über CommunityDragon): Gold, Reroll, XP, Ambosse, Beutekugeln
 const TI = k => `assets/icons/tft/${k}.png`;
@@ -3374,7 +3374,7 @@ const csCoin = n => +n === 0 ? '<span class="csx-none">–</span>' : csIc(TI('go
 // Zufällige Champions: Riots Champion-Kugel in der Kostenfarbe (wie im Spiel); zufällige Komponenten: Riots Item-Symbol
 const csChamp = (c, n) => csIc(TI('champ-' + c), n, (n > 1 ? n + ' ' : '') + L(`zufällige ${c}-Kosten-Champions`, `random ${c}-cost champions`), 'chorb');
 const csComp = n => csIc(TI('orb-blue'), '' + n, n + ' ' + L('Komponenten-Kugeln (je eine zufällige Komponente)', 'component orbs (one random component each)'), 'corb');   // Riots Symbol: so sehen Komponenten-Orbs im Spiel aus
-const CS_ORB = {s:['Grauer Orb', 'Gray orb'], b:['Blauer Orb', 'Blue orb'], g:['Gold-Orb', 'Gold orb'], p:['Prismatic-Orb', 'Prismatic orb']};
+const CS_ORB = {s:['Grauer Orb', 'Gray orb'], b:['Blauer Orb', 'Blue orb'], g:['Gold-Orb', 'Gold orb'], p:['Prismatischer Orb', 'Prismatic orb']};
 // Beutekugeln: eigene Grafiken (assets/icons/tft/lootorb-*.webp) – Riot hat für Grau und Gold nur Platzhalter
 const CS_ORB_IMG = {s:'gray', b:'blue', g:'gold', p:'prism'};
 const csOrb = (k, n, always) => csIc(TI('lootorb-' + CS_ORB_IMG[k]).replace('.png', '.webp'), n > 1 || (always && n) ? '' + n : '', (n > 1 ? n + '× ' : '') + L(CS_ORB[k][0], CS_ORB[k][1]), 'orb o-' + k);
@@ -3685,10 +3685,10 @@ function csPatchSection(){
 const CS_META = {
   shop:{s:['Shop & XP', 'Shop & XP'], h:['Wann du levelst. Wann du rollst.', 'Know when to level. Know when to roll.'], d:['Chancen pro Level, Pool & XP', 'Odds per level, pool & XP'], ic:'<path d="M3 4h2l2.4 11h11L21 7H6"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/>',
     tip:()=>SHOP && SHOP.odds[7] ? L(`Level 8 ist der wichtigste Breakpoint für 4-Kosten-Carries: ${SHOP.odds[7][3]} % pro Shop-Slot.`, `Level 8 is the key breakpoint for 4-cost carries: ${SHOP.odds[7][3]}% per shop slot.`) : ''},
-  augments:{s:['Augment-Stufen', 'Augment tiers'], h:['Welche Stufen auf 2-1, 3-2 und 4-2 kommen.', 'Which tiers show up on 2-1, 3-2 and 4-2.'], d:['Silber, Gold & Prisma pro Partie', 'Silver, gold & prismatic per game'], ic:'<path d="M12 3l2.6 5.6L20 9.5l-4 4 1 5.5-5-2.8L7 19l1-5.5-4-4 5.4-.9z"/>',
+  augments:{s:['Augment-Stufen', 'Augment tiers'], h:['Welche Stufen auf 2-1, 3-2 und 4-2 kommen.', 'Which tiers show up on 2-1, 3-2 and 4-2.'], d:['Silber, Gold & Prismatisch pro Partie', 'Silver, gold & prismatic per game'], ic:'<path d="M12 3l2.6 5.6L20 9.5l-4 4 1 5.5-5-2.8L7 19l1-5.5-4-4 5.4-.9z"/>',
     tip:()=>L('Ist das erste Augment Silber, kommt als Nächstes zu 61 % Gold.', 'If the first augment is silver, the next one is gold 61% of the time.')},
   encounters:{s:['Encounters', 'Encounters'], h:['Alle Encounters und wie oft sie kommen.', 'Every encounter and how often it shows up.'], d:['Wie oft jeder Encounter kommt', 'How often each one appears'], ic:'<path d="M4 20l7-7M13 4l7 7-3 1-4 4-1 3-6-6 3-1 4-4z"/>'},
-  orbs:{s:['Loot-Orbs', 'Loot orbs'], h:['Was in Gold- und Prismatic-Orbs steckt.', "What's inside gold and prismatic orbs."], d:['Inhalt von Gold & Prisma', 'Gold & prismatic contents'], ic:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/>'},
+  orbs:{s:['Loot-Orbs', 'Loot orbs'], h:['Was in Gold-Orbs und prismatischen Orbs steckt.', "What's inside gold and prismatic orbs."], d:['Inhalt von Gold-Orbs & prismatischen Orbs', 'Gold & prismatic contents'], ic:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/>'},
   loot:{s:['Loot-Verteilung', 'Loot distribution'], h:['Welche Beute die Creep-Runden geben.', 'What loot the creep rounds give.'], d:['Beute aus den Creep-Runden', 'Loot from the creep rounds'], ic:'<path d="M4 9h16v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M3 5h18v4H3zM12 5v15"/>'},
   damage:{s:['Spielerschaden', 'Player damage'], h:['Wie viel Leben du nach einer Niederlage verlierst.', 'How much health you lose after a loss.'], d:['Schaden pro Stage', 'Damage per stage'], ic:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path d="M12 8l-1.5 4h3L12 16"/>',
     tip:()=>L('Jede gegnerische Unit, die überlebt, kostet dich 1 Leben extra.', 'Every enemy unit that survives costs you 1 extra health.')},
@@ -3848,7 +3848,7 @@ function renderCheats(sub){
       </div>
       <aside class="ts-side">
         <h3>${L('Häufige Fragen', 'FAQ')}</h3>
-        <details><summary>${L('Wie hoch ist die Chance auf ein Prismatic-Augment?', 'What are the odds of a prismatic augment?')}</summary><p>${L('Das erste Augment ist in etwa 9 % der Partien Prismatisch. Mindestens ein Prismatic-Augment gibt es in knapp der Hälfte der Partien (etwa 48 %).', 'The first augment is prismatic in about 9% of games. Almost half of all games (about 48%) have at least one prismatic augment.')}</p></details>
+        <details><summary>${L('Wie hoch ist die Chance auf ein Prismatic-Augment?', 'What are the odds of a prismatic augment?')}</summary><p>${L('Das erste Augment ist in etwa 9 % der Partien prismatisch. Mindestens ein Prismatic-Augment gibt es in knapp der Hälfte der Partien (etwa 48 %).', 'The first augment is prismatic in about 9% of games. Almost half of all games (about 48%) have at least one prismatic augment.')}</p></details>
         <details><summary>${L('Wie viel Schaden bekomme ich nach einer Niederlage?', 'How much damage do I take after a loss?')}</summary><p>${L('Den Stage-Schaden plus 1 für jede gegnerische Unit, die den Kampf überlebt.', 'The stage damage plus 1 for every enemy unit that survives the fight.')}</p></details>
         <details><summary>${L('Wie baue ich ein Emblem?', 'How do I build an emblem?')}</summary><p>${L('Pfannenwender oder Bratpfanne plus eine Komponente. Welches Emblem dabei entsteht, steht in der Tabelle Emblem-Rezepte.', 'Spatula or Frying Pan plus a component. Which emblem you get is listed in the emblem recipes table.')}</p></details>
         <h3>${L('Weiterlesen', 'Read more')}</h3>
