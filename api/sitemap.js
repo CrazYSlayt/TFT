@@ -10,7 +10,7 @@ const csPath = id => '/cheatsheet/' + (CS_SLUG[id] || 'tft-' + id);
 // Englische Adressen – gleiche Tabellen wie in app.js (TOOL_SLUG_EN, CS_SLUG_EN, PAGE_EN, langPath)
 const TOOL_SLUG_EN = {rolldown: 'tft-rolldown-calculator', drops: 'tft-item-drop-chance', tierlist: 'tft-tier-list-maker', simulator: 'tft-fight-simulator', dps: 'tft-dps-comparison', augments: 'tft-augment-prediction'};
 const CS_SLUG_EN = {shop: 'tft-shop-odds', augments: 'tft-augment-tiers', orbs: 'tft-loot-orbs', loot: 'tft-loot-distribution', damage: 'tft-player-damage', emblems: 'tft-emblems', solo: 'tft-solo-stage-1', 'patch-schedule': 'tft-patch-schedule', carousel: 'tft-carousel'};
-const PAGE_EN = {tierlist: 'tier-list', bibliothek: 'library', impressum: 'legal-notice', datenschutz: 'privacy-policy', bedingungen: 'terms'};
+const PAGE_EN = {tierlist: 'tier-list', bibliothek: 'library', impressum: 'legal-notice', datenschutz: 'privacy-policy', bedingungen: 'terms', 'tft-patch-countdown': 'tft-next-patch-countdown'};
 const keyOf = (map, slug) => (Object.entries(map).find(([, v]) => v === slug) || [slug])[0];
 function enPath(p) {
   if (p === '/') return '/en/';
@@ -28,7 +28,7 @@ const PAGES = [
   '/bibliothek', '/bibliothek/items', '/bibliothek/traits',
   '/ranks',
   ...['iron', 'bronze', 'silver', 'gold', 'platinum', 'emerald', 'diamond', 'master', 'grandmaster', 'challenger'].map(k => '/ranks/' + k),
-  '/patches',
+  '/patches', '/tft-patch-countdown',
   '/cheatsheet',
   ...['shop', 'augments', 'encounters', 'damage', 'orbs', 'loot', 'gold-subscription', 'reroll-subscription', 'emblems', 'solo'].map(csPath),
   // Augment-Tabellen (ids wie in data/custom-<Set>.js → cheats.augTables)

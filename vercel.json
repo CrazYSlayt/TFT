@@ -171,7 +171,8 @@
     { "source": "/en/datenschutz", "destination": "/en/privacy-policy", "permanent": true },
     { "source": "/en/datenschutz/:rest*", "destination": "/en/privacy-policy/:rest*", "permanent": true },
     { "source": "/en/bedingungen", "destination": "/en/terms", "permanent": true },
-    { "source": "/en/bedingungen/:rest*", "destination": "/en/terms/:rest*", "permanent": true }
+    { "source": "/en/bedingungen/:rest*", "destination": "/en/terms/:rest*", "permanent": true },
+    { "source": "/en/tft-patch-countdown", "destination": "/en/tft-next-patch-countdown", "permanent": true }
   ],
   "rewrites": [
     {

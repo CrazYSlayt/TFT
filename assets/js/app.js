@@ -18,7 +18,7 @@ const GUIDE_SLUG = {encounters:'tft-encounters'};
 // toEn() macht aus einem internen (deutschen) Pfad den englischen, fromEn() umgekehrt
 const TOOL_SLUG_EN = {rolldown:'tft-rolldown-calculator', drops:'tft-item-drop-chance', tierlist:'tft-tier-list-maker', simulator:'tft-fight-simulator', dps:'tft-dps-comparison', augments:'tft-augment-prediction'};
 const CS_SLUG_EN = {shop:'tft-shop-odds', augments:'tft-augment-tiers', orbs:'tft-loot-orbs', loot:'tft-loot-distribution', damage:'tft-player-damage', emblems:'tft-emblems', solo:'tft-solo-stage-1', 'patch-schedule':'tft-patch-schedule', carousel:'tft-carousel'};
-const PAGE_EN = {tierlist:'tier-list', bibliothek:'library', impressum:'legal-notice', datenschutz:'privacy-policy', bedingungen:'terms'};
+const PAGE_EN = {tierlist:'tier-list', bibliothek:'library', impressum:'legal-notice', datenschutz:'privacy-policy', bedingungen:'terms', 'tft-patch-countdown':'tft-next-patch-countdown'};
 function langPath(p, en){   // en = true: deutsch → englisch, false: englisch → deutsch
   const i = p.search(/[?#]/), rest = i < 0 ? '' : p.slice(i), s = (i < 0 ? p : p.slice(0, i)).split('/');
   const [pages, tools, csFrom, csTo] = en ? [PAGE_EN, [TOOL_SLUG, TOOL_SLUG_EN], CS_SLUG, CS_SLUG_EN] : [Object.fromEntries(Object.entries(PAGE_EN).map(([a, b])=>[b, a])), [TOOL_SLUG_EN, TOOL_SLUG], CS_SLUG_EN, CS_SLUG];
@@ -29,10 +29,10 @@ function langPath(p, en){   // en = true: deutsch → englisch, false: englisch 
 }
 function toEn(p){ return langPath(p, true); }
 function fromEn(p){ return langPath(p, false); }
-const BUILDER_PATH = '/tft-team-builder';
+const BUILDER_PATH = '/tft-team-builder', COUNTDOWN_PATH = '/tft-patch-countdown';   // intern: builder, countdown
 const toolHref = k => '/tools/' + (TOOL_SLUG[k] || k), csHref = id => '/cheatsheet/' + (CS_SLUG[id] || 'tft-' + id);
 const unslug = (map, s) => (Object.entries(map).find(([, v])=>v === s) || [s])[0];
-const seoPath = p => p.replace(/^\/builder(?=[/?#]|$)/, BUILDER_PATH)
+const seoPath = p => p.replace(/^\/builder(?=[/?#]|$)/, BUILDER_PATH).replace(/^\/countdown(?=[/?#]|$)/, COUNTDOWN_PATH)
   .replace(/^\/tools\/([^/?#]+)/, (m, k)=>TOOL_SLUG[k] ? toolHref(k) : m)
   .replace(/^\/cheatsheet\/([^/?#]+)/, (m, k)=>/^tft-/.test(k) ? m : csHref(k))
   .replace(/^\/guides\/([^/?#]+)/, (m, k)=>GUIDE_SLUG[k] ? '/guides/' + GUIDE_SLUG[k] : m);
@@ -2112,6 +2112,7 @@ function searchPagesBuild(){
   const tools = [...document.querySelectorAll('#page-tools .tc')].map(a=>{ const href = a.getAttribute('href'), ph = a.querySelector('.tc-ph');
     return {label:a.querySelector('h3').textContent.trim(), alt:a.querySelector('.tc-text').textContent + ' ' + href, type:'Tool', html:srIc(ph ? ph.innerHTML : ''), go:()=>{closeSearch();go(href);}}; });
   tools.push({label:'Team Builder', alt:'builder board planer planner', type:'Tool', html:srIc(csSvg('<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 7.5l4 2.3v4.4L12 16.5l-4-2.3V9.8z"/>')), go:()=>{closeSearch();go('/tft-team-builder');}});
+  tools.push({label:'Patch Countdown', alt:'next patch nächster patch wann kommt countdown timer', type:'Patches', html:srIc(csSvg('<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.6 2M9.5 2.5h5"/>')), go:()=>{closeSearch();go(COUNTDOWN_PATH);}});
   const sheets = csList().map(([id])=>{ const m = CS_META[id] || {};
     return {label:csName(id), alt:[...(m.s || []), ...(m.h || []), ...(m.d || []), id].join(' '), type:'Cheatsheet', html:srIc(csIco(id)), go:()=>{closeSearch();go(csHref(id));}}; });
   return [...tools, ...sheets];
@@ -2575,8 +2576,8 @@ function renderTools(sub, a, b){
   }
 }
 /* ================= AUGMENT-VORHERSAGE (/tools/tft-augment-vorhersage) ================= */
-// Input: die Augment-Stufen, die du schon gesehen hast (2-1, 3-2, 4-2). Output: was als Nächstes kommt, Prismatic-Chance, wahrscheinlichste Verläufe.
-// Gleiche Daten wie der Augment-Baum im Cheatsheet (CS.augments.seq); der kleine Baum in der Output-Box zeigt dieselbe Auswahl und lässt sich auch anklicken.
+// „Deine Angaben“: die Augment-Stufen, die du schon gesehen hast (2-1, 3-2, 4-2). „Dein Ergebnis“: was als Nächstes kommt, Prismatic-Chance, wahrscheinlichste Verläufe.
+// Gleiche Daten wie der Augment-Baum im Cheatsheet (CS.augments.seq); der kleine Baum in der Ergebnis-Box zeigt dieselbe Auswahl und lässt sich auch anklicken.
 // Die Auswahl steht in der Adresse (?a=SG), damit man sie teilen kann
 const AG_ST = ['2-1', '3-2', '4-2'];
 const ag = {k:''};
@@ -2585,29 +2586,33 @@ const agSum = p => CS.augments.seq.filter(x=>x[0].startsWith(p)).reduce((s, x)=>
 const agName = l => L(CS_AUG[l][1], CS_AUG[l][2]);
 const agHex = l => `<svg class="ag-hx atg-n atg-${l}" viewBox="0 0 24 24" aria-hidden="true"><polygon class="atg-h" points="12,1.5 21.1,6.75 21.1,17.25 12,22.5 2.9,17.25 2.9,6.75"/></svg>`;
 const agPct = p => (p > 0 && p < 1 ? '<1' : fmtNum(Math.round(p * 10) / 10)) + L(' %', '%');
+// Augment-Rahmen in Silber, Gold und Prisma (eigene Grafiken von CrazYSlayt, assets/icons/tft/augment-frame-*.webp)
+const AG_FR = {S:'silver', G:'gold', P:'prism'};
+const agFrSrc = l => `assets/icons/tft/augment-frame-${AG_FR[l]}.webp`;
+const agFr = (l, cls) => `<img class="${cls}" src="${agFrSrc(l)}" alt="" width="240" height="356">`;
+const agLock = () => csSvg('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', 2);
+// Symbol der aufklappbaren Baum-Box: Start und die drei Rahmen der ersten Stufe
+const agTreeIcon = () => `<svg class="ag-ti" viewBox="0 0 66 50" aria-hidden="true"><path class="ag-ti-l" d="M33 17 13 25M33 17v8M33 17l20 8"/><polygon class="ag-ti-s" points="33,1 39.9,5 39.9,13 33,17 26.1,13 26.1,5"/>${'SGP'.split('').map((l, i)=>`<image href="${agFrSrc(l)}" x="${5 + i * 20}" y="25" width="16" height="24"/>`).join('')}</svg>`;
 // Verteilung der Stufe an Position i (0 = 2-1), wenn die bisherigen Augments k sind
 const agDist = (k, i) => { const all = CS.augments.seq.filter(x=>x[0].startsWith(k)), w = all.reduce((s, x)=>s + x[1], 0);
   return 'SGP'.split('').map(l=>[l, w ? all.filter(x=>x[0][i]===l).reduce((s, x)=>s + x[1], 0) / w * 100 : 0]); };
-function agBars(dist, big){
-  const top = Math.max(...dist.map(d=>d[1]));
-  return `<div class="ag-bars${big ? ' big' : ''}">${dist.map(([l, p])=>`<div class="ag-bar ${CS_AUG[l][0]}${p === top && p > 0 ? ' top' : ''}"><span class="nm">${agHex(l)}${agName(l)}</span><span class="tr"><i style="width:${p.toFixed(1)}%"></i></span><b class="v">${agPct(p)}</b></div>`).join('')}</div>`;
-}
+// Deine Angaben: pro Stufe drei Augment-Rahmen. Die gerade fällige Stufe pulsiert leicht, spätere Stufen (und Stufen, die nach deinen Augments nicht vorkommen) sind mit Schloss gesperrt
 function agInput(){
   const k = ag.k;
-  return `<div class="tio-hd"><span class="tio-lbl">Input</span><h2>${L('Deine Augments', 'Your augments')}</h2><button type="button" class="tio-reset" id="agReset" title="${L('Zurücksetzen', 'Reset')}"${k ? '' : ' disabled'}>${csSvg('<path d="M4 4v6h6"/><path d="M20 12a8 8 0 1 1-2.3-5.7L4 10"/>', 2)}<span>${L('Zurücksetzen', 'Reset')}</span></button></div>
-    <p class="tio-hint">${L('Wähl die Stufe jedes Augments, sobald du es siehst. Nochmal klicken nimmt die Auswahl zurück.', 'Pick the tier of each augment as soon as you see it. Click again to undo.')}</p>
-    ${AG_ST.map((st, i)=>`<div class="ag-row ${i < k.length ? 'done' : i === k.length ? 'cur' : 'later'}"><span class="ag-st">${st}</span><span class="ag-n">${i + 1}. Augment</span>
-      <div class="ag-opts">${'SGP'.split('').map(l=>{ const ok = i <= k.length && agSum(k.slice(0, i) + l) > 0;
-        return `<button type="button" class="ag-opt ${CS_AUG[l][0]}${k[i] === l ? ' on' : ''}" data-i="${i}" data-l="${l}"${ok ? '' : ' disabled'}${ok ? '' : ` title="${i > k.length ? L('Erst das Augment davor wählen', 'Pick the augment before first') : L('Kommt nach deinen bisherigen Augments nicht vor', 'Does not occur after your previous augments')}"`}>${agHex(l)}<b>${agName(l)}</b><span></span></button>`; }).join('')}</div></div>`).join('')}`;
+  return `<div class="tio-hd"><h2>${L('Deine Angaben', 'Your input')}</h2><button type="button" class="tio-reset" id="agReset" title="${L('Zurücksetzen', 'Reset')}"${k ? '' : ' disabled'}>${csSvg('<path d="M4 4v6h6"/><path d="M20 12a8 8 0 1 1-2.3-5.7L4 10"/>', 2)}<span>${L('Zurücksetzen', 'Reset')}</span></button></div>
+    <p class="tio-hint">${L('Wähl jedes Augment, sobald du es siehst.', 'Pick each augment as soon as you see it.')}</p>
+    <div class="ag-rows">${AG_ST.map((st, i)=>`<div class="ag-row ${i < k.length ? 'done' : i === k.length ? 'cur' : 'later'}" role="group" aria-label="${i + 1}. Augment (${st})"><span class="ag-st">${st}</span>
+      <div class="ag-opts">${'SGP'.split('').map(l=>{ const ok = i <= k.length && agSum(k.slice(0, i) + l) > 0, on = k[i] === l;
+        return `<button type="button" class="ag-opt ${CS_AUG[l][0]}${on ? ' on' : ''}${ok ? '' : ' lock'}" data-i="${i}" data-l="${l}"${ok ? ` aria-pressed="${on}"${on ? ` title="${L('Nochmal klicken nimmt die Auswahl zurück', 'Click again to undo')}"` : ''}` : ` disabled title="${i > k.length ? L('Erst das Augment davor wählen', 'Pick the augment before first') : L('Kommt nach deinen bisherigen Augments nicht vor', 'Does not occur after your previous augments')}"`}><span class="ag-cbg"></span>${agFr(l, 'ag-fr')}<span class="ag-cin">${ok ? agHex(l) : agLock()}<b>${agName(l)}</b></span></button>`; }).join('')}</div></div>`).join('')}</div>`;
 }
+// Dein Ergebnis: oben die Prismatic-Chance, darunter eine Vorhersage pro offenem Augment (am Anfang alle drei, jede Eingabe nimmt eine weg)
 function agOutput(){
   const k = ag.k, n = k.length, W = agSum(''), wk = agSum(k), seq = CS.augments.seq;
   const prism = k.includes('P') ? 100 : seq.filter(x=>x[0].startsWith(k) && x[0].includes('P')).reduce((s, x)=>s + x[1], 0) / wk * 100;
-  const stChip = i => `<span class="ag-chip">${AG_ST[i]}</span>`;
-  // Oben die Prismatic-Chance, darunter links das nächste Augment (bzw. die fertige Reihenfolge), rechts „Danach“; der Baum steht darunter
-  let main, after = '';
-  if(n < 3){ main = `<div class="ag-sec"><h3>${L('Nächstes Augment', 'Next augment')} ${stChip(n)}</h3>${agBars(agDist(k, n), true)}</div>`;
-    if(n < 2) after = `<div class="ag-sec"><h3>${L('Danach', 'After that')} ${stChip(n + 1)}</h3>${agBars(agDist(k, n + 1))}</div>`; }
+  let main;
+  if(n < 3) main = `<div class="ag-pg n${3 - n}" style="--n:${3 - n}">${AG_ST.slice(n).map((st, j)=>{ const dist = agDist(k, n + j), top = Math.max(...dist.map(d=>d[1]));
+    return `<div class="ag-pb${j ? '' : ' next'}"><h3><span class="ag-chip">${st}</span>${n + j + 1}. Augment</h3>
+      ${dist.map(([l, p])=>`<div class="ag-pi ${CS_AUG[l][0]}${p === top && p > 0 ? ' top' : ''}" style="--p:${p.toFixed(1)}%">${agHex(l)}<span>${agName(l)}</span><b>${agPct(p)}</b></div>`).join('')}</div>`; }).join('')}</div>`;
   else { const rank = [...seq].sort((a, b)=>b[1] - a[1]).findIndex(x=>x[0] === k) + 1;
     main = `<div class="ag-sec"><h3>${L('Deine Reihenfolge', 'Your order')}</h3><div class="ag-done"><span class="ag-path">${k.split('').map(agHex).join('<i></i>')}</span>
       <p>${L(`Kommt in <b>${agPct(wk / W * 100)}</b> aller Partien vor – Platz ${rank} von ${seq.length} Reihenfolgen.`, `Happens in <b>${agPct(wk / W * 100)}</b> of all games – rank ${rank} of ${seq.length} orders.`)}</p></div></div>`; }
@@ -2615,9 +2620,9 @@ function agOutput(){
     <b>${k.includes('P') ? L('Hast du schon', 'Already got one') : agPct(prism)}</b></div></div>`;
   const paths = n < 3 ? seq.filter(x=>x[0].startsWith(k)).sort((a, b)=>b[1] - a[1]).slice(0, 4) : [];
   const pathList = paths.length ? `<div class="ag-sec ag-psec"><h3>${L('Wahrscheinlichste Verläufe', 'Most likely orders')}</h3><div class="ag-paths">${paths.map(([s, w])=>`<div class="ag-pr"><span class="ag-path">${s.split('').map((l, i)=>`<span class="${i < n ? 'kn' : ''}">${agHex(l)}</span>`).join('<i></i>')}</span><b>${agPct(w / wk * 100)}</b></div>`).join('')}</div></div>` : '';
-  return `<div class="tio-hd"><span class="tio-lbl out">Output</span><h2>${L('Vorhersage', 'Prediction')}</h2></div>
+  return `<div class="tio-hd"><h2>${L('Dein Ergebnis', 'Your result')}</h2></div>
     <p class="tio-hint">${n ? L('Nach deinen Augments', 'Based on your augments') + ' ' + k.split('').map((l, i)=>`<b class="ag-t ${CS_AUG[l][0]}">${AG_ST[i]} ${agName(l)}</b>`).join(' · ') : L('Noch nichts eingegeben – so verteilen sich die Stufen in allen Partien.', 'Nothing entered yet – this is how the tiers spread across all games.')}</p>
-    ${kpi}<div class="ag-og${after ? '' : ' one'}"><div class="ag-ol">${main}</div>${after ? `<div class="ag-or">${after}</div>` : ''}</div>${pathList}`;
+    ${kpi}${main}${pathList}`;
 }
 function agUpdate(syncTree=true){
   const app = $('#agApp'); if(!app) return;
@@ -2635,8 +2640,10 @@ function agMount(){
     agMounted = true;
     if(!CS.augments){ app.innerHTML = ornnSays(L(`Für Set ${TFT_DATA.set} fehlen mir noch die Augment-Chancen.`, `I'm still missing the augment odds for Set ${TFT_DATA.set}.`)); return; }
     const {tree, legend} = atgTreeHTML();
-    app.innerHTML = `<div class="tio"><section class="card tio-in" aria-label="Input"></section><section class="card tio-out" aria-label="Output"><div class="ag-ob" aria-live="polite"></div>
-      <div class="ag-sec ag-tsec"><h3>${L('Augment-Baum', 'Augment tree')}</h3>${legend}${tree}</div></section></div>`;
+    // Der Baum steckt zugeklappt in einer Box (Symbol links, Pfeil rechts); Klicks darin wählen die Augments wie die Karten links
+    app.innerHTML = `<div class="tio"><section class="card tio-in" aria-label="${L('Deine Angaben', 'Your input')}"></section><section class="card tio-out" aria-label="${L('Dein Ergebnis', 'Your result')}"><div class="ag-ob" aria-live="polite"></div>
+      <details class="ag-tsec"><summary>${agTreeIcon()}<span class="ag-tt"><b>${L('Augment-Baum', 'Augment tree')}</b><small>${L('Alle Pfade und ihre Chancen im Überblick', 'Every path and its odds at a glance')}</small></span>${csSvg('<path d="m6 9 6 6 6-6"/>', 2.4)}</summary>
+      <div class="ag-tb">${legend}${tree}</div></details></section></div>`;
     app.addEventListener('click', e=>{
       const b = e.target.closest('.ag-opt'); if(b && !b.disabled){ const i = +b.dataset.i, l = b.dataset.l; ag.k = ag.k[i] === l ? ag.k.slice(0, i) : ag.k.slice(0, i) + l; agUpdate(); return; }
       if(e.target.closest('#agReset')){ ag.k = ''; agUpdate(); }
@@ -3143,7 +3150,8 @@ function renderPatches(sub){
   if(!p){
     const sets = [...new Set(PATCHES.map(x=>x.set))];
     app.innerHTML = `<div class="page-head"><div class="crumb">Home / Patches</div><h1>TFT <em class="serif">Patches</em></h1>
-      <p>${L('Alle Patches für euch aufbereitet: jede Änderung übersichtlich nach Champions, Traits, Items und Augments sortiert – neu, sobald ein Patch erscheint (alle zwei Wochen, meist dienstags).', 'Every patch prepared for you: each change neatly sorted by champions, traits, items and augments – updated as soon as a patch drops (every two weeks, usually on Tuesdays).')}</p></div>`
+      <p>${L('Alle Patches für euch aufbereitet: jede Änderung übersichtlich nach Champions, Traits, Items und Augments sortiert – neu, sobald ein Patch erscheint (alle zwei Wochen, meist dienstags).', 'Every patch prepared for you: each change neatly sorted by champions, traits, items and augments – updated as soon as a patch drops (every two weeks, usually on Tuesdays).')}</p>
+      ${(()=>{ const n = stNextPatch(); return n ? `<a class="pt-next" href="${COUNTDOWN_PATH}"><span class="pt-nb">${esc(n.id || 'TFT')}</span><span><small>${L('Nächster Patch in', 'Next patch in')}</small><b data-countdown>${stCountdown()}</b></span><em>${L('Zum Countdown', 'Open countdown')} →</em></a>` : ''; })()}</div>`
       + sets.map(st=>`<div class="pt-set"><h2>Set ${st}</h2><div class="pt-grid">${PATCHES.filter(x=>x.set===st).map(x=>{
         const cur = x===CURRENT_PATCH, cnt = patchCount(x), note = PATCH_NOTES[x.id];
         return `<a class="pt-card${cur?' cur':''}" href="/patches/${patchSlug(x.id)}">
@@ -3187,7 +3195,7 @@ function champPatchHTML(name){
 
 /* ================= LEISTE OBEN: LP-Grenzen + nächster Patch ================= */
 // Patch-Countdown: Riot patcht meist mittwochs um 4:30 Uhr (deutsche Zeit) im Zwei-Wochen-Takt.
-// Feste Termine aus data/patch-kommentare.js (TFT_PATCH_SCHEDULE) haben Vorrang.
+// Bekannte Termine (Patch-Plan des Sets, data/patch-kommentare.js → TFT_PATCH_SCHEDULE) haben Vorrang vor der Schätzung.
 const ST_PATCH = TL_PATCH || (CURRENT_PATCH ? CURRENT_PATCH.id : '');
 // Uhrzeit in deutscher Zeit (Sommer-/Winterzeit automatisch) → echter Zeitpunkt, egal wo der Besucher ist
 function berlinTime(y, mo, d, h, mi){
@@ -3195,11 +3203,18 @@ function berlinTime(y, mo, d, h, mi){
   const off = (()=>{ try { const p = new Intl.DateTimeFormat('en-US', {timeZone:'Europe/Berlin', timeZoneName:'shortOffset'}).formatToParts(new Date(guess)).find(x=>x.type==='timeZoneName').value.match(/GMT([+-]\d+)/); return p ? +p[1] : 1; } catch(e){ return 1; } })();
   return new Date(guess - off * 36e5);
 }
+// Alle bekannten Patch-Termine, nach Zeit sortiert: Patch-Plan des Sets (data/custom-<Set>.js → cheats.patchSchedule, Quelle Little Buddy Bot,
+// nur das Datum → 4:30 Uhr) und Termine aus data/patch-kommentare.js (mit Uhrzeit, haben Vorrang). ev = Ereignisse [deutsch, englisch]
+function stPatchDates(){
+  const at = s => { const m = String(s).match(/^(\d{4})-(\d\d)-(\d\d)(?:[ T](\d\d):(\d\d))?/); return m ? berlinTime(+m[1], +m[2], +m[3], +(m[4]||4), +(m[5]||30)) : null; };
+  const ps = (TFT_CUSTOM_SET.cheats || {}).patchSchedule, out = {};
+  ((ps && ps.rows) || []).forEach(r=>{ const d = at(r[1]); if(d) out[r[0]] = {id:r[0], d, ev:[r[2] || [], r[3] || []]}; });
+  Object.entries(window.TFT_PATCH_SCHEDULE || {}).forEach(([id, s])=>{ const d = at(s); if(d) out[id] = {ev:[[], []], ...out[id], id, d}; });
+  return Object.values(out).sort((a,b)=>a.d - b.d);
+}
 function stNextPatch(){
-  const now = new Date();
-  const fixed = Object.entries(window.TFT_PATCH_SCHEDULE || {}).map(([id, s])=>{ const m = String(s).match(/^(\d{4})-(\d\d)-(\d\d)(?:[ T](\d\d):(\d\d))?/); return m ? {id, d:berlinTime(+m[1], +m[2], +m[3], +(m[4]||4), +(m[5]||30)), fixed:true} : null; })
-    .filter(x=>x && x.d > now).sort((a,b)=>a.d - b.d)[0];
-  if(fixed) return fixed;
+  const now = new Date(), fixed = stPatchDates().find(x=>x.d > now);
+  if(fixed) return {...fixed, fixed:true};
   if(!CURRENT_PATCH || !CURRENT_PATCH.date) return null;
   // Live-Termin des letzten Patches: erster Mittwoch ab dem Datum der Patchnotes, 4:30 Uhr
   const [y, mo, d] = CURRENT_PATCH.date.split('-').map(Number), base = new Date(Date.UTC(y, mo - 1, d));
@@ -3247,10 +3262,100 @@ function renderStatBar(){
   el.innerHTML = `<div class="wrap sb-in">
     ${cut ? `<a class="sb-main" href="/ranks/challenger"><img src="${rankImg(rankBy.challenger)}" alt="" width="40" height="40"><span class="sb-num"><b data-lp="${cut.ch}" data-key="ch" data-noi18n>${fmtLP(sbShown.ch ?? cut.ch)}</b><small>${dot}Challenger · EUW</small></span></a>
     <a class="sb-main" href="/ranks/grandmaster"><img src="${rankImg(rankBy.grandmaster)}" alt="" width="40" height="40"><span class="sb-num"><b data-lp="${cut.gm}" data-key="gm" data-noi18n>${fmtLP(sbShown.gm ?? cut.gm)}</b><small>${dot}Großmeister · EUW</small></span></a>` : ''}
-    ${ST_PATCH ? `<a class="sb-item sb-hide" href="/patches" title="${L('Nächster Patch', 'Next patch')}: ${esc(stNextLabel())}"><span class="sb-patch">${esc(ST_PATCH)}</span><span><small>Nächster Patch in</small><b data-countdown>${stCountdown()}</b></span></a>` : ''}</div>`;
+    ${ST_PATCH ? `<a class="sb-item sb-hide" href="${COUNTDOWN_PATH}" title="${L('Nächster Patch', 'Next patch')}: ${esc(stNextLabel())}"><span class="sb-patch">${esc(ST_PATCH)}</span><span><small>Nächster Patch in</small><b data-countdown>${stCountdown()}</b></span></a>` : ''}</div>`;
   el.hidden = !cut && !ST_PATCH;
 }
 setInterval(()=>document.querySelectorAll('[data-countdown]').forEach(e=>{ e.textContent = stCountdown(); }), 60000);
+
+/* ================= PATCH-COUNTDOWN (/tft-patch-countdown) ================= */
+// Eigene Seite für „TFT next patch countdown“: Countdown auf die Sekunde bis zum nächsten Patch, Termin in deutscher Zeit und in der
+// Zeit des Besuchers, Fortschritt des laufenden Patches, alle Termine des Sets (stPatchDates) und Fragen & Antworten für Google.
+let CD_NEXT = null, CD_PREV = null, CD_TIMER = 0;
+const cdDay = (d, o) => d.toLocaleDateString(LOC, {timeZone:'Europe/Berlin', ...o});
+// Abstand in Kalendertagen (deutsche Zeit): „heute“, „morgen“, „in 9 Tagen“ bzw. negativ = seit wie vielen Tagen
+const cdYmd = d => { const [y, m, t] = d.toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'}).split('-').map(Number); return Date.UTC(y, m - 1, t); };
+const cdDiff = d => Math.round((cdYmd(d) - cdYmd(new Date())) / 864e5);
+const cdDays = d => { const n = cdDiff(d); return n <= 0 ? L('heute', 'today') : n === 1 ? L('morgen', 'tomorrow') : L(`in ${n} Tagen`, `in ${n} days`); };
+function renderCountdown(){
+  const app = $('#cdApp'); if(!app) return;
+  const now = new Date(), all = stPatchDates(), n = CD_NEXT = stNextPatch(), S = TFT_DATA.set;
+  const prev = CD_PREV = [...all].reverse().find(x=>x.d <= now) || (n && {id:CURRENT_PATCH ? CURRENT_PATCH.id : '', d:new Date(n.d - 14 * 864e5)});
+  const notes = id => patchBySlug[patchSlug(id)] ? '/patches/' + patchSlug(id) : '';
+  const id = n && n.id, long = n ? cdDay(n.d, {weekday:'long', day:'numeric', month:'long', year:'numeric'}) : '';
+  const time = n ? n.d.toLocaleTimeString(LOC, {hour:'2-digit', minute:'2-digit', timeZone:'Europe/Berlin'}) : '';
+  const tz = n ? (new Intl.DateTimeFormat('en-GB', {timeZone:'Europe/Berlin', timeZoneName:'short'}).formatToParts(n.d).find(p=>p.type==='timeZoneName') || {}).value || 'CET' : '';
+  // Uhrzeit beim Besucher, wenn sie von der deutschen abweicht
+  const fmtL = o => n.d.toLocaleString(LOC, {weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit', ...o});
+  const local = n && fmtL({}) !== fmtL({timeZone:'Europe/Berlin'}) ? fmtL({}) : '';
+  const ev = n && n.ev ? L(n.ev[0], n.ev[1]) || [] : [];
+  // nächstes Set: erster Patch x.1 eines höheren Sets im Patch-Plan
+  const ns = all.find(x=>x.d > now && /^\d+\.1$/.test(x.id) && +x.id.split('.')[0] > S), nsN = ns && ns.id.split('.')[0];
+  const nsLong = ns ? cdDay(ns.d, {day:'numeric', month:'long', year:'numeric'}) : '';
+  const cur = CURRENT_PATCH, links = [
+    cur && [notes(cur.id), L(`Patchnotes ${cur.id}`, `Patch notes ${cur.id}`), L('Alle Änderungen des aktuellen Patches', 'Every change of the current patch')],
+    [csHref('patch-schedule'), L('Patch-Plan', 'Patch schedule'), L('Alle Termine als Tabelle im Cheatsheet', 'Every date as a table in the cheatsheet')],
+    ['/tierlist', L('TFT Tierlist', 'TFT Tier List'), L('Die besten Comps bis zum Patch', 'The best comps until the patch')],
+    ['/patches', L('Alle Patches', 'All patches'), L(`Jede Änderung seit Set ${S - 1}`, `Every change since Set ${S - 1}`)]].filter(x=>x && x[0]);
+  const row = x => {
+    const st = x === n || (n && x.id === n.id) ? 'next' : x === prev ? 'cur' : x.d <= now ? 'past' : 'later', href = notes(x.id), e = L(x.ev[0], x.ev[1]) || [];
+    const tag = st === 'next' ? `<em class="cd-tag">${L('Nächster', 'Next')}</em>` : st === 'cur' ? `<em class="cd-tag live">${L('Läuft gerade', 'Live now')}</em>` : '';
+    const right = st === 'past' || st === 'cur' ? (href ? `<a href="${href}">${L('Patchnotes', 'Patch notes')} →</a>` : '') : `<span>${cdDays(x.d)}</span>`;
+    return `<li class="cd-row ${st}"><span class="cd-id">${esc(x.id)}</span><span class="cd-rd"><b>${esc(cdDay(x.d, {weekday:'short', day:'numeric', month:'short'}))}</b>${tag}${e.length ? `<small>${e.map(esc).join(' · ')}</small>` : ''}</span><span class="cd-rs">${right}</span></li>`;
+  };
+  app.innerHTML = `<div class="page-head"><div class="crumb"><a href="/">Home</a> / <a href="/patches">Patches</a> / Countdown</div>
+      <h1>${L('TFT Patch <em class="serif">Countdown</em>', 'TFT Next Patch <em class="serif">Countdown</em>')}</h1></div>
+    ${n ? `<section class="cd-card" aria-label="${L('Countdown bis zum nächsten Patch', 'Countdown to the next patch')}"${cur && cur.img ? ` style="--img:url('${esc(cur.img)}?w=1280&fm=webp');--pos:${esc(patchFocus(cur))}"` : ''}>
+      <div class="cd-top"><span class="cd-badge">${id ? `<small>Patch</small><b>${esc(id)}</b>` : '<b>TFT</b>'}</span>
+        <span class="cd-tt"><b>${id ? L(`Patch ${id} kommt in`, `Patch ${id} drops in`) : L('Der nächste Patch kommt in', 'The next patch drops in')}</b><small>${n.fixed ? L(`Termin laut Patch-Plan von Set ${S}`, `Date from the Set ${S} patch schedule`) : L('Termin geschätzt: Mittwoch, zwei Wochen nach dem letzten Patch', 'Estimated date: Wednesday, two weeks after the last patch')}</small></span></div>
+      <div class="cd-clock" role="timer">${[['d', 'Tage', 'Days'], ['h', 'Stunden', 'Hours'], ['m', 'Minuten', 'Minutes'], ['s', 'Sekunden', 'Seconds']].map(([k, de, en])=>`<div class="cd-u"><b data-cd="${k}">00</b><small>${L(de, en)}</small></div>`).join('')}</div>
+      <p class="cd-when"><b>${esc(long)}</b><span>${L(`ca. ${time} Uhr deutscher Zeit`, `around ${time} ${tz}`)}</span>${local ? `<span>${L('Bei dir', 'Your time')}: ${esc(local)}</span>` : ''}</p>
+      ${ev.length ? `<ul class="cd-ev">${ev.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+      ${prev ? `<div class="cd-prog"><div class="cd-pl"><span>${prev.id ? L(`Patch ${esc(prev.id)} läuft`, `Patch ${esc(prev.id)} has been live`) : L('Aktueller Patch', 'Current patch')} <i data-cd="ago"></i></span><b data-cd="pct"></b></div><div class="cd-bar"><i data-cd="bar"></i></div></div>` : ''}
+    </section>` : viSays(L('Für den nächsten Patch gibt es noch keinen Termin. Schau bald wieder vorbei!', 'There is no date for the next patch yet. Check back soon!'))}
+    <div class="cd-grid">
+      ${all.length ? `<section class="cd-box cd-list"><h2>${L(`Alle Patch-Termine von Set ${S}`, `Every patch date of Set ${S}`)}</h2><ol>${all.map(row).join('')}</ol>
+        <p class="cd-src">${L(`Termine: ${esc((TFT_CUSTOM_SET.cheats || {}).patchSchedule ? TFT_CUSTOM_SET.cheats.patchSchedule.src : 'Riot Games')}. Die Uhrzeit ist geschätzt und gilt für die europäischen Server.`, `Dates: ${esc((TFT_CUSTOM_SET.cheats || {}).patchSchedule ? TFT_CUSTOM_SET.cheats.patchSchedule.src : 'Riot Games')}. The time is an estimate for the European servers.`)}</p></section>` : ''}
+      <div class="cd-side">
+        ${ns ? `<section class="cd-box cd-set"><small>${L('Neues Set', 'New set')}</small><h2>${L(`Countdown bis Set ${nsN}`, `Countdown to Set ${nsN}`)}</h2><b class="cd-setn">${esc(cdDays(ns.d))}</b><p>${L(`Set ${nsN} startet laut Patch-Plan mit Patch ${esc(ns.id)} am ${esc(nsLong)}.`, `According to the patch schedule, Set ${nsN} launches with patch ${esc(ns.id)} on ${esc(nsLong)}.`)}</p></section>` : ''}
+        <nav class="cd-box cd-links" aria-label="${L('Rund um den Patch', 'All about the patch')}"><h2>${L('Rund um den Patch', 'All about the patch')}</h2>${links.map(([h, t, d])=>`<a href="${h}"><b>${t}</b><small>${d}</small></a>`).join('')}</nav>
+      </div>
+    </div>
+    <section class="tool-seo" aria-labelledby="ts-cd">
+      <div class="ts-main">
+        <h2 id="ts-cd">${L('So funktioniert der TFT Patch Countdown', 'How the TFT patch countdown works')}</h2>
+        <p>${L(`Riot bringt etwa alle zwei Wochen einen neuen Patch für Teamfight Tactics. Der Countdown zählt bis zum nächsten Termin aus dem Patch-Plan von Set ${S} herunter – auf die Sekunde genau. Lebst du nicht in Deutschland, siehst du die Uhrzeit zusätzlich in deiner eigenen Zeitzone.`,
+          `Riot releases a new Teamfight Tactics patch about every two weeks. The countdown runs to the next date from the Set ${S} patch schedule – down to the second. If you don't live in Central Europe, you also see the time in your own time zone.`)}</p>
+        <p>${L('Ein Patch verschiebt oft die ganze Tierlist. Nutz die Zeit bis dahin, um mit den aktuellen Comps noch LP mitzunehmen. Sobald die Patchnotes da sind, findest du alle Änderungen bei uns übersichtlich aufbereitet.',
+          'A patch often shifts the whole tier list. Use the time until then to climb with the current comps. As soon as the patch notes are out, you\'ll find every change neatly prepared on our site.')}</p>
+      </div>
+      <aside class="ts-side">
+        <h3>${L('Häufige Fragen', 'FAQ')}</h3>
+        ${n ? `<details><summary>${L('Wann kommt der nächste TFT Patch?', 'When is the next TFT patch?')}</summary><p>${id ? L(`Patch ${esc(id)} kommt ${n.fixed ? '' : 'voraussichtlich '}am ${esc(long)}. Auf den europäischen Servern geht ein Patch meist früh am Morgen live, der Countdown zählt bis ca. ${time} Uhr deutscher Zeit.`,
+          `Patch ${esc(id)} ${n.fixed ? 'drops' : 'is expected to drop'} on ${esc(long)}. On the European servers a patch usually goes live early in the morning; the countdown runs to around ${time} ${tz}.`)
+          : L(`Voraussichtlich am ${esc(long)}, etwa um ${time} Uhr deutscher Zeit.`, `Probably on ${esc(long)}, around ${time} ${tz}.`)}</p></details>` : ''}
+        <details><summary>${L('Wie oft kommt ein neuer TFT Patch?', 'How often is there a new TFT patch?')}</summary><p>${L('Etwa alle zwei Wochen. Dazwischen gibt es manchmal kleine B-Patches, die einzelne Champions, Traits oder Augments schnell anpassen.', 'About every two weeks. In between there are sometimes small B-patches that quickly adjust single champions, traits or augments.')}</p></details>
+        <details><summary>${L('Wann kommen die TFT Patchnotes?', 'When do the TFT patch notes come out?')}</summary><p>${L('Riot veröffentlicht die Patchnotes meist einen Tag vor dem Patch. Sobald sie da sind, stehen alle Änderungen bei uns unter Patches.', 'Riot usually publishes the patch notes one day before the patch. As soon as they are out, you\'ll find every change on our patches page.')}</p></details>
+        ${ns ? `<details><summary>${L(`Wann startet TFT Set ${nsN}?`, `When does TFT Set ${nsN} launch?`)}</summary><p>${L(`Laut Patch-Plan startet Set ${nsN} mit Patch ${esc(ns.id)} am ${esc(nsLong)}.`, `According to the patch schedule, Set ${nsN} launches with patch ${esc(ns.id)} on ${esc(nsLong)}.`)}</p></details>` : ''}
+      </aside>
+    </section>`;
+  clearInterval(CD_TIMER); CD_TIMER = n ? setInterval(cdTick, 1000) : 0;
+  if(n) cdTick();
+}
+// jede Sekunde: Countdown, Fortschritt des laufenden Patches und Tage bis zum neuen Set; nur solange die Seite offen ist
+function cdTick(){
+  const pg = $('#page-countdown'), n = CD_NEXT;
+  if(!pg || !pg.classList.contains('active') || !n){ clearInterval(CD_TIMER); CD_TIMER = 0; return; }
+  const now = Date.now(), ms = n.d - now;
+  if(ms <= 0){ renderCountdown(); setMeta('countdown'); h1Sync(); return; }   // Patch ist live → Countdown zum nächsten
+  const set = (k, v) => { const e = pg.querySelector(`[data-cd="${k}"]`); if(e && e.textContent !== v) e.textContent = v; };
+  set('d', String(Math.floor(ms / 864e5)).padStart(2, '0')); set('h', String(Math.floor(ms % 864e5 / 36e5)).padStart(2, '0'));
+  set('m', String(Math.floor(ms % 36e5 / 6e4)).padStart(2, '0')); set('s', String(Math.floor(ms % 6e4 / 1e3)).padStart(2, '0'));
+  const p = CD_PREV; if(p){
+    const k = Math.max(0, Math.min(1, (now - p.d) / (n.d - p.d))), ago = -cdDiff(p.d);
+    set('pct', Math.floor(k * 100) + L(' %', '%')); set('ago', ago < 1 ? L('seit heute', 'since today') : ago === 1 ? L('seit 1 Tag', 'for 1 day') : L(`seit ${ago} Tagen`, `for ${ago} days`));
+    const bar = pg.querySelector('[data-cd="bar"]'); if(bar) bar.style.width = (k * 100).toFixed(2) + '%';
+  }
+}
 /* ================= CHEATSHEET (/cheatsheet) ================= */
 // Alle Systemwerte des Sets auf einer Seite: Shop & XP, Augment-Stufen, Encounters, Schaden, Orbs, Embleme (Karussell vorerst ausgeblendet).
 // Werte aus data/custom-<Set>.js (shop, loot, encounters, cheats) und den offiziellen Set-Daten (Emblem-Rezepte).
@@ -3572,7 +3677,8 @@ function csPatchSection(){
   const rows = P.rows.map(r=>{ const dt = d(r[1]), tag = r === cur ? ['aktuell', 'current'] : r === next ? ['nächster', 'next'] : null;
     return `<tr class="${r === cur ? 'cur' : r === next ? 'nxt' : dt < now ? 'past' : ''}"><td class="set">Set ${r[0].split('.')[0]}</td><td class="pv">${esc(r[0])}${tag ? ` <i class="ctr-tag">${L(tag[0], tag[1])}</i>` : ''}</td>
       <td>${dt.toLocaleDateString(EN ? 'en-US' : 'de-DE', {weekday:'long'})}</td><td class="dt">${dt.toLocaleDateString(EN ? 'en-US' : 'de-DE', {day:'numeric', month:'short'})}</td><td class="ev">${(L(r[2], r[3]) || []).map(esc).join('<br>')}</td></tr>`; }).join('');
-  return [['patch-schedule', L('Patch-Plan', 'Patch schedule'), `<div class="cs-wrap"><table class="cs-table ctr-ps"><thead><tr><th>Set</th><th>Patch</th><th>${L('Tag', 'Day')}</th><th>${L('Datum', 'Date')}</th><th>${L('Was passiert', 'What happens')}</th></tr></thead><tbody>${rows}</tbody></table></div>` + csSrc(P.src)]];
+  return [['patch-schedule', L('Patch-Plan', 'Patch schedule'), `<div class="cs-wrap"><table class="cs-table ctr-ps"><thead><tr><th>Set</th><th>Patch</th><th>${L('Tag', 'Day')}</th><th>${L('Datum', 'Date')}</th><th>${L('Was passiert', 'What happens')}</th></tr></thead><tbody>${rows}</tbody></table></div>` + csSrc(P.src)
+    + `<p class="cs-cd"><a href="${COUNTDOWN_PATH}">${L('Live-Countdown bis zum nächsten Patch', 'Live countdown to the next patch')} →</a></p>`]];
 }
 // Seitenleiste & Panels: Kurzname (s), Unterzeile (h), Kurztext für Karten (d), Icon (SVG-Pfade), optional ein Hinweis (tip)
 const CS_META = {
@@ -3886,6 +3992,14 @@ function pageMeta(page, sub){
       return [L('TFT Patch Notes – alle Änderungen', 'TFT Patch Notes – All Changes'), L('Alle TFT Patches übersichtlich aufbereitet: jede Änderung an Champions, Traits, Items und Augments auf einen Blick.',
         'All TFT patches neatly prepared: every change to champions, traits, items and augments at a glance.')];
     }
+    case 'countdown': {
+      const n = stNextPatch(), id = n && n.id;
+      if(!id) return [L('TFT Patch Countdown – nächster TFT Patch', 'TFT Next Patch Countdown'), L('TFT Patch Countdown: Wann kommt der nächste TFT Patch? Live-Countdown bis zum nächsten Patch mit Datum und Uhrzeit.',
+        'TFT next patch countdown: when is the next TFT patch? Live countdown to the next patch with date and time.')];
+      return [L(`TFT Patch Countdown – nächster Patch ${id}`, `TFT Next Patch Countdown – Patch ${id}`),
+        L(fit(`TFT Patch Countdown: Wann kommt der nächste TFT Patch? Live-Countdown bis Patch ${id} mit Datum, Uhrzeit und allen Terminen von ${S}.`, `TFT Patch Countdown: Wann kommt der nächste TFT Patch? Live-Countdown bis Patch ${id} mit Datum, Uhrzeit und allen Terminen.`),
+          fit(`TFT next patch countdown: when is the next TFT patch? Live countdown to patch ${id} with date, time and every patch date of ${S}.`, `TFT next patch countdown: when is the next TFT patch? Live countdown to patch ${id} with date, time and every patch date.`))];
+    }
     case 'impressum': return [L('Impressum', 'Legal Notice'), L('Impressum von TFTClimb: Anbieter, Kontakt und Verantwortlicher für die Inhalte der TFT Seite tftclimb.com.',
       'Legal notice of TFTClimb: provider, contact and the person responsible for the content of the TFT site tftclimb.com.')];
     case 'datenschutz': return [L('Datenschutzerklärung', 'Privacy Policy'), L('Datenschutzerklärung von TFTClimb: welche Daten wir erheben, wie wir Google Analytics nutzen und welche Rechte du hast.',
@@ -3983,6 +4097,7 @@ function setLd(page, sub, tool, title, desc, url, path){
     const items = [['Home', '/']], sec = LD_SECTION[page];
     if(page==='champion') items.push([tr('Bibliothek'), '/bibliothek'], ['Champions', '/bibliothek/champions'], [champBySlug[sub].n, path]);
     else if(page==='comp') items.push(['Tierlist', '/tierlist'], [compByKey[sub].name, path]);
+    else if(page==='countdown') items.push(['Patches', '/patches'], [title.split(' – ')[0], path]);
     else {
       if(sec) items.push([tr(sec), '/' + page]);
       if(path !== '/' + page) items.push([title.split(' – ')[0], path]);
@@ -3995,8 +4110,8 @@ function setLd(page, sub, tool, title, desc, url, path){
     const qa = box ? [...box.querySelectorAll('details')].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}})) : [];
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
   }
-  if(page==='champion' || page==='comp' || page==='cheatsheet' || (page==='guides' && sub && GUIDES_LIVE)){   // Fragen aus dem Textblock der Champion-/Comp-Seite, des Cheatsheets bzw. des Guides
-    const qa = [...document.querySelectorAll(page==='champion' ? '#chPage .tool-seo details' : page==='comp' ? '#compPage .tool-seo details' : page==='cheatsheet' ? '#csPage .tool-seo details' : `#page-guides .gd-view[data-guide="${sub}"] .tool-seo details`)].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}}));
+  if(page==='champion' || page==='comp' || page==='cheatsheet' || page==='countdown' || (page==='guides' && sub && GUIDES_LIVE)){   // Fragen aus dem Textblock der Champion-/Comp-Seite, des Cheatsheets, des Countdowns bzw. des Guides
+    const qa = [...document.querySelectorAll(page==='champion' ? '#chPage .tool-seo details' : page==='comp' ? '#compPage .tool-seo details' : page==='cheatsheet' ? '#csPage .tool-seo details' : page==='countdown' ? '#cdApp .tool-seo details' : `#page-guides .gd-view[data-guide="${sub}"] .tool-seo details`)].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}}));
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
   }
   const pt = page==='patches' && patchBySlug[sub];   // Patch-Seite als Artikel mit CrazYSlayt als Autor
@@ -4043,6 +4158,7 @@ function route(){
   let page = parts[0] || 'home', sub = parts[1];
   // sprechende Adressen auf die internen Schlüssel zurückführen
   if('/' + page === BUILDER_PATH) page = 'builder';
+  if('/' + page === COUNTDOWN_PATH && !sub) page = 'countdown';
   if(sub && page==='tools') sub = unslug(TOOL_SLUG, sub);
   if(sub && page==='cheatsheet'){ const k = unslug(CS_SLUG, sub); sub = k !== sub ? k : sub.replace(/^tft-/, ''); }
   if(sub && page==='guides') sub = unslug(GUIDE_SLUG, sub);
@@ -4053,7 +4169,7 @@ function route(){
   // alte Adressen weiter unterstützen
   if(['champions','items','traits'].includes(page)){ sub = page; page = 'bibliothek'; }
   if(page==='augments'){ sub = 'augments'; page = 'tierlist'; }
-  const valid = ['home','tierlist','bibliothek','champion','comp','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches'];
+  const valid = ['home','tierlist','bibliothek','champion','comp','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches','countdown'];
   if(!valid.includes(page)) page='notfound';
   const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche
   const isCv = page==='bibliothek' && !['items','traits'].includes(sub);   // Champions: Wabenansicht (auch alte Adresse /bibliothek/v2)
@@ -4065,8 +4181,8 @@ function route(){
   tnUpdate(isSim ? 'simulator' : page === 'tools' ? sub : '');
   // Seitenbreite: Übersichtsseiten breit wie das Dashboard, Unterseiten (einzelnes Tool, Cheatsheet, Champion, Patch, Rang, Profil, Rechtliches) schmaler
   const subOk = {tools:['rolldown','tierlist','simulator','drops','dps','augments'], cheatsheet:csList().map(s=>s[0]), patches:Object.keys(patchBySlug), ranks:Object.keys(rankBy), about:['crazyslayt','humbadobo']}[page];
-  document.body.dataset.lvl = ['champion','comp','builder','apply','impressum','datenschutz','bedingungen'].includes(page) || (subOk && subOk.includes(sub)) ? 'sub' : 'top';
-  let navKey = page==='champion' ? 'bibliothek' : page==='comp' ? 'tierlist' : page;
+  document.body.dataset.lvl = ['champion','comp','builder','apply','impressum','datenschutz','bedingungen','countdown'].includes(page) || (subOk && subOk.includes(sub)) ? 'sub' : 'top';
+  let navKey = page==='champion' ? 'bibliothek' : page==='comp' ? 'tierlist' : page==='countdown' ? 'patches' : page;
   $('#statBar').classList.toggle('sb-off', page!=='home');   // LP-Grenzen und Patch-Countdown nur auf der Startseite
   if(page==='home') requestAnimationFrame(()=>sbCount(true));   // beim Öffnen der Startseite die LP hochzählen
   if(!isSim) simPause();
@@ -4081,6 +4197,7 @@ function route(){
   if(isSim) builderRoute(parts[2], parts[3], 'sim');
   else if(page==='tools') renderTools(sub, parts[2], parts[3]);
   if(page==='patches') renderPatches(sub);
+  if(page==='countdown') renderCountdown();
   if(page==='champion') renderChampPage(sub);
   if(page==='comp') renderCompPage(sub);
   if(page==='cheatsheet') renderCheats(sub);
@@ -4301,7 +4418,7 @@ function renderDash(){
       <div class="dsh-stats">
         ${cut.ch ? lpStat('ch', cut.ch, rankBy.challenger, L('Challenger · EUW', 'Challenger · EUW')) : ''}
         ${cut.gm ? lpStat('gm', cut.gm, rankBy.grandmaster, L('Großmeister · EUW', 'Grandmaster · EUW')) : ''}
-        ${ST_PATCH ? `<a class="dsh-np" href="/patches" title="${esc(stNextLabel())}"><span class="dsh-pbadge">${esc(ST_PATCH)}</span><span><small>${L('Nächster Patch in', 'Next patch in')}</small><b data-countdown>${stCountdown()}</b></span></a>` : ''}
+        ${ST_PATCH ? `<a class="dsh-np" href="${COUNTDOWN_PATH}" title="${esc(stNextLabel())}"><span class="dsh-pbadge">${esc(ST_PATCH)}</span><span><small>${L('Nächster Patch in', 'Next patch in')}</small><b data-countdown>${stCountdown()}</b></span></a>` : ''}
       </div>
     </section>
     <div class="dsh-row2">
