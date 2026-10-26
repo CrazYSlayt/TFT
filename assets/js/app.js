@@ -2298,11 +2298,29 @@ let pnTouch = null;
 const SHOP = TFT_CUSTOM_SET.shop && Array.isArray(TFT_CUSTOM_SET.shop.odds) ? TFT_CUSTOM_SET.shop : null;
 const SHOP_DISTINCT = [1,2,3,4,5].map(c=>champions.filter(x=>x.c===c).length);
 const RD_MAXK = 9;   // bis 9 Kopien (= ★★★)
-const rd = {champ:'', cost:4, lvl:8, gold:50, out:0, other:0, target:3, buy:true, xp:''};
-(function(){   // Start: Carry der besten Comp, passendes Level
-  const c = champBy[(mainComps.find(x=>x.tier==='S') || mainComps[0] || {}).carry];
-  if(c){ rd.champ = c.n; rd.cost = c.c; rd.lvl = [5,6,7,8,9][c.c-1]; }
-})();
+// Version 2 „für alle“, kurze Maske: Kostenstufe (welcher Champion es ist, ändert die Chance nicht – alle einer Stufe haben gleich viele Kopien),
+// Ziel in Sternen (3 Kopien = ★★, 9 Kopien = ★★★) und wie viele schon da sind, spielt noch jemand die Unit, Level und Gold.
+// Ergebnis als Ampel und „x von 100 Spielen“. Der Modus „Genau“ zeigt die exakten Pool-Zahlen und den XP-Vergleich für erfahrene Spieler.
+const RD_LVL = [5, 6, 7, 8, 9];   // auf diesem Level rollt man die Kostenstufe meist (2-Kosten-Reroll auf 6, 3-Kosten auf 7 …)
+// Kopien deiner Unit bei Gegnern (geschätzt): 1 Gegner hält meist ein ★★ (3 Kopien), bei 5-Kostern seltener; „2 oder mehr“ entsprechend doppelt
+const RD_OPP = [[0, 0, 0, 0, 0], [3, 3, 3, 3, 2], [6, 6, 6, 5, 4]];
+// Richtwert: Kopien ANDERER Units derselben Kostenstufe, die bei den Spielern liegen (Board + Bank) – sie fehlen im Pool und machen deine Unit häufiger.
+// Pro Spieler je Kostenstufe 1–5, nach Level als Anzeiger für die Spielphase (Level 6 ≈ 3-2, Level 7 ≈ 3-5/4-1, Level 8 ≈ 4-2 …); mal 8 Spieler
+const RD_LOBBY = {3:[4, 2, .5, 0, 0], 4:[4, 2, .5, 0, 0], 5:[5, 3, 1, 0, 0], 6:[5, 5, 2, .3, 0], 7:[4, 6, 4, 1, 0], 8:[3, 5, 6, 3, .3], 9:[2, 4, 6, 5, 1.5], 10:[1, 3, 5, 6, 3], 11:[1, 3, 5, 6, 3]};
+const rdOtherEst = (lvl, cost) => Math.round(8 * (RD_LOBBY[Math.max(3, Math.min(11, lvl))] || [])[cost-1] || 0);
+const RD_GOLD_MAX = 80;
+const rd = {cost:0, lvl:7, gold:50, have:0, goal:2, contest:0, opp:0, other:'', xp:''};   // cost 0 = Leerlauf (noch keine Kostenstufe); other '' = Richtwert
+const rdGoalN = g => g === 3 ? 9 : 3;   // ★★ = 3 Kopien, ★★★ = 9 Kopien
+const RD_UNIT_NEW = {have:0, contest:0, opp:0, other:''};   // andere Kostenstufe: Kopien und Pool-Angaben gelten nicht mehr
+const RD_DEF = {...rd};   // Startwerte für „Zurücksetzen“
+let rdMode = (()=>{ try { return localStorage.getItem('tftfreaks_rd_mode') === 'pro' ? 'pro' : 'easy'; } catch(e){ return 'easy'; } })(), rdMoreOpen = rdMode === 'pro';
+// Rechengrundlage: Kopien draußen (deine + die der Gegner), andere Units gleicher Kosten, wie viele du noch brauchst
+function rdCtx(){
+  const bag = SHOP.bag[rd.cost-1], goalN = rdGoalN(rd.goal), opp = Math.max(0, Math.min(rdMode === 'pro' ? rd.opp : RD_OPP[rd.contest][rd.cost-1], bag - rd.have));
+  const est = rdOtherEst(rd.lvl, rd.cost), exact = rdMode === 'pro' && rd.other !== '';   // ohne eigene Angabe gilt der Richtwert
+  const other = Math.min(exact ? rd.other : est, bag * (SHOP_DISTINCT[rd.cost-1] - 1));
+  return {bag, goalN, opp, other, est, exact, out:rd.have + opp, need:goalN - rd.have, left:bag - rd.have - opp};
+}
 
 // Chance, dass EIN Shop-Slot den gesuchten Champion zeigt, wenn man schon k Kopien gefunden hat
 function rdSlotP(lvl, cost, out, other, k){
@@ -2311,24 +2329,28 @@ function rdSlotP(lvl, cost, out, other, k){
   return left > 0 && pool > 0 ? (SHOP.odds[lvl-1][cost-1] / 100) * left / pool : 0;
 }
 // Wahrscheinlichkeit für genau 0…9 gefundene Kopien, wenn man `gold` ins Rollen steckt (2 Gold = 5 Slots).
-// buy: jeder Treffer kostet seine Kosten in Gold – fehlt das Gold, kann er nicht gekauft werden.
-function rdDist(lvl, cost, out, other, gold, buy){
-  const K = RD_MAXK + 1, price = buy ? cost : 0, G = Math.max(0, Math.floor(gold));
+// Wie im Spiel kostet jeder Treffer seine Kosten in Gold – fehlt das Gold, kann er nicht gekauft werden.
+// Dazu kommt der kostenlose Shop zu Beginn der Runde (geprüft gegen eine Simulation des Shops: Abweichung unter 1 Prozentpunkt).
+function rdDist(lvl, cost, out, other, gold){
+  const K = RD_MAXK + 1, price = cost, G = Math.max(0, Math.floor(gold));
   const pk = Array.from({length:K}, (_,k)=> k < RD_MAXK ? rdSlotP(lvl, cost, out, other, k) : 0);
-  const m = new Float64Array((G+1) * K); m[G*K] = 1;
+  const m = new Float64Array((G+1) * K);
+  const shop = st => {   // ein Shop mit 5 Slots: Treffer kaufen, wenn das Gold reicht
+    for(let s = 0; s < 5; s++){
+      const nx = new Map(), add = (key, v)=>nx.set(key, (nx.get(key)||0) + v);
+      st.forEach((v, key)=>{
+        const gg = Math.floor(key / K), kk = key % K, p = pk[kk];
+        if(p > 0 && gg >= price){ add((gg-price)*K + kk + 1, v*p); add(key, v*(1-p)); } else add(key, v);
+      });
+      st = nx;
+    }
+    st.forEach((v, key)=>{ m[key] += v; });
+  };
+  shop(new Map([[G*K, 1]]));                // kostenloser Shop zu Rundenbeginn
   for(let g = G; g >= 2; g--){            // Gold sinkt mit jedem Roll – also von oben nach unten abarbeiten
     for(let k = 0; k < K; k++){
       const w = m[g*K+k]; if(!w) continue; m[g*K+k] = 0;
-      let st = new Map([[(g-2)*K + k, w]]);
-      for(let s = 0; s < 5; s++){
-        const nx = new Map(), add = (key, v)=>nx.set(key, (nx.get(key)||0) + v);
-        st.forEach((v, key)=>{
-          const gg = Math.floor(key / K), kk = key % K, p = pk[kk];
-          if(p > 0 && gg >= price){ add((gg-price)*K + kk + 1, v*p); add(key, v*(1-p)); } else add(key, v);
-        });
-        st = nx;
-      }
-      st.forEach((v, key)=>{ m[key] += v; });
+      shop(new Map([[(g-2)*K + k, w]]));
     }
   }
   const res = new Array(K).fill(0);
@@ -2337,8 +2359,8 @@ function rdDist(lvl, cost, out, other, gold, buy){
 }
 const rdAtLeast = (dist, k) => dist.slice(k).reduce((a,b)=>a+b, 0);
 const rdPct = p => (p*100).toLocaleString(LOC, {maximumFractionDigits: p > 0 && p < 0.1 ? 1 : 0}) + L(' %', '%');
-function rdGoldFor(q){   // kleinstes Gold, mit dem das Ziel mit Chance q erreicht wird
-  const P = g => rdAtLeast(rdDist(rd.lvl, rd.cost, rd.out, rd.other, g, rd.buy), rd.target);
+function rdGoldFor(q, x){   // kleinstes Gold, mit dem das Ziel mit Chance q erreicht wird
+  const P = g => rdAtLeast(rdDist(rd.lvl, rd.cost, x.out, x.other, g), x.need);
   let hi = 2; while(P(hi) < q){ hi *= 2; if(hi > 512) return null; }
   let lo = 0; while(hi - lo > 1){ const mid = (lo + hi) >> 1; if(P(mid) >= q) hi = mid; else lo = mid; }
   return hi;
@@ -2374,12 +2396,13 @@ function dpsSuggest(n){
   }));
   return out.slice(0, 3);
 }
+// Leerlauf: Der Vergleich startet ohne Champion (oder mit ?c=<champion>, z. B. von der Champion-Seite); „Zurücksetzen“ führt hierher zurück
+const DPS_IDLE = {champ:'', cost:4, star:2, builds:[[], []], tl:{}, prof:'mid', n:1, at:22, mode:'sum', pick:null, cat:'craft', q:''};
 function dpsMount(){
   if(dpsMounted) return; dpsMounted = true;
-  if(!dps.champ){ const c = mainComps.find(x=>dpsOk(x.carry) && champBy[x.carry].c===4) || mainComps.find(x=>dpsOk(x.carry)); if(c){ dps.champ = c.carry; dps.cost = champBy[c.carry].c; } }
-  if(dps.champ){ const s = dpsSuggest(dps.champ); if(s.length) dps.builds = s.length > 1 ? s : [s[0], []]; }
   $('#dpsApp').innerHTML = `<div class="dps">
-    <div class="card dps-in">
+    <section class="card dps-in tio-in" aria-label="${L('Deine Angaben', 'Your input')}">
+      ${tioHead(false, tioReset('id="dpsReset"'), L('Wähl einen Champion und bis zu vier Item-Builds – der Vergleich rechnet sofort mit.', 'Pick a champion and up to four item builds – the comparison updates instantly.'))}
       <section><h3 class="rd-h"><b>1</b> Champion</h3>
         <div class="rd-costs" id="dpsCosts">${[1,2,3,4,5].map(c=>`<button type="button" class="rd-cost cb c${c}" data-dcost="${c}">${c} Gold<span></span></button>`).join('')}</div>
         <div class="rd-champs" id="dpsChamps"></div>
@@ -2395,25 +2418,27 @@ function dpsMount(){
         <p class="rd-hint" id="dpsProfTxt"></p>
         <div class="dps-row"><span>Puppen</span><div class="rd-costs" id="dpsN">${[1,2,3].map(n=>`<button type="button" class="rd-cost" data-dn="${n}">${n}<span></span></button>`).join('')}</div></div>
         <p class="rd-hint">Mehr Puppen nebeneinander zeigen, wie viel Flächenschaden eine Fähigkeit macht.</p></section>
-    </div>
-    <div class="card dps-res">
-      <div class="dps-head"><h3 class="rd-h">Schaden über die Zeit</h3>
-        <div class="rd-costs" id="dpsMode"><button type="button" class="rd-cost" data-dmode="sum">Gesamtschaden<span></span></button><button type="button" class="rd-cost" data-dmode="dps">Schaden pro Sekunde<span></span></button></div></div>
+    </section>
+    <section class="card dps-res tio-out" aria-label="${L('Dein Ergebnis', 'Your result')}">
+      ${tioHead(true, `<div class="rd-costs" id="dpsMode"><button type="button" class="rd-cost" data-dmode="sum">Gesamtschaden<span></span></button><button type="button" class="rd-cost" data-dmode="dps">Schaden pro Sekunde<span></span></button></div>`,
+        L('Schaden über die Zeit – jede Linie ist ein Build.', 'Damage over time – each line is one build.'))}
       <div id="dpsChart" class="dps-chart"></div>
       <label class="rd-f dps-at"><span>Auswertung bis Sekunde</span><b id="dpsAtV"></b><input type="range" id="dpsAt" min="1" max="30" value="${dps.at}"></label>
       <div class="dps-table-wrap"><table class="dps-table" id="dpsTable"></table></div>
       <p class="note">Gerechnet mit der Engine des Kampf-Simulators: Grundwerte und Items nach Riot, die Stärke der Fähigkeiten ist geschätzt, wo Riot keine Zahlen liefert. Die Puppen greifen nicht an – Mana gibt es also nur über Angriffe und Items. Traits zählen auf der Stufe, die du oben einstellst, Augments nicht. Jeder Wert ist der Mittelwert aus 24 Kämpfen, weil Krits Zufall sind. Für den Vergleich von Builds gut geeignet, die absoluten Zahlen sind Richtwerte.</p>
-    </div>
+    </section>
   </div>`;
   const on = (sel, ev, f) => $(sel).addEventListener(ev, f);
   on('#dpsCosts', 'click', e=>{ const b = e.target.closest('[data-dcost]'); if(!b) return; dps.cost = +b.dataset.dcost; dpsChamps(); });
-  on('#dpsChamps', 'click', e=>{ const b = e.target.closest('[data-dch]'); if(!b) return; dpsSetChamp(b.dataset.dch); });
+  on('#dpsChamps', 'click', e=>{ const b = e.target.closest('[data-dch]'); if(!b) return;   // gewählten Champion nochmal anklicken = zurück in den Leerlauf
+    if(b.dataset.dch===dps.champ){ Object.assign(dps, {champ:'', builds:[[], []], tl:{}, pick:null}); dpsChamps(); dpsUpdate(); } else dpsSetChamp(b.dataset.dch); });
   on('#dpsStars', 'click', e=>{ const b = e.target.closest('[data-dstar]'); if(!b) return; dps.star = +b.dataset.dstar; dpsUpdate(); });
   on('#dpsProf', 'click', e=>{ const b = e.target.closest('[data-dprof]'); if(!b) return; dps.prof = b.dataset.dprof; dpsUpdate(); });
   on('#dpsN', 'click', e=>{ const b = e.target.closest('[data-dn]'); if(!b) return; dps.n = +b.dataset.dn; dpsUpdate(); });
   on('#dpsTraits', 'click', e=>{ const b = e.target.closest('[data-dtl]'); if(!b) return; const i = b.dataset.dtl.lastIndexOf(':'); dps.tl[b.dataset.dtl.slice(0, i)] = +b.dataset.dtl.slice(i + 1); dpsUpdate(); });
   on('#dpsMode', 'click', e=>{ const b = e.target.closest('[data-dmode]'); if(!b) return; dps.mode = b.dataset.dmode; dpsDraw(); });
   on('#dpsAt', 'input', e=>{ dps.at = +e.target.value; dpsDraw(); });
+  on('#dpsReset', 'click', ()=>{ Object.assign(dps, DPS_IDLE, {builds:[[], []], tl:{}}); $('#dpsAt').value = dps.at; dpsChamps(); dpsUpdate(); });
   let dpsW = 0; window.addEventListener('resize', ()=>{ const ch = $('#dpsChart'); if(ch && ch.offsetParent && Math.abs(ch.clientWidth - dpsW) > 30){ dpsW = ch.clientWidth; dpsDraw(); } });
   on('#dpsBuilds', 'click', e=>{
     const slot = e.target.closest('[data-dslot]'), del = e.target.closest('[data-ddel]'), add = e.target.closest('[data-dadd]'), clr = e.target.closest('[data-dclr]');
@@ -2474,6 +2499,7 @@ function dpsTraits(){
 }
 const dpsItemImg = id => { const it = findItem(id); return it ? `<img src="${it.img}" alt="" title="${esc(it.en)}">` : ''; };
 function dpsBuilds(){
+  if(!dps.champ){ $('#dpsBuilds').innerHTML = `<p class="rd-hint" style="margin:0">${L('Wähl zuerst einen Champion – dann schlage ich dir Builds aus unserer Tierlist vor.', 'Pick a champion first – then I’ll suggest builds from our tier list.')}</p>`; dpsPicker(); return; }
   $('#dpsBuilds').innerHTML = dps.builds.map((b, i)=>`<div class="dps-build" style="--bc:${DPS_COL[i]}"><b class="dps-bn">${String.fromCharCode(65 + i)}</b>
     <div class="dps-slots">${[0,1,2].map(s=>{ const id = b[s], open = dps.pick && dps.pick.b===i && dps.pick.s===s;
       return `<div class="dps-slot${open?' on':''}${id?'':' empty'}"><button type="button" data-dslot="${i}:${s}" aria-label="${id ? esc((findItem(id)||{}).en || '') : 'Item wählen'}">${id ? dpsItemImg(id) : '+'}<span></span></button>${id?`<button type="button" class="dps-x" data-dclr="${i}:${s}" aria-label="Entfernen">✕<span></span></button>`:''}</div>`; }).join('')}</div>
@@ -2509,6 +2535,14 @@ function dpsUpdate(){
     dpsDraw();
   }, 30);
 }
+// Leerlauf ohne Champion: angedeutetes Diagramm (Raster und drei blasse Build-Linien), darüber die Aufforderung
+function dpsIdle(){
+  const grid = [0, 1, 2, 3, 4].map(i=>`<line x1="54" x2="626" y1="${14 + i * 61}" y2="${14 + i * 61}" class="dps-grid-l"/>`).join('') + [0, 1, 2, 3, 4, 5, 6].map(i=>`<line x1="${54 + i * 95.3}" x2="${54 + i * 95.3}" y1="14" y2="258" class="dps-grid-l v"/>`).join('');
+  const steps = [[0, 258, 120, 250, 135, 196, 300, 186, 318, 120, 470, 110, 490, 52, 626, 40], [0, 258, 150, 252, 165, 214, 330, 204, 345, 160, 500, 150, 515, 104, 626, 96], [0, 258, 180, 254, 200, 236, 380, 228, 400, 200, 560, 192, 580, 170, 626, 160]];
+  const line = (p, i) => `<polyline fill="none" stroke="${DPS_COL[i]}" stroke-width="2.6" stroke-dasharray="6 6" points="${p.reduce((s, v, k)=>s + (k % 2 ? v + ' ' : (54 + v * 572 / 626).toFixed(1) + ','), '').trim()}"/>`;
+  return `<div class="dps-idle"><svg viewBox="0 0 640 288" aria-hidden="true">${grid}${steps.map(line).join('')}</svg>
+    <div class="dps-idle-txt"><b>${L('Noch kein Champion gewählt', 'No champion picked yet')}</b><span>${L('Wähl unter „Deine Angaben“ einen Champion – dann vergleiche ich seine Item-Builds.', 'Pick a champion under “Your input” – then I’ll compare its item builds.')}</span></div></div>`;
+}
 const dpsAtIdx = (r, t) => Math.min(r.tot.length - 1, Math.round(t / SIM_DPS_STEP));
 // Schaden pro Sekunde: gleitendes Fenster (±2 s um den Zeitpunkt), damit einzelne Angriffe und Fähigkeiten nicht als Zacken stehen
 const dpsRate = r => { const k = Math.round(2 / SIM_DPS_STEP), n = r.tot.length - 1;
@@ -2516,8 +2550,10 @@ const dpsRate = r => { const k = Math.round(2 / SIM_DPS_STEP), n = r.tot.length 
 function dpsDraw(){
   $('#dpsMode').querySelectorAll('[data-dmode]').forEach(b=>b.classList.toggle('on', b.dataset.dmode===dps.mode));
   $('#dpsAtV').textContent = dps.at + ' s';
-  const R = dps.res, chart = $('#dpsChart');
-  if(!R || !R.length){ chart.innerHTML = viSays('Wähl oben einen Champion – dann rechne ich los.'); $('#dpsTable').innerHTML = ''; return; }
+  const R = dps.res, chart = $('#dpsChart'), idle = !dps.champ || !R || !R.length;
+  $('#dpsReset').disabled = !dps.champ && ['star', 'prof', 'n', 'at', 'mode'].every(k=>dps[k]===DPS_IDLE[k]);
+  chart.closest('.dps-res').classList.toggle('idle', idle);
+  if(idle){ chart.innerHTML = dpsIdle(); $('#dpsTable').innerHTML = ''; return; }
   // Zeichenfläche in echter Breite, damit die Beschriftung auf dem Handy lesbar bleibt
   const W = Math.round(Math.max(320, Math.min(640, chart.clientWidth || 640))), H = Math.round(W * (W < 480 ? 0.62 : 0.45)), L0 = 54, R0 = 14, T0 = 14, B0 = 30, w = W - L0 - R0, h = H - T0 - B0;
   const ser = R.map(r=>dps.mode==='dps' ? dpsRate(r) : r.tot);
@@ -2579,6 +2615,10 @@ function renderTools(sub, a, b){
 // „Deine Angaben“: die Augment-Stufen, die du schon gesehen hast (2-1, 3-2, 4-2). „Dein Ergebnis“: was als Nächstes kommt, Chance auf ein prismatisches Augment, wahrscheinlichste Verläufe.
 // Gleiche Daten wie der Augment-Baum im Cheatsheet (CS.augments.seq); der kleine Baum in der Ergebnis-Box zeigt dieselbe Auswahl und lässt sich auch anklicken.
 // Die Auswahl steht in der Adresse (?a=SG), damit man sie teilen kann
+// Kopf der beiden Tool-Boxen (Gerüst .tio, für alle Tools gleich): Überschrift „Deine Angaben“ bzw. „Dein Ergebnis“, rechts Knöpfe, darunter ein kurzer Hinweis
+const TIO_RESET_IC = '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>';
+const tioReset = (attrs, label = L('Zurücksetzen', 'Reset')) => `<button type="button" class="tio-reset" ${attrs} title="${label}">${csSvg(TIO_RESET_IC, 2.2)}<span>${label}</span></button>`;
+const tioHead = (out, right = '', hint = '') => `<div class="tio-top"><div class="tio-hd"><h2>${out ? L('Dein Ergebnis', 'Your result') : L('Deine Angaben', 'Your input')}</h2>${right}</div>${hint ? `<p class="tio-hint">${hint}</p>` : ''}</div>`;
 const AG_ST = ['2-1', '3-2', '4-2'];
 const ag = {k:''};
 let agMounted = false;
@@ -2599,7 +2639,7 @@ const agDist = (k, i) => { const all = CS.augments.seq.filter(x=>x[0].startsWith
 // Deine Angaben: pro Stufe drei Augment-Rahmen. Die gerade fällige Stufe pulsiert leicht, spätere Stufen (und Stufen, die nach deinen Augments nicht vorkommen) sind mit Schloss gesperrt
 function agInput(){
   const k = ag.k;
-  return `<div class="tio-hd"><h2>${L('Deine Angaben', 'Your input')}</h2><button type="button" class="tio-reset" id="agReset" title="${L('Zurücksetzen', 'Reset')}"${k ? '' : ' disabled'}>${csSvg('<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>', 2.2)}<span>${L('Zurücksetzen', 'Reset')}</span></button></div>
+  return `<div class="tio-hd"><h2>${L('Deine Angaben', 'Your input')}</h2>${tioReset(`id="agReset"${k ? '' : ' disabled'}`)}</div>
     <p class="tio-hint">${L('Wähl jedes Augment, sobald du es siehst.', 'Pick each augment as soon as you see it.')}</p>
     <div class="ag-rows">${AG_ST.map((st, i)=>`<div class="ag-row ${i < k.length ? 'done' : i === k.length ? 'cur' : 'later'}" role="group" aria-label="${i + 1}. Augment (${st})"><span class="ag-st">${st}</span>
       <div class="ag-opts">${'SGP'.split('').map(l=>{ const ok = i <= k.length && agSum(k.slice(0, i) + l) > 0, on = k[i] === l;
@@ -2659,101 +2699,170 @@ function rdMount(){
   const app = $('#rdApp');
   if(!SHOP){ app.innerHTML = ornnSays(`Für Set ${TFT_DATA.set} fehlen mir noch die Shop-Chancen. Sobald sie feststehen, schmiede ich den Rechner nach.`); return; }
   app.innerHTML = `<div class="rd">
-    <div class="card rd-in">
-      <section><h3 class="rd-h"><b>1</b> Champion</h3>
-        <div class="rd-costs" id="rdCosts">${[1,2,3,4,5].map(c=>`<button type="button" class="rd-cost cb c${c}" data-cost="${c}">${c} Gold<span></span></button>`).join('')}</div>
-        <div class="rd-champs" id="rdChamps"></div></section>
-      <section><h3 class="rd-h"><b>2</b> Level &amp; Gold</h3>
-        <label class="rd-f"><span>Level</span><b id="rdLvlV"></b><input type="range" id="rdLvl" min="1" max="11" value="${rd.lvl}"></label>
-        <div class="rd-odds" id="rdOdds"></div>
-        <label class="rd-f"><span>Gold zum Rollen</span><b id="rdGoldV"></b><input type="range" id="rdGold" min="0" max="150" step="2" value="${rd.gold}"></label></section>
-      <section><h3 class="rd-h"><b>3</b> Pool</h3>
-        <div class="rd-nums">
-          <label class="rd-n"><span>Kopien schon draußen</span><input class="input" type="number" id="rdOutN" min="0" value="0"><small>bei allen Spielern – deine eingeschlossen</small></label>
-          <label class="rd-n"><span>Andere <span id="rdCostLbl"></span>-Kosten draußen</span><input class="input" type="number" id="rdOther" min="0" value="0"><small>alle anderen Units dieser Kosten auf Boards und Bänken</small></label>
+    <section class="card rd-in tio-in" aria-label="${L('Deine Angaben', 'Your input')}">
+      ${tioHead(false, `<div class="tio-seg" id="rdMode" role="group" aria-label="${L('Ansicht', 'View')}"><button type="button" data-rdmode="easy" title="${L('Vier kurze Fragen', 'Four quick questions')}">${L('Einfach', 'Simple')}</button><button type="button" data-rdmode="pro" title="${L('Pool genau eingeben und Leveln vergleichen', 'Enter the pool exactly and compare levelling')}">${L('Detailliert', 'Detailed')}</button></div>${tioReset('id="rdReset"')}`,
+        L('Beantworte vier kurze Fragen – das Ergebnis rechnet sofort mit.', 'Answer four quick questions – the result updates instantly.'))}
+      <section><h3 class="rd-h"><b>1</b> ${L('Was kostet deine Unit?', 'What does your unit cost?')}</h3>
+        <div class="rd-costs rd-cost5" id="rdCosts">${[1,2,3,4,5].map(c=>`<button type="button" class="rd-cost cb c${c}" data-cost="${c}">${c} Gold<span></span></button>`).join('')}</div></section>
+      <section><h3 class="rd-h"><b>2</b> ${L('Dein Ziel', 'Your goal')}</h3>
+        <div class="rd-gh">
+          <div class="rd-goal" id="rdGoal"><button type="button" data-goal="2"><b class="s2">★★</b><small>${L('3 Kopien', '3 copies')}</small></button><button type="button" data-goal="3"><b class="s3">★★★</b><small>${L('9 Kopien', '9 copies')}</small></button></div>
+          <div class="rd-have"><span>${L('Meine Kopien', 'My copies')}</span><div class="rd-step"><button type="button" data-hstep="-1" aria-label="${L('Eine Kopie weniger', 'One copy less')}">−</button><b id="rdHaveN" aria-live="polite">0</b><button type="button" data-hstep="1" aria-label="${L('Eine Kopie mehr', 'One copy more')}">+</button></div></div>
+        </div>
+        <p class="rd-hint" id="rdHaveTxt"></p></section>
+      <section><h3 class="rd-h"><b>3</b> ${L('Spielt noch jemand diese Unit?', 'Is anyone else playing this unit?')}</h3>
+        <div class="rd-seg rd-easy" id="rdContest">${[['Niemand', 'Nobody'], ['1 Gegner', '1 opponent'], ['2 oder mehr', '2 or more']].map(([d, e], i)=>`<button type="button" data-contest="${i}">${L(d, e)}</button>`).join('')}</div>
+        <div class="rd-nums rd-pro">
+          <label class="rd-n"><span>${L('Kopien bei Gegnern', 'Copies held by opponents')}</span><input class="input" type="number" id="rdOpp" min="0" value="${rd.opp}"><small>${L('auf allen gegnerischen Boards und Bänken', 'on all enemy boards and benches')}</small></label>
+          <label class="rd-n"><span>${L('Andere', 'Other')} <span id="rdCostLbl"></span>${L('-Kosten draußen', '-costs out')}</span><input class="input" type="number" id="rdOther" min="0" value="${rd.other}"><small>${L('alle anderen Units dieser Kosten auf Boards und Bänken', 'all other units of this cost on boards and benches')}</small></label>
         </div></section>
-      <section><h3 class="rd-h"><b>4</b> Ziel</h3>
-        <div class="rd-targets" id="rdTargets">${Array.from({length:RD_MAXK}, (_,i)=>`<button type="button" data-k="${i+1}">${i+1}<span></span></button>`).join('')}</div>
-        <p class="rd-hint">So viele Kopien willst du finden · 3 Kopien = ★★ · 9 Kopien = ★★★</p>
-        <label class="rd-chk"><input type="checkbox" id="rdBuy" checked> Treffer kosten Gold <small>(wie im Spiel – ausschalten, um nur die Shops zu zählen)</small></label>
-        <label class="rd-n"><span>XP bis zum nächsten Level <small>(optional)</small></span><input class="input" type="number" id="rdXp" min="0" placeholder="z. B. 28"><small>Dann vergleicht der Rechner: jetzt rollen oder erst leveln und dann rollen?</small></label></section>
-    </div>
-    <div class="card rd-res" id="rdRes" aria-live="polite"></div>
+      <section><h3 class="rd-h"><b>4</b> ${L('Dein Level und Gold', 'Your level and gold')}</h3>
+        <div class="rd-lvls" id="rdLvls"></div>
+        <p class="rd-hint" id="rdLvlTxt"></p>
+        <div class="rd-odds rd-pro" id="rdOdds"></div>
+        <label class="rd-f"><span>${L('Gold zum Ausgeben', 'Gold to spend')} <small>${L('(Rollen und Kaufen)', '(rolling and buying)')}</small></span><b id="rdGoldV"></b><input type="range" id="rdGold" min="0" max="${RD_GOLD_MAX}" step="1" value="${rd.gold}"></label>
+        <div class="rd-ticks" aria-hidden="true">${Array.from({length:RD_GOLD_MAX / 10 + 1}, (_, i)=>`<span style="--v:${i * 10 / RD_GOLD_MAX}">${i * 10}</span>`).join('')}</div>
+        <label class="rd-n rd-pro"><span>${L('XP bis zum nächsten Level', 'XP to the next level')} <small>(optional)</small></span><input class="input" type="number" id="rdXp" min="0" placeholder="${L('z. B. 28', 'e.g. 28')}"><small>${L('Dann vergleicht der Rechner: jetzt rollen oder erst leveln und dann rollen?', 'Then the calculator compares: roll now or level first and then roll?')}</small></label></section>
+    </section>
+    <section class="card rd-res tio-out" aria-label="${L('Dein Ergebnis', 'Your result')}">${tioHead(true)}<div id="rdRes" aria-live="polite"></div></section>
   </div>
   <div class="card rd-table-card"><h3 class="rd-h">Shop-Chancen Set ${TFT_DATA.set}</h3><div class="rd-table-wrap"><table class="rd-table" id="rdTable"></table></div>
     <p class="note">Chance pro Shop-Slot nach Level. Pool: ${SHOP.bag.map((b,i)=>`${i+1}-Kosten ${b} Kopien × ${SHOP_DISTINCT[i]} Champions`).join(' · ')}.</p></div>`;
-  $('#rdCosts').addEventListener('click', e=>{ const b = e.target.closest('[data-cost]'); if(!b) return; rd.cost = +b.dataset.cost; rd.champ = ''; rdChamps(); rdUpdate(); });
-  $('#rdChamps').addEventListener('click', e=>{ const b = e.target.closest('[data-rdc]'); if(!b) return; const c = champBy[b.dataset.rdc]; rd.champ = rd.champ===c.n ? '' : c.n; rd.cost = c.c; rdChamps(); rdUpdate(); });
-  $('#rdTargets').addEventListener('click', e=>{ const b = e.target.closest('[data-k]'); if(!b) return; rd.target = +b.dataset.k; rdUpdate(); });
-  $('#rdLvl').addEventListener('input', e=>{ rd.lvl = +e.target.value; rdUpdate(); });
-  $('#rdGold').addEventListener('input', e=>{ rd.gold = +e.target.value; rdUpdate(); });
-  $('#rdOutN').addEventListener('input', e=>{ rd.out = Math.max(0, parseInt(e.target.value)||0); rdUpdate(); });
-  $('#rdOther').addEventListener('input', e=>{ rd.other = Math.max(0, parseInt(e.target.value)||0); rdUpdate(); });
-  $('#rdBuy').addEventListener('change', e=>{ rd.buy = e.target.checked; rdUpdate(); });
-  $('#rdXp').addEventListener('input', e=>{ rd.xp = e.target.value; rdUpdate(); });
-  rdChamps(); rdUpdate();
+  const on = (sel, ev, f) => $(sel).addEventListener(ev, f), num = e => Math.max(0, parseInt(e.target.value) || 0);
+  on('#rdCosts', 'click', e=>{ const b = e.target.closest('[data-cost]'); if(!b) return; const c = +b.dataset.cost;   // Kostenstufe wählt gleich das übliche Level mit
+    if(c !== rd.cost) Object.assign(rd, RD_UNIT_NEW, {lvl:RD_LVL[c-1]}); rd.cost = c; rdUpdate(); });
+  on('.rd-step', 'click', e=>{ const b = e.target.closest('[data-hstep]'); if(!b || b.disabled) return; rd.have += +b.dataset.hstep; rdUpdate(); });   // Kopien, die du schon hast
+  on('#rdGoal', 'click', e=>{ const b = e.target.closest('[data-goal]'); if(!b || b.disabled) return; rd.goal = +b.dataset.goal; rdUpdate(); });
+  on('#rdContest', 'click', e=>{ const b = e.target.closest('[data-contest]'); if(!b) return; rd.contest = +b.dataset.contest; rdUpdate(); });
+  on('#rdLvls', 'click', e=>{ const b = e.target.closest('[data-lvl]'); if(!b) return; rd.lvl = +b.dataset.lvl; rdUpdate(); });
+  on('#rdGold', 'input', e=>{ rd.gold = +e.target.value; rdUpdate(); });
+  on('#rdOpp', 'input', e=>{ rd.opp = num(e); rdUpdate(); });
+  on('#rdOther', 'input', e=>{ rd.other = e.target.value === '' ? '' : num(e); rdUpdate(); });   // leer = Richtwert
+  on('#rdXp', 'input', e=>{ rd.xp = e.target.value; rdUpdate(); });
+  on('#rdMode', 'click', e=>{ const b = e.target.closest('[data-rdmode]'); if(!b) return; rdMode = b.dataset.rdmode; rdMoreOpen = rdMode === 'pro';
+    try { localStorage.setItem('tftfreaks_rd_mode', rdMode); } catch(err){} rdUpdate(); });
+  on('#rdReset', 'click', ()=>{ Object.assign(rd, RD_DEF); $('#rdGold').value = rd.gold; $('#rdXp').value = rd.xp; rdUpdate(); });
+  $('#rdRes').addEventListener('toggle', e=>{ if(e.target.matches && e.target.matches('.rd-more')){ rdMoreOpen = e.target.open; rdStick(); } }, true);   // „Details“ bleibt beim Neurechnen offen bzw. zu
+  window.addEventListener('resize', rdStick);
+  rdUpdate();
 }
-function rdChamps(){
-  $('#rdCosts').querySelectorAll('[data-cost]').forEach(b=>b.classList.toggle('on', +b.dataset.cost===rd.cost));
-  $('#rdChamps').innerHTML = champions.filter(c=>c.c===rd.cost).map(c=>`<button type="button" class="rd-ch${c.n===rd.champ?' on':''}" data-rdc="${esc(c.n)}" title="${esc(c.n)}">${avatar(c.n, 44)}<span>${esc(c.n)}</span><span></span></button>`).join('');
-}
+// Ergebnis läuft nur mit, wenn es ganz auf den Bildschirm passt (sonst wäre sein unteres Ende erst am Schluss erreichbar)
+function rdStick(){ const s = document.querySelector('.rd-res'); if(s) s.classList.toggle('tall', s.offsetHeight > innerHeight - 96); }
 function rdUpdate(){
-  const bag = SHOP.bag[rd.cost-1], maxOther = bag * (SHOP_DISTINCT[rd.cost-1] - 1);
-  rd.out = Math.min(rd.out, bag); rd.other = Math.min(rd.other, maxOther);
-  const outEl = $('#rdOutN'), othEl = $('#rdOther');
-  outEl.max = bag; othEl.max = maxOther;
-  if(+outEl.value > bag) outEl.value = bag;
-  if(+othEl.value > maxOther) othEl.value = maxOther;
-  $('#rdCostLbl').textContent = rd.cost;
-  $('#rdLvlV').textContent = rd.lvl; $('#rdGoldV').textContent = rd.gold + ' Gold';
-  $('#rdTargets').querySelectorAll('[data-k]').forEach(b=>b.classList.toggle('on', +b.dataset.k===rd.target));
+  const idle = !rd.cost, ci = (rd.cost || 3) - 1;   // Leerlauf: noch keine Kostenstufe (ci nur, damit die Felder gültige Grenzen haben)
+  const bag = SHOP.bag[ci], maxOther = bag * (SHOP_DISTINCT[ci] - 1);
+  rd.have = Math.max(0, Math.min(8, rd.have)); if(rd.have >= 3) rd.goal = 3;   // ★★ hast du dann schon
+  rd.opp = Math.min(rd.opp, bag - rd.have); if(rd.other !== '') rd.other = Math.min(rd.other, maxOther);
+  const oppEl = $('#rdOpp'), othEl = $('#rdOther');   // Zahlenfelder zeigen den Stand (außer während man tippt)
+  oppEl.max = bag - rd.have; othEl.max = maxOther;
+  if(document.activeElement !== oppEl || +oppEl.value > rd.opp) oppEl.value = rd.opp;
+  if(document.activeElement !== othEl || (rd.other !== '' && +othEl.value > rd.other)) othEl.value = rd.other;
+  othEl.placeholder = idle ? '' : L(`leer = Richtwert (≈ ${rdOtherEst(rd.lvl, rd.cost)})`, `empty = guideline (≈ ${rdOtherEst(rd.lvl, rd.cost)})`);
+  $('#rdContest').querySelectorAll('[data-contest]').forEach(b=>{ const i = +b.dataset.contest, n = RD_OPP[i][ci]; b.title = idle ? '' : i ? L(`geschätzt ${n} Kopien bei Gegnern`, `estimated ${n} copies with opponents`) : L('alle Kopien im Pool', 'all copies in the pool'); });
+  $('#rdCostLbl').textContent = idle ? 'X' : rd.cost;
+  $('.rd-in').classList.toggle('pro', rdMode === 'pro');
+  $('#rdMode').querySelectorAll('[data-rdmode]').forEach(b=>b.classList.toggle('on', b.dataset.rdmode === rdMode));
+  $('#rdReset').disabled = Object.keys(RD_DEF).every(k=>rd[k]===RD_DEF[k]);
+  $('#rdGoldV').textContent = rd.gold + ' Gold';
+  $('#rdCosts').querySelectorAll('[data-cost]').forEach(b=>b.classList.toggle('on', +b.dataset.cost === rd.cost));
+  // Ziel und Kopien: 3 Kopien = ★★, 9 Kopien = ★★★ – ab 3 Kopien hast du ★★ schon, dann geht es um ★★★
+  const goalN = rdGoalN(rd.goal), rest = goalN - rd.have, stars = rd.goal === 3 ? '★★★' : '★★';
+  $('#rdHaveN').textContent = rd.have;
+  $('.rd-step').querySelectorAll('[data-hstep]').forEach(b=>{ b.disabled = +b.dataset.hstep < 0 ? rd.have <= 0 : rd.have >= 8; });
+  $('#rdHaveTxt').innerHTML = rd.have >= 3 ? L(`Du hast schon ★★ – noch <b>${rest} ${rest === 1 ? 'Kopie' : 'Kopien'}</b> bis ★★★.`, `You already have ★★ – <b>${rest} more ${rest === 1 ? 'copy' : 'copies'}</b> to ★★★.`)
+    : L(`Noch <b>${rest} ${rest === 1 ? 'Kopie' : 'Kopien'}</b> bis ${stars}.`, `<b>${rest} more ${rest === 1 ? 'copy' : 'copies'}</b> to ${stars}.`);
+  $('#rdGoal').querySelectorAll('[data-goal]').forEach(b=>{ const g = +b.dataset.goal; b.classList.toggle('on', g === rd.goal); b.disabled = g === 2 && rd.have >= 3; b.title = b.disabled ? L('★★ hast du schon', 'You already have ★★') : ''; });
+  $('#rdContest').querySelectorAll('[data-contest]').forEach(b=>b.classList.toggle('on', +b.dataset.contest === rd.contest));
+  // Level als Knöpfe mit der Shop-Chance der Kostenstufe; der gelbe Punkt markiert das übliche Level
+  const oc = l => SHOP.odds[l-1][ci], typ = idle ? 0 : RD_LVL[ci];
+  $('#rdLvls').innerHTML = SHOP.odds.map((o, i)=>{ const l = i + 1, p = idle ? null : o[ci]; if(l < 3) return '';
+    return `<button type="button" class="rd-lv${l === rd.lvl ? ' on' : ''}${p === 0 ? ' off' : ''}${l === typ ? ' typ' : ''}" data-lvl="${l}" aria-pressed="${l === rd.lvl}"${idle ? '' : ` title="${L(`Level ${l}: ${p} % pro Shop-Slot für ${rd.cost}-Kosten`, `Level ${l}: ${p}% per shop slot for ${rd.cost}-costs`)}"`}><b>${l}</b><small>${p ? p + L(' %', '%') : '–'}</small></button>`; }).join('');
+  $('#rdLvlTxt').innerHTML = idle ? L('Wähl oben die Kosten – dann siehst du die Shop-Chance pro Level.', 'Pick the cost above – then you see the shop chance per level.')
+    : `<i class="rd-dot"></i>${L(`Üblich für ${rd.cost}-Kosten: Level ${typ}`, `Usual for ${rd.cost}-costs: level ${typ}`)}`
+    + (rd.lvl < typ && oc(typ) > oc(rd.lvl) ? L(` – auf Level ${rd.lvl} kommen sie seltener (${oc(rd.lvl)} % statt ${oc(typ)} %).`, ` – on level ${rd.lvl} they show up less often (${oc(rd.lvl)}% instead of ${oc(typ)}%).`) : '');
   const odds = SHOP.odds[rd.lvl-1];
   $('#rdOdds').innerHTML = odds.map((o,i)=>o ? `<span class="c${i+1}${i+1===rd.cost?' on':''}" style="flex:${o}" title="${i+1}-Kosten: ${o} %">${o >= 6 ? o + ' %' : ''}</span>` : '').join('');
   $('#rdTable').innerHTML = `<thead><tr><th>Level</th>${[1,2,3,4,5].map(c=>`<th class="${c===rd.cost?'on':''}"><i class="cdot c${c}"></i>${c}</th>`).join('')}</tr></thead><tbody>${SHOP.odds.map((r,i)=>`<tr class="${i+1===rd.lvl?'on':''}"><td>${i+1}</td>${r.map((o,c)=>`<td class="${c+1===rd.cost?'on':''}">${o ? o + ' %' : '–'}</td>`).join('')}</tr>`).join('')}</tbody>`;
 
-  const who = rd.champ ? esc(rd.champ) : `deine ${rd.cost}-Kosten-Unit`;
-  const left = bag - rd.out;
-  if(left < rd.target){ $('#rdRes').innerHTML = viSays(`Es sind nur noch ${left} Kopien im Pool – ${rd.target} kannst du nicht mehr finden.`); return; }
-  if(!odds[rd.cost-1]){ $('#rdRes').innerHTML = viSays(`Auf Level ${rd.lvl} tauchen keine ${rd.cost}-Kosten-Units im Shop auf. Erst leveln!`); return; }
-
-  const dist = rdDist(rd.lvl, rd.cost, rd.out, rd.other, rd.gold, rd.buy);
-  const P = rdAtLeast(dist, rd.target), exp = dist.reduce((a,v,k)=>a + v*k, 0);
-  // Vergleich: erst leveln (4 Gold = 4 XP), dann mit dem Rest rollen
-  const xp = parseInt(rd.xp), lvlGold = xp > 0 ? Math.ceil(xp/4) * 4 : 0;
-  let cmp = null, cmpNote = '';
-  if(xp > 0 && rd.lvl < 11){
-    if(rd.gold >= lvlGold){ cmp = rdDist(rd.lvl+1, rd.cost, rd.out, rd.other, rd.gold - lvlGold, rd.buy); }
-    else cmpNote = `Zum Leveln brauchst du ${lvlGold} Gold – du hast nur ${rd.gold}.`;
+  // Ergebnis: Ampel und „x von 100 Spielen“, darunter ein Gold-Tipp; Balken und Gold-Tabelle stecken in „Details“
+  const res = $('#rdRes');
+  if(idle){   // Leerlauf: leerer Ring, Aufforderung – die erste Rechnung zählt dann von 0 hoch
+    res.innerHTML = `<div class="rd-hero idle"><div class="rd-ring" style="--p:0"><i class="rd-knob"></i><b>–</b><small>${L('von 100', 'of 100')}</small></div>
+      <div><span class="rd-amp">${L('Bereit', 'Ready')}</span><h3>${L('Wähl deine Unit', 'Pick your unit')}</h3>
+        <p>${L('Sag mir unter „Deine Angaben“, was deine Unit kostet – dann rechne ich aus, wie oft du sie triffst.', 'Tell me under “Your input” what your unit costs – then I’ll work out how often you hit it.')}</p></div></div>`;
+    Object.assign(rdShown, {p:0, cat:''}); rdStick(); return;
   }
-  const pRoll = 1 - Math.pow(1 - rdSlotP(rd.lvl, rd.cost, rd.out, rd.other, 0), 5);
-  const need = [0.5, 0.8, 0.95].map(q=>[q, rdGoldFor(q)]);
-  const bars = Array.from({length:RD_MAXK}, (_,i)=>{
-    const k = i+1, a = rdAtLeast(dist, k), b = cmp ? rdAtLeast(cmp, k) : null;
-    return `<div class="rd-bar${k===rd.target?' on':''}" title="Mindestens ${k}×: ${rdPct(a)}${b!==null?' · nach Leveln: '+rdPct(b):''}">
-      <div class="rd-cols"><span class="rd-fill" style="height:${a*100}%"></span>${b!==null?`<span class="rd-fill alt" style="height:${b*100}%"></span>`:''}</div>
+  const x = rdCtx(), who = L(`deine ${rd.cost}-Kosten-Unit`, `your ${rd.cost}-cost unit`);
+  if(x.left < x.need){ res.innerHTML = viSays(L(`Für ${who} ${stars} brauchst du noch ${x.need} ${x.need === 1 ? 'Kopie' : 'Kopien'} – im Pool sind aber nur noch ${x.left}. Das klappt so nicht mehr.`, `For ${who} ${stars} you still need ${x.need} ${x.need === 1 ? 'copy' : 'copies'} – but only ${x.left} are left in the pool. That won't work anymore.`)); rdStick(); return; }
+  if(!odds[rd.cost-1]){ res.innerHTML = viSays(L(`Auf Level ${rd.lvl} tauchen keine ${rd.cost}-Kosten-Units im Shop auf. Erst leveln!`, `No ${rd.cost}-cost units show up in the shop on level ${rd.lvl}. Level up first!`)); rdStick(); return; }
+
+  const dist = rdDist(rd.lvl, rd.cost, x.out, x.other, rd.gold);
+  const P = rdAtLeast(dist, x.need), exp = dist.reduce((a, v, k)=>a + v * k, 0);
+  // Vergleich (nur „Genau“): erst leveln (4 Gold = 4 XP), dann mit dem Rest rollen
+  const xp = rdMode === 'pro' ? parseInt(rd.xp) : 0, lvlGold = xp > 0 ? Math.ceil(xp / 4) * 4 : 0;
+  let cmp = null, cmpNote = '';
+  if(xp > 0 && rd.lvl < SHOP.odds.length){
+    if(rd.gold >= lvlGold) cmp = rdDist(rd.lvl + 1, rd.cost, x.out, x.other, rd.gold - lvlGold);
+    else cmpNote = L(`Zum Leveln brauchst du ${lvlGold} Gold – du hast nur ${rd.gold}.`, `Levelling needs ${lvlGold} gold – you only have ${rd.gold}.`);
+  }
+  const pRoll = 1 - Math.pow(1 - rdSlotP(rd.lvl, rd.cost, x.out, x.other, 0), 5);
+  const n = Math.round(P * 100), amp = P >= .7 ? ['g', 'Gute Chance', 'Good chance'] : P >= .4 ? ['y', 'Wackelig', 'Shaky'] : ['r', 'Eher nicht', 'Unlikely'];
+  const nTxt = P >= .995 ? L('fast jedem Spiel', 'almost every game') : P < .005 ? L('weniger als 1 von 100 Spielen', 'fewer than 1 of 100 games') : L(`${n} von 100 Spielen`, `${n} of 100 games`);
+  const g80 = rdGoldFor(0.8, x);
+  const tip = g80 === null ? L('Selbst mit sehr viel Gold wird das schwer – vielleicht lohnt sich eine andere Unit.', 'Even with lots of gold this is hard – another unit might be the better pick.')
+    : g80 > 100 && P < .8 ? L(`Mehr Sicherheit: Mit rund <b>${g80} Gold</b> wären es 8 von 10 Spielen. Das klappt nur über mehrere Runden – halte 50 Gold und roll jede Runde, was darüber liegt (Slow Roll).`, `More safety: with about <b>${g80} gold</b> it would be 8 of 10 games. That only works over several rounds – keep 50 gold and roll whatever is above it each round (slow roll).`)
+    : P >= .8 ? (g80 < rd.gold ? L(`Das reicht: Schon mit <b>${g80} Gold</b> wären es 8 von 10 Spielen.`, `That's enough: with just <b>${g80} gold</b> it would be 8 of 10 games.`) : L('Das reicht: Du triffst in mindestens 8 von 10 Spielen.', "That's enough: you hit in at least 8 of 10 games."))
+    : L(`Mehr Sicherheit: Mit <b>${g80} Gold</b> (${g80 - rd.gold} mehr) wären es 8 von 10 Spielen.`, `More safety: with <b>${g80} gold</b> (${g80 - rd.gold} more) it would be 8 of 10 games.`);
+  const need = [[0.5, '5 von 10', '5 of 10'], [0.8, '8 von 10', '8 of 10'], [0.95, '19 von 20', '19 of 20']].map(([q, de, en])=>[L(de, en), rdGoldFor(q, x)]);
+  const bars = Array.from({length:RD_MAXK}, (_, i)=>{
+    const k = i + 1, a = rdAtLeast(dist, k), b = cmp ? rdAtLeast(cmp, k) : null;
+    return `<div class="rd-bar${k === x.need ? ' on' : ''}" title="${L(`Mindestens ${k}×`, `At least ${k}×`)}: ${rdPct(a)}${b !== null ? L(' · nach Leveln: ', ' · after levelling: ') + rdPct(b) : ''}">
+      <div class="rd-cols"><span class="rd-fill" style="height:${a * 100}%"></span>${b !== null ? `<span class="rd-fill alt" style="height:${b * 100}%"></span>` : ''}</div>
       <b>${rdPct(a)}</b><small>${k}×</small></div>`;
   }).join('');
   let verdict = '';
   if(cmp){
-    const Q = rdAtLeast(cmp, rd.target), diff = Math.round((Q - P) * 100);
-    verdict = `<div class="rd-cmp ${diff > 0 ? 'up' : 'down'}"><b>${diff > 0 ? 'Erst leveln lohnt sich' : diff < 0 ? 'Lieber jetzt rollen' : 'Kein Unterschied'}</b>
-      <span>Auf Level ${rd.lvl+1} (${lvlGold} Gold fürs Leveln, ${rd.gold - lvlGold} Gold zum Rollen): ${rdPct(Q)} statt ${rdPct(P)}${diff ? ` (${diff > 0 ? '+' : '−'}${Math.abs(diff)} Prozentpunkte)` : ''}.</span></div>`;
+    const Q = rdAtLeast(cmp, x.need), diff = Math.round((Q - P) * 100);
+    verdict = `<div class="rd-cmp ${diff > 0 ? 'up' : 'down'}"><b>${diff > 0 ? L('Erst leveln lohnt sich', 'Levelling first pays off') : diff < 0 ? L('Lieber jetzt rollen', 'Better roll now') : L('Kein Unterschied', 'No difference')}</b>
+      <span>${L(`Auf Level ${rd.lvl + 1} (${lvlGold} Gold fürs Leveln, ${rd.gold - lvlGold} Gold zum Rollen): ${rdPct(Q)} statt ${rdPct(P)}`, `On level ${rd.lvl + 1} (${lvlGold} gold for levelling, ${rd.gold - lvlGold} gold for rolling): ${rdPct(Q)} instead of ${rdPct(P)}`)}${diff ? ` (${diff > 0 ? '+' : '−'}${Math.abs(diff)} ${L('Prozentpunkte', 'percentage points')})` : ''}.</span></div>`;
   } else if(cmpNote) verdict = `<div class="rd-cmp">${esc(cmpNote)}</div>`;
 
-  $('#rdRes').innerHTML = `
-    <div class="rd-hero">
-      <div class="rd-ring" style="--p:${(P*100).toFixed(1)}"><b>${rdPct(P)}</b><small>Chance</small></div>
-      <div><span class="rd-kicker">${rd.champ ? avatar(rd.champ, 26) : ''}Level ${rd.lvl} · ${rd.gold} Gold</span>
-        <h3>Mindestens ${rd.target}× ${who}</h3>
-        <p>Im Schnitt findest du <b>${exp.toLocaleString(LOC, {maximumFractionDigits:1})}</b> Kopien. In einem Roll (5 Slots) taucht ${who} mit <b>${rdPct(pRoll)}</b> Chance mindestens einmal auf.</p></div>
+  res.innerHTML = `
+    <div class="rd-hero ${amp[0]}" style="--rc:${rdColor(rdShown.p)}">
+      <div class="rd-ring" style="--p:${rdShown.p.toFixed(2)}"><i class="rd-knob"></i><b>${Math.round(rdShown.p)}</b><small>${L('von 100', 'of 100')}</small></div>
+      <div><span class="rd-amp${rdShown.cat && rdShown.cat !== amp[0] ? ' pop' : ''}">${L(amp[1], amp[2])}</span>
+        <h3>${L(`${rd.cost}-Kosten-Unit`, `${rd.cost}-cost unit`)} <span class="rd-st s${rd.goal}">${stars}</span></h3>
+        <p>${L(`Mit ${rd.gold} Gold auf Level ${rd.lvl} bringst du ${who} in <b>${nTxt}</b> auf ${stars}.`, `With ${rd.gold} gold on level ${rd.lvl} you get ${who} to ${stars} in <b>${nTxt}</b>.`)}</p></div>
     </div>
+    <p class="rd-gtip">${tip}</p>
     ${verdict}
-    <h4 class="rd-sub">Chance auf mindestens …</h4>
-    <div class="rd-bars">${bars}</div>
-    ${cmp ? `<div class="rd-legend"><span><i class="rd-fill"></i>jetzt rollen (Level ${rd.lvl})</span><span><i class="rd-fill alt"></i>erst leveln (Level ${rd.lvl+1})</span></div>` : ''}
-    <h4 class="rd-sub">Wie viel Gold brauchst du für ${rd.target}×?</h4>
-    <div class="rd-need">${need.map(([q, g])=>`<div><small>${q*100} % Chance</small><b>${g === null ? 'über 500' : g + ' Gold'}</b></div>`).join('')}</div>
-    <p class="note">Gerechnet wird Shop für Shop mit dem geteilten Pool aller Spieler: Jede gefundene Kopie fehlt danach im Pool. Nicht berücksichtigt sind Effekte, die Shops verändern (z. B. Augments oder Wisps).</p>`;
+    <details class="rd-more"${rdMoreOpen ? ' open' : ''}><summary>${L('Details: Chance pro Kopie und Gold-Bedarf', 'Details: odds per copy and gold needed')}</summary>
+      <p class="rd-dl">${L(`Im Schnitt findest du <b>${exp.toLocaleString(LOC, {maximumFractionDigits:1})}</b> Kopien. In einem Shop (5 Slots) taucht ${who} mit <b>${rdPct(pRoll)}</b> Chance mindestens einmal auf.`, `On average you find <b>${exp.toLocaleString(LOC, {maximumFractionDigits:1})}</b> copies. In one shop (5 slots) ${who} shows up at least once with a <b>${rdPct(pRoll)}</b> chance.`)}</p>
+      <h4 class="rd-sub">${L('Chance, mindestens so viele Kopien zu finden', 'Chance to find at least this many copies')}</h4>
+      <div class="rd-bars">${bars}</div>
+      ${cmp ? `<div class="rd-legend"><span><i class="rd-fill"></i>${L(`jetzt rollen (Level ${rd.lvl})`, `roll now (level ${rd.lvl})`)}</span><span><i class="rd-fill alt"></i>${L(`erst leveln (Level ${rd.lvl + 1})`, `level first (level ${rd.lvl + 1})`)}</span></div>` : ''}
+      <h4 class="rd-sub">${L(`Wie viel Gold brauchst du für ${who} ${stars}?`, `How much gold do you need for ${who} ${stars}?`)}</h4>
+      <div class="rd-need">${need.map(([q, g])=>`<div><small>${q} ${L('Spielen', 'games')}</small><b>${g === null ? L('über 500', 'over 500') : g + ' Gold'}</b></div>`).join('')}</div>
+    </details>
+    <p class="note">${L('Gerechnet wird Shop für Shop mit dem geteilten Pool aller Spieler, inklusive des kostenlosen Shops zu Rundenbeginn: Jede gefundene Kopie fehlt danach im Pool und kostet ihren Preis in Gold, wie im Spiel. Nicht berücksichtigt sind Effekte, die Shops verändern (z. B. Augments oder Wisps).', 'Calculated shop by shop with the shared pool of all players, including the free shop at the start of the round: every copy found is then missing from the pool and costs its price in gold, like in the game. Effects that change shops (e.g. augments or wisps) are not included.')}${x.exact ? '' : L(` Richtwert für Level ${rd.lvl}: Bei den Spielern liegen etwa ${x.est} Kopien anderer ${rd.cost}-Kosten-Units. Sie fehlen im Pool, deshalb taucht deine Unit etwas öfter auf.`, ` Guideline for level ${rd.lvl}: the players hold about ${x.est} copies of other ${rd.cost}-cost units. They're missing from the pool, so your unit shows up a bit more often.`)}${rdMode !== 'pro' && rd.contest ? L(` Gegner: geschätzt ${x.opp} Kopien deiner Unit.`, ` Opponents: an estimated ${x.opp} copies of your unit.`) : ''}</p>`;
+  rdShown.cat = amp[0];
+  rdRing(P * 100, P < .005 ? '<1' : String(n));
+  rdStick();
+}
+// Ergebnis-Ring wie ein Regler: Ring und Zahl laufen vom alten zum neuen Wert (wie die LP-Grenzen), die Farbe wandert mit –
+// rot unter 40, gelb bis 70, darüber grün (gleiche Grenzen wie die Ampel)
+const rdShown = {p:0, cat:''};   // p = gerade angezeigter Wert (auch mitten in der Animation)
+const rdHue = v => v < 40 ? v / 40 * 22 : v < 70 ? 38 + (v - 40) / 30 * 14 : 115 + (v - 70) / 30 * 30;
+const rdColor = v => `hsl(${rdHue(v).toFixed(0)} 85% 60%)`;
+function rdRing(to, label){
+  const hero = $('#rdRes .rd-hero'), ring = hero && hero.querySelector('.rd-ring'), num = ring && ring.querySelector('b'); if(!num) return;
+  const from = rdShown.p, set = v => { rdShown.p = v; ring.style.setProperty('--p', v.toFixed(2)); hero.style.setProperty('--rc', rdColor(v)); num.textContent = Math.round(v); };
+  cancelAnimationFrame(rdRing.raf);
+  const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(still || Math.abs(to - from) < .5){ set(to); num.textContent = label; return; }
+  const t0 = performance.now(), dur = 700, ease = x => 1 - Math.pow(1 - x, 3);
+  const step = now => { const k = Math.min(1, (now - t0) / dur); set(from + (to - from) * ease(k)); if(k < 1) rdRing.raf = requestAnimationFrame(step); else num.textContent = label; };
+  rdRing.raf = requestAnimationFrame(step);
 }
 
 /* ================= TOOLS: Tierlist-Maker ================= */
@@ -3033,11 +3142,12 @@ function drRender(){
   const craft = [];
   Object.keys(have).forEach(a=>Object.keys(have).forEach(b=>{ if(a > b || (a===b && have[a] < 2)) return; const r = recipeOf[[a, b].sort().join('|')]; if(r && !craft.includes(r)) craft.push(r); }));
   const orbTbl = o => o ? `<div class="dr-orbtbl"><h4>${esc(o.label)} <small>${esc(o.note)} · Wert ${esc(o.wert)}</small></h4><table class="dr-table small"><tbody>${o.items.map(([t, p])=>`<tr><td>${esc(t)}</td><td>${fmtNum(p)} %</td></tr>`).join('')}</tbody></table></div>` : '';
+  // Deine Angaben: Stage-Reiter, Komponenten zum Anklicken, Drops pro Stage. Dein Ergebnis: Wahrscheinlichkeiten, Beute der Stage, deine Komponenten
   app.innerHTML = `<div class="dr">
-    <div class="dr-top"><div class="dr-tabs">${tabs}</div>
-      <button class="dr-new" type="button" data-drreset title="Alle Eingaben löschen und mit einem neuen Spiel starten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Neues Spiel<span></span></button></div>
     <div class="dr-grid">
-      <section class="card dr-in">
+      <section class="card dr-in tio-in" aria-label="${L('Deine Angaben', 'Your input')}">
+        ${tioHead(false, tioReset('data-drreset', L('Neues Spiel', 'New game')), L('Trag Stage für Stage ein, welche Komponenten droppen.', 'Enter stage by stage which components drop.'))}
+        <div class="dr-tabs">${tabs}</div>
         <div class="dr-head"><h3>Was hast du in ${esc(stageName)} bekommen?</h3>
           <div class="bp-pills"><button type="button" data-drsrc="drop" class="${dr.src==='drop' ? 'on' : ''}">Creep-Drop<span></span></button><button type="button" data-drsrc="extra" class="${dr.src==='extra' ? 'on' : ''}">Sonstiges<span></span></button></div></div>
         <p class="dr-note">${dr.src==='drop' ? 'Klick die Komponenten an, die gerade gedroppt sind – sie werden aus dem Item-Pool genommen.' : 'Komponenten aus Karussell, Ambossen oder Augments: zählen für deine Items, aber nicht für den Item-Pool.'}</p>
@@ -3052,17 +3162,16 @@ function drRender(){
           <select class="input" id="drStart"><option value="1"${dr.start===1 ? ' selected' : ''}>1 von jeder Komponente – Stage 1 ohne Doppelte</option><option value="2"${dr.start===2 ? ' selected' : ''}>2 von jeder Komponente</option></select>
         </label>
       </section>
-      <section class="card dr-out">
+      <section class="card dr-out tio-out" aria-label="${L('Dein Ergebnis', 'Your result')}">
+        ${tioHead(true)}
         <h3>Wahrscheinlichkeiten ${late ? '' : `<small>${n} Komponenten im Pool</small>`}</h3>
         ${table}
         <p class="dr-note">${restTxt} Vor ${nextS <= 4 ? DR_STAGES[nextS-1][1] : 'der nächsten Creep-Stage'} kommt von jeder Komponente eine in den Item-Pool.</p>
-      </section>
-    </div>
-    <div class="dr-grid">
-      <section class="card"><h3>Beute in ${esc(stageName)}</h3>${loot}</section>
-      <section class="card"><h3>Deine Komponenten</h3>
-        <div class="dr-have">${mine.length ? Object.entries(have).map(([id, k])=>`<span>${drIcon(id, 34)}${k > 1 ? `<b>×${k}</b>` : ''}</span>`).join('') : '<small class="dr-note">Noch keine.</small>'}</div>
-        ${craft.length ? `<h4 class="dr-h4">Daraus baubar</h4><div class="dr-craft">${craft.map(r=>`<button type="button" data-item="${r.id}" title="${esc(r.en)}">${itImg(r, 38)}<span></span></button>`).join('')}</div>` : ''}
+        <div class="dr-sec"><h3>Beute in ${esc(stageName)}</h3>${loot}</div>
+        <div class="dr-sec"><h3>Deine Komponenten</h3>
+          <div class="dr-have">${mine.length ? Object.entries(have).map(([id, k])=>`<span>${drIcon(id, 34)}${k > 1 ? `<b>×${k}</b>` : ''}</span>`).join('') : '<small class="dr-note">Noch keine.</small>'}</div>
+          ${craft.length ? `<h4 class="dr-h4">Daraus baubar</h4><div class="dr-craft">${craft.map(r=>`<button type="button" data-item="${r.id}" title="${esc(r.en)}">${itImg(r, 38)}<span></span></button>`).join('')}</div>` : ''}
+        </div>
       </section>
     </div>
     <details class="card dr-more"><summary>Orb-Inhalte (Gold-Orb &amp; prismatischer Orb) und Quelle</summary>

@@ -810,7 +810,7 @@ html.nd:not(.nd-ready) main,html.nd:not(.nd-ready) footer{opacity:0;visibility:h
 .nd .cbadge.d-MEDIUM,.nd .dr-warn{background:var(--tft-gold-soft);color:var(--tft-gold)}
 .nd .sim-banner.ot{border-color:var(--tft-gold);color:var(--tft-gold)}
 /* gefüllte Flächen: auf Pink weiße statt dunkler Schrift */
-.nd .cp-close,.nd .tm-mode button.on,.nd .tm-box-head h3,.nd .tm-acts button.hl,.nd .tm-tabs button.on,.nd .tm-toast,.nd .b-ibtn:hover,.nd .bp-pills button.on,.nd .dr-new:hover,.nd .dr-tab i,.nd .dr-have b{background:var(--pink);color:#fff}
+.nd .cp-close,.nd .tm-mode button.on,.nd .tm-box-head h3,.nd .tm-acts button.hl,.nd .tm-tabs button.on,.nd .tm-toast,.nd .b-ibtn:hover,.nd .bp-pills button.on,.nd .dr-tab i,.nd .dr-have b{background:var(--pink);color:#fff}
 .nd .tm-box-head h3{background:linear-gradient(90deg,var(--pink),var(--violet))}
 /* feste Gold-Töne im alten CSS */
 .nd .rd-cmp.down{border-color:rgba(247,22,110,.5)}

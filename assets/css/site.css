@@ -865,6 +865,7 @@ a.tool-card:hover{transform:translateY(-3px);border-color:var(--accent)}
 .rd-kicker .av{width:26px;height:26px;border-radius:7px;border-width:1.5px}
 .rd-f{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;font-weight:600;font-size:.9rem}
 .rd-f b{font-family:var(--ff-head);font-size:1.15rem;color:var(--accent-2)}
+.rd-f small{font-size:.76rem;font-weight:500;color:var(--faint)}
 .rd-f input{grid-column:1/-1;width:100%;accent-color:var(--accent)}
 .rd-odds{display:flex;height:22px;border-radius:7px;overflow:hidden;gap:2px}
 .rd-odds span{display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:800;color:#fff;opacity:.45;background:var(--c1);min-width:4px}
@@ -873,15 +874,8 @@ a.tool-card:hover{transform:translateY(-3px);border-color:var(--accent)}
 .rd-nums{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .rd-n{display:flex;flex-direction:column;gap:5px;font-weight:600;font-size:.86rem}
 .rd-n small{font-weight:400;color:var(--faint);font-size:.74rem}
-.rd-targets{display:grid;grid-template-columns:repeat(9,1fr);gap:5px}
-.rd-targets button{padding:8px 0;border-radius:9px;border:1px solid var(--line-2);background:transparent;color:var(--muted);font-weight:800;cursor:pointer}
-.rd-targets button.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.rd-targets button[data-k="3"],.rd-targets button[data-k="9"]{border-color:var(--gold)}
 .rd-hint{margin:0;font-size:.76rem;color:var(--faint)}
-.rd-chk{display:flex;align-items:center;gap:8px;font-size:.86rem;font-weight:600;flex-wrap:wrap}
-.rd-chk input{accent-color:var(--accent);width:16px;height:16px}
-.rd-chk small{font-weight:400;color:var(--faint)}
-.rd-res{padding:22px;position:sticky;top:96px}
+.rd-res{padding:22px}
 .rd-hero{display:flex;align-items:center;gap:20px}
 .rd-ring{--p:0;flex:none;width:132px;height:132px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(closest-side,var(--panel) 78%,transparent 79%),conic-gradient(var(--accent) calc(var(--p)*1%),var(--panel-2) 0)}
 .rd-ring b{font-family:var(--ff-head);font-size:1.9rem;line-height:1}
@@ -910,6 +904,86 @@ a.tool-card:hover{transform:translateY(-3px);border-color:var(--accent)}
 .rd-need div{padding:10px 12px;border-radius:10px;background:var(--panel-2);display:flex;flex-direction:column}
 .rd-need small{font-size:.7rem;color:var(--faint);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
 .rd-need b{font-family:var(--ff-head);font-size:1.15rem}
+/* ---------- Rolldown-Rechner Version 2: Fragen statt Fachbegriffe („Einfach“), exakte Zahlen nur in „Genau“ ---------- */
+.rd-in.pro .rd-easy,.rd-in:not(.pro) .rd-pro{display:none}
+/* kurze Maske: kleinere Abstände, jede Frage eine Zeile */
+.rd-in.tio-in{gap:16px}
+.rd-in.tio-in section{gap:8px}
+.rd-cost5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+.rd-cost5 .rd-cost{justify-content:center;padding:7px 0}
+/* Ziel (★★ = 3 Kopien, ★★★ = 9 Kopien) und daneben, wie viele Kopien schon da sind */
+.rd-gh{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:stretch}
+.rd-goal,.rd-seg{display:grid;gap:6px}
+.rd-goal{flex:1 1 200px;grid-template-columns:1fr 1fr}
+.rd-seg{grid-template-columns:repeat(3,minmax(0,1fr))}
+.rd-goal button,.rd-seg button{display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;padding:8px 6px;border-radius:10px;border:1px solid var(--line-2);background:rgba(3,17,27,.5);color:var(--muted);font:inherit;font-size:.86rem;font-weight:700;text-align:center;cursor:pointer}
+.rd-goal button:hover:not(:disabled),.rd-seg button:hover{border-color:var(--accent-2)}
+.rd-goal button.on,.rd-seg button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--text)}
+.rd-goal button:disabled{opacity:.35;cursor:default}
+.rd-goal b{font-size:1.05rem;line-height:1;letter-spacing:.06em}
+.rd-goal b.s2,.rd-st.s2{color:#cbd5e1}.rd-goal b.s3,.rd-st.s3{color:var(--tft-gold,#f2c14e)}
+.rd-goal small{font-size:.72rem;font-weight:600;color:var(--faint)}
+.rd-have{display:flex;align-items:center;gap:8px;font-size:.84rem;font-weight:600;color:var(--muted)}
+.rd-step{display:inline-flex;align-items:center;border:1px solid var(--line-2);border-radius:10px;background:rgba(3,17,27,.5);overflow:hidden}
+.rd-step button{width:34px;height:36px;border:0;background:none;color:var(--text);font:inherit;font-size:1.1rem;font-weight:700;cursor:pointer}
+.rd-step button:hover:not(:disabled){background:rgba(46,230,214,.1);color:#7ff7ec}
+.rd-step button:disabled{opacity:.3;cursor:default}
+.rd-step b{min-width:26px;text-align:center;font:800 1.1rem/1 var(--ff-head);color:#fff}
+.rd-dot{display:inline-block;width:6px;height:6px;margin:0 6px 1px 0;border-radius:50%;background:var(--tft-gold,#f2c14e);vertical-align:middle}
+/* Level als Knöpfe mit der Shop-Chance der Kostenstufe; gelber Punkt = übliches Level */
+.rd-lvls{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:5px}
+.rd-lv{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;padding:7px 0 6px;border-radius:10px;border:1px solid var(--line-2);background:rgba(3,17,27,.5);color:var(--text);font:inherit;cursor:pointer}
+.rd-lv b{font:800 1.05rem/1 var(--ff-head)}
+.rd-lv small{font-size:.62rem;color:var(--faint);white-space:nowrap}
+.rd-lv.off{opacity:.4}
+.rd-lv.typ::after{content:"";position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--tft-gold,#f2c14e)}
+.rd-lv:hover{border-color:var(--accent-2)}
+.rd-lv.on{border-color:var(--accent);background:var(--accent-soft)}
+.rd-lv.on small{color:var(--accent-2)}
+.rd-hint b{color:var(--tft-gold,#f2c14e)}
+/* Zinsgrenzen unter dem Gold-Regler (Daumen ca. 16 px breit) */
+.rd-ticks{position:relative;height:14px;margin-top:-6px}
+.rd-ticks span{position:absolute;left:calc(8px + (100% - 16px) * var(--v));transform:translateX(-50%);font-size:.64rem;font-weight:700;color:var(--faint)}
+.rd-ticks span::before{content:"";position:absolute;left:50%;top:-5px;width:1px;height:4px;background:var(--faint)}
+/* Ergebnis: Ampel (grün / gelb / rot) am Ring und als Etikett */
+.rd-hero{--rc:var(--accent)}
+.rd-hero.g{--rc:#4ade80}.rd-hero.y{--rc:#f2c14e}.rd-hero.r{--rc:#f87171}
+.rd-hero .rd-ring{background:radial-gradient(closest-side,var(--panel) 78%,transparent 79%),conic-gradient(var(--rc) calc(var(--p)*1%),var(--panel-2) 0)}
+.rd-hero .rd-ring b{font-size:2.3rem}
+/* Ergebnis-Ring wie ein Regler (app.js rdRing): Skalenstriche, Leucht-Knopf am Ende des Bogens, Farbe läuft von Rot über Gelb nach Grün */
+.rd-hero .rd-ring{position:relative;isolation:isolate;box-shadow:0 0 30px color-mix(in srgb,var(--rc) 20%,transparent)}
+.rd-hero .rd-ring::after{content:"";position:absolute;inset:0;z-index:0;border-radius:50%;pointer-events:none;background:repeating-conic-gradient(rgba(3,17,27,.92) 0 1.6deg,transparent 1.6deg 9deg);
+  -webkit-mask:radial-gradient(closest-side,transparent 77%,#000 78%);mask:radial-gradient(closest-side,transparent 77%,#000 78%)}
+.rd-ring b,.rd-ring small{position:relative;z-index:1}
+.rd-hero .rd-ring b{font-variant-numeric:tabular-nums;color:#fff;text-shadow:0 0 18px color-mix(in srgb,var(--rc) 60%,transparent)}
+.rd-knob{position:absolute;inset:0;z-index:2;transform:rotate(calc(var(--p) * 3.6deg));pointer-events:none}
+.rd-knob::before{content:"";position:absolute;left:50%;top:1px;width:13px;height:13px;margin-left:-6.5px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px var(--rc),0 0 14px 3px var(--rc)}
+.rd-amp.pop{animation:rdPop .45s ease-out}   /* Ampel wechselt die Stufe */
+@keyframes rdPop{0%{transform:scale(.7);opacity:.3}60%{transform:scale(1.12)}100%{transform:none;opacity:1}}
+/* Leerlauf: leerer Ring pulsiert ruhig, bis eine Kostenstufe gewählt ist */
+.rd-hero.idle{--rc:#7ff7ec}
+.rd-hero.idle .rd-knob{display:none}
+.rd-hero.idle .rd-ring{animation:rdIdle 2.6s ease-in-out infinite}
+.rd-hero.idle .rd-ring b{color:#7ff7ec}
+@keyframes rdIdle{0%,100%{box-shadow:0 0 0 rgba(46,230,214,0)}50%{box-shadow:0 0 28px rgba(46,230,214,.35)}}
+@media (prefers-reduced-motion:reduce){.rd-amp.pop,.rd-hero.idle .rd-ring{animation:none}}
+.rd-amp{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--rc);background:color-mix(in srgb,var(--rc) 14%,transparent);border:1px solid color-mix(in srgb,var(--rc) 45%,transparent)}
+.rd-amp::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--rc)}
+.rd-st{letter-spacing:.06em}
+.rd-hero p b{color:var(--rc)}
+.rd-gtip{margin:16px 0 0;padding:11px 14px;border-radius:12px;border:1px solid rgba(242,193,78,.3);background:rgba(242,193,78,.07);font-size:.88rem;line-height:1.5;color:#e9dfc5}
+.rd-gtip b{color:var(--tft-gold,#f2c14e)}
+.rd-more{margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06)}
+.rd-more summary{cursor:pointer;font-weight:700;font-size:.88rem;color:#cfe3ee}
+.rd-more summary:hover{color:#fff}
+.rd-dl{margin:10px 0 0;font-size:.84rem;line-height:1.5;color:var(--muted)}.rd-dl b{color:var(--text)}
+/* Umschalter in der Kopfzeile einer Tool-Box (z. B. Einfach | Genau) */
+.tio-seg{display:inline-flex;padding:3px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(3,17,27,.5)}
+.tio-seg button{padding:5px 11px;border:0;border-radius:7px;background:none;color:#9fb3c0;font:inherit;font-size:.82rem;font-weight:700;cursor:pointer}
+.tio-seg button:hover{color:#fff}
+.tio-seg button.on{background:rgba(46,230,214,.16);color:#7ff7ec}
+.tio-hd .tio-seg+.tio-reset{margin-left:0}
+@media (max-width:560px){.rd-lvls{grid-template-columns:repeat(5,minmax(0,1fr))}.rd-hero .rd-ring b{font-size:1.9rem}.rd-cost5 .rd-cost{font-size:.76rem}}
 .rd-table-card{margin-top:16px;padding:22px}
 .rd-table-wrap{overflow-x:auto;margin-top:12px}
 .rd-table{width:100%;border-collapse:collapse;font-size:.86rem;text-align:center;min-width:420px}
@@ -1400,12 +1474,11 @@ a.tc:hover .tc-ph{transform:rotate(0) scale(1.05)}
 @media (max-width:600px){ .tc{height:180px} .tc h3{font-size:1.18rem} .tc-text{width:calc(100% - 190px)} .tc-art{width:200px;right:-8px} .tc-art img{max-height:200px} }
 /* ================= ITEM-DROP-RECHNER ================= */
 .dr{display:flex;flex-direction:column;gap:16px}
-.dr-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.dr-tabs{display:flex;gap:8px;flex-wrap:wrap}
-.dr-new{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:12px;border:1px solid var(--gold);background:var(--gold-soft);color:var(--gold);font:inherit;font-weight:800;font-size:.92rem;cursor:pointer;transition:background .15s,color .15s}
-.dr-new svg{width:18px;height:18px}
-.dr-new:hover{background:var(--gold);color:#1a1405}
-.dr-tab{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:10px 18px;border-radius:12px;border:1px solid var(--line-2);background:var(--panel);color:var(--muted);font:inherit;cursor:pointer;min-width:96px}
+/* Stage-Reiter oben in „Deine Angaben“: fünf gleich breite Reiter */
+.dr-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:14px 0 18px}
+.dr-tab{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;padding:9px 12px;border-radius:12px;border:1px solid var(--line-2);background:var(--panel);color:var(--muted);font:inherit;cursor:pointer}
+.dr-tab b{white-space:nowrap}
+.dr-sec{margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06)}   /* Abschnitte in „Dein Ergebnis“: Beute der Stage, deine Komponenten */
 .dr-tab b{font-family:var(--ff-head);font-size:1.15rem;color:var(--text)}
 .dr-tab small{font-size:.72rem}
 .dr-tab i{position:absolute;top:-7px;right:-7px;min-width:20px;height:20px;padding:0 5px;border-radius:99px;background:var(--gold);color:#1a1405;font-style:normal;font-weight:800;font-size:.72rem;display:flex;align-items:center;justify-content:center}
@@ -1483,7 +1556,7 @@ details.card.dr-more{margin:0}
 .dr-orbtbl h4{margin:0 0 6px;font-size:.95rem}
 .dr-orbtbl h4 small{display:block;font-weight:600;font-size:.74rem;color:var(--faint)}
 @media (max-width:980px){ .dr-grid{grid-template-columns:minmax(0,1fr)} }
-@media (max-width:600px){ .dr-orbs{grid-template-columns:1fr 1fr} .dr-table th:nth-child(5),.dr-table td:nth-child(5){display:none} .dr-bar{display:none} .dr-tab{min-width:0;padding:8px 12px;flex:1} }
+@media (max-width:600px){ .dr-orbs{grid-template-columns:1fr 1fr} .dr-table th:nth-child(5),.dr-table td:nth-child(5){display:none} .dr-bar{display:none} .dr-tabs{gap:4px} .dr-tab{padding:7px 6px;align-items:center} .dr-tab small{display:none} }
 /* ================= KAMPF-SIMULATOR ================= */
 .b-simonly{display:none}
 .sim-mode .b-only{display:none}
@@ -1716,9 +1789,16 @@ details.card.dr-more{margin:0}
 .dps-grid button:hover{background:var(--panel-2);border-color:var(--line-2);color:var(--text)}
 .dps-grid img{width:38px;height:38px;border-radius:7px}
 .dps-grid span{max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.dps-res{padding:20px;position:sticky;top:100px}
-.dps-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.dps-res{padding:20px}
 .dps-chart{position:relative}
+/* Leerlauf ohne Champion: blasses Diagramm mit Aufforderung in der Mitte; Regler, Tabelle und Umschalter erst mit Champion */
+.dps-idle{position:relative}
+.dps-idle svg{opacity:.35}
+.dps-idle-txt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 24px;text-align:center;background:radial-gradient(closest-side,rgba(8,30,40,.95) 45%,transparent)}
+.dps-idle-txt b{font:italic 900 1.35rem/1.1 var(--ff-head);text-transform:uppercase;color:#fff}
+.dps-idle-txt span{max-width:360px;font-size:.92rem;line-height:1.45;color:#9fb3c0}
+.dps-res.idle .dps-at,.dps-res.idle .dps-table-wrap{display:none}
+.dps-res.idle #dpsMode{display:none}
 .dps-chart svg{display:block;width:100%;height:auto}
 .dps-chart text{fill:var(--faint);font-size:11px;font-family:inherit}
 .dps-grid-l{stroke:rgba(255,255,255,.07);stroke-width:1}
@@ -2687,22 +2767,29 @@ img.cs-ric{border-radius:0 !important;object-fit:contain;filter:drop-shadow(0 2p
 @media (max-width:760px){.cs-vk{display:none}}
 @media (prefers-reduced-motion:reduce){.cs-vk{animation:none}}
 
-/* ---------- Tool-Gerüst „Deine Angaben“ → „Dein Ergebnis“ (zuerst in der Augment-Vorhersage; einheitliche Bereichsnamen für alle Tools) ---------- */
-.tio{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:28px;align-items:start}
+/* ---------- Tool-Gerüst „Deine Angaben“ | „Dein Ergebnis“ (zuerst in der Augment-Vorhersage, gilt für alle Tools) ----------
+   Wiedererkennung: gleiche Boxen, Überschriften und Zurücksetzen-Knopf – der Inhalt jeder Box bleibt so eigen wie das Tool */
+.tio{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:16px;align-items:start}
 .tio>.card{position:relative;margin:0;padding:20px 22px 22px;border-radius:16px}
 .tio-in,.tio-out{border:1px solid rgba(46,230,214,.2);background:linear-gradient(180deg,#0d2a34,#071a23);box-shadow:0 14px 32px rgba(0,0,0,.35)}
-/* Pfeil von den Angaben zum Ergebnis */
-.tio-out::before{content:"";position:absolute;left:-23px;top:50%;width:18px;height:24px;transform:translateY(-50%);background:#2ee6d6;opacity:.7;clip-path:polygon(0 18%,55% 18%,55% 0,100% 50%,55% 100%,55% 82%,0 82%)}
-.tio-hd{display:flex;align-items:center;gap:12px;min-height:32px}
+.tio-in.card,.tio-out.card{padding:20px 22px 22px;border-radius:16px}   /* gleicher Innenabstand in allen Tools */
+@media (max-width:640px){.tio-in.card,.tio-out.card{padding:18px 16px 20px}}
+.tio-hd{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;min-height:36px}   /* so hoch wie der Zurücksetzen-Knopf: beide Überschriften auf einer Linie */
+.tio-hd>h2+*{margin-left:auto}   /* Knöpfe rechts neben der Überschrift (Zurücksetzen, Umschalter) */
+.tio-top .tio-hint{margin-bottom:0}
+.tio-out>.tio-top{margin-bottom:14px}
 .tio-hd h2{margin:0;font:italic 900 1.3rem/1 var(--ff-head);text-transform:uppercase;letter-spacing:.02em;color:#fff}
 .tio-hint{margin:6px 0 10px;font-size:.92rem;line-height:1.45;color:#9fb3c0}
 .tio-reset{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:rgba(3,17,27,.5);color:#c9d6e0;font:inherit;font-size:.86rem;font-weight:700;cursor:pointer}
 .tio-reset svg{width:15px;height:15px}
 .tio-reset:hover:not(:disabled){color:#fff;border-color:#2ee6d6}
 .tio-reset:disabled{opacity:.4;cursor:default}
+/* Ergebnis läuft beim Scrollen mit (Rolldown-Rechner, DPS-Vergleich): links die lange Eingabe, rechts bleibt das Ergebnis unter der Kopfleiste
+   sichtbar – nur wenn die Box ganz auf den Bildschirm passt. Stärkere Regel, weil .nd .card sonst position:relative setzt */
+@media (min-width:981px){.rd>.card.rd-res{position:sticky;top:calc(var(--topH, 64px) + 16px)}.rd>.card.rd-res.tall{position:relative}}   /* .tall: höher als der Bildschirm (app.js rdStick) */
+@media (min-width:981px) and (min-height:900px){.dps>.card.dps-res{position:sticky;top:calc(var(--topH, 64px) + 16px)}}
 @media (max-width:900px){
-  .tio{grid-template-columns:minmax(0,1fr);gap:30px}
-  .tio-out::before{left:50%;top:-27px;transform:translateX(-50%) rotate(90deg)}
+  .tio{grid-template-columns:minmax(0,1fr);gap:16px}
   .tio>.card{padding:18px 16px 20px}
 }
 /* Augment-Rechner: Input */
@@ -2853,8 +2940,7 @@ img.cs-ric{border-radius:0 !important;object-fit:contain;filter:drop-shadow(0 2p
 /* wenig Platz neben der Seitenleiste (Tablet quer, kleine Laptops): Angaben und Ergebnis untereinander */
 #agApp{container-type:inline-size}
 @container (max-width:759px){
-  #agApp .tio{grid-template-columns:minmax(0,1fr);gap:30px}
-  .tio-out::before{left:50%;top:-27px;transform:translateX(-50%) rotate(90deg)}
+  #agApp .tio{grid-template-columns:minmax(0,1fr);gap:16px}
 }
 /* schmale Input-Box: Überschrift einzeilig, „Zurücksetzen“ nur als Symbol */
 .tio-hd h2{white-space:nowrap}
