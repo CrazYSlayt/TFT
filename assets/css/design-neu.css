@@ -246,8 +246,6 @@ body.nd-mini .nds-col svg{transform:rotate(180deg)}
 
 /* ---------- Dashboard: Tools mit Heimerdinger ---------- */
 .dsh-tools{background:radial-gradient(360px 240px at 100% 100%,rgba(242,193,78,.16),transparent 65%),radial-gradient(320px 220px at 0 0,rgba(46,230,214,.12),transparent 65%),linear-gradient(160deg,rgba(9,36,50,.82),rgba(3,17,27,.92))}
-.dsh-heimer{position:absolute;right:-22px;bottom:-14px;height:165px;filter:drop-shadow(0 10px 24px rgba(0,0,0,.55));pointer-events:none;z-index:0}
-.dsh-tools>*:not(.dsh-heimer){position:relative;z-index:1}
 .dsh-tlist{display:flex;flex-direction:column;gap:6px;max-width:calc(100% - 120px)}
 .dsh-tlist a{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:10px;border:1px solid transparent;transition:background .15s,border-color .15s}
 .dsh-tlist a:hover{background:rgba(46,230,214,.07);border-color:rgba(46,230,214,.25)}
@@ -256,7 +254,6 @@ body.nd-mini .nds-col svg{transform:rotate(180deg)}
 .dsh-tlist small{display:block;color:var(--faint);font-size:.74rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dsh-tlist span{min-width:0}
 .dsh-tlist a:hover b{color:var(--cy2)}
-@media (max-width:640px){.dsh-heimer{height:140px}.dsh-tlist{max-width:calc(100% - 80px)}}
 
 /* ---------- Dashboard-Header (kompakt): Coaches links, LP-Grenzen + nächster Patch rechts, Vi ganz rechts ---------- */
 .dsh-hero{grid-template-columns:auto 1fr;gap:12px;padding:14px 140px 14px 18px;min-height:126px}
@@ -339,6 +336,15 @@ body.nd-mini .nds-col svg{transform:rotate(180deg)}
 .dsh-coach ul{margin-bottom:18px}
 .dsh-coach .dsh-btn{align-self:flex-start;margin-top:auto}
 @media (max-width:980px){.dsh-row3{grid-template-columns:minmax(0,1fr)}}
+/* Unten: Bibliothek | Tools | Cheatsheets – Tools und Cheatsheets als schmale Listen nebeneinander (vorher eine breite Tools-Karte mit viel Leerraum) */
+.dsh-row3{grid-template-columns:minmax(0,1fr) minmax(0,.5fr) minmax(0,.5fr)}
+.dsh-row3 .dsh-tlist{max-width:none}
+.dsh-cheats{background:radial-gradient(320px 220px at 100% 100%,rgba(167,139,250,.14),transparent 65%),radial-gradient(300px 200px at 0 0,rgba(46,230,214,.1),transparent 65%),linear-gradient(160deg,rgba(9,36,50,.82),rgba(3,17,27,.92))}
+.dsh-cic{flex:none;display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;border:1px solid rgba(46,230,214,.28);background:rgba(46,230,214,.08);color:#7ff7ec}
+.dsh-cic svg{width:19px;height:19px}
+.dsh-cic img{width:24px;height:24px;border-radius:6px}
+@media (max-width:1250px){.dsh-row3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.dsh-row3 .dsh-lib{grid-column:1/-1}}
+@media (max-width:640px){.dsh-row3{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:640px){.dsh-bar .dsh-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}.dsh-coaches .dsh-av{width:60px;height:60px}.dsh-coaches .dsh-c3 b i{display:inline}.dsh-coaches .dsh-c3 small em{display:inline}.dsh-coaches .dsh-sep{display:inline}}
 
 /* ---------- Dashboard: Coaches als Player Cards nebeneinander ---------- */

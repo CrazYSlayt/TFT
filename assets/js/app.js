@@ -4815,15 +4815,21 @@ function renderDash(){
         <div class="dsh-comb">${(()=>{ const pick = champions.slice().sort((a,b)=>b.c - a.c || a.n.localeCompare(b.n)).slice(0, 16), rows = [5, 6, 5]; let i = 0;
           return rows.map(m=>`<div>${pick.slice(i, i += m).map(c=>`<span class="dsh-cb c${c.c}" title="${esc(c.n)}"><i style="background-image:url('${champImg(c.n) || champFallback(c.n)}')"></i></span>`).join('')}</div>`).join(''); })()}</div>
         <div class="dsh-libstats"><span><b>${champions.length}</b> Champions</span><span><b>${ITEMS.length}</b> Items</span><span><b>${traits.length}</b> Traits</span></div></a>
-      <section class="dsh-card dsh-tools"><img class="dsh-heimer" src="assets/img/mascot-heimer-wave.webp" alt="">
-        <div class="dsh-h"><h2>Tools</h2><a href="/tools">${L('Alle Tools', 'All tools')} →</a></div>
+      <section class="dsh-card dsh-tools">
+        <div class="dsh-h"><h2>Tools</h2><a href="/tools">${L('Alle', 'All')} →</a></div>
         <div class="dsh-tlist">${[
           ['/tools/tft-rolldown-rechner', 'rolldown', L('Rolldown-Rechner', 'Rolldown calculator'), L('Rollen oder leveln?', 'Roll or level?')],
           ['/tools/tft-dps-vergleich', 'dps', L('DPS-Vergleich', 'DPS Comparison'), L('Item-Builds vergleichen', 'Compare item builds')],
           ['/tools/tft-item-drop-chance', 'drops', L('Item-Drop-Chance', 'Item Drop Chance'), L('Was droppt als Nächstes?', 'What drops next?')],
+          ['/tools/tft-augment-vorhersage', 'augments', L('Augment-Vorhersage', 'Augment Prediction'), L('Welche Stufe kommt?', 'Which tier comes next?')],
           ['/tools/tft-tierlist-maker', 'tierlist', 'Tierlist-Maker', L('Eigene Tierlist bauen', 'Build your own tier list')],
           ['/tft-team-builder', 'simulator', 'Team Builder', L('Board planen & teilen', 'Plan & share boards')]
         ].map(([h, img, t, d])=>`<a href="${h}"><img src="assets/tools/thumb/${img}.webp" alt="" width="34" height="34" loading="lazy"><span><b>${t}</b><small>${d}</small></span></a>`).join('')}</div></section>
+      <section class="dsh-card dsh-cheats">
+        <div class="dsh-h"><h2>Cheatsheets</h2><a href="/cheatsheet">${L('Alle', 'All')} →</a></div>
+        <div class="dsh-tlist dsh-clist">${(()=>{ const has = new Set(csList().map(s=>s[0]));   // unsere wichtigsten Tabellen (wie „TFTClimb Priority“ auf der Cheatsheet-Seite)
+          return CS_PRIO[1].filter(id=>has.has(id)).map(id=>{ const m = CS_META[id] || {};
+            return `<a href="${csHref(id)}"><span class="dsh-cic">${csIco(id)}</span><span><b>${esc(csName(id))}</b>${m.d ? `<small>${L(m.d[0], m.d[1])}</small>` : ''}</span></a>`; }).join(''); })()}</div></section>
     </div>`;
   const f = box.querySelector('.dsh-ts'); if(f) f.classList.add('on');
   box.dataset.done = '1';
