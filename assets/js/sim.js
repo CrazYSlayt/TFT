@@ -649,7 +649,7 @@ const SIM_DPS_STEP = 0.25;
 function simDpsRun(o, seed){
   const S = SS = {t:0, rng:simRng(seed), units:[], occ:new Int16Array(56).fill(-1), ev:[], frames:[], quiet:true, team:[{enemyDeath:[]}, {enemyDeath:[]}], info:[], dots:[], seed};
   const u = sNewUnit(S, {u:o.champ, s:o.star, i:o.items}, 0, 3);
-  // Hauptziel direkt vor dem Champion, weitere Puppen daneben (für Flächenschaden)
+  // Hauptziel direkt vor dem Champion, weitere Gegner daneben (für Flächenschaden)
   const dummies = [3, 4, 2].slice(0, o.n).map(h=>sNewUnit(S, {u:'Dummy'}, 1, h, 'Dummy'));
   // Traits auf der gewählten Stufe (o.traits = [{n, k}]) – wie im Kampf-Simulator, nur mit dem einen Champion als Träger
   const tctx = {sac:null, side:0, info:{traits:[], augs:[], items:[], sac:null}};
@@ -665,6 +665,9 @@ function simDpsRun(o, seed){
   });
   u.maxHp = (u.hp0 + u.hpF) * (1 + u.hpP); u.hp = u.maxHp; if(u.maxMana > 5) u.mana = Math.min(u.mana, u.maxMana); u.atkCD = 0.2 + S.rng()*0.1;
   dummies.forEach(d=>{ d.maxHp = o.hp; d.hp = 1e12; d.ar = o.ar; d.mr = o.mr; });
+  // Shred/Sunder aus dem eigenen Team (ein anderer Champion trägt es): dauerhaft −30 %, stapelt nicht mit dem des Champions (sDeb nimmt den höchsten Wert)
+  if(o.shred) dummies.forEach(d=>sDebuff(d, 'shred', 0.3, 1e9, 'team'));
+  if(o.sunder) dummies.forEach(d=>sDebuff(d, 'sunder', 0.3, 1e9, 'team'));
   u.on.start.forEach(f=>f());
   const per = Math.round(SIM_DPS_STEP / SIM_DT), rec = {ph:[0], mg:[0], tr:[0]};
   for(let step = 1; ; step++){

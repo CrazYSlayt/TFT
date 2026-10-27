@@ -1587,10 +1587,10 @@ const BUDDY_LINES = {
     'Klick auf ein Label, um die Reihe umzubenennen. Farbe und Reihenfolge änderst du direkt daneben.',
     'Bis zu 12 Reihen! Genug Platz für jede noch so verrückte Hypothese.',
     'Fertig? Mit „Teilen“ bekommst du einen Link. Perfekt für hitzige Diskussionen mit Freunden!']; },
-  dps(){ return ['Zwei Builds, eine Puppe, 30 Sekunden. So sieht saubere Wissenschaft aus!',
+  dps(){ return ['Zwei Builds, ein Gegner, 30 Sekunden. So sieht saubere Wissenschaft aus!',
     'Guinsoo und Kraken brauchen Anlauf – schau, wie die Kurve nach oben zieht.',
     'Stell die Auswertung auf die Sekunde, in der dein Kampf meist entschieden ist.',
-    'Mehr Puppen zeigen, wie viel Flächenschaden in einer Fähigkeit steckt.']; },
+    'Mehr Gegner zeigen, wie viel Flächenschaden in einer Fähigkeit steckt.']; },
   rolldown(){ return ['Rollen oder leveln? Lass uns das berechnen, bevor du dein Gold verbrennst!',
     'Je mehr Kopien schon weg sind, desto schlechter deine Chancen. Trag sie ein – Präzision ist alles!',
     'Der Vergleich zeigt dir, ob ein Level vor dem Rollen mehr bringt. Faszinierend!',
@@ -2475,8 +2475,10 @@ const dpsCarry = n => { let d = 0, t = 0;
 const dpsOk = n => !!champBy[n] && (simRole(n) !== 'tank' || dpsCarry(n));
 // Embleme: keine Taktiker-Kronen (die geben nur Teamgröße)
 const dpsItemOk = it => it && DPS_ITEM_CATS.includes(it.cat) && !(it.cat==='emblem' && /Tactician/i.test(it.id + ' ' + it.en));
-const dps = {cost:4, champ:'', star:2, builds:[[], []], tl:{}, prof:'mid', n:1, at:22, dur:30, mode:'sum', pick:null, cat:'craft', q:'', res:null};
+const dps = {cost:4, champ:'', star:2, builds:[[], []], tl:{}, prof:'mid', n:1, at:22, dur:30, mode:'sum', pick:null, cat:'craft', q:'', res:null, shred:false, sunder:false};
 let dpsMounted = false, dpsTimer = 0;
+// Ansicht „Einfach“: Champion, Items und Shred/Sunder aus dem Team. „Detailliert“ zeigt dazu Traits (stehen sonst auf der niedrigsten Stufe) und die Gegner
+let dpsView = (()=>{ try { return localStorage.getItem('tftfreaks_dps_mode') === 'pro' ? 'pro' : 'easy'; } catch(e){ return 'easy'; } })();
 // Builds aus der Tierlist als Startpunkt: Item-Sets, die der Champion in Comps und Alt Builds hält
 function dpsSuggest(n){
   const seen = new Set(), out = [];
@@ -2488,35 +2490,38 @@ function dpsSuggest(n){
   return out.slice(0, 3);
 }
 // Leerlauf: Der Vergleich startet ohne Champion (oder mit ?c=<champion>, z. B. von der Champion-Seite); „Zurücksetzen“ führt hierher zurück
-const DPS_IDLE = {champ:'', cost:4, star:2, builds:[[], []], tl:{}, prof:'mid', n:1, at:22, mode:'sum', pick:null, cat:'craft', q:''};
+const DPS_IDLE = {champ:'', cost:4, star:2, builds:[[], []], tl:{}, prof:'mid', n:1, at:22, mode:'sum', pick:null, cat:'craft', q:'', shred:false, sunder:false};
 function dpsMount(){
   if(dpsMounted) return; dpsMounted = true;
   $('#dpsApp').innerHTML = `<div class="dps">
     <section class="card dps-in tio-in" aria-label="${L('Deine Angaben', 'Your input')}">
-      ${tioHead(false, tioReset('id="dpsReset"'), L('Wähl einen Champion und bis zu vier Item-Builds – der Vergleich rechnet sofort mit.', 'Pick a champion and up to four item builds – the comparison updates instantly.'))}
+      ${tioHead(false, `<div class="tio-seg" id="dpsView" role="group" aria-label="${L('Ansicht', 'View')}"><button type="button" data-dview="easy" title="${L('Champion, Items, Shred und Sunder', 'Champion, items, shred and sunder')}">${L('Einfach', 'Simple')}</button><button type="button" data-dview="pro" title="${L('Dazu Traits und Gegner einstellen', 'Also set traits and enemies')}">${L('Detailliert', 'Detailed')}</button></div>${tioReset('id="dpsReset"')}`,
+        L('Wähl einen Champion und bis zu vier Item-Builds – der Vergleich rechnet sofort mit.', 'Pick a champion and up to four item builds – the comparison updates instantly.'))}
       <section><h3 class="rd-h"><b>1</b> Champion</h3>
         <div class="rd-costs" id="dpsCosts">${[1,2,3,4,5].map(c=>`<button type="button" class="rd-cost cb c${c}" data-dcost="${c}">${c} Gold<span></span></button>`).join('')}</div>
         <div class="rd-champs" id="dpsChamps"></div>
-        <div class="dps-row"><span>Sterne</span><div class="rd-costs" id="dpsStars">${[1,2,3].map(s=>`<button type="button" class="rd-cost" data-dstar="${s}">${'★'.repeat(s)}<span></span></button>`).join('')}</div></div></section>
-      <section><h3 class="rd-h"><b>2</b> Item-Builds</h3>
+        <div class="dps-row"><span>Sterne</span><div class="rd-costs" id="dpsStars">${[1,2,3].map(s=>`<button type="button" class="rd-cost" data-dstar="${s}">${'★'.repeat(s)}<span></span></button>`).join('')}</div>
+          <div class="dps-debs" id="dpsDebs" role="group" aria-label="${L('Shred und Sunder aus dem Team', 'Shred and sunder from your team')}">
+            <button type="button" data-ddeb="shred" title="${L('Shred aus dem Team: −30 % Magieresistenz beim Gegner (z. B. Leerenstab) – dein Carry muss es nicht selbst bauen', 'Shred from your team: −30% enemy magic resist (e.g. Void Staff) – your carry doesn’t have to build it')}">Shred</button>
+            <button type="button" data-ddeb="sunder" title="${L('Sunder aus dem Team: −30 % Rüstung beim Gegner (z. B. Letzter Atemzug) – dein Carry muss es nicht selbst bauen', 'Sunder from your team: −30% enemy armor (e.g. Last Whisper) – your carry doesn’t have to build it')}">Sunder</button></div></div></section>
+      <section class="dps-bsec"><h3 class="rd-h"><b>2</b> Item-Builds</h3>
         <div id="dpsBuilds"></div>
         <div id="dpsPicker"></div></section>
-      <section><h3 class="rd-h"><b>3</b> Traits</h3>
+      <section class="dps-pro"><h3 class="rd-h"><b>3</b> Traits</h3>
         <div id="dpsTraits"></div>
-        <p class="rd-hint">Auf welcher Stufe ist der Trait in deinem Board aktiv? Embleme im Build bringen ihren Trait dazu.</p></section>
-      <section><h3 class="rd-h"><b>4</b> Ziel</h3>
+        <p class="rd-hint">${L('Stufe, auf der der Trait in deinem Board aktiv ist. In „Einfach“ zählt die niedrigste Stufe.', 'Level at which the trait is active on your board. “Simple” uses the lowest level.')}</p></section>
+      <section class="dps-pro"><h3 class="rd-h"><b>4</b> ${L('Gegner', 'Enemies')}</h3>
         <div class="rd-costs" id="dpsProf">${DPS_PROF.map(([k,l,hp,ar,mr])=>`<button type="button" class="rd-cost" data-dprof="${k}" title="${dpsN(hp)} Leben · ${ar} Rüstung · ${mr} Magieresistenz">${l}<span></span></button>`).join('')}</div>
         <p class="rd-hint" id="dpsProfTxt"></p>
-        <div class="dps-row"><span>Puppen</span><div class="rd-costs" id="dpsN">${[1,2,3].map(n=>`<button type="button" class="rd-cost" data-dn="${n}">${n}<span></span></button>`).join('')}</div></div>
-        <p class="rd-hint">Mehr Puppen nebeneinander zeigen, wie viel Flächenschaden eine Fähigkeit macht.</p></section>
+        <div class="dps-row" title="${L('Mehr Gegner nebeneinander zeigen, wie viel Flächenschaden eine Fähigkeit macht.', 'More enemies side by side show how much area damage an ability deals.')}"><span>${L('Anzahl', 'Count')}</span><div class="rd-costs" id="dpsN">${[1,2,3].map(n=>`<button type="button" class="rd-cost" data-dn="${n}">${n}<span></span></button>`).join('')}</div></div></section>
     </section>
     <section class="card dps-res tio-out" aria-label="${L('Dein Ergebnis', 'Your result')}">
       ${tioHead(true, `<div class="rd-costs" id="dpsMode"><button type="button" class="rd-cost" data-dmode="sum">Gesamtschaden<span></span></button><button type="button" class="rd-cost" data-dmode="dps">Schaden pro Sekunde<span></span></button></div>`,
         L('Schaden über die Zeit – jede Linie ist ein Build.', 'Damage over time – each line is one build.'))}
+      <div id="dpsWin" aria-live="polite"></div>
       <div id="dpsChart" class="dps-chart"></div>
       <label class="rd-f dps-at"><span>Auswertung bis Sekunde</span><b id="dpsAtV"></b><input type="range" id="dpsAt" min="1" max="30" value="${dps.at}"></label>
       <div class="dps-table-wrap"><table class="dps-table" id="dpsTable"></table></div>
-      <p class="note">Gerechnet mit der Engine des Kampf-Simulators: Grundwerte und Items nach Riot, die Stärke der Fähigkeiten ist geschätzt, wo Riot keine Zahlen liefert. Die Puppen greifen nicht an – Mana gibt es also nur über Angriffe und Items. Traits zählen auf der Stufe, die du oben einstellst, Augments nicht. Jeder Wert ist der Mittelwert aus 24 Kämpfen, weil Krits Zufall sind. Für den Vergleich von Builds gut geeignet, die absoluten Zahlen sind Richtwerte.</p>
     </section>
   </div>`;
   const on = (sel, ev, f) => $(sel).addEventListener(ev, f);
@@ -2526,8 +2531,11 @@ function dpsMount(){
   on('#dpsStars', 'click', e=>{ const b = e.target.closest('[data-dstar]'); if(!b) return; dps.star = +b.dataset.dstar; dpsUpdate(); });
   on('#dpsProf', 'click', e=>{ const b = e.target.closest('[data-dprof]'); if(!b) return; dps.prof = b.dataset.dprof; dpsUpdate(); });
   on('#dpsN', 'click', e=>{ const b = e.target.closest('[data-dn]'); if(!b) return; dps.n = +b.dataset.dn; dpsUpdate(); });
+  on('#dpsDebs', 'click', e=>{ const b = e.target.closest('[data-ddeb]'); if(!b) return; dps[b.dataset.ddeb] = !dps[b.dataset.ddeb]; dpsUpdate(); });
+  on('#dpsView', 'click', e=>{ const b = e.target.closest('[data-dview]'); if(!b || b.dataset.dview === dpsView) return; dpsView = b.dataset.dview;
+    try { localStorage.setItem('tftfreaks_dps_mode', dpsView); } catch(err){} dpsUpdate(); });
   on('#dpsTraits', 'click', e=>{ const b = e.target.closest('[data-dtl]'); if(!b) return; const i = b.dataset.dtl.lastIndexOf(':'); dps.tl[b.dataset.dtl.slice(0, i)] = +b.dataset.dtl.slice(i + 1); dpsUpdate(); });
-  on('#dpsMode', 'click', e=>{ const b = e.target.closest('[data-dmode]'); if(!b) return; dps.mode = b.dataset.dmode; dpsDraw(); });
+  on('#dpsMode', 'click', e=>{ const b = e.target.closest('[data-dmode]'); if(!b) return; dps.mode = b.dataset.dmode; dps.anim = 'morph'; dpsDraw(); });
   on('#dpsAt', 'input', e=>{ dps.at = +e.target.value; dpsDraw(); });
   on('#dpsReset', 'click', ()=>{ Object.assign(dps, DPS_IDLE, {builds:[[], []], tl:{}}); $('#dpsAt').value = dps.at; dpsChamps(); dpsUpdate(); });
   let dpsW = 0; window.addEventListener('resize', ()=>{ const ch = $('#dpsChart'); if(ch && ch.offsetParent && Math.abs(ch.clientWidth - dpsW) > 30){ dpsW = ch.clientWidth; dpsDraw(); } });
@@ -2541,11 +2549,15 @@ function dpsMount(){
   on('#dpsPicker', 'click', e=>{
     const c = e.target.closest('[data-dcat]'); if(c){ dps.cat = c.dataset.dcat; dpsPicker(); return; }
     if(e.target.closest('[data-dclose]')){ dps.pick = null; dpsBuilds(); return; }
-    const it = e.target.closest('[data-ditem]'); if(!it || !dps.pick) return;
+    const it = e.target.closest('[data-ditem]'); if(!it || it.disabled || !dps.pick) return;
     const b = dps.builds[dps.pick.b]; b[Math.min(dps.pick.s, b.length)] = it.dataset.ditem;
     dps.pick = b.length < 3 ? {b:dps.pick.b, s:b.length} : null; dpsUpdate();
   });
   on('#dpsPicker', 'input', e=>{ if(e.target.id!=='dpsQ') return; dps.q = e.target.value; dpsPickerGrid(); });
+  // Klick daneben oder Escape schließt die schwebende Item-Auswahl
+  document.addEventListener('click', e=>{ if(dps.pick && e.target.isConnected && !e.target.closest('#dpsPicker, [data-dslot], [data-dadd]')){ dps.pick = null; dpsBuilds(); } });
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && dps.pick){ dps.pick = null; dpsBuilds(); } });
+  window.addEventListener('resize', dpsPickPos);
   const ch = $('#dpsChart');
   ch.addEventListener('mousemove', e=>dpsHover(e)); ch.addEventListener('mouseleave', ()=>dpsHover(null));
   dpsChamps(); dpsUpdate();
@@ -2573,7 +2585,7 @@ function dpsTraitList(){
   return list.map(x=>Object.assign(x, {t:traits.find(t=>t.n===x.n)})).filter(x=>x.t);
 }
 // Stufe eines Traits: gewählt, sonst die erste Stufe (der Trait ist aktiv, so wie man den Champion meist spielt)
-const dpsTraitLv = x => dps.tl[x.n] !== undefined ? dps.tl[x.n] : (+x.t.bp[0] || 1);
+const dpsTraitLv = x => dpsView === 'pro' && dps.tl[x.n] !== undefined ? dps.tl[x.n] : (+x.t.bp[0] || 1);   // „Einfach“: immer die niedrigste Stufe
 function dpsBuildTraits(items){
   const em = items.map(findItem).filter(it=>it && it.cat==='emblem').map(emblemTrait);
   return dpsTraitList().filter(x=>x.own || em.includes(x.n)).map(x=>({n:x.n, k:dpsTraitLv(x)})).filter(x=>x.k > 0);
@@ -2599,41 +2611,85 @@ function dpsBuilds(){
     + (dps.builds.length < 4 ? `<button type="button" class="btn btn-ghost b-btn dps-add" data-dadd>+ Build vergleichen<span></span></button>` : '');
   dpsPicker();
 }
+// Ist die Auswahl schon offen (Filter, nächster Slot nach einem Item), bleibt das Feld stehen: nur Titel, Filter-Knöpfe, Liste und Spitze wechseln – kein Neuaufbau
 function dpsPicker(){
   const box = $('#dpsPicker');
   if(!dps.pick){ box.innerHTML = ''; return; }
-  box.innerHTML = `<div class="dps-pick"><div class="dps-pickbar"><span>Item für Build ${String.fromCharCode(65 + dps.pick.b)}, Slot ${dps.pick.s + 1}</span><button type="button" class="dps-x2" data-dclose aria-label="Schließen">✕<span></span></button></div>
+  const title = `Item für Build ${String.fromCharCode(65 + dps.pick.b)}, Slot ${dps.pick.s + 1}`, open = box.querySelector('.dps-pick');
+  if(open){
+    open.querySelector('.dps-pickt').textContent = title;
+    open.querySelectorAll('[data-dcat]').forEach(b=>b.classList.toggle('active', b.dataset.dcat === dps.cat));
+    const grid = $('#dpsGrid'), keep = grid.dataset.cat === dps.cat ? grid.scrollTop : 0;   // gleiche Liste (nächster Slot): Scroll-Position behalten
+    dpsPickerGrid(); grid.scrollTop = keep; dpsPickPos(); return;
+  }
+  box.innerHTML = `<div class="dps-pick"><div class="dps-pickbar"><span class="dps-pickt">${title}</span><button type="button" class="dps-x2" data-dclose aria-label="Schließen">✕<span></span></button></div>
     <div class="dps-pickbar">${DPS_CATS.map(([k,l])=>`<button type="button" class="chip-btn${dps.cat===k?' active':''}" data-dcat="${k}">${l}<span></span></button>`).join('')}<input class="input" id="dpsQ" placeholder="Item suchen…" value="${esc(dps.q)}"></div>
     <div class="dps-grid" id="dpsGrid"></div></div>`;
-  dpsPickerGrid();
+  dpsPickerGrid(); dpsPickPos();
+}
+// Die Auswahl schwebt direkt unter der Build-Zeile, die gerade bearbeitet wird (über allem, ohne etwas zu verschieben);
+// die kleine Spitze oben zeigt auf den Item-Platz, der geändert oder neu belegt wird
+function dpsPickPos(){
+  const box = $('#dpsPicker'), pk = box && box.querySelector('.dps-pick'); if(!pk || !dps.pick) return;
+  const sec = box.closest('.dps-bsec'), row = $('#dpsBuilds').children[dps.pick.b], slot = $(`[data-dslot="${dps.pick.b}:${dps.pick.s}"]`); if(!sec || !row || !slot) return;
+  const s = sec.getBoundingClientRect(), r = row.getBoundingClientRect(), b = slot.getBoundingClientRect();
+  box.style.top = Math.round(r.bottom - s.top + 10) + 'px';
+  pk.style.setProperty('--nx', Math.round(b.left + b.width / 2 - s.left) + 'px');
 }
 function dpsPickerGrid(){
   const q = dps.q.toLowerCase().trim();
   const list = ITEMS.filter(i=>dpsItemOk(i) && (q || i.cat===dps.cat) && (!q || i.en.toLowerCase().includes(q) || i.de.toLowerCase().includes(q))).sort((a,b)=>a.en.localeCompare(b.en));
-  $('#dpsGrid').innerHTML = list.map(i=>`<button type="button" data-ditem="${i.id}" title="${esc(i.en)}"><img src="${i.img}" alt="" loading="lazy"><span>${esc(i.en)}</span><span></span></button>`).join('') || '<p class="note">Kein Item gefunden.</p>';
+  // Embleme für einen Trait, den der Champion schon hat, bringen nichts – gesperrt
+  const own = (champBy[dps.champ] || {}).t || [];
+  $('#dpsGrid').dataset.cat = q ? '' : dps.cat;
+  $('#dpsGrid').innerHTML = list.map(i=>{ const no = own.includes(emblemTrait(i));
+    return `<button type="button" data-ditem="${i.id}"${no ? ` disabled title="${esc(dps.champ)} hat ${esc(emblemTrait(i))} schon"` : ` title="${esc(i.en)}"`}><img src="${i.img}" alt="" loading="lazy"><span>${esc(i.en)}</span><span></span></button>`; }).join('') || '<p class="note">Kein Item gefunden.</p>';
 }
 function dpsUpdate(){
   $('#dpsStars').querySelectorAll('[data-dstar]').forEach(b=>b.classList.toggle('on', +b.dataset.dstar===dps.star));
   $('#dpsProf').querySelectorAll('[data-dprof]').forEach(b=>b.classList.toggle('on', b.dataset.dprof===dps.prof));
   $('#dpsN').querySelectorAll('[data-dn]').forEach(b=>b.classList.toggle('on', +b.dataset.dn===dps.n));
-  const p = DPS_PROF.find(x=>x[0]===dps.prof);
+  $('#dpsDebs').querySelectorAll('[data-ddeb]').forEach(b=>{ const on = dps[b.dataset.ddeb]; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  const pro = dpsView === 'pro';
+  $('.dps-in').classList.toggle('pro', pro);
+  $('#dpsView').querySelectorAll('[data-dview]').forEach(b=>b.classList.toggle('on', b.dataset.dview === dpsView));
+  // „Einfach“ rechnet gegen eine Frontline und einen Gegner – die Einstellungen aus „Detailliert“ bleiben gemerkt, zählen dort aber nicht
+  const p = DPS_PROF.find(x=>x[0]===(pro ? dps.prof : 'mid')), n = pro ? dps.n : 1;
   $('#dpsProfTxt').textContent = `${dpsN(p[2])} Leben · ${p[3]} Rüstung · ${p[4]} Magieresistenz`;
   dpsBuilds(); dpsTraits();
   clearTimeout(dpsTimer);
   dpsTimer = setTimeout(()=>{   // kurz warten, damit schnelle Klicks nicht jedes Mal neu rechnen
     if(!dps.champ){ dps.res = null; dpsDraw(); return; }
-    dps.res = dps.builds.map(items=>simDps({champ:dps.champ, star:dps.star, items, traits:dpsBuildTraits(items), hp:p[2], ar:p[3], mr:p[4], n:dps.n, dur:dps.dur}));
-    dpsDraw();
+    dps.res = dps.builds.map(items=>simDps({champ:dps.champ, star:dps.star, items, traits:dpsBuildTraits(items), hp:p[2], ar:p[3], mr:p[4], n, dur:dps.dur, shred:dps.shred, sunder:dps.sunder}));
+    dps.anim = dps.champ !== dpsAnimChamp ? 'draw' : 'morph'; dpsAnimChamp = dps.champ; dpsDraw();
   }, 30);
 }
-// Leerlauf ohne Champion: angedeutetes Diagramm (Raster und drei blasse Build-Linien), darüber die Aufforderung
+// Leerlauf ohne Champion (eigene Grafik dieses Tools): drei Build-Linien zeichnen sich immer wieder ins Raster – wie ein Rennen, das gleich startet –,
+// am Ende jeder Linie leuchtet ein Punkt; darunter „Bereit“ und die Aufforderung
 function dpsIdle(){
   const grid = [0, 1, 2, 3, 4].map(i=>`<line x1="54" x2="626" y1="${14 + i * 61}" y2="${14 + i * 61}" class="dps-grid-l"/>`).join('') + [0, 1, 2, 3, 4, 5, 6].map(i=>`<line x1="${54 + i * 95.3}" x2="${54 + i * 95.3}" y1="14" y2="258" class="dps-grid-l v"/>`).join('');
   const steps = [[0, 258, 120, 250, 135, 196, 300, 186, 318, 120, 470, 110, 490, 52, 626, 40], [0, 258, 150, 252, 165, 214, 330, 204, 345, 160, 500, 150, 515, 104, 626, 96], [0, 258, 180, 254, 200, 236, 380, 228, 400, 200, 560, 192, 580, 170, 626, 160]];
-  const line = (p, i) => `<polyline fill="none" stroke="${DPS_COL[i]}" stroke-width="2.6" stroke-dasharray="6 6" points="${p.reduce((s, v, k)=>s + (k % 2 ? v + ' ' : (54 + v * 572 / 626).toFixed(1) + ','), '').trim()}"/>`;
-  return `<div class="dps-idle"><svg viewBox="0 0 640 288" aria-hidden="true">${grid}${steps.map(line).join('')}</svg>
-    <div class="dps-idle-txt"><b>${L('Noch kein Champion gewählt', 'No champion picked yet')}</b><span>${L('Wähl unter „Deine Angaben“ einen Champion – dann vergleiche ich seine Item-Builds.', 'Pick a champion under “Your input” – then I’ll compare its item builds.')}</span></div></div>`;
+  const px = v => (54 + v * 572 / 626).toFixed(1);
+  const line = (p, i) => `<polyline class="dps-iline" style="--i:${i}" fill="none" stroke="${DPS_COL[i]}" stroke-width="3" stroke-linejoin="round" pathLength="100" points="${p.reduce((s, v, k)=>s + (k % 2 ? v + ' ' : px(v) + ','), '').trim()}"/>
+    <circle class="dps-idot" style="--i:${i}" cx="${px(p[p.length - 2])}" cy="${p[p.length - 1]}" r="5" fill="${DPS_COL[i]}"/>`;
+  return `<div class="dps-idle"><svg viewBox="0 0 640 270" aria-hidden="true">${grid}${steps.map(line).join('')}</svg>
+    <div class="dps-idle-txt"><span class="dr-ready">${L('Bereit', 'Ready')}</span><b>${L('Welcher Build gewinnt?', 'Which build wins?')}</b><span>${L('Wähl unter „Deine Angaben“ einen Champion – dann lasse ich seine Item-Builds gegeneinander antreten.', 'Pick a champion under “Your input” – then I’ll let its item builds race each other.')}</span></div></div>`;
 }
+// Zahlen laufen vom zuletzt gezeigten zum neuen Wert (wie im Item-Drop-Rechner); dpsShown merkt sich die Werte je Schlüssel
+const dpsShown = {};
+function dpsCount(root){
+  const els = [...root.querySelectorAll('[data-cnt]')], still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const jobs = els.map(el=>{ const k = el.dataset.cnt, to = +el.dataset.v, from = dpsShown[k] != null ? dpsShown[k] : to; dpsShown[k] = to; return {el, from, to}; }).filter(j=>j.from !== j.to);
+  if(still || !jobs.length) return;
+  const t0 = performance.now(), dur = 650, ease = x => 1 - Math.pow(1 - x, 3);
+  cancelAnimationFrame(dpsCount.raf);
+  const step = now => { const k = Math.max(0, Math.min(1, (now - t0) / dur)); jobs.forEach(j=>{ j.el.textContent = dpsN(j.from + (j.to - j.from) * ease(k)); }); if(k < 1) dpsCount.raf = requestAnimationFrame(step); };
+  jobs.forEach(j=>{ j.el.textContent = dpsN(j.from); });
+  dpsCount.raf = requestAnimationFrame(step);
+}
+let dpsWinner = '';
+// Linien-Animation: 'draw' = neu einzeichnen (nur beim Champion-Wechsel), 'morph' = vom gezeigten zum neuen Verlauf gleiten; dpsSerShown = gerade gezeigte Werte
+let dpsAnimChamp = '', dpsSerShown = null;
 const dpsAtIdx = (r, t) => Math.min(r.tot.length - 1, Math.round(t / SIM_DPS_STEP));
 // Schaden pro Sekunde: gleitendes Fenster (±2 s um den Zeitpunkt), damit einzelne Angriffe und Fähigkeiten nicht als Zacken stehen
 const dpsRate = r => { const k = Math.round(2 / SIM_DPS_STEP), n = r.tot.length - 1;
@@ -2642,9 +2698,10 @@ function dpsDraw(){
   $('#dpsMode').querySelectorAll('[data-dmode]').forEach(b=>b.classList.toggle('on', b.dataset.dmode===dps.mode));
   $('#dpsAtV').textContent = dps.at + ' s';
   const R = dps.res, chart = $('#dpsChart'), idle = !dps.champ || !R || !R.length;
-  $('#dpsReset').disabled = !dps.champ && ['star', 'prof', 'n', 'at', 'mode'].every(k=>dps[k]===DPS_IDLE[k]);
+  $('#dpsReset').disabled = !dps.champ && ['star', 'prof', 'n', 'at', 'mode', 'shred', 'sunder'].every(k=>dps[k]===DPS_IDLE[k]);
   chart.closest('.dps-res').classList.toggle('idle', idle);
-  if(idle){ chart.innerHTML = dpsIdle(); $('#dpsTable').innerHTML = ''; return; }
+  $('.dps-in').classList.toggle('need-champ', !dps.champ);   // ohne Champion pulsieren die Champions, sonst die leeren Item-Plätze
+  if(idle){ cancelAnimationFrame(dpsDraw.raf); chart.innerHTML = dpsIdle(); $('#dpsTable').innerHTML = ''; $('#dpsWin').innerHTML = ''; dpsWinner = ''; dpsAnimChamp = ''; dpsSerShown = null; return; }
   // Zeichenfläche in echter Breite, damit die Beschriftung auf dem Handy lesbar bleibt
   const W = Math.round(Math.max(320, Math.min(640, chart.clientWidth || 640))), H = Math.round(W * (W < 480 ? 0.62 : 0.45)), L0 = 54, R0 = 14, T0 = 14, B0 = 30, w = W - L0 - R0, h = H - T0 - B0;
   const ser = R.map(r=>dps.mode==='dps' ? dpsRate(r) : r.tot);
@@ -2654,21 +2711,54 @@ function dpsDraw(){
   let g = '';
   for(let v = 0; v <= top + 1e-6; v += step) g += `<line x1="${L0}" x2="${W - R0}" y1="${Y(v)}" y2="${Y(v)}" class="dps-grid-l"/><text x="${L0 - 8}" y="${Y(v) + 4}" text-anchor="end">${dpsN(v)}</text>`;
   for(let t = 0; t <= dps.dur; t += 5) g += `<line x1="${X(t)}" x2="${X(t)}" y1="${T0}" y2="${T0 + h}" class="dps-grid-l v"/><text x="${X(t)}" y="${H - 10}" text-anchor="middle">${t} s</text>`;
-  const lines = ser.map((s, i)=>`<polyline fill="none" stroke="${DPS_COL[i]}" stroke-width="2.6" stroke-linejoin="round" points="${s.map((v, k)=>`${X(R[i].t[k]).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}"/>`).join('');
-  const dots = ser.map((s, i)=>`<circle cx="${X(dps.at)}" cy="${Y(s[dpsAtIdx(R[i], dps.at)])}" r="4.5" fill="${DPS_COL[i]}" stroke="#0d0d12" stroke-width="2"/>`).join('');
+  // Neuer Champion: die Linien zeichnen sich von links nach rechts ein. Andere Änderungen (Sterne, Items, Shred/Sunder, Ansicht …): die Linien
+  // gleiten vom gerade gezeigten zum neuen Verlauf hoch bzw. runter (neue Builds wachsen von der Nulllinie). Regler und Fenstergröße zeichnen ohne Bewegung
+  const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const morph = dps.anim === 'morph' && !still && dpsSerShown;
+  const from = morph ? ser.map((s, i)=>{ const o = dpsSerShown[i]; return o && o.length === s.length ? o : s.map(()=>0); }) : ser;
+  const pts = (s, i) => s.map((v, k)=>`${X(R[i].t[k]).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+  const lines = from.map((s, i)=>`<polyline class="dps-ln" fill="none" stroke="${DPS_COL[i]}" stroke-width="2.6" stroke-linejoin="round" points="${pts(s, i)}"/>`).join('');
+  const dots = from.map((s, i)=>`<circle class="dps-dot" cx="${X(dps.at)}" cy="${Y(s[dpsAtIdx(R[i], dps.at)])}" r="4.5" fill="${DPS_COL[i]}" stroke="#0d0d12" stroke-width="2"/>`).join('');
+  cancelAnimationFrame(dpsDraw.raf);
   chart.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Schaden über die Zeit">${g}<line x1="${X(dps.at)}" x2="${X(dps.at)}" y1="${T0}" y2="${T0 + h}" class="dps-at-l"/>${lines}${dots}<g id="dpsHov"></g></svg><div class="dps-tip" id="dpsTip" hidden></div>`;
   chart.dataset.geo = JSON.stringify({W, L0, w, top, T0, h});
+  dpsSerShown = ser;
+  if(dps.anim === 'draw' && !still){
+    chart.classList.add('drawing');
+    chart.querySelectorAll('.dps-ln').forEach((pl, i)=>{ const len = pl.getTotalLength(); pl.style.strokeDasharray = len; pl.style.strokeDashoffset = len;
+      pl.getBoundingClientRect(); pl.style.transition = `stroke-dashoffset .9s ${i * .12}s cubic-bezier(.4,0,.2,1)`; pl.style.strokeDashoffset = 0; });
+    clearTimeout(dpsDraw.t); dpsDraw.t = setTimeout(()=>chart.classList.remove('drawing'), 900 + R.length * 120);
+  } else if(morph){
+    const pls = chart.querySelectorAll('.dps-ln'), cs = chart.querySelectorAll('.dps-dot'), t0 = performance.now(), dur = 650, ease = x => 1 - Math.pow(1 - x, 3);
+    const stepM = now => { const k = Math.max(0, Math.min(1, (now - t0) / dur)), e = ease(k);
+      const cur = ser.map((s, i)=>s.map((v, j)=>from[i][j] + (v - from[i][j]) * e));
+      cur.forEach((s, i)=>{ pls[i].setAttribute('points', pts(s, i)); cs[i].setAttribute('cy', Y(s[dpsAtIdx(R[i], dps.at)])); });
+      dpsSerShown = cur;   // wird die Bewegung unterbrochen, geht die nächste von hier weiter
+      if(k < 1) dpsDraw.raf = requestAnimationFrame(stepM); };
+    dpsDraw.raf = requestAnimationFrame(stepM);
+  }
+  dps.anim = false;
   // Tabelle: Schaden bis zur gewählten Sekunde, sortiert nach Build
   const vals = R.map(r=>r.tot[dpsAtIdx(r, dps.at)]), best = Math.max(...vals);
+  // Gewinner groß über dem Diagramm: welcher Build vorne liegt und mit wie viel Abstand zum Zweiten
+  const wi = vals.indexOf(best), second = Math.max(-Infinity, ...vals.filter((_, i)=>i !== wi)), si = vals.indexOf(second);
+  const winKey = wi + ':' + dps.builds[wi].join(','), lead = R.length > 1 && second > 0 ? Math.round((best / second - 1) * 100) : null;
+  $('#dpsWin').innerHTML = `<div class="dps-win${dpsWinner && dpsWinner !== winKey ? ' pop' : ''}" style="--bc:${DPS_COL[wi]}">
+    <b class="dps-bn">${String.fromCharCode(65 + wi)}</b>
+    <div><small>${R.length > 1 ? (lead === 0 ? 'Gleichauf vorne' : 'Bester Build') : 'Dein Build'}${dps.shred || dps.sunder ? ` · mit ${[dps.shred && 'Shred', dps.sunder && 'Sunder'].filter(Boolean).join(' & ')} aus dem Team` : ''}</small><span class="dps-wi">${dps.builds[wi].map(dpsItemImg).join('') || '<em>ohne Items</em>'}</span>
+      ${lead ? `<p>+${lead} % mehr Schaden als Build ${String.fromCharCode(65 + si)}</p>` : ''}</div>
+    <strong><b data-cnt="win" data-v="${Math.round(best)}">${dpsN(best)}</b><small>Schaden bis ${dps.at} s</small></strong></div>`;
+  dpsWinner = winKey;
   const split = r => { const i = dpsAtIdx(r, dps.at), t = r.tot[i] || 1; return [r.ph[i]/t, r.mg[i]/t, r.tr[i]/t]; };
   $('#dpsTable').innerHTML = `<thead><tr><th>Build</th><th>Schaden bis ${dps.at} s</th><th>DPS</th><th>Aufteilung</th><th>Fähigkeiten</th><th>Gesamt ${dps.dur} s</th></tr></thead><tbody>${R.map((r, i)=>{
     const v = vals[i], sp = split(r), diff = best ? Math.round((v / best - 1) * 100) : 0, casts = r.casts * dps.at / dps.dur;
     return `<tr><td><span class="dps-tb" style="--bc:${DPS_COL[i]}"><b>${String.fromCharCode(65 + i)}</b>${dps.builds[i].map(dpsItemImg).join('') || '<small>ohne Items</small>'}</span></td>
-      <td><b class="dps-big">${dpsN(v)}</b>${v===best && R.length > 1 ? '<span class="dps-best">Bester</span>' : R.length > 1 ? `<small class="dps-minus">${diff} %</small>` : ''}</td>
+      <td><b class="dps-big" data-cnt="b${i}" data-v="${Math.round(v)}">${dpsN(v)}</b>${v===best && R.length > 1 ? '<span class="dps-best">Bester</span>' : R.length > 1 ? `<small class="dps-minus">${diff} %</small>` : ''}</td>
       <td>${dpsN(v / dps.at)}</td>
       <td><div class="dps-split" title="Physisch ${Math.round(sp[0]*100)} % · Magisch ${Math.round(sp[1]*100)} % · Absolut ${Math.round(sp[2]*100)} %"><i class="ph" style="flex:${sp[0]}"></i><i class="mg" style="flex:${sp[1]}"></i><i class="tr" style="flex:${sp[2]}"></i></div></td>
       <td>${fmtNum(Math.round(casts * 10) / 10)}×</td>
       <td>${dpsN(r.tot[r.tot.length - 1])}</td></tr>`; }).join('')}</tbody>`;
+  dpsCount($('.dps-res'));
 }
 function dpsHover(e){
   const tip = $('#dpsTip'), hov = $('#dpsHov'), ch = $('#dpsChart'); if(!tip || !hov || !dps.res) return;
@@ -2716,7 +2806,7 @@ let agMounted = false;
 const agSum = p => CS.augments.seq.filter(x=>x[0].startsWith(p)).reduce((s, x)=>s + x[1], 0);
 const agName = l => L(CS_AUG[l][1], CS_AUG[l][2]);
 const agHex = l => `<svg class="ag-hx atg-n atg-${l}" viewBox="0 0 24 24" aria-hidden="true"><polygon class="atg-h" points="12,1.5 21.1,6.75 21.1,17.25 12,22.5 2.9,17.25 2.9,6.75"/></svg>`;
-const agPct = p => (p > 0 && p < 1 ? '<1' : fmtNum(Math.round(p * 10) / 10)) + L(' %', '%');
+const agPct = p => (p > 0 && p < 0.5 ? '<1' : Math.round(p)) + L(' %', '%');   // ganze Prozent – Nachkommastellen bringen hier nichts
 // Augment-Rahmen in Silber, Gold und Prismatisch (eigene Grafiken von CrazYSlayt, assets/icons/tft/augment-frame-*.webp)
 const AG_FR = {S:'silver', G:'gold', P:'prism'};
 const agFrSrc = l => `assets/icons/tft/augment-frame-${AG_FR[l]}.webp`;
@@ -2738,18 +2828,57 @@ function agInput(){
 }
 // Dein Ergebnis: oben die Chance auf ein prismatisches Augment, darunter immer alle drei Augments. Offene zeigen die Chancen nach deinen bisherigen Augments,
 // gewählte bleiben stehen: deine Wahl ist hervorgehoben (mit der Chance, die sie vorher hatte), die anderen Stufen treten zurück
+// Bewegung im Ergebnis: Balken und Zahlen laufen vom zuletzt gezeigten zum neuen Wert (agShown je Schlüssel), die neue Wahl blitzt kurz auf
+const agShown = {};
+let agLastK = null;
+const agWas = (key, v) => agShown[key] != null ? agShown[key] : v;
+function agAnim(root){
+  const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const bars = [...root.querySelectorAll('[data-p]')];
+  const nums = [...root.querySelectorAll('[data-agk]')].map(el=>{ const key = el.dataset.agk, to = +el.dataset.agv, from = agWas(key, to); agShown[key] = to; return {el, from, to}; });
+  if(still){ bars.forEach(el=>el.style.setProperty('--p', el.dataset.p + '%')); nums.forEach(j=>{ j.el.textContent = agPct(j.to); }); return; }
+  requestAnimationFrame(()=>requestAnimationFrame(()=>bars.forEach(el=>el.style.setProperty('--p', el.dataset.p + '%'))));
+  const run = nums.filter(j=>j.from !== j.to); if(!run.length) return;
+  const t0 = performance.now(), dur = 650, ease = x => 1 - Math.pow(1 - x, 3);
+  cancelAnimationFrame(agAnim.raf);
+  const step = now => { const k = Math.max(0, Math.min(1, (now - t0) / dur));
+    run.forEach(j=>{ j.el.textContent = k < 1 ? Math.round(j.from + (j.to - j.from) * ease(k)) + L(' %', '%') : agPct(j.to); });
+    if(k < 1) agAnim.raf = requestAnimationFrame(step); };
+  agAnim.raf = requestAnimationFrame(step);
+}
+// Leerlauf (eigene Grafik): die drei Karten für 2-1 schweben nebeneinander, die wahrscheinlichste ist größer und leuchtet; darunter die Chancen
+function agIdle(){
+  const dist = agDist('', 0), top = Math.max(...dist.map(d=>d[1])), W = agSum(''), seq = CS.augments.seq;
+  const prism = seq.filter(x=>x[0].includes('P')).reduce((s, x)=>s + x[1], 0) / W * 100;
+  dist.forEach(([l])=>{ if(agShown['d0' + l] == null) agShown['d0' + l] = 0; });   // beim ersten Öffnen zählen die Chancen von 0 hoch
+  agShown.kpi = prism;   // die erste Wahl lässt die Prismatisch-Chance von hier aus laufen
+  return `<div class="tio-hd"><h2>${L('Dein Ergebnis', 'Your result')}</h2></div>
+    <div class="ag-idle">
+      <span class="dr-ready">${L('Bereit', 'Ready')}</span>
+      <h3>${L('Was kommt auf 2-1?', 'What comes on 2-1?')}</h3>
+      <div class="ag-icards">${dist.map(([l, p], i)=>`<div class="ag-ic ${CS_AUG[l][0]}${p === top ? ' top' : ''}" style="--i:${i}">
+        <div class="ag-icard"><span class="ag-cbg"></span>${agFr(l, 'ag-fr')}<span class="ag-cin">${agHex(l)}<b>${agName(l)}</b></span></div>
+        <strong data-agk="d0${l}" data-agv="${p}">${agPct(agWas('d0' + l, 0))}</strong></div>`).join('')}</div>
+      <p>${L('Wähl unter „Deine Angaben“ dein Augment auf 2-1 – dann sage ich dir, was auf 3-2 und 4-2 kommt.', 'Pick your 2-1 augment under “Your input” – then I’ll tell you what comes on 3-2 and 4-2.')}
+        <span>${L(`In <b>${agPct(prism)}</b> aller Partien gibt es mindestens ein prismatisches Augment.`, `<b>${agPct(prism)}</b> of all games have at least one prismatic augment.`)}</span></p>
+    </div>`;
+}
 function agOutput(){
   const k = ag.k, n = k.length, W = agSum(''), wk = agSum(k), seq = CS.augments.seq;
+  if(!n) return agIdle();
   const prism = k.includes('P') ? 100 : seq.filter(x=>x[0].startsWith(k) && x[0].includes('P')).reduce((s, x)=>s + x[1], 0) / wk * 100;
   const check = csSvg('<path d="m5 12.5 4.5 4.5L19 7.5"/>', 3);
+  const fresh = agLastK !== null && k.length > agLastK.length && k.startsWith(agLastK);   // gerade ein Augment dazugewählt
   let main = `<div class="ag-pg n3" style="--n:3">${AG_ST.map((st, i)=>{ const dist = agDist(k.slice(0, Math.min(i, n)), i), top = Math.max(...dist.map(d=>d[1])), done = i < n;
-    return `<div class="ag-pb${done ? ' done' : i === n ? ' next' : ''}"><h3><span class="ag-chip">${done ? check : ''}${st}</span>${i + 1}. Augment</h3>
-      ${dist.map(([l, p])=>`<div class="ag-pi ${CS_AUG[l][0]}${done ? (k[i] === l ? ' pick' : ' off') : p === top && p > 0 ? ' top' : ''}" style="--p:${p.toFixed(1)}%"${done && k[i] === l ? ` title="${L('Deine Wahl', 'Your pick')}"` : ''}>${agHex(l)}<span>${agName(l)}</span><b>${agPct(p)}</b></div>`).join('')}</div>`; }).join('')}</div>`;
+    return `<div class="ag-pb${done ? ' done' : i === n ? ' next' : ''}${fresh && i === n ? ' wake' : ''}"><h3><span class="ag-chip">${done ? check : ''}${st}</span>${i + 1}. Augment</h3>
+      ${dist.map(([l, p])=>{ const key = `d${i}${l}`, mine = done && k[i] === l;
+        return `<div class="ag-pi ${CS_AUG[l][0]}${done ? (mine ? ' pick' : ' off') : p === top && p > 0 ? ' top' : ''}${mine && fresh && i === n - 1 ? ' pop' : ''}" style="--p:${agWas(key, p).toFixed(1)}%" data-p="${p.toFixed(1)}"${mine ? ` title="${L('Deine Wahl', 'Your pick')}"` : ''}>${agHex(l)}<span>${agName(l)}</span><b data-agk="${key}" data-agv="${p}">${agPct(agWas(key, p))}</b></div>`; }).join('')}</div>`; }).join('')}</div>`;
   if(n === 3){ const rank = [...seq].sort((a, b)=>b[1] - a[1]).findIndex(x=>x[0] === k) + 1;
     main += `<div class="ag-sec"><h3>${L('Deine Reihenfolge', 'Your order')}</h3><div class="ag-done"><span class="ag-path">${k.split('').map(agHex).join('<i></i>')}</span>
       <p>${L(`Kommt in <b>${agPct(wk / W * 100)}</b> aller Partien vor – Platz ${rank} von ${seq.length} Reihenfolgen.`, `Happens in <b>${agPct(wk / W * 100)}</b> of all games – rank ${rank} of ${seq.length} orders.`)}</p></div></div>`; }
-  const kpi = `<div class="ag-kpi${k.includes('P') ? ' got' : ''}"><span>${agHex('P')}</span><div><small>${L('Mindestens ein prismatisches Augment in dieser Partie', 'At least one prismatic this game')}</small>
-    <b>${k.includes('P') ? L('Hast du schon', 'Already got one') : agPct(prism)}</b></div></div>`;
+  const gotP = k.includes('P'), gotNow = gotP && fresh && k[n - 1] === 'P';
+  const kpi = `<div class="ag-kpi${gotP ? ' got' : ''}${gotNow ? ' pop' : ''}"><span>${agHex('P')}</span><div><small>${L('Mindestens ein prismatisches Augment in dieser Partie', 'At least one prismatic this game')}</small>
+    <b${gotP ? '' : ` data-agk="kpi" data-agv="${prism}"`}>${gotP ? L('Hast du schon', 'Already got one') : agPct(agWas('kpi', prism))}</b></div></div>`;
   const paths = n < 3 ? seq.filter(x=>x[0].startsWith(k)).sort((a, b)=>b[1] - a[1]).slice(0, 4) : [];
   const pathList = paths.length ? `<div class="ag-sec ag-psec"><h3>${L('Wahrscheinlichste Verläufe', 'Most likely orders')}</h3><div class="ag-paths">${paths.map(([s, w])=>`<div class="ag-pr"><span class="ag-path">${s.split('').map((l, i)=>`<span class="${i < n ? 'kn' : ''}">${agHex(l)}</span>`).join('<i></i>')}</span><b>${agPct(w / wk * 100)}</b></div>`).join('')}</div></div>` : '';
   return `<div class="tio-hd"><h2>${L('Dein Ergebnis', 'Your result')}</h2></div>
@@ -2760,6 +2889,7 @@ function agUpdate(syncTree=true){
   const app = $('#agApp'); if(!app) return;
   app.querySelector('.tio-in').innerHTML = agInput();
   app.querySelector('.ag-ob').innerHTML = agOutput();
+  agAnim(app.querySelector('.ag-ob')); agLastK = ag.k;
   const svg = app.querySelector('svg.atg');
   if(svg && syncTree){ svg.dataset.sel = ag.k; svg.dataset.hist = JSON.stringify(ag.k.split('').map((_, i)=>ag.k.slice(0, i))); atgMark(svg, ag.k); }   // Verlauf wie nach Klicks im Baum
   history.replaceState(history.state, '', location.pathname + (ag.k ? '?a=' + ag.k : '') + location.hash);
@@ -3145,13 +3275,18 @@ const LOOT = (()=>{ const l = TFT_CUSTOM_SET.loot; if(!l) return null;
   return l.stages ? l : null; })();
 const DR_KEY = 'tftfreaks_drops_v1_' + TFT_DATA.set;
 const DR_COMPS = COMPONENTS.filter(id=>!/spatula|fryingpan/i.test(normN(itemById[id].en))).slice(0, 8);   // die 8 Komponenten im Item-Pool
-const DR_STAGES = [[1,'Stage 1','Minions'],[2,'2-7','Creeps'],[3,'3-7','Creeps'],[4,'4-7','Creeps'],[5,'ab 5-7','Xerath']];
-const DR_NEW = () => ({stage:1, start:1, src:'drop', drops:{1:[], 2:[], 3:[], 4:[]}, extra:[]});
-let dr = (()=>{ try { const s = JSON.parse(localStorage.getItem(DR_KEY)); if(s && s.drops) return Object.assign(DR_NEW(), s); } catch(e){} return DR_NEW(); })();
+// Ab 5-7 gibt es keine zufälligen Komponenten mehr – deshalb nur die vier Creep-Stages
+const DR_STAGES = [[1,'Stage 1','Minions'],[2,'2-7','Creeps'],[3,'3-7','Creeps'],[4,'4-7','Creeps']];
+// Nur noch, was droppt und was du bekommen hast: Stage und Drops pro Stage (Karussell, Ambosse und Start-Pool sind raus, der Pool startet mit einer von jeder)
+const DR_NEW = () => ({stage:1, drops:{1:[], 2:[], 3:[], 4:[]}});
+let dr = (()=>{ try { const s = JSON.parse(localStorage.getItem(DR_KEY)); if(s && s.drops) return {stage:Math.max(1, Math.min(4, +s.stage || 1)), drops:Object.assign(DR_NEW().drops, s.drops)}; } catch(e){} return DR_NEW(); })();
+// Beute der Stage (Orbs und Anzahl Komponenten) steckt eingeklappt im Ergebnis; Orbs mit den eigenen Grafiken (wie im Cheatsheet)
+let drLootOpen = false;
+const drOrbImg = k => `<img src="assets/icons/tft/lootorb-${k}.webp" alt="" width="34" height="34">`;
 const drSave = () => { try { localStorage.setItem(DR_KEY, JSON.stringify(dr)); } catch(e){} };
 // Item-Pool nach allen Drops bis einschließlich Stage `upto`
 function drBag(upto){
-  const bag = Object.fromEntries(DR_COMPS.map(id=>[id, dr.start]));
+  const bag = Object.fromEntries(DR_COMPS.map(id=>[id, 1]));
   let warn = false;
   for(let s = 1; s <= Math.min(4, upto); s++){
     if(s > 1) DR_COMPS.forEach(id=>{ bag[id]++; });
@@ -3173,118 +3308,156 @@ const drMix = (dist, c, n) => dist ? Object.entries(dist).reduce((s, [k, p])=>s 
 const drPct = p => p == null ? '–' : rdPct(p);
 const drIcon = (id, size=34) => { const it = itemById[id]; return it ? `<img src="${it.img}" alt="${esc(it.de || it.en)}" title="${esc(it.de || it.en)}" width="${size}" height="${size}">` : ''; };
 
+// Bewegung: Zahlen und Balken laufen vom alten zum neuen Wert, Zeilen rutschen an ihren neuen Platz (sortiert nach Chance),
+// gedroppte Pool-Punkte fliegen raus, Nachschub springt rein. drLast = Werte beim letzten Zeichnen, drFx = einmalige Effekte (welcher Klick)
+let drLast = null, drFx = {};
+const drStill = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const drNum = (key, v, fmt = 'pct') => { const f = drLast && drLast[key] != null ? drLast[key] : v; drNow[key] = v;
+  return `<span class="dr-num" data-v="${v == null ? '' : v}" data-f="${f == null ? '' : f}" data-fmt="${fmt}">${v == null ? '–' : fmt === 'pct' ? drPct(f) : fmtNum(f)}</span>`; };
+let drNow = {};
+function drAnimate(app, rowsBefore){
+  if(drStill()){ app.querySelectorAll('.dr-num').forEach(el=>{ const v = el.dataset.v; if(v !== '') el.textContent = el.dataset.fmt === 'pct' ? drPct(+v) : fmtNum(+v); }); app.querySelectorAll('[data-w]').forEach(el=>{ el.style.width = el.dataset.w + '%'; }); return; }
+  // Zeilen an den neuen Platz rutschen lassen (FLIP)
+  app.querySelectorAll('.dr-table tbody tr[data-id]').forEach(tr=>{ const was = rowsBefore[tr.dataset.id]; if(was == null) return;
+    const dy = was - tr.getBoundingClientRect().top; if(Math.abs(dy) < 1) return;
+    tr.style.transition = 'none'; tr.style.transform = `translateY(${dy}px)`;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ tr.style.transition = 'transform .5s cubic-bezier(.2,.8,.2,1)'; tr.style.transform = ''; })); });
+  // Balken wachsen bzw. schrumpfen per CSS-Übergang
+  requestAnimationFrame(()=>requestAnimationFrame(()=>app.querySelectorAll('[data-w]').forEach(el=>{ el.style.width = el.dataset.w + '%'; })));
+  // Zahlen zählen hoch oder runter
+  const nums = [...app.querySelectorAll('.dr-num')].filter(el=>el.dataset.v !== '' && el.dataset.f !== '' && el.dataset.v !== el.dataset.f);
+  if(!nums.length) return;
+  const t0 = performance.now(), dur = 600, ease = x => 1 - Math.pow(1 - x, 3);
+  cancelAnimationFrame(drAnimate.raf);
+  const step = now => { const k = Math.max(0, Math.min(1, (now - t0) / dur));
+    nums.forEach(el=>{ const f = +el.dataset.f, v = +el.dataset.v, x = f + (v - f) * ease(k); el.textContent = el.dataset.fmt === 'pct' ? drPct(x) : fmtNum(Math.round(x)); });
+    if(k < 1) drAnimate.raf = requestAnimationFrame(step); };
+  drAnimate.raf = requestAnimationFrame(step);
+}
+
 function drRender(){
   const app = $('#drApp'); if(!app) return;
   if(!LOOT){ app.innerHTML = ornnSays(`Für Set ${TFT_DATA.set} fehlen mir noch die Beute-Tabellen. Sobald sie feststehen, schmiede ich den Rechner nach.`); return; }
-  const s = dr.stage, late = s >= 5, cur = dr.drops[s] || [];
+  const rowsBefore = {}; app.querySelectorAll('.dr-table tbody tr[data-id]').forEach(tr=>{ rowsBefore[tr.dataset.id] = tr.getBoundingClientRect().top; });
+  drNow = {};
+  const s = dr.stage, cur = dr.drops[s] || [];
   const {bag, warn, n} = drBag(s);
-  const rest = late ? null : drRest(s, cur.length);
+  const rest = drRest(s, cur.length);
   const restK = rest ? Object.entries(rest).reduce((a, [k, p])=>a + k*p, 0) : 0;
   const nextS = s + 1, nextBag = Object.fromEntries(DR_COMPS.map(id=>[id, bag[id] + 1])), nextN = n + DR_COMPS.length;
-  const nextDist = nextS <= 4 ? drRest(nextS, 0) : null;
-  const stageName = DR_STAGES.find(x=>x[0]===s)[1];
+  const nextDist = nextS <= 4 ? drRest(nextS, 0) : null, nextName = nextS <= 4 ? DR_STAGES[nextS-1][1] : '';
+  const stageName = DR_STAGES[s-1][1];
+  const prevBag = drLast && drLast.bag;
+  // Ohne einen einzigen Drop ist das Ergebnis im Leerlauf
+  const idle = [1,2,3,4].every(k=>!(dr.drops[k]||[]).length);
   // Stage-Leiste
-  const tabs = DR_STAGES.map(([k, l, sub])=>`<button type="button" class="dr-tab${k===s ? ' on' : ''}" data-drstage="${k}"><b>${l}</b><small>${sub}</small>${k <= 4 && (dr.drops[k]||[]).length ? `<i>${dr.drops[k].length}</i>` : ''}<span></span></button>`).join('');
-  // Eingabe
-  const pickIds = dr.src==='drop' ? DR_COMPS : COMPONENTS;
-  const pick = late && dr.src==='drop' ? `<p class="dr-note">${esc(LOOT.late)}</p>`
-    : `<div class="dr-pick">${pickIds.map(id=>{ const it = itemById[id]; const left = dr.src==='drop' ? bag[id] : null;
-        return `<button type="button" class="dr-c${left===0 ? ' empty' : ''}" data-dradd="${id}" title="${esc(it.de)} hinzufügen">${drIcon(id, 44)}<span>${esc(it.de)}</span>${left != null ? `<em>${left}× im Pool</em>` : ''}<span></span></button>`; }).join('')}</div>`;
-  const got = [1,2,3,4].map(k=>{ const l = dr.drops[k]||[]; return `<div class="dr-row${k===s ? ' on' : ''}"><span>${DR_STAGES[k-1][1]}</span><div>${l.length ? l.map((id, i)=>`<button type="button" class="dr-chip" data-drdel="${k}:${i}" title="Entfernen">${drIcon(id, 28)}<span></span></button>`).join('') : '<small>–</small>'}</div></div>`; }).join('')
-    + `<div class="dr-row"><span>Sonstiges</span><div>${dr.extra.length ? dr.extra.map((id, i)=>`<button type="button" class="dr-chip" data-drdel="x:${i}" title="Entfernen">${drIcon(id, 28)}<span></span></button>`).join('') : '<small>Karussell, Amboss, Augments …</small>'}</div></div>`;
-  // Wahrscheinlichkeiten
+  const tabs = DR_STAGES.map(([k, l, sub])=>`<button type="button" class="dr-tab${k===s ? ' on' : ''}" data-drstage="${k}"><b>${l}</b><small>${sub}</small>${(dr.drops[k]||[]).length ? `<i>${dr.drops[k].length}</i>` : ''}<span></span></button>`).join('');
+  // Eingabe: ein Klick = eine gedroppte Komponente; der Knopf zeigt, wie viele noch im Pool liegen. Die Knöpfe leuchten pulsierend (wie die fällige Stufe der Augment-Vorhersage)
+  const pick = `<div class="dr-pick">${DR_COMPS.map(id=>{ const it = itemById[id], left = bag[id];
+    return `<button type="button" class="dr-c${left===0 ? ' empty' : ''}${drFx.add === id ? ' hit' : ''}" data-dradd="${id}"${left===0 ? ' disabled' : ''} title="${left===0 ? `${esc(it.de)}: gerade nicht im Item-Pool` : `${esc(it.de)} hinzufügen`}">${drIcon(id, 38)}<span>${esc(it.de)}</span><em>${left}× im Pool</em>${drFx.add === id ? '<strong class="dr-minus">−1</strong>' : ''}<span></span></button>`; }).join('')}</div>`;
+  const got = [1,2,3,4].map(k=>{ const l = dr.drops[k]||[]; return `<div class="dr-row${k===s ? ' on' : ''}"><span>${DR_STAGES[k-1][1]}</span><div>${l.length ? l.map((id, i)=>`<button type="button" class="dr-chip${drFx.add && k===s && i===l.length-1 ? ' new' : ''}" data-drdel="${k}:${i}" title="Entfernen">${drIcon(id, 28)}<span></span></button>`).join('') : '<small>–</small>'}</div></div>`; }).join('');
+  // Wahrscheinlichkeiten – sortiert nach der Chance auf den nächsten Drop (bei Gleichstand in der üblichen Reihenfolge)
   const rows = DR_COMPS.map(id=>{
     const it = itemById[id], c = bag[id];
-    const pNext = late || !n ? null : c / n;
-    const pRest = late || !rest || restK < 0.01 ? null : drMix(rest, c, n);
+    const pNext = !n ? null : c / n;
+    const pRest = !rest || restK < 0.01 ? null : drMix(rest, c, n);
     const pNextStage = nextDist ? drMix(nextDist, nextBag[id], nextN) : null;
     return {id, it, c, pNext, pRest, pNextStage};
-  });
-  const best = Math.max(...rows.map(r=>r.pNext || 0));
-  const dots = c => '<span class="dr-dots">' + Array.from({length:Math.max(c, 1)}, (_, i)=>`<i class="${i < c ? 'on' : ''}"></i>`).join('') + '</span>';
-  const table = `<table class="dr-table"><thead><tr><th>Komponente</th><th>Im Pool</th><th>Nächster Drop</th><th>Mind. 1 im Rest von ${esc(stageName)}</th><th>Mind. 1 in ${nextS <= 4 ? DR_STAGES[nextS-1][1] : '–'}</th></tr></thead><tbody>${rows.map(r=>
-    `<tr class="${r.pNext && r.pNext===best ? 'best' : ''}${r.c===0 ? ' gone' : ''}"><td><span class="dr-name">${drIcon(r.id, 30)}${esc(r.it.de)}</span></td><td>${dots(r.c)} <b>${r.c}</b></td><td><span class="dr-bar"><i style="width:${(r.pNext||0)*100}%"></i></span>${drPct(r.pNext)}</td><td>${drPct(r.pRest)}</td><td>${drPct(r.pNextStage)}</td></tr>`).join('')}</tbody></table>`;
-  const restTxt = late ? 'Ab Stage 5 gibt es keine zufälligen Komponenten mehr.'
-    : !rest ? `Mehr Komponenten als laut Tabelle möglich (max. ${Math.max(...LOOT.stages[s].map(r=>r[4]))}) – prüf deine Eingabe.`
-    : restK < 0.01 ? `In ${esc(stageName)} kommt laut Tabelle keine weitere Komponente – weiter zu ${nextS <= 4 ? DR_STAGES[nextS-1][1] : 'Stage 5'}.`
+  }).sort((a, b)=>(b.pNext || 0) - (a.pNext || 0));
+  const best = Math.max(...rows.map(r=>r.pNext || 0)), allSame = rows.every(r=>(r.pNext || 0) === best);
+  // Pool-Punkte: gedroppte fliegen raus, neue (Nachschub vor der nächsten Stage) springen rein
+  const dots = r => { const was = prevBag ? prevBag[r.id] : r.c;
+    return '<span class="dr-dots">' + Array.from({length:Math.max(r.c, was, 1)}, (_, i)=>`<i class="${i < r.c ? 'on' : ''}${i >= r.c && i < was ? ' out' : ''}${i >= was && i < r.c ? ' in' : ''}"></i>`).join('') + '</span>'; };
+  const lastBar = id => drLast && drLast['n:' + id] != null ? drLast['n:' + id] : 0;
+  const table = `<table class="dr-table${nextDist ? '' : ' no-next'}"><thead><tr><th>Komponente</th><th>Im Pool</th><th>Nächster Drop</th><th>Mind. 1 im Rest von ${esc(stageName)}</th>${nextDist ? `<th>Mind. 1 in ${nextName}</th>` : ''}</tr></thead><tbody>${rows.map(r=>
+    `<tr data-id="${r.id}" class="${!allSame && r.pNext && r.pNext===best ? 'best' : ''}${r.c===0 ? ' gone' : ''}"><td><span class="dr-name">${drIcon(r.id, 30)}${esc(r.it.de)}</span></td><td>${dots(r)} <b>${r.c}</b></td><td><span class="dr-bar"><i style="width:${lastBar(r.id) * 100}%" data-w="${(r.pNext||0) * 100}"></i></span>${drNum('n:' + r.id, r.pNext)}</td><td>${drNum('r:' + r.id, r.pRest)}</td>${nextDist ? `<td>${drNum('s:' + r.id, r.pNextStage)}</td>` : ''}</tr>`).join('')}</tbody></table>`;
+  // Kurz und groß über der Tabelle: was am wahrscheinlichsten als Nächstes kommt
+  const favs = rows.filter(r=>r.pNext && r.pNext === best);
+  const favKey = favs.map(r=>r.id).join(','), favNew = drLast && drLast.fav != null && drLast.fav !== favKey;
+  drNow.fav = idle ? null : favKey;
+  const top = !n ? '' : allSame
+    ? `<div class="dr-top same"><div><small>Nächster Drop</small><b>Alles gleich wahrscheinlich</b></div><strong>${drNum('top', best)}</strong></div>`
+    : `<div class="dr-top${favNew ? ' pop' : ''}"><div><small>Am wahrscheinlichsten als Nächstes</small><span class="dr-favs${favs.length > 2 ? ' icons' : ''}">${favs.map(r=>`<span>${drIcon(r.id, 36)}${favs.length > 2 ? '' : `<b>${esc(r.it.de)}</b>`}</span>`).join('')}</span></div><strong>${favs.length > 1 ? '<em>je</em>' : ''}${drNum('top', best)}</strong></div>`;
+  const restTxt = !rest ? `Mehr Komponenten als laut Tabelle möglich (max. ${Math.max(...LOOT.stages[s].map(r=>r[4]))}) – prüf deine Eingabe.`
+    : restK < 0.01 ? (nextName ? `In ${esc(stageName)} kommt laut Tabelle keine weitere Komponente – weiter zu ${nextName}.` : `In ${esc(stageName)} kommt laut Tabelle keine weitere Komponente.`)
     : `Noch erwartet in ${esc(stageName)}: <b>${fmtNum(Math.round(restK*10)/10)}</b> Komponente${Math.abs(restK-1) < 0.05 ? '' : 'n'} (${Object.entries(rest).filter(([,p])=>p > 0.0005).map(([k, p])=>`${k}: ${drPct(p)}`).join(' · ')}).`;
-  // Beute dieser Stage (bedingt auf die schon gedroppten Komponenten)
-  let loot = '';
-  if(!late){
-    const all = LOOT.stages[s], ok = all.filter(r=>r[4] >= cur.length), tot = ok.reduce((a, r)=>a + r[7], 0) || 1;
-    const P = f => ok.filter(f).reduce((a, r)=>a + r[7], 0) / tot;
-    const cnt = {}; all.forEach(r=>{ cnt[r[4]] = (cnt[r[4]]||0) + r[7]; });
-    const maxC = Math.max(...Object.values(cnt));
-    const orbName = r => [r[4] && `${r[4]}× ${L('Komponente', 'component')}`, r[0] && `${r[0]}× ${L('Grau', 'gray')}`, r[1] && `${r[1]}× ${L('Blau', 'blue')}`, r[2] && `${r[2]}× Gold`, r[3] && `${r[3]}× ${L('Prismatisch', 'prismatic')}`, r[5] && L('Komponenten-Amboss', 'component anvil')].filter(Boolean).join(' + ');
-    const hasUp = all.some(r=>r[6] > 0);   // aufgewertete Runden gibt es nur in der alten tftflow-Tabelle
-    loot = `<div class="dr-orbs">
-        <div class="dr-orb prism"><span>Prismatischer Orb</span><b>${drPct(P(r=>r[3] > 0))}</b></div>
-        <div class="dr-orb gold"><span>Gold-Orb</span><b>${drPct(P(r=>r[2] > 0))}</b></div>
-        <div class="dr-orb blue"><span>Blau-Orb</span><b>${drPct(P(r=>r[1] > 0))}</b></div>
-        ${hasUp ? `<div class="dr-orb up"><span>Aufgewertet</span><b>${drPct(P(r=>r[6] > 0))}</b></div>` : `<div class="dr-orb gray"><span>${L('Grauer Orb', 'Gray orb')}</span><b>${drPct(P(r=>r[0] > 0))}</b></div>`}
+  const poolTxt = nextName ? ` Vor ${nextName} kommt von jeder Komponente eine in den Item-Pool.` : ' Danach gibt es keine zufälligen Komponenten mehr.';
+  // Beute dieser Stage (bedingt auf die schon gedroppten Komponenten) – eingeklappt, mit den eigenen Orb-Grafiken
+  const all = LOOT.stages[s], ok = all.filter(r=>r[4] >= cur.length), tot = ok.reduce((a, r)=>a + r[7], 0) || 1;
+  const P = f => ok.filter(f).reduce((a, r)=>a + r[7], 0) / tot;
+  const cnt = {}; all.forEach(r=>{ cnt[r[4]] = (cnt[r[4]]||0) + r[7]; });
+  const maxC = Math.max(...Object.values(cnt));
+  const orbName = r => [r[4] && `${r[4]}× ${L('Komponente', 'component')}`, r[0] && `${r[0]}× ${L('Grau', 'gray')}`, r[1] && `${r[1]}× ${L('Blau', 'blue')}`, r[2] && `${r[2]}× Gold`, r[3] && `${r[3]}× ${L('Prismatisch', 'prismatic')}`, r[5] && L('Komponenten-Amboss', 'component anvil')].filter(Boolean).join(' + ');
+  const hasUp = all.some(r=>r[6] > 0);   // aufgewertete Runden gibt es nur in der alten tftflow-Tabelle
+  const orb = (cls, img, label, key, f) => `<div class="dr-orb ${cls}">${img ? drOrbImg(img) : ''}<div><span>${label}</span><b>${drNum(key, P(f))}</b></div></div>`;
+  const loot = `<details class="dr-sec dr-loot"${drLootOpen ? ' open' : ''}><summary><span class="dr-lsum">${['prism', 'gold', 'blue', 'gray'].map(drOrbImg).join('')}</span><span><b>Orbs &amp; Beute in ${esc(stageName)}</b><small>Wie sich die Orbs in dieser Stage verteilen</small></span></summary>
+      <div class="dr-orbs">
+        ${orb('prism', 'prism', 'Prismatischer Orb', 'o:p', r=>r[3] > 0)}
+        ${orb('gold', 'gold', 'Gold-Orb', 'o:g', r=>r[2] > 0)}
+        ${orb('blue', 'blue', 'Blau-Orb', 'o:b', r=>r[1] > 0)}
+        ${hasUp ? orb('up', '', 'Aufgewertet', 'o:u', r=>r[6] > 0) : orb('gray', 'gray', L('Grauer Orb', 'Gray orb'), 'o:y', r=>r[0] > 0)}
       </div>
       ${cur.length ? `<p class="dr-note">Schon berücksichtigt: Du hast in ${esc(stageName)} ${cur.length} Komponente${cur.length===1 ? '' : 'n'} – Kombinationen mit weniger fallen raus.</p>` : ''}
       <h4 class="dr-h4">Zufällige Komponenten in ${esc(stageName)}</h4>
       <div class="dr-counts">${Object.keys(cnt).sort((a,b)=>a-b).map(k=>`<div class="${+k < cur.length ? 'off' : ''}"><span style="height:${cnt[k]/maxC*100}%"></span><b>${fmtNum(Math.round(cnt[k]*10)/10)} %</b><small>${k}</small></div>`).join('')}</div>
-      <details class="dr-more"><summary>Alle Beute-Kombinationen</summary><table class="dr-table small"><tbody>${all.slice().sort((a,b)=>b[7]-a[7]).map(r=>`<tr class="${r[4] < cur.length ? 'gone' : ''}${r[3] ? ' prism' : ''}"><td>${orbName(r)}${r[6] ? ' <span class="dr-up" title="nur in einer aufgewerteten Runde">aufgewertet</span>' : ''}</td><td>${fmtNum(r[7])} %</td></tr>`).join('')}</tbody></table></details>`;
-  } else loot = `<p class="dr-note">${esc(LOOT.late)}</p>`;
-  // Deine Komponenten und was du daraus bauen kannst
-  const mine = [...[1,2,3,4].flatMap(k=>dr.drops[k]||[]), ...dr.extra];
-  const have = {}; mine.forEach(id=>{ have[id] = (have[id]||0) + 1; });
-  const craft = [];
-  Object.keys(have).forEach(a=>Object.keys(have).forEach(b=>{ if(a > b || (a===b && have[a] < 2)) return; const r = recipeOf[[a, b].sort().join('|')]; if(r && !craft.includes(r)) craft.push(r); }));
+      <p class="dr-note">${restTxt}${poolTxt}</p>
+      <details class="dr-more"><summary>Alle Beute-Kombinationen</summary><table class="dr-table small"><tbody>${all.slice().sort((a,b)=>b[7]-a[7]).map(r=>`<tr class="${r[4] < cur.length ? 'gone' : ''}${r[3] ? ' prism' : ''}"><td>${orbName(r)}${r[6] ? ' <span class="dr-up" title="nur in einer aufgewerteten Runde">aufgewertet</span>' : ''}</td><td>${fmtNum(r[7])} %</td></tr>`).join('')}</tbody></table></details>
+    </details>`;
   const orbTbl = o => o ? `<div class="dr-orbtbl"><h4>${esc(o.label)} <small>${esc(o.note)} · Wert ${esc(o.wert)}</small></h4><table class="dr-table small"><tbody>${o.items.map(([t, p])=>`<tr><td>${esc(t)}</td><td>${fmtNum(p)} %</td></tr>`).join('')}</tbody></table></div>` : '';
-  // Deine Angaben: Stage-Reiter, Komponenten zum Anklicken, Drops pro Stage. Dein Ergebnis: Wahrscheinlichkeiten, Beute der Stage, deine Komponenten
+  // Leerlauf: der volle Item-Pool – die acht Komponenten schweben im Kreis um die Zahl im Pool, bis die erste droppt
+  const out = idle ? `<div class="dr-idle">
+      <div class="dr-orbit">${DR_COMPS.map((id, i)=>{ const a = i / DR_COMPS.length * 2 * Math.PI - Math.PI / 2;
+        return `<span style="--x:${(50 + 41 * Math.cos(a)).toFixed(1)}%;--y:${(50 + 41 * Math.sin(a)).toFixed(1)}%;--i:${i}">${drIcon(id, 42)}</span>`; }).join('')}
+        <div class="dr-orbit-c"><b>${n}</b><small>${L('im Pool', 'in pool')}</small></div></div>
+      <span class="dr-ready">${L('Bereit', 'Ready')}</span>
+      <h3>${L('Was droppt als Nächstes?', 'What drops next?')}</h3>
+      <p>${L('Klick unter „Deine Angaben“ die Komponente an, die gerade gedroppt ist – dann siehst du hier, was am wahrscheinlichsten als Nächstes kommt.', 'Click the component that just dropped under “Your input” – then you see here what is most likely to come next.')}</p></div>`
+    : `${top}
+      <h3>Wahrscheinlichkeiten <small>${drNum('pool', n, 'n')} Komponenten im Pool</small></h3>
+      <div class="dr-tw">${table}</div>
+      ${loot}`;
+  // Deine Angaben: Stage-Reiter, Komponenten zum Anklicken, Drops pro Stage. Dein Ergebnis: Favorit, Wahrscheinlichkeiten, Beute der Stage (eingeklappt), deine Komponenten
   app.innerHTML = `<div class="dr">
     <div class="dr-grid">
       <section class="card dr-in tio-in" aria-label="${L('Deine Angaben', 'Your input')}">
-        ${tioHead(false, tioReset('data-drreset', L('Neues Spiel', 'New game')), L('Trag Stage für Stage ein, welche Komponenten droppen.', 'Enter stage by stage which components drop.'))}
+        ${tioHead(false, tioReset(`data-drreset${idle && s === 1 ? ' disabled' : ''}`, L('Neues Spiel', 'New game')), L('Trag Stage für Stage ein, welche Komponenten droppen.', 'Enter stage by stage which components drop.'))}
         <div class="dr-tabs">${tabs}</div>
-        <div class="dr-head"><h3>Was hast du in ${esc(stageName)} bekommen?</h3>
-          <div class="bp-pills"><button type="button" data-drsrc="drop" class="${dr.src==='drop' ? 'on' : ''}">Creep-Drop<span></span></button><button type="button" data-drsrc="extra" class="${dr.src==='extra' ? 'on' : ''}">Sonstiges<span></span></button></div></div>
-        <p class="dr-note">${dr.src==='drop' ? 'Klick die Komponenten an, die gerade gedroppt sind – sie werden aus dem Item-Pool genommen.' : 'Komponenten aus Karussell, Ambossen oder Augments: zählen für deine Items, aber nicht für den Item-Pool.'}</p>
+        <div class="dr-head"><h3>Was hast du in ${esc(stageName)} bekommen?</h3></div>
+        <p class="dr-note">Klick die Komponenten an, die gerade gedroppt sind – sie werden aus dem Item-Pool genommen.</p>
         ${pick}
-        ${warn ? '<p class="dr-warn">Eine Komponente ist öfter gedroppt, als laut Pool-Regel möglich. Stell unten den Start-Pool auf „2 von jeder“ um, falls das in deinem Spiel so war.</p>' : ''}
+        ${warn ? '<p class="dr-warn">Eine Komponente ist öfter gedroppt, als laut Pool-Regel möglich – prüf deine Eingabe.</p>' : ''}
         <div class="dr-got">${got}</div>
         <div class="dr-actions">
-          ${s < 5 ? `<button class="btn btn-primary" type="button" data-drstage="${s+1}">Weiter zu ${DR_STAGES[s][1]} →<span></span></button>` : ''}
-          <button class="b-tbtn" type="button" data-drundo>Letzten entfernen<span></span></button>
+          ${nextName ? `<button class="btn btn-primary" type="button" data-drstage="${nextS}">Weiter zu ${nextName} →<span></span></button>` : ''}
+          <button class="b-tbtn" type="button" data-drundo${cur.length ? '' : ' disabled'}>Letzten entfernen<span></span></button>
         </div>
-        <label class="dr-set">Start-Pool:
-          <select class="input" id="drStart"><option value="1"${dr.start===1 ? ' selected' : ''}>1 von jeder Komponente – Stage 1 ohne Doppelte</option><option value="2"${dr.start===2 ? ' selected' : ''}>2 von jeder Komponente</option></select>
-        </label>
       </section>
       <section class="card dr-out tio-out" aria-label="${L('Dein Ergebnis', 'Your result')}">
         ${tioHead(true)}
-        <h3>Wahrscheinlichkeiten ${late ? '' : `<small>${n} Komponenten im Pool</small>`}</h3>
-        ${table}
-        <p class="dr-note">${restTxt} Vor ${nextS <= 4 ? DR_STAGES[nextS-1][1] : 'der nächsten Creep-Stage'} kommt von jeder Komponente eine in den Item-Pool.</p>
-        <div class="dr-sec"><h3>Beute in ${esc(stageName)}</h3>${loot}</div>
-        <div class="dr-sec"><h3>Deine Komponenten</h3>
-          <div class="dr-have">${mine.length ? Object.entries(have).map(([id, k])=>`<span>${drIcon(id, 34)}${k > 1 ? `<b>×${k}</b>` : ''}</span>`).join('') : '<small class="dr-note">Noch keine.</small>'}</div>
-          ${craft.length ? `<h4 class="dr-h4">Daraus baubar</h4><div class="dr-craft">${craft.map(r=>`<button type="button" data-item="${r.id}" title="${esc(r.en)}">${itImg(r, 38)}<span></span></button>`).join('')}</div>` : ''}
-        </div>
+        ${out}
       </section>
     </div>
     <details class="card dr-more"><summary>Orb-Inhalte (Gold-Orb &amp; prismatischer Orb) und Quelle</summary>
       <div class="dr-orbgrid">${orbTbl(LOOT.orbs.prism)}${orbTbl(LOOT.orbs.gold)}${orbTbl(LOOT.orbs.gold4)}
         ${LOOT.lbb ? '' : `<div class="dr-orbtbl"><h4>Aufgewertete Runden <small>einmal pro Spiel geheim ausgewürfelt</small></h4><table class="dr-table small"><tbody>${LOOT.upgraded.map(([t, p])=>`<tr><td>${esc(t)}</td><td>${fmtNum(p)} %</td></tr>`).join('')}</tbody></table></div>`}</div>
       ${LOOT.lbb ? `<p class="dr-note">${L('Alle Spieler bekommen dieselbe Menge und Qualität an Orbs, nur der Inhalt unterscheidet sich. Komponenten-Kugeln (mindestens 11, höchstens 15 pro Spiel) sehen aus wie blaue Orbs.', 'All players receive the same quantity and quality of orbs, only the contents vary. Component orbs (minimum 11, maximum 15 per game) look the same as blue orbs.')}</p>` : ''}
-      <p class="dr-note">Beute-Tabellen: ${esc(LOOT.source)}. Die Pool-Regel (gezogene Komponenten fehlen, vor jeder Creep-Stage kommt von jeder eine dazu) ist nicht offiziell von Riot dokumentiert – deshalb kannst du den Start-Pool umstellen.</p>
+      <p class="dr-note">Beute-Tabellen: ${esc(LOOT.source)}. Ab 5-7: ${esc(LOOT.late)} Die Pool-Regel (gezogene Komponenten fehlen, vor jeder Creep-Stage kommt von jeder eine dazu) ist nicht offiziell von Riot dokumentiert.</p>
     </details>
   </div>`;
+  drAnimate(app, rowsBefore);
+  drLast = Object.assign(drNow, {bag});
+  drFx = {};
 }
+document.addEventListener('toggle', e=>{ if(e.target.matches && e.target.matches('.dr-loot')) drLootOpen = e.target.open; }, true);   // „Orbs & Beute“ bleibt beim Neurechnen offen bzw. zu
 document.addEventListener('click', e=>{
   const app = e.target.closest && e.target.closest('#drApp'); if(!app) return;
   const t = e.target;
   const st = t.closest('[data-drstage]'); if(st){ dr.stage = +st.dataset.drstage; drSave(); drRender(); return; }
-  const src = t.closest('[data-drsrc]'); if(src){ dr.src = src.dataset.drsrc; drSave(); drRender(); return; }
-  const add = t.closest('[data-dradd]'); if(add){ if(dr.src==='extra') dr.extra.push(add.dataset.dradd); else if(dr.stage <= 4) dr.drops[dr.stage].push(add.dataset.dradd); drSave(); drRender(); return; }
-  const del = t.closest('[data-drdel]'); if(del){ const [k, i] = del.dataset.drdel.split(':'); (k==='x' ? dr.extra : dr.drops[k]).splice(+i, 1); drSave(); drRender(); return; }
-  if(t.closest('[data-drundo]')){ const l = dr.src==='extra' ? dr.extra : dr.drops[Math.min(4, dr.stage)]; if(l && l.length){ l.pop(); drSave(); drRender(); } return; }
+  const add = t.closest('[data-dradd]'); if(add){ if(add.disabled) return; if(dr.stage <= 4){ dr.drops[dr.stage].push(add.dataset.dradd); drFx.add = add.dataset.dradd; } drSave(); drRender(); return; }
+  const del = t.closest('[data-drdel]'); if(del){ const [k, i] = del.dataset.drdel.split(':'); dr.drops[k].splice(+i, 1); drSave(); drRender(); return; }
+  if(t.closest('[data-drundo]')){ const l = dr.drops[Math.min(4, dr.stage)]; if(l && l.length){ l.pop(); drSave(); drRender(); } return; }
   if(t.closest('[data-drreset]')){ if(confirm('Alle Eingaben löschen und ein neues Spiel starten?')){ dr = DR_NEW(); drSave(); drRender(); } return; }
 });
-document.addEventListener('change', e=>{ if(e.target.id==='drStart'){ dr.start = +e.target.value; drSave(); drRender(); } });
 
 /* ================= PATCHES (aus Riots Patchnotes, automatisch vom Update-Skript) ================= */
 const PATCHES = (window.TFT_PATCHES || []).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
