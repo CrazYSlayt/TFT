@@ -46,22 +46,29 @@ module.exports = async (req, res) => {
   const set = Number(body.set), data = body.data;
   if (!Number.isInteger(set) || set < 1 || set > 99) { res.status(400).json({error: 'Set ungültig.'}); return; }
   if (!data || typeof data !== 'object' || !Array.isArray(data.comps) || Number(data.set) !== set) { res.status(400).json({error: 'Tierlist ungültig.'}); return; }
-  const json = JSON.stringify(data);
-  if (Buffer.byteLength(json) > MAX_BYTES) { res.status(413).json({error: 'Tierlist zu groß.'}); return; }
-
-  const stamp = new Date().toLocaleString('de-DE', {timeZone: 'Europe/Berlin'});
   const file = `tierlist-data-${set}.js`;
-  const content = '// TFTClimb – Tierlist-Daten, veröffentlicht aus der Redaktion am ' + stamp + '\n// Wird vom Knopf „Veröffentlichen“ in /admin geschrieben (api/tierlist.js).\nwindow.TIERLIST_DATA = ' + json + ';\n';
-
   try {
-    const cur = await gh(`/contents/${file}?ref=${encodeURIComponent(BRANCH)}`);   // sha der bisherigen Datei (fehlt bei einem neuen Set)
+    const cur = await gh(`/contents/${file}?ref=${encodeURIComponent(BRANCH)}`);   // bisherige Datei mit sha (fehlt bei einem neuen Set)
     if (cur.status !== 200 && cur.status !== 404) { res.status(502).json({error: 'GitHub nicht erreichbar (' + cur.status + ').'}); return; }
+    // Schutz vor veralteten Entwürfen: jede veröffentlichte Tierlist hat eine Version (rev). Der Entwurf schickt die Version mit,
+    // auf der er aufbaut (base). Hat sich der Live-Stand seitdem geändert, wird nur mit ausdrücklichem „Trotzdem“ (force) überschrieben.
+    const curText = cur.status === 200 && cur.data.content ? Buffer.from(cur.data.content, 'base64').toString('utf8') : '';
+    const curRev = (curText.match(/"rev":"([^"]*)"/) || [])[1] || '';
+    if (curRev && String(body.base || '') !== curRev && !body.force) {
+      const upd = (curText.match(/"updated":"([^"]*)"/) || [])[1] || '';
+      res.status(409).json({error: 'Die Live-Tierlist wurde seit deinem Entwurf geändert.', updated: upd}); return;
+    }
+    data.rev = Date.now().toString(36) + crypto.randomBytes(3).toString('hex');
+    const json = JSON.stringify(data);
+    if (Buffer.byteLength(json) > MAX_BYTES) { res.status(413).json({error: 'Tierlist zu groß.'}); return; }
+    const stamp = new Date().toLocaleString('de-DE', {timeZone: 'Europe/Berlin'});
+    const content = '// TFTClimb – Tierlist-Daten, veröffentlicht aus der Redaktion am ' + stamp + '\n// Wird vom Knopf „Veröffentlichen“ in /admin geschrieben (api/tierlist.js).\nwindow.TIERLIST_DATA = ' + json + ';\n';
     const put = await gh(`/contents/${file}`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({
       message: `Tierlist Set ${set} aus der Redaktion veröffentlicht (${data.comps.length} Comps, Patch ${String(data.patch || '').slice(0, 12)})`,
       content: Buffer.from(content, 'utf8').toString('base64'), branch: BRANCH, committer: AUTHOR, author: AUTHOR,
       ...(cur.status === 200 && cur.data.sha ? {sha: cur.data.sha} : {})})});
     if (put.status !== 200 && put.status !== 201) { res.status(502).json({error: 'GitHub hat das Speichern abgelehnt (' + put.status + ').'}); return; }
-    res.status(200).json({ok: true, commit: String((put.data.commit || {}).sha || '').slice(0, 7), comps: data.comps.length});
+    res.status(200).json({ok: true, commit: String((put.data.commit || {}).sha || '').slice(0, 7), comps: data.comps.length, rev: data.rev});
   } catch (e) {
     res.status(502).json({error: 'Veröffentlichen fehlgeschlagen.'});
   }

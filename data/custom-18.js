@@ -85,6 +85,8 @@ window.TFT_CUSTOM = {
       prism: {label:'Prismatischer Orb', orb:'p', wert:'≈ 40 Gold', items:[['Item-Entferner + 2 Artefakt-Ambosse', 15], ['Meisterwerk-Aufwertung + Item-Entferner + Komponenten-Amboss', 15], ['24 Gold + Meisterwerk-Aufwertung', 15], ['18 Gold + Umgestalter + Amboss (fertig) + Komponenten-Amboss + Pfannenwender', 15], ['18 Gold + Umgestalter + Amboss (fertig) + Komponenten-Amboss + Bratpfanne', 15], ['Lichtgegenstand-Glückstruhe + 10 Gold', 15], ['25 Gold + Item-Entferner + Artefakt-Amboss', 10]], note:'ab Stage 3'}
     }
   },
+  // Sonderregeln für Units (offizieller Trait-Text „Apex Predator“): Elder Dragon belegt 2 Teamplätze und zählt +2 für Riftbeast
+  unitRules: {'Elder Dragon': {slots:2, traits:{'Riftbeast':2}}},
   // Schwarzdorn (Blackthorn): Die Unit auf dem Opferfeld wird vor dem Kampf geopfert.
   // Alle Champions erhalten das Leben der Trait-Stufe (175/350/600), Schwarzdorn-Champions zusätzlich Werte je nach Rolle des Opfers:
   // Grundwert × Faktor (Kosten/Sterne des Opfers) × Stufe (1 / 1,3 / 1,6). Quelle: tftips.app/tables/blackthorn-sacrifice (Patch 18.4), AP-Schadenssteigerung laut Patch 18.5 von 12 % auf 10 %

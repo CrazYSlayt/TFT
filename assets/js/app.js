@@ -106,6 +106,10 @@ const TL_PATCH = tierSource.data.patch || (TL_FILE && TL_FILE.patch) || '';
 // Eigene Ergänzungen zum Set (data/custom-<Set>.js): Pflanzen-Bilder, Icons für Platzhalter-Augments
 const TFT_CUSTOM_SET = window.TFT_CUSTOM && (!TFT_CUSTOM.set || TFT_CUSTOM.set===TFT_DATA.set) ? window.TFT_CUSTOM : {};
 const PLANT_IMG = TFT_CUSTOM_SET.plants || {};
+// Sonderregeln für Units (data/custom-<Set>.js → unitRules): Teamplätze (slots) und Zählwert pro Trait (traits), z. B. Elder Dragon = 2 Plätze, +2 Riftbeast
+const UNIT_RULES = TFT_CUSTOM_SET.unitRules || {};
+const unitSlots = u => (UNIT_RULES[u] || {}).slots || 1;
+const unitTraitAdd = (u, t) => ((UNIT_RULES[u] || {}).traits || {})[t] || 1;
 const AUG_IMG = Object.fromEntries((TFT_CUSTOM_SET.augmentIcons || []).map(id=>[id, 'assets/augments/' + id + '.webp']));
 // Augments: offizielle Daten des gewählten Sets; die Stufe aus deiner Augment-Tierlist hat Vorrang
 const AUG_TL_LV = {}; Object.values(AUG_TL).forEach(st=>Object.entries(st).forEach(([lv,tiers])=>Object.values(tiers).forEach(ids=>ids.forEach(id=>{ AUG_TL_LV[id] = +lv; }))));
@@ -241,7 +245,7 @@ function compTraits(c){
   const cnt = {}, seen = new Set();
   c.board.forEach(b=>{
     const ch = champBy[b.u];
-    if(ch && !seen.has(b.u)){ seen.add(b.u); ch.t.forEach(t=>{ cnt[t]=(cnt[t]||0)+1; }); }
+    if(ch && !seen.has(b.u)){ seen.add(b.u); ch.t.forEach(t=>{ cnt[t]=(cnt[t]||0)+unitTraitAdd(b.u, t); }); }
     (b.i||[]).forEach(id=>{ const it=findItem(id); const tr = it && emblemTrait(it); if(tr && !(ch && ch.t.includes(tr))) cnt[tr]=(cnt[tr]||0)+1; });
   });
   return Object.entries(cnt).map(([n,k])=>{
@@ -728,6 +732,7 @@ let bEnemy = false, bActive = 'm', bNamesOn = false, bAugSide = 'm';
 let bSel = null;            // {type:'item', id} oder {type:'hex', side, id}
 let bCtx = null;            // {slug} wenn aus der Redaktion geöffnet
 let bSort = 'cost', bItemCat = 'craft', bQuery = '', bDrag = null, bLoaded = false, bHintTimer = 0;
+let bTraitF = '';           // Trait-Filter für die Champion-Liste (Klick in der Trait-Liste)
 let bHist = [], bRedo = [], bLast = null, bRestoring = false;
 const sideBoard = s => s==='e' ? eBoard : bBoard;
 const sideAugs = s => s==='e' ? eAugs : bAugs;
@@ -800,7 +805,7 @@ function bAllTraits(team){
   const active = compTraits(team), cnt = {}, seen = new Set();
   team.board.forEach(b=>{
     const ch = champBy[b.u];
-    if(ch && !seen.has(b.u)){ seen.add(b.u); ch.t.forEach(t=>{ cnt[t]=(cnt[t]||0)+1; }); }
+    if(ch && !seen.has(b.u)){ seen.add(b.u); ch.t.forEach(t=>{ cnt[t]=(cnt[t]||0)+unitTraitAdd(b.u, t); }); }
     (b.i||[]).forEach(id=>{ const it=findItem(id); const tr=it && emblemTrait(it); if(tr && !(ch && ch.t.includes(tr))) cnt[tr]=(cnt[tr]||0)+1; });
   });
   const inactive = Object.entries(cnt).filter(([n])=>!active.some(a=>a.n===n)).map(([n,k])=>({n,k,lvl:0,cls:0})).sort((a,b)=>b.k-a.k || a.n.localeCompare(b.n));
@@ -832,8 +837,9 @@ function boardRows(board, side){
       const btTag = h===btHex ? `<span class="bt-tag" title="Schwarzdorn-Opferfeld: Die Unit hier wird vor dem Kampf geopfert und stärkt dein Team">Opfer</span>` : '';
       if(!b){ cells += `<div class="hex${sel}" data-hex="${h}" data-side="${side}"><div class="hex-bg"></div>${btTag}</div>`; continue; }
       const ch = champBy[b.u], plant = PLANTS[b.u];
-      const its = b.i.map((id,n)=>{ const it=findItem(id); return it?`<img src="${it.img}" alt="${esc(it.en)}" title="${esc(it.en)} – Klick entfernt" data-unequip="${key}:${n}" draggable="true">`:''; }).join('');
-      cells += `<div class="hex filled c${ch?ch.c:1}${plant?' plant':''}${sel}" data-hex="${h}" data-side="${side}" draggable="true" title="${esc(b.u)}"><div class="hex-bg"></div><div class="hex-img" style="background-image:${champBg(b.u)}"></div>`
+      const its = b.i.map((id,n)=>{ const it=findItem(id); return it?`<img src="${it.img}" alt="${esc(it.en)}" title="${esc(it.en)} – Klick entfernt · auf ein anderes Item ziehen tauscht" data-unequip="${key}:${n}" draggable="true">`:''; }).join('');
+      const slotTag = unitSlots(b.u) > 1 ? `<span class="hex-slots" title="Belegt ${unitSlots(b.u)} Teamplätze">${unitSlots(b.u)} Plätze</span>` : '';
+      cells += `<div class="hex filled c${ch?ch.c:1}${plant?' plant':''}${sel}" data-hex="${h}" data-side="${side}" draggable="true" title="${esc(b.u)} – Klick: Sterne · Rechtsklick: entfernen · Ziehen: verschieben"><div class="hex-bg"></div><div class="hex-img" style="background-image:${champBg(b.u)}"></div>${slotTag}`
         + `<button class="hex-stars b-star${b.s===1?' one':''}" data-star="${key}" type="button" title="Sterne ändern (${b.s}★)">${'★'.repeat(b.s)}<span></span></button>`
         + `<button class="b-x" data-remove="${key}" type="button" aria-label="${esc(b.u)} entfernen">✕<span></span></button>`
         + (its?`<div class="hex-items">${its}</div>`:'') + `<span class="hex-name">${esc(b.u)}</span>${btTag}</div>`;
@@ -847,12 +853,13 @@ function renderSide(side){
   $('#bBoard'+S).innerHTML = boardRows(board, side);
   $('#bBoard'+S).classList.toggle('show-names', bNamesOn);
   const team = bTeamOf(board), units = team.board.filter(b=>!PLANTS[b.u]);
-  const gold = units.reduce((s,b)=>s + costOf(b.u) * Math.pow(3, (b.s||1)-1), 0);
-  $('#bStats'+S).innerHTML = `<span title="Units auf dem Brett">⬡ ${units.length}</span><span title="Gesamtkosten in Gold (inkl. Sterne)"><i class="coin"></i> ${gold}</span>`;
+  const gold = units.reduce((s,b)=>s + costOf(b.u) * Math.pow(3, (b.s||1)-1), 0), slots = units.reduce((s,b)=>s + unitSlots(b.u), 0);
+  $('#bStats'+S).innerHTML = `<span title="Belegte Teamplätze (Elder Dragon zählt doppelt)">⬡ ${slots}</span><span title="Gesamtkosten in Gold (inkl. Sterne)"><i class="coin"></i> ${gold}</span>`;
+  // Traits: Klick filtert die Champions in der Liste darunter auf dieses Trait (nochmal klicken hebt den Filter auf)
   const tr = bAllTraits(team);
   $('#bTraits'+S).innerHTML = tr.length ? tr.map(t=>{
     const bp = (traitBy[t.n]||{bp:['1']}).bp;
-    return `<div class="bt${t.lvl?'':' off'}">${traitHex(t.n, t.lvl?traitCls(t):'base', 26)}<div><b>${esc(t.n)}</b><span class="bt-bp">${bp.map(x=>`<i class="${+x<=t.k?'on':''}">${x}</i>`).join('')}</span></div><em>${t.k}</em></div>`;
+    return `<button type="button" class="bt${t.lvl?'':' off'}${bTraitF===t.n?' on':''}" data-btrait="${esc(t.n)}" title="Champions mit ${esc(t.n)} zeigen">${traitHex(t.n, t.lvl?traitCls(t):'base', 26)}<div><b>${esc(t.n)}</b><span class="bt-bp">${bp.map(x=>`<i class="${+x<=t.k?'on':''}">${x}</i>`).join('')}</span></div><em>${t.k}</em></button>`;
   }).join('') : '<p class="note" style="margin:0">Noch keine Units auf dem Brett.</p>';
   $('#bAugs'+S).innerHTML = augs.map((id,i)=>{ const a = augById[id]; return a ? `<button class="b-aug" type="button" data-baug-del="${side}:${i}" title="${esc(a.en)} – Klick entfernt"><img src="${augImg(a)}" alt="${esc(a.en)}"><span></span></button>` : ''; }).join('')
     + (augs.length<3 ? `<button class="b-plus" type="button" data-baug-open="${side}" title="Augment hinzufügen" aria-label="Augment hinzufügen">+<span></span></button>` : '');
@@ -881,7 +888,7 @@ function bUnitBtn(n){
 }
 function renderPool(){
   const q = bQuery.toLowerCase().trim();
-  const hit = n => { const ch = champBy[n]; return !q || n.toLowerCase().includes(q) || (ch ? ch.t.some(t=>t.toLowerCase().includes(q)) : 'elderwood pflanze'.includes(q)); };
+  const hit = n => { const ch = champBy[n]; if(bTraitF && !(ch && ch.t.includes(bTraitF))) return false; return !q || n.toLowerCase().includes(q) || (ch ? ch.t.some(t=>t.toLowerCase().includes(q)) : 'elderwood pflanze'.includes(q)); };
   let names = B_UNITS.filter(hit);
   let html;
   if(bSort==='origin' || bSort==='class'){
@@ -893,7 +900,8 @@ function renderPool(){
     names = names.sort(bSort==='name' ? (a,b)=>a.localeCompare(b) : (a,b)=>(costOf(a)||9)-(costOf(b)||9) || a.localeCompare(b));
     html = names.length ? `<div class="bp-grid">${names.map(bUnitBtn).join('')}</div>` : '';
   }
-  $('#bPoolUnits').innerHTML = html || viSays('Keine Unit gefunden. Andere Schreibweise?');
+  const tf = bTraitF ? `<button type="button" class="bp-tf" data-btrait-clear title="Filter aufheben">${traitHex(bTraitF,'base',20)}<span>Nur ${esc(bTraitF)}</span><b>✕</b></button>` : '';
+  $('#bPoolUnits').innerHTML = tf + (html || viSays('Keine Unit gefunden. Andere Schreibweise?'));
   const items = ITEMS.filter(i=>(bItemCat==='other' ? ['emblem','component'].includes(i.cat) : i.cat===bItemCat) && (!q || i.en.toLowerCase().includes(q) || i.de.toLowerCase().includes(q)))
     .sort((a,b)=>bItemCat==='other' ? a.cat.localeCompare(b.cat) || a.en.localeCompare(b.en) : a.en.localeCompare(b.en));
   $('#bPoolItems').innerHTML = items.length ? `<div class="bp-grid">${items.map(it=>`<button class="bp-i${bSel&&bSel.type==='item'&&bSel.id===it.id?' sel':''}" type="button" draggable="true" data-bitem="${it.id}" title="${esc(it.en)} · ${esc(it.de)}"><img src="${it.img}" alt="" draggable="false"><span></span></button>`).join('')}</div>` : '<p class="b-empty">Kein Item gefunden.</p>';
@@ -989,10 +997,14 @@ document.addEventListener('click', e=>{
     bActive = side;
     if(bSel && bSel.type==='item'){ if(bEquip(side, h, bSel.id)){ bSel = null; renderPool(); bHint('Item ausgerüstet.'); } renderBuilder(); return; }
     if(bSel && bSel.type==='hex'){ bMove(bSel.side, +bSel.id, side, h); bSel = null; renderBuilder(); return; }
+    // Maus: Klick schaltet die Sterne 1 → 2 → 3 → 1 (Rechtsklick entfernt, Ziehen verschiebt). Touch: antippen wählt die Unit zum Verschieben
+    if(b && e.pointerType !== 'touch' && !PLANTS[b.u]){ b.s = b.s % 3 + 1; renderBuilder(); bHint(`${b.u}: ${'★'.repeat(b.s)} – Rechtsklick entfernt die Unit.`); return; }
     if(b){ bSel = {type:'hex', side, id:h}; renderBuilder(); bHint('Jetzt auf ein anderes Feld klicken, um die Unit zu verschieben.'); }
     else renderBuilder();
     return;
   }
+  const trf = t.closest('[data-btrait]'); if(trf){ bTraitF = bTraitF === trf.dataset.btrait ? '' : trf.dataset.btrait; renderPool(); renderBuilder(); bHint(bTraitF ? `Champion-Liste zeigt nur ${bTraitF}.` : ''); return; }
+  if(t.closest('[data-btrait-clear]')){ bTraitF = ''; renderPool(); renderBuilder(); return; }
   const panel = t.closest('[data-panel]'); if(panel && bEnemy && bActive!==panel.dataset.panel){ bActive = panel.dataset.panel; renderBuilder(); }
   const btn = t.closest('button'); const id = btn && btn.id;
   if(id==='bUndo'){ bUndo(); return; }
@@ -1058,8 +1070,19 @@ document.addEventListener('drop', e=>{
     const h = +hx.dataset.hex, side = hx.dataset.side; bActive = side;
     if(kind==='unit') bPlace(side, h, rest);
     else if(kind==='hex'){ const [s,a] = splitKey(rest); bMove(s, a, side, h); }
-    else if(kind==='item') bEquip(side, h, rest);
-    else if(kind==='eq'){ const [s,a,n] = splitKey(rest), src = sideBoard(s)[a], id = src && src.i[n]; if(id && !(s===side && a===h) && bEquip(side, h, id)) src.i.splice(n,1); }
+    else if(kind==='item'){   // aus der Liste auf ein ausgerüstetes Item gezogen: ersetzt es
+      const ti = e.target.closest('[data-unequip]');
+      if(ti){ const [s2,a2,m] = splitKey(ti.dataset.unequip), dst = sideBoard(s2)[a2]; if(dst) dst.i[m] = rest; } else bEquip(side, h, rest);
+    }
+    else if(kind==='eq'){   // Item von einer Unit: auf ein anderes Item = tauschen, auf eine volle Unit = mit deren letztem Item tauschen, sonst umhängen
+      const [s,a,n] = splitKey(rest), src = sideBoard(s)[a], id = src && src.i[n], ti = e.target.closest('[data-unequip]');
+      if(id && ti){ const [s2,a2,m] = splitKey(ti.dataset.unequip), dst = sideBoard(s2)[a2]; if(dst){ src.i[n] = dst.i[m]; dst.i[m] = id; } }
+      else if(id && !(s===side && a===h)){
+        const dst = sideBoard(side)[h];
+        if(dst && !PLANTS[dst.u] && dst.i.length >= 3){ src.i[n] = dst.i[2]; dst.i[2] = id; }
+        else if(bEquip(side, h, id)) src.i.splice(n,1);
+      }
+    }
   } else if(pool){
     if(kind==='hex'){ const [s,a] = splitKey(rest); delete sideBoard(s)[a]; }
     if(kind==='eq'){ const [s,a,n] = splitKey(rest), src = sideBoard(s)[a]; if(src) src.i.splice(n,1); }
@@ -1080,19 +1103,29 @@ const admBySlug = s => adm && adm.comps.find(c=>c.slug===s);
 function admEnsure(){
   if(adm) return;
   const d = tierSource.data;
-  adm = JSON.parse(JSON.stringify({version:1, set:TFT_DATA.set, patch:d.patch||TL_PATCH, updated:d.updated||'', source:d.source||'', basedOn:d.basedOn||'', comps:d.comps, itemTL:d.itemTL||ITEM_TL, augTL:d.augTL||AUG_TL, holdTL:d.holdTL||HOLD_TL, encTL:d.encTL||ENC_TL}));
+  adm = JSON.parse(JSON.stringify({version:1, set:TFT_DATA.set, rev:d.rev||'', patch:d.patch||TL_PATCH, updated:d.updated||'', source:d.source||'', basedOn:d.basedOn||'', comps:d.comps, itemTL:d.itemTL||ITEM_TL, augTL:d.augTL||AUG_TL, holdTL:d.holdTL||HOLD_TL, encTL:d.encTL||ENC_TL}));
 }
 function admStatus(t){ const el = $('#admStatus'); if(el) el.textContent = t; }
 function admSourceText(){ return tierSource.src==='draft' ? 'Entwurf in diesem Browser aktiv' : tierSource.src==='file' ? `Veröffentlichter Stand (tierlist-data-${TFT_DATA.set}.js${tierSource.data.source==='TFTAcademy'?', TFTAcademy-Ausgangsstand':''})` : `Set ${TFT_DATA.set}: noch keine Tierlist – leg mit „+ Neue Comp“ los`; }
-function admSave(msg){
+function admSave(msg, published){
   admEnsure();
   adm.updated = new Date().toISOString().slice(0,10);
+  adm.pub = !!published;   // true direkt nach dem Veröffentlichen: Entwurf = Live-Stand, dann kein Vorschau-Hinweis
   if(adm.source && !['TFTClimb', 'Climb TFT'].includes(adm.source)){ adm.basedOn = adm.source; } adm.source = 'TFTClimb';   // 'Climb TFT' = alter Name in früheren Exporten
   let ok = true; try { localStorage.setItem(TL_DRAFT_KEY, JSON.stringify(adm)); } catch(e){ ok = false; }
   tierSource = {src:'draft', data:adm};
   ITEM_TL = adm.itemTL || {}; AUG_TL = adm.augTL || {}; HOLD_TL = adm.holdTL || {}; ENC_TL = adm.encTL || {};
   rebuildComps(adm.comps); filterComps(); renderItemTL(); renderAugTL(); renderHoldTL(); renderEncTL(); updateTlNote();
   admStatus(ok ? (msg || 'Entwurf gespeichert · ' + new Date().toLocaleTimeString(LOC,{hour:'2-digit',minute:'2-digit'})) : 'Speichern im Browser nicht möglich – bitte exportieren!');
+  draftBadge();
+}
+// Entwurf aus der Redaktion liegt nur in diesem Browser und wird hier als Vorschau angezeigt – Besucher sehen den veröffentlichten Stand.
+// Damit das nicht wie „schon live“ wirkt: Hinweis unten rechts auf jeder Seite, solange ein unveröffentlichter Entwurf aktiv ist
+function draftBadge(){
+  let el = document.getElementById('draftBadge');
+  if(tierSource.src !== 'draft' || tierSource.data.pub){ if(el) el.remove(); return; }
+  if(!el){ el = document.createElement('a'); el.id = 'draftBadge'; el.className = 'draft-badge'; el.href = '/admin'; el.setAttribute('data-noi18n', ''); document.body.appendChild(el); }
+  el.innerHTML = '<b>Entwurf-Vorschau</b><span>nur in diesem Browser – Besucher sehen den veröffentlichten Stand. Zur Redaktion →</span>';
 }
 function updateTlNote(){
   const el = $('#tlSrc'); if(!el) return;
@@ -1235,18 +1268,25 @@ function admPwSubmit(){
   try { sessionStorage.setItem(ADM_PW_KEY, v); } catch(e){}
   $('#admPwBox').hidden = true; admPublish(v);
 }
-async function admPublish(pw){
+// Der Entwurf kennt die Version (rev) des Live-Stands, auf dem er aufbaut: Hat sich der Live-Stand seitdem geändert (anderes Gerät,
+// Änderung im Projekt), lehnt /api/tierlist ab – überschrieben wird nur nach ausdrücklichem „Trotzdem veröffentlichen“
+async function admPublish(pw, force){
   if(FILE_MODE || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)){ admStatus('Veröffentlichen geht nur auf der Live-Seite (tftclimb.com).'); return; }
   pw = pw || admPwGet(); if(!pw){ admPwAsk(); return; }
-  const data = admData();
-  if(!confirm(`Tierlist für Set ${data.set} mit ${data.comps.length} Comps veröffentlichen? Alle Besucher sehen sie nach etwa einer Minute.`)) return;
+  const data = admData(), base = adm.rev || '';
+  if(!force && !confirm(`Tierlist für Set ${data.set} mit ${data.comps.length} Comps veröffentlichen? Alle Besucher sehen sie nach etwa einer Minute.`)) return;
   const btn = $('#admPublish'); btn.disabled = true; admStatus('Wird veröffentlicht …');
   try {
-    const r = await fetch('/api/tierlist', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw, set:data.set, data})});
+    const r = await fetch('/api/tierlist', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw, set:data.set, data, base, force:!!force})});
     const j = await r.json().catch(()=>({}));
     if(r.status === 401){ try { sessionStorage.removeItem(ADM_PW_KEY); } catch(e){} admPwAsk('Passwort falsch – bitte noch einmal eingeben.'); return; }
+    if(r.status === 409){
+      admStatus('Nicht veröffentlicht: Die Live-Tierlist ist neuer als dein Entwurf.');
+      if(confirm(`Achtung: Die Live-Tierlist wurde seit deinem Entwurf geändert${j.updated ? ' (Stand ' + new Date(j.updated).toLocaleDateString(LOC) + ')' : ''}.\n\nOK = deinen Entwurf trotzdem veröffentlichen (die Änderungen der Live-Tierlist gehen verloren).\nAbbrechen = nichts tun. Mit „Entwurf verwerfen“ holst du dir den Live-Stand.`)){ btn.disabled = false; admPublish(pw, true); }
+      return;
+    }
     if(!r.ok || !j.ok){ admStatus('Nicht veröffentlicht: ' + (j.error || 'Fehler ' + r.status)); return; }
-    admStatus(`Veröffentlicht ✓ ${j.comps} Comps (Commit ${j.commit}) – in etwa einer Minute für alle sichtbar.`);
+    adm.rev = j.rev || ''; admSave(`Veröffentlicht ✓ ${j.comps} Comps (Commit ${j.commit}) – in etwa einer Minute für alle sichtbar.`, true);
   } catch(e){ admStatus('Nicht veröffentlicht: keine Verbindung.'); }
   finally { btn.disabled = false; }
 }
@@ -1285,7 +1325,7 @@ document.addEventListener('click', e=>{
   if(t.id==='admReset'){
     if(!confirm('Entwurf verwerfen? Danach gilt wieder der veröffentlichte Stand (tierlist-data-' + TFT_DATA.set + '.js) bzw. der eingebaute Stand.')) return;
     try { localStorage.removeItem(TL_DRAFT_KEY); } catch(err){}
-    tierSource = loadTierSource(); ITEM_TL = tlPart('itemTL'); AUG_TL = tlPart('augTL'); HOLD_TL = tlPart('holdTL'); ENC_TL = tlPart('encTL'); adm = null; admSel = null; rebuildComps(tierSource.data.comps); filterComps(); renderItemTL(); renderAugTL(); renderHoldTL(); renderEncTL(); updateTlNote(); renderAdmin(); return;
+    tierSource = loadTierSource(); ITEM_TL = tlPart('itemTL'); AUG_TL = tlPart('augTL'); HOLD_TL = tlPart('holdTL'); ENC_TL = tlPart('encTL'); adm = null; admSel = null; rebuildComps(tierSource.data.comps); filterComps(); renderItemTL(); renderAugTL(); renderHoldTL(); renderEncTL(); updateTlNote(); renderAdmin(); draftBadge(); return;
   }
 });
 // Drag & Drop zwischen den Tiers
@@ -4353,7 +4393,7 @@ function route(){
   moreMenu.classList.remove('open'); drawer.classList.remove('open');
   closeModal(); window.scrollTo(0,0);
   if(ND) ndRoute(page, navKey);
-  setMeta(page, sub);
+  setMeta(page, sub); draftBadge();
   h1Sync(); requestAnimationFrame(()=>requestAnimationFrame(()=>{ h1Sync(); metaLead(META_DESC); }));   // zweiter Lauf für Inhalte, die erst im nächsten Bild entstehen
 }
 window.addEventListener(FILE_MODE ? 'hashchange' : 'popstate', route);
