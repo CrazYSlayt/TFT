@@ -3490,7 +3490,22 @@ function patchIcon(subject){
   if(m.ty==='i'){ const it = itemById[m.k]; return it ? `<button class="pn-ic" data-item="${esc(it.id)}" type="button"><img src="${it.img}" alt="" loading="lazy"><span></span></button>` : ''; }
   const a = AUG_BY[m.k]; return a ? `<span class="pn-ic"><img src="${augImg(a)}" alt="" loading="lazy"></span>` : '';
 }
-const grpLabel = g => { const s = String(g||''); if(/PATCH-AKTUALISIERUNG|MID-PATCH UPDATE/i.test(s)) return 'B-Patch' + (s.includes('·') ? ' · ' + secLabel(s.split('·').slice(1).join('·').trim()) : ''); return secLabel(s).replace(/\bGrosse\b/g, 'Große'); };
+// Patch-Aktualisierungen eines Patches nach Datum: die erste ist der B-Patch, die zweite der C-Patch, dann D …
+// Daten stehen deutsch („27. OKTOBER“) oder englisch („OCTOBER 27TH“) in der Gruppe; ältere Stände fassen mehrere Daten in einer Gruppe zusammen
+const PATCH_MID = /PATCH-AKTUALISIERUNG|MID-PATCH/i;
+const PATCH_MON = {jan:1, feb:2, 'mär':3, mar:3, apr:4, mai:5, may:5, jun:6, jul:7, aug:8, sep:9, okt:10, oct:10, nov:11, dez:12, dec:12};
+const patchDayKey = d => { const m = String(d).match(/(\d{1,2})\.?\s+(\S+)/) || String(d).match(/(\S+)\s+(\d{1,2})/), [day, mon] = m ? (/^\d/.test(m[1]) ? [m[1], m[2]] : [m[2], m[1]]) : [0, ''];
+  return (PATCH_MON[String(mon).toLowerCase().slice(0, 3)] || 0) * 100 + +day; };
+const grpDates = g => String(g || '').split('·').slice(1).map(x=>secLabel(x.trim())).filter(Boolean);
+function patchMids(p){   // [{d: '27. Oktober', k: 1027, letter: 'C'}] in zeitlicher Reihenfolge
+  const seen = new Map(); (p.notes || []).filter(s=>PATCH_MID.test(s.grp || '')).forEach(s=>grpDates(s.grp).forEach(d=>seen.set(patchDayKey(d), d)));
+  return [...seen].sort((a, b)=>a[0] - b[0]).map(([k, d], i)=>({d, k, letter:String.fromCharCode(66 + i)}));
+}
+const grpLabel = (g, p) => { const s = String(g||'');
+  if(PATCH_MID.test(s)){ const mids = p ? patchMids(p) : [], ds = grpDates(s).sort((a, b)=>patchDayKey(a) - patchDayKey(b));
+    const ls = ds.map(d=>(mids.find(m=>m.k === patchDayKey(d)) || {letter:'B'}).letter);
+    return (ls.length > 1 ? ls.slice(0, -1).join('-, ') + '- & ' + ls[ls.length - 1] + '-Patch' : (ls[0] || 'B') + '-Patch') + (ds.length ? ' · ' + ds.join(' · ') : ''); }
+  return secLabel(s).replace(/\bGrosse\b/g, 'Große'); };
 const secLabel = s => String(s||'').toLowerCase().replace(/(^|[\s\-–(„"])(\S)/g, (m,a,b)=>a + b.toUpperCase());
 function patchRowHTML(r){
   const [s, l, o, n] = r;
@@ -3502,12 +3517,12 @@ const PATCH_AUTHOR = {img:'assets/img/team-claudio.jpg', href:'/about/crazyslayt
 const patchIntro = p => p===CURRENT_PATCH ? L(`Hey Leute, TFT Patch ${p.id} ist draußen! Ich hab ihn für euch übersichtlich aufbereitet – alle Änderungen auf einen Blick.`, `Hey everyone, TFT patch ${p.id} is out! I've neatly prepared it for you – every change at a glance.`)
   : L(`Hey Leute, hier ist TFT Patch ${p.id}! Ich hab ihn für euch übersichtlich aufbereitet – alle Änderungen auf einen Blick.`, `Hey everyone, here's TFT patch ${p.id}! I've neatly prepared it for you – every change at a glance.`);
 function patchHero(p){
-  // B-Patches: Gruppe „PATCH-AKTUALISIERUNG · 28. SEPTEMBER · 24. SEPTEMBER“ → Daten in zeitlicher Reihenfolge
-  const bp = (p.notes || []).find(s=>/PATCH-AKTUALISIERUNG|MID-PATCH/i.test(s.grp || ''));
-  const bpDates = bp ? bp.grp.split('·').slice(1).map(x=>secLabel(x.trim())).filter(Boolean).reverse() : [], and = L(' und ', ' and ');
+  // Patch-Aktualisierungen in zeitlicher Reihenfolge: „Der B-Patch vom 22. Oktober und der C-Patch vom 27. Oktober sind schon mit drin.“
+  const bp = (p.notes || []).some(s=>PATCH_MID.test(s.grp || '')), mids = patchMids(p);
+  const list = mids.map(m=>L(`der ${m.letter}-Patch vom ${m.d}`, `the ${m.letter}-patch from ${m.d}`)), joined = list.length > 1 ? list.slice(0, -1).join(', ') + L(' und ', ' and ') + list[list.length - 1] : list[0];
   const msg = patchIntro(p)
-    + (!bp ? '' : ' ' + (bpDates.length > 1 ? L(`Die B-Patches vom ${bpDates.join(and)} sind schon mit drin.`, `The B-patches from ${bpDates.join(and)} are already included.`)
-      : bpDates.length ? L(`Der B-Patch vom ${bpDates[0]} ist schon mit drin.`, `The B-patch from ${bpDates[0]} is already included.`) : L('Die B-Patch-Änderungen sind schon mit drin.', 'The B-patch changes are already included.')));
+    + (!bp ? '' : ' ' + (list.length ? joined.charAt(0).toUpperCase() + joined.slice(1) + (list.length > 1 ? L(' sind schon mit drin.', ' are already included.') : L(' ist schon mit drin.', ' is already included.'))
+      : L('Die B-Patch-Änderungen sind schon mit drin.', 'The B-patch changes are already included.')));
   return `<section class="pde"${p.img ? ` style="--img:url('${esc(p.img)}?w=1280&fm=webp');--pos:${esc(patchFocus(p))}"` : ''}>
     <div class="pde-kick"><span>Set ${esc(p.set)}</span>${p===CURRENT_PATCH ? `<span class="live">${L('Aktueller Patch', 'Current patch')}</span>` : ''}</div>
     <h1 class="pde-h1">TFT Patch <span>${esc(p.id)}</span></h1>
@@ -3545,7 +3560,7 @@ function renderPatches(sub){
     ${p.lang==='en' && !EN ? '<p class="pd-lang">Riot hat die deutschen Patchnotes noch nicht veröffentlicht – bis dahin siehst du hier die englische Fassung.</p>' : ''}
     ${note ? `<div class="card pd-note"><h3>Einschätzung von TFTClimb</h3>${String(note).split(/\n{2,}/).map(t=>`<p>${esc(t).replace(/\n/g,'<br>')}</p>`).join('')}</div>` : ''}
     ${grps.length ? `<input class="input pd-search" id="pdSearch" placeholder="Champion, Trait, Item oder Augment suchen …" aria-label="Änderungen durchsuchen">
-    <div id="pdList">${grps.map(g=>`<section class="pd-grp">${g.g ? `<h2>${esc(grpLabel(g.g))}</h2>` : ''}${g.secs.map(s=>`<div class="card pd-sec"><h3>${esc(secLabel(s.sec))}</h3><ul>${s.ch.map(patchRowHTML).join('')}</ul></div>`).join('')}</section>`).join('')}</div>`
+    <div id="pdList">${grps.map(g=>`<section class="pd-grp">${g.g ? `<h2>${esc(grpLabel(g.g, p))}</h2>` : ''}${g.secs.map(s=>`<div class="card pd-sec">${s.sec ? `<h3>${esc(secLabel(s.sec))}</h3>` : ''}${s.en ? `<p class="pd-en">${L('Riot hat diese Aktualisierung bisher nur auf Englisch veröffentlicht – die deutsche Fassung folgt automatisch.', 'Riot has only published this update in English so far.')}</p>` : ''}<ul>${s.ch.map(patchRowHTML).join('')}</ul></div>`).join('')}</section>`).join('')}</div>`
       : viSays('Für diesen Patch habe ich keine einzelnen Änderungen gefunden – schau direkt in die Patchnotes bei Riot.')}
     <div class="pd-nav">${older ? `<a class="btn btn-ghost" href="/patches/${patchSlug(older.id)}">← Patch ${esc(older.id)}</a>` : '<span></span>'}${newer ? `<a class="btn btn-ghost" href="/patches/${patchSlug(newer.id)}">Patch ${esc(newer.id)} →</a>` : ''}</div>
     <p class="note">${L('Quelle: offizielle Patchnotes von Riot Games, für euch übersichtlich aufbereitet. Im Zweifel gilt das', 'Source: official patch notes by Riot Games, neatly prepared for you. If in doubt, the')} <a href="${esc(p.url)}" target="_blank" rel="noopener">${L('Original bei Riot', 'original at Riot applies')}</a>.</p>`;
@@ -3708,7 +3723,7 @@ function renderCountdown(){
         ${n ? `<details><summary>${L('Wann kommt der nächste TFT Patch?', 'When is the next TFT patch?')}</summary><p>${id ? L(`Patch ${esc(id)} kommt ${n.fixed ? '' : 'voraussichtlich '}am ${esc(long)}. Auf den europäischen Servern geht ein Patch meist früh am Morgen live, der Countdown zählt bis ca. ${time} Uhr deutscher Zeit.`,
           `Patch ${esc(id)} ${n.fixed ? 'drops' : 'is expected to drop'} on ${esc(long)}. On the European servers a patch usually goes live early in the morning; the countdown runs to around ${time} ${tz}.`)
           : L(`Voraussichtlich am ${esc(long)}, etwa um ${time} Uhr deutscher Zeit.`, `Probably on ${esc(long)}, around ${time} ${tz}.`)}</p></details>` : ''}
-        <details><summary>${L('Wie oft kommt ein neuer TFT Patch?', 'How often is there a new TFT patch?')}</summary><p>${L('Etwa alle zwei Wochen. Dazwischen gibt es manchmal kleine B-Patches, die einzelne Champions, Traits oder Augments schnell anpassen.', 'About every two weeks. In between there are sometimes small B-patches that quickly adjust single champions, traits or augments.')}</p></details>
+        <details><summary>${L('Wie oft kommt ein neuer TFT Patch?', 'How often is there a new TFT patch?')}</summary><p>${L('Etwa alle zwei Wochen. Dazwischen gibt es manchmal kleine B- oder C-Patches, die einzelne Champions, Traits oder Augments schnell anpassen.', 'About every two weeks. In between there are sometimes small B- or C-patches that quickly adjust single champions, traits or augments.')}</p></details>
         <details><summary>${L('Wann kommen die TFT Patchnotes?', 'When do the TFT patch notes come out?')}</summary><p>${L('Riot veröffentlicht die Patchnotes meist einen Tag vor dem Patch. Sobald sie da sind, stehen alle Änderungen bei uns unter Patches.', 'Riot usually publishes the patch notes one day before the patch. As soon as they are out, you\'ll find every change on our patches page.')}</p></details>
         ${ns ? `<details><summary>${L(`Wann startet TFT Set ${nsN}?`, `When does TFT Set ${nsN} launch?`)}</summary><p>${L(`Laut Patch-Plan startet Set ${nsN} mit Patch ${esc(ns.id)} am ${esc(nsLong)}.`, `According to the patch schedule, Set ${nsN} launches with patch ${esc(ns.id)} on ${esc(nsLong)}.`)}</p></details>` : ''}
       </aside>
@@ -4313,8 +4328,8 @@ function pageMeta(page, sub){
         `TFT augment tier list ${S}: the best silver, gold and prismatic augments for 2-1, 3-2 and 4-2 – rated from S to C.`)];
       if(sub==='holds') return [L(`TFT Holds-Tierlist ${PS}`, `TFT Holds Tier List ${PS}`), L(`TFT Holds-Tierlist ${S}: welche 1-, 2- und 3-Kosten-Champions du von 1-1 bis 1-3 halten solltest – bewertet von S bis C.`,
         `TFT holds tier list ${S}: which 1, 2 and 3 cost champions to hold from 1-1 to 1-3 – rated from S to C.`)];
-      return [L(`TFT Tierlist ${PS} – die besten Comps`, `TFT Tier List ${PS} – the Best Comps`), L(`TFT Tierlist ${S}${P}: die besten Comps von S bis C – mit Aufstellung, Items, Augments und Spielplan für jede Comp.`,
-        `TFT tier list ${S}${P}: the best comps from S to C – with positioning, items, augments and game plan for every comp.`)];
+      return [L(`TFT Tierlist ${PS} – die besten Comps`, `TFT Tier List ${PS} – the Best Comps`), L(`TFT Tierlist ${S}${P}: die besten Comps mit Aufstellung, Items, Augments und Spielplan.`,
+        `TFT tier list ${S}${P}: the best comps with positioning, items, augments and game plan.`)];
     case 'bibliothek':
       if(sub==='items') return [L(`TFT Items ${S} – Rezepte & Werte`, `TFT Items ${S} – Recipes & Stats`), L(`Alle TFT Items in ${S}: Rezepte, Komponenten, Lichtversionen, Artefakte und Embleme mit ihren Werten auf einen Blick.`,
         `All TFT items in ${S}: recipes, components, radiant items, artifacts and emblems with their stats at a glance.`)];

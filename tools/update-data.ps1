@@ -396,6 +396,20 @@ function RiotPatches([string]$loc = 'de-de') {
 }
 # Änderungszeilen aus einem Patch-Artikel lesen: Abschnitt (z. B. "1-GOLD-EINHEIT") und Zeilen "Name – Wert: alt ⇒ neu".
 # Unterpunkte ohne eigenen Namen ("Angriffstempo: 0,7 ⇒ 0,75") gehören zum übergeordneten Punkt.
+# Daten einer Patch-Aktualisierung als "Tag.Monat" – deutsch "PATCH-AKTUALISIERUNG · 27. OKTOBER" wie englisch "MID-PATCH UPDATE · OCTOBER 27TH" → "27.10"
+$MonthDe = @('JANUAR', 'FEBRUAR', 'MÄRZ', 'APRIL', 'MAI', 'JUNI', 'JULI', 'AUGUST', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DEZEMBER')
+$MonthEn = @('JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER')
+function GrpDays([string]$g) {
+  $out = @()
+  foreach ($part in @($g -split '·' | Select-Object -Skip 1)) {
+    $t = $part.Trim().ToUpperInvariant()
+    $m = [regex]::Match($t, '^(\d{1,2})\.\s+(\S+)$')
+    if ($m.Success) { $i = [array]::IndexOf($MonthDe, $m.Groups[2].Value); if ($i -ge 0) { $out += ('{0}.{1}' -f [int]$m.Groups[1].Value, ($i + 1)) }; continue }
+    $m = [regex]::Match($t, '^([A-Z]+)\s+(\d{1,2})')
+    if ($m.Success) { $i = [array]::IndexOf($MonthEn, $m.Groups[1].Value); if ($i -ge 0) { $out += ('{0}.{1}' -f [int]$m.Groups[2].Value, ($i + 1)) } }
+  }
+  return $out
+}
 function CleanTxt([string]$s) { return ([Net.WebUtility]::HtmlDecode(($s -replace '<[^>]+>', ' ')) -replace '\s+', ' ').Trim() }
 # Champion-Namen des Live-Sets (klein, ohne Apostroph) – damit verschachtelte Champions in den Patchnotes erkannt werden
 function NormName([string]$s) { return ($s -replace "['’`]", '').Trim().ToLowerInvariant() }
@@ -404,7 +418,7 @@ function PatchChanges([string]$url) {
   $html = (Invoke-WebRequest $url -UseBasicParsing -UserAgent $UA -TimeoutSec 60).Content
   $secs = New-Object 'System.Collections.Generic.List[object]'; $cur = $null
   $stack = New-Object 'System.Collections.Generic.List[object]'
-  $inHead = $false; $head = ''; $pos = 0; $grp = ''
+  $inHead = $false; $head = ''; $pos = 0; $grp = ''; $grpBase = ''
   # Riot schreibt (v. a. auf Deutsch) manchmal den Namen als eigenen Punkt und die Werte als gleichrangige Punkte darunter
   # ("Würfelwurf", "Aufwertungskosten: 3 ⇒ 2") – der alleinstehende Name gilt dann für die folgenden Zeilen derselben Liste
   $bare = ''; $bareDepth = -1
@@ -416,9 +430,13 @@ function PatchChanges([string]$url) {
       if (-not $close) { $inHead = $true; $head = '' }
       else {
         $inHead = $false; $name = CleanTxt $head; $bare = ''
-        # h2 = Gruppe (z. B. "PATCH-AKTUALISIERUNG" = B-Patch, "GROSSE ÄNDERUNGEN"); ein Datum als h4 gehört zur Gruppe
-        if ($tag -eq 'h2') { $grp = $name; $cur = $null }
-        elseif ($name -match '^\d{1,2}\.\s+\S+$' -or $name -match '^(?i)(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(st|nd|rd|th)?$') { $grp = ($grp + ' · ' + $name).Trim(' ·') }
+        # h2 = Gruppe (z. B. "PATCH-AKTUALISIERUNG" = B-Patch, "GROSSE ÄNDERUNGEN"); ein Datum als h4 = eigene Aktualisierung dieser Gruppe.
+        # Riot listet die Änderungen eines Datums manchmal direkt darunter, ohne Abschnitt wie "Champions" – dafür ein Abschnitt ohne Namen
+        if ($tag -eq 'h2') { $grp = $name; $grpBase = $name; $cur = $null }
+        elseif ($name -match '^\d{1,2}\.\s+\S+$' -or $name -match '^(?i)(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(st|nd|rd|th)?$') {
+          $grp = ($grpBase + ' · ' + $name).Trim(' ·')
+          $cur = NewObj; $cur['sec'] = ''; $cur['grp'] = $grp; $cur['ch'] = New-Object 'System.Collections.Generic.List[object]'; $secs.Add($cur)
+        }
         elseif ($name) { $cur = NewObj; $cur['sec'] = $name; $cur['grp'] = $grp; $cur['ch'] = New-Object 'System.Collections.Generic.List[object]'; $secs.Add($cur) }
       }
       continue
@@ -494,10 +512,7 @@ function UpdatePatches([int]$liveSet) {
     catch { Warn "Patch $($p['id']) nicht lesbar: $($_.Exception.Message)" }
   }
   $sorted = @($all.Values | Sort-Object { [string]$_['date'] } -Descending)
-  [IO.File]::WriteAllText($listFile, (J $sorted), $utf8)
   $show = @($sorted | Where-Object { [int]$_['set'] -ge ($liveSet - 1) })
-  [IO.File]::WriteAllText((Join-Path $dataDir 'patches.js'), "// TFTClimb – Patches (automatisch erzeugt mit tools\update-data.ps1 aus Riots Patchnotes, nicht von Hand bearbeiten)`n// Eigene Kommentare zu Patches gehören in data\patch-kommentare.js`nwindow.TFT_PATCHES = $(J $show);`n", $utf8)
-  Write-Host ("  geschrieben: data\patches.js ({0} Patches)" -f $show.Count) -ForegroundColor Green
   # Englische Fassung derselben Patches (Riots en-gb-Seite) für die englische Seite → data\patches-en.js
   try {
     $enFile = Join-Path $histDir 'patches-en.json'
@@ -514,7 +529,24 @@ function UpdatePatches([int]$liveSet) {
     [IO.File]::WriteAllText($enFile, (J @($en.Values)), $utf8)
     [IO.File]::WriteAllText((Join-Path $dataDir 'patches-en.js'), "// TFTClimb – Patches auf Englisch für die englische Seite (automatisch erzeugt mit tools\update-data.ps1 aus Riots englischen Patchnotes)`nwindow.TFT_PATCHES_EN = $(J $outEn);`n", $utf8)
     Write-Host ("  geschrieben: data\patches-en.js ({0} Patches auf Englisch)" -f $outEn.Count) -ForegroundColor Green
+    # Patch-Aktualisierung (B-/C-Patch), die Riot bisher nur auf Englisch nachgetragen hat: vorerst die englischen Zeilen in die
+    # deutsche Fassung übernehmen (en = true). Sobald Riot das Datum auf Deutsch ergänzt, ersetzt es beim nächsten Lauf diese Zeilen.
+    $e = $en[[string]$newest['id']]
+    if ($newest['notes'] -and $e -and $e['notes'] -and -not $newest.ContainsKey('lang')) {
+      $deDays = @($newest['notes'] | Where-Object { $_['grp'] -match 'PATCH-AKTUALISIERUNG' } | ForEach-Object { GrpDays ([string]$_['grp']) })
+      $add = @(@($e['notes']) | Where-Object { $_['grp'] -match 'MID-PATCH' } | Where-Object { $d = @(GrpDays ([string]$_['grp'])); $d.Count -and -not ($d | Where-Object { $deDays -contains $_ }) })
+      if ($add.Count) {
+        $merged = New-Object 'System.Collections.Generic.List[object]'
+        foreach ($s in $add) { $x = NewObj; $x['sec'] = $s['sec']; $x['grp'] = 'PATCH-AKTUALISIERUNG · ' + ((@(GrpDays ([string]$s['grp'])) | ForEach-Object { $dm = $_ -split '\.'; '{0}. {1}' -f $dm[0], $MonthDe[[int]$dm[1] - 1] }) -join ' · '); $x['ch'] = $s['ch']; $x['en'] = $true; $merged.Add($x) }
+        foreach ($s in @($newest['notes'])) { $merged.Add($s) }
+        $newest['notes'] = [object[]]$merged.ToArray()
+        Write-Host ("  Patch {0}: Aktualisierung vom {1} gibt es bisher nur auf Englisch – vorerst die englischen Zeilen." -f $newest['id'], (($add | ForEach-Object { GrpDays ([string]$_['grp']) } | Select-Object -Unique) -join ', ')) -ForegroundColor Yellow
+      }
+    }
   } catch { Warn "Englische Patchnotes nicht aktualisiert ($($_.Exception.Message)) – die bisherigen bleiben." }
+  [IO.File]::WriteAllText($listFile, (J $sorted), $utf8)
+  [IO.File]::WriteAllText((Join-Path $dataDir 'patches.js'), "// TFTClimb – Patches (automatisch erzeugt mit tools\update-data.ps1 aus Riots Patchnotes, nicht von Hand bearbeiten)`n// Eigene Kommentare zu Patches gehören in data\patch-kommentare.js`nwindow.TFT_PATCHES = $(J $show);`n", $utf8)
+  Write-Host ("  geschrieben: data\patches.js ({0} Patches)" -f $show.Count) -ForegroundColor Green
 }
 
 # ======================= 1. Live-Server =======================
