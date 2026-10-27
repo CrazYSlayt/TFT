@@ -489,8 +489,15 @@
     <div class="page-head">
       <div class="crumb">Home / Redaktion</div>
       <h1>Redaktion <em class="serif">Tierlist bearbeiten</em></h1>
-      <p>Comps per Drag &amp; Drop zwischen den Tiers verschieben und anklicken zum Bearbeiten. Items, Augments und Holds bewertest du in ihren Tabs genauso. Änderungen speichern automatisch in diesem Browser. Für die Live-Seite: „Veröffentlichen“ – nach etwa einer Minute sehen alle Besucher den neuen Stand. „Exportieren“ bleibt als Sicherungskopie. Jedes Set hat seine eigene Tierlist – das Set wechselst du oben links.</p>
+      <p>Comps per Drag &amp; Drop zwischen den Tiers verschieben und anklicken zum Bearbeiten. Items, Augments und Holds bewertest du in ihren Tabs genauso. Deine Änderungen werden erst mit „Speichern“ live – dann nach etwa einer Minute auf allen Geräten. Jedes Set hat seine eigene Tierlist – das Set wechselst du oben links.</p>
     </div>
+    <div class="card adm-login" id="admLogin" hidden>
+      <h2>Anmelden</h2>
+      <p class="note">Die Redaktion ist nur mit Passwort zugänglich.</p>
+      <div class="adm-login-row"><input class="input" type="password" id="admLoginPw" placeholder="Redaktions-Passwort" autocomplete="current-password" aria-label="Redaktions-Passwort"><button class="btn btn-primary" id="admLoginGo" type="button">Anmelden</button></div>
+      <p class="adm-login-msg" id="admLoginMsg" role="status"></p>
+    </div>
+    <div id="admWork" hidden>
     <div class="tabs" id="admTabs">
       <button class="tab active" data-adm-tab="comps">Comps</button>
       <button class="tab" data-adm-tab="items">Items</button>
@@ -499,13 +506,13 @@
       <button class="tab" data-adm-tab="encounters">Encounters</button>
     </div>
     <div class="adm-bar">
-      <button class="btn btn-primary" id="admNew" type="button">+ Neue Comp</button>
-      <button class="btn btn-primary" id="admPublish" type="button">Veröffentlichen</button>
-      <span class="adm-pw" id="admPwBox" hidden><input class="input" type="password" id="admPw" placeholder="Redaktions-Passwort" autocomplete="current-password" aria-label="Redaktions-Passwort"><button class="btn btn-primary" id="admPwGo" type="button">OK</button></span>
-      <button class="btn btn-ghost" id="admExport" type="button">Exportieren</button>
-      <label class="btn btn-ghost" style="cursor:pointer">Importieren<input type="file" id="admImport" accept=".js,.json" hidden></label>
-      <button class="btn btn-ghost" id="admReset" type="button">Entwurf verwerfen</button>
-      <a class="btn btn-ghost" href="/tierlist">Vorschau</a>
+      <button class="btn btn-primary adm-save" id="admPublish" type="button" disabled>Speichern</button>
+      <span class="adm-dirty" id="admDirty" hidden>● Nicht gespeichert</span>
+      <button class="btn btn-ghost" id="admNew" type="button">+ Neue Comp</button>
+      <button class="btn btn-ghost" id="admReset" type="button" disabled>Änderungen verwerfen</button>
+      <button class="btn btn-ghost" id="admExport" type="button" title="Sicherungskopie als Datei">Exportieren</button>
+      <label class="btn btn-ghost" style="cursor:pointer" title="Sicherungskopie laden">Importieren<input type="file" id="admImport" accept=".js,.json" hidden></label>
+      <button class="btn btn-ghost" id="admLogout" type="button">Abmelden</button>
       <span class="adm-status" id="admStatus"></span>
     </div>
     <div class="adm-wrap" id="admCompsView">
@@ -513,6 +520,7 @@
       <aside class="card adm-edit" id="admEdit"></aside>
     </div>
     <div id="admTL" hidden></div>
+    </div>
   </div>
 </div>
 

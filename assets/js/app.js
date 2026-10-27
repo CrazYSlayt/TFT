@@ -89,12 +89,12 @@ const traits = TFT_DATA.traits.map(x=>{ const m = TRAIT_META[x.n] || {}; return 
 
 
 
-// Tierlist (pro Set): Entwurf aus der Redaktion (dieser Browser) > tierlist-data-<Set>.js (veröffentlicht)
-const TL_DRAFT_KEY = 'tftfreaks_tierlist_draft_v1_' + TFT_DATA.set;
-try { if(TFT_DATA.set===18 && !localStorage.getItem(TL_DRAFT_KEY) && localStorage.getItem('tftfreaks_tierlist_draft_v1')) localStorage.setItem(TL_DRAFT_KEY, localStorage.getItem('tftfreaks_tierlist_draft_v1')); } catch(e){}
+// Tierlist (pro Set): die Seite zeigt immer den gespeicherten Stand (tierlist-data-<Set>.js) – auf jedem Gerät gleich.
+// Die Redaktion arbeitet auf einer eigenen Kopie; ungespeicherte Änderungen liegen nur dort (ADM_WIP_KEY), bis man „Speichern“ klickt
+const ADM_WIP_KEY = 'tftfreaks_admin_wip_v1_' + TFT_DATA.set;
+try { localStorage.removeItem('tftfreaks_tierlist_draft_v1_' + TFT_DATA.set); localStorage.removeItem('tftfreaks_tierlist_draft_v1'); } catch(e){}   // alte Entwürfe (früher auch auf der Seite angezeigt)
 const TL_FILE = window.TIERLIST_DATA && Array.isArray(window.TIERLIST_DATA.comps) && (!window.TIERLIST_DATA.set || window.TIERLIST_DATA.set===TFT_DATA.set) ? window.TIERLIST_DATA : null;
 function loadTierSource(){
-  try { const d = JSON.parse(localStorage.getItem(TL_DRAFT_KEY) || 'null'); if(d && Array.isArray(d.comps)) return {src:'draft', data:d}; } catch(e){}
   if(TL_FILE) return {src:'file', data:TL_FILE};
   return {src:'none', data:{comps:[]}};
 }
@@ -1100,33 +1100,38 @@ const ADM_ROWS = [['S','S-Tier'],['A','A-Tier'],['B','B-Tier'],['C','C-Tier'],['
 const ADM_ROW_HELP = {var:'Erscheinen nur als Tab bei Comps mit gleichem Carry', hid:'Nicht auf der Seite sichtbar'};
 const admRowOf = c => c.hidden ? 'hid' : !c.main ? 'var' : c.tier;
 const admBySlug = s => adm && adm.comps.find(c=>c.slug===s);
+// Redaktion: Arbeitskopie (adm). Änderungen bleiben in der Redaktion, bis „Speichern“ sie für alle veröffentlicht.
+// Ungespeicherte Änderungen überleben ein Neuladen (ADM_WIP_KEY) – die öffentlichen Seiten sehen sie nie.
+let admDirty = false;
 function admEnsure(){
   if(adm) return;
+  try { const w = JSON.parse(localStorage.getItem(ADM_WIP_KEY) || 'null'); if(w && Array.isArray(w.comps)){ adm = w; admDirty = true; return; } } catch(e){}
   const d = tierSource.data;
   adm = JSON.parse(JSON.stringify({version:1, set:TFT_DATA.set, rev:d.rev||'', patch:d.patch||TL_PATCH, updated:d.updated||'', source:d.source||'', basedOn:d.basedOn||'', comps:d.comps, itemTL:d.itemTL||ITEM_TL, augTL:d.augTL||AUG_TL, holdTL:d.holdTL||HOLD_TL, encTL:d.encTL||ENC_TL}));
 }
 function admStatus(t){ const el = $('#admStatus'); if(el) el.textContent = t; }
-function admSourceText(){ return tierSource.src==='draft' ? 'Entwurf in diesem Browser aktiv' : tierSource.src==='file' ? `Veröffentlichter Stand (tierlist-data-${TFT_DATA.set}.js${tierSource.data.source==='TFTAcademy'?', TFTAcademy-Ausgangsstand':''})` : `Set ${TFT_DATA.set}: noch keine Tierlist – leg mit „+ Neue Comp“ los`; }
-function admSave(msg, published){
+// Speichern-Knopf und Hinweis: ungespeicherte Änderungen sichtbar machen
+function admDirtyUI(){
+  const b = $('#admPublish'), r = $('#admReset'); if(b){ b.disabled = !admDirty; b.classList.toggle('dirty', admDirty); } if(r) r.disabled = !admDirty;
+  const el = $('#admDirty'); if(el) el.hidden = !admDirty;
+}
+function admSave(msg){   // Änderung in der Arbeitskopie merken (noch nicht live)
   admEnsure();
   adm.updated = new Date().toISOString().slice(0,10);
-  adm.pub = !!published;   // true direkt nach dem Veröffentlichen: Entwurf = Live-Stand, dann kein Vorschau-Hinweis
   if(adm.source && !['TFTClimb', 'Climb TFT'].includes(adm.source)){ adm.basedOn = adm.source; } adm.source = 'TFTClimb';   // 'Climb TFT' = alter Name in früheren Exporten
-  let ok = true; try { localStorage.setItem(TL_DRAFT_KEY, JSON.stringify(adm)); } catch(e){ ok = false; }
-  tierSource = {src:'draft', data:adm};
+  try { localStorage.setItem(ADM_WIP_KEY, JSON.stringify(adm)); } catch(e){}
+  admDirty = true; admDirtyUI();
+  admStatus(msg || 'Geändert – zum Veröffentlichen „Speichern“ klicken.');
+}
+// Nach dem Speichern: Arbeitskopie ist jetzt der Live-Stand – auch die Seiten in diesem Tab zeigen ihn sofort
+function admApplyLive(){
+  try { localStorage.removeItem(ADM_WIP_KEY); } catch(e){}
+  admDirty = false; admDirtyUI();
+  tierSource = {src:'file', data:JSON.parse(JSON.stringify(adm))};
   ITEM_TL = adm.itemTL || {}; AUG_TL = adm.augTL || {}; HOLD_TL = adm.holdTL || {}; ENC_TL = adm.encTL || {};
   rebuildComps(adm.comps); filterComps(); renderItemTL(); renderAugTL(); renderHoldTL(); renderEncTL(); updateTlNote();
-  admStatus(ok ? (msg || 'Entwurf gespeichert · ' + new Date().toLocaleTimeString(LOC,{hour:'2-digit',minute:'2-digit'})) : 'Speichern im Browser nicht möglich – bitte exportieren!');
-  draftBadge();
 }
-// Entwurf aus der Redaktion liegt nur in diesem Browser und wird hier als Vorschau angezeigt – Besucher sehen den veröffentlichten Stand.
-// Damit das nicht wie „schon live“ wirkt: Hinweis unten rechts auf jeder Seite, solange ein unveröffentlichter Entwurf aktiv ist
-function draftBadge(){
-  let el = document.getElementById('draftBadge');
-  if(tierSource.src !== 'draft' || tierSource.data.pub){ if(el) el.remove(); return; }
-  if(!el){ el = document.createElement('a'); el.id = 'draftBadge'; el.className = 'draft-badge'; el.href = '/admin'; el.setAttribute('data-noi18n', ''); document.body.appendChild(el); }
-  el.innerHTML = '<b>Entwurf-Vorschau</b><span>nur in diesem Browser – Besucher sehen den veröffentlichten Stand. Zur Redaktion →</span>';
-}
+window.addEventListener('beforeunload', e=>{ if(admDirty && $('#page-admin').classList.contains('active')){ e.preventDefault(); e.returnValue = ''; } });
 function updateTlNote(){
   const el = $('#tlSrc'); if(!el) return;
   const D = tierSource.data, link = '<a href="https://tftacademy.com/tierlist/comps" target="_blank" rel="noopener" style="text-decoration:underline">TFTAcademy</a>';
@@ -1183,7 +1188,12 @@ function renderAdminEdit(){
     <datalist id="admItemList">${ITEMS.filter(i=>B_ITEM_CATS.includes(i.cat)).map(i=>`<option value="${esc(i.en)}">`).join('')}</datalist>`;
 }
 function renderAdmin(){
-  admEnsure(); renderAdminRows(); renderAdminEdit(); renderAdminTL(); admStatus(admSourceText());
+  // ohne Anmeldung nur die Passwort-Maske (der echte Schutz ist das Passwort beim Speichern in api/tierlist.js)
+  const authed = !!admPwGet();
+  $('#admLogin').hidden = authed; $('#admWork').hidden = !authed;
+  if(!authed){ setTimeout(()=>{ const i = $('#admLoginPw'); if(i) i.focus(); }, 30); return; }
+  admEnsure(); renderAdminRows(); renderAdminEdit(); renderAdminTL(); admDirtyUI();
+  admStatus(admDirty ? 'Es gibt ungespeicherte Änderungen – „Speichern“ stellt sie live.' : 'Alles gespeichert – so sehen es gerade alle Besucher.');
 }
 function admAdd(kind){
   const c = admBySlug(admSel), inp = document.querySelector(`#admEdit [data-add="${kind}"]`); if(!c || !inp) return;
@@ -1251,44 +1261,50 @@ document.addEventListener('change', e=>{
 });
 document.addEventListener('keydown', e=>{
   if(e.key==='Enter' && e.target.dataset && e.target.dataset.add){ e.preventDefault(); admAdd(e.target.dataset.add); }
-  if(e.key==='Enter' && e.target.id==='admPw'){ e.preventDefault(); admPwSubmit(); }
+  if(e.key==='Enter' && e.target.id==='admLoginPw'){ e.preventDefault(); admLogin(); }
 });
 // Stand der Tierlist, wie er veröffentlicht bzw. exportiert wird
 function admData(){
   admEnsure();
   return {version:1, set:TFT_DATA.set, patch:adm.patch, updated:adm.updated || new Date().toISOString().slice(0,10), source:adm.source || 'TFTClimb', basedOn:adm.basedOn || '', comps:adm.comps, itemTL:adm.itemTL || ITEM_TL, augTL:adm.augTL || AUG_TL, holdTL:adm.holdTL || HOLD_TL, encTL:adm.encTL || ENC_TL};
 }
-// Veröffentlichen: schickt die Tierlist an /api/tierlist (Vercel-Funktion), die sie als tierlist-data-<Set>.js ins Repository schreibt.
-// Das Passwort bleibt nur für diesen Tab gemerkt (sessionStorage) und wird bei „Passwort falsch“ wieder vergessen.
+// Anmeldung: Passwort wird bei /api/tierlist geprüft und nur für diesen Tab gemerkt (sessionStorage); lokal (localhost) ohne Prüfung
 const ADM_PW_KEY = 'tftfreaks_admin_pw';
+const ADM_LOCAL = FILE_MODE || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const admPwGet = () => { try { return sessionStorage.getItem(ADM_PW_KEY) || ''; } catch(e){ return ''; } };
-function admPwAsk(msg){ const box = $('#admPwBox'); box.hidden = false; $('#admPw').value = ''; $('#admPw').focus(); admStatus(msg || 'Redaktions-Passwort eingeben und mit OK veröffentlichen.'); }
-function admPwSubmit(){
-  const v = $('#admPw').value; if(!v) return;
-  try { sessionStorage.setItem(ADM_PW_KEY, v); } catch(e){}
-  $('#admPwBox').hidden = true; admPublish(v);
+const admPwSet = v => { try { v ? sessionStorage.setItem(ADM_PW_KEY, v) : sessionStorage.removeItem(ADM_PW_KEY); } catch(e){} };
+async function admLogin(){
+  const inp = $('#admLoginPw'), msg = $('#admLoginMsg'), pw = inp.value; if(!pw) return;
+  msg.textContent = 'Wird geprüft …';
+  if(ADM_LOCAL){ admPwSet(pw); renderAdmin(); return; }
+  try {
+    const r = await fetch('/api/tierlist', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw, check:true})});
+    const j = await r.json().catch(()=>({}));
+    if(r.ok && j.ok){ admPwSet(pw); msg.textContent = ''; inp.value = ''; renderAdmin(); return; }
+    msg.textContent = j.error || 'Anmeldung fehlgeschlagen.'; inp.select();
+  } catch(e){ msg.textContent = 'Keine Verbindung.'; }
 }
-// Der Entwurf kennt die Version (rev) des Live-Stands, auf dem er aufbaut: Hat sich der Live-Stand seitdem geändert (anderes Gerät,
-// Änderung im Projekt), lehnt /api/tierlist ab – überschrieben wird nur nach ausdrücklichem „Trotzdem veröffentlichen“
-async function admPublish(pw, force){
-  if(FILE_MODE || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)){ admStatus('Veröffentlichen geht nur auf der Live-Seite (tftclimb.com).'); return; }
-  pw = pw || admPwGet(); if(!pw){ admPwAsk(); return; }
+// Speichern = für alle veröffentlichen: /api/tierlist schreibt tierlist-data-<Set>.js ins Repository, Vercel baut neu (etwa eine Minute).
+// Die Arbeitskopie kennt die Version (rev), auf der sie aufbaut – ist der Live-Stand inzwischen neuer (z. B. vom Handy gespeichert),
+// wird nur nach ausdrücklichem „trotzdem speichern“ überschrieben
+async function admPublish(force){
+  if(ADM_LOCAL){ admStatus('Speichern geht nur auf der Live-Seite (tftclimb.com).'); return; }
+  const pw = admPwGet(); if(!pw){ renderAdmin(); return; }
   const data = admData(), base = adm.rev || '';
-  if(!force && !confirm(`Tierlist für Set ${data.set} mit ${data.comps.length} Comps veröffentlichen? Alle Besucher sehen sie nach etwa einer Minute.`)) return;
-  const btn = $('#admPublish'); btn.disabled = true; admStatus('Wird veröffentlicht …');
+  const btn = $('#admPublish'); btn.disabled = true; admStatus('Wird gespeichert …');
   try {
     const r = await fetch('/api/tierlist', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw, set:data.set, data, base, force:!!force})});
     const j = await r.json().catch(()=>({}));
-    if(r.status === 401){ try { sessionStorage.removeItem(ADM_PW_KEY); } catch(e){} admPwAsk('Passwort falsch – bitte noch einmal eingeben.'); return; }
+    if(r.status === 401){ admPwSet(''); renderAdmin(); $('#admLoginMsg').textContent = 'Passwort falsch – bitte neu anmelden. Deine Änderungen bleiben erhalten.'; return; }
     if(r.status === 409){
-      admStatus('Nicht veröffentlicht: Die Live-Tierlist ist neuer als dein Entwurf.');
-      if(confirm(`Achtung: Die Live-Tierlist wurde seit deinem Entwurf geändert${j.updated ? ' (Stand ' + new Date(j.updated).toLocaleDateString(LOC) + ')' : ''}.\n\nOK = deinen Entwurf trotzdem veröffentlichen (die Änderungen der Live-Tierlist gehen verloren).\nAbbrechen = nichts tun. Mit „Entwurf verwerfen“ holst du dir den Live-Stand.`)){ btn.disabled = false; admPublish(pw, true); }
+      admStatus('Nicht gespeichert: Die Live-Tierlist ist neuer als deine Änderungen.'); admDirtyUI();
+      if(confirm(`Achtung: Die Tierlist wurde inzwischen woanders gespeichert${j.updated ? ' (Stand ' + new Date(j.updated).toLocaleDateString(LOC) + ')' : ''}.\n\nOK = deine Version trotzdem speichern (die andere geht verloren).\nAbbrechen = nichts tun. Mit „Änderungen verwerfen“ holst du dir den aktuellen Stand.`)) admPublish(true);
       return;
     }
-    if(!r.ok || !j.ok){ admStatus('Nicht veröffentlicht: ' + (j.error || 'Fehler ' + r.status)); return; }
-    adm.rev = j.rev || ''; admSave(`Veröffentlicht ✓ ${j.comps} Comps (Commit ${j.commit}) – in etwa einer Minute für alle sichtbar.`, true);
-  } catch(e){ admStatus('Nicht veröffentlicht: keine Verbindung.'); }
-  finally { btn.disabled = false; }
+    if(!r.ok || !j.ok){ admStatus('Nicht gespeichert: ' + (j.error || 'Fehler ' + r.status)); admDirtyUI(); return; }
+    adm.rev = j.rev || ''; admApplyLive();
+    admStatus(`Gespeichert ✓ ${j.comps} Comps – in etwa einer Minute auf allen Geräten sichtbar.`);
+  } catch(e){ admStatus('Nicht gespeichert: keine Verbindung.'); admDirtyUI(); }
 }
 // Klicks
 document.addEventListener('click', e=>{
@@ -1314,7 +1330,8 @@ document.addEventListener('click', e=>{
     adm.comps.push(c); admSel = c.slug; admSave('Neue Comp angelegt'); renderAdminRows(); renderAdminEdit(); return;
   }
   if(t.id==='admPublish'){ admPublish(); return; }
-  if(t.id==='admPwGo'){ admPwSubmit(); return; }
+  if(t.id==='admLoginGo'){ admLogin(); return; }
+  if(t.id==='admLogout'){ if(admDirty && !confirm('Es gibt ungespeicherte Änderungen. Trotzdem abmelden? Sie bleiben in diesem Browser erhalten.')) return; admPwSet(''); renderAdmin(); return; }
   if(t.id==='admExport'){
     const data = admData();
     const js = '// TFTClimb – Tierlist-Daten, exportiert aus der Redaktion am ' + new Date().toLocaleString(LOC) + '\n// Datei neben die index.html legen, dann sehen alle Besucher diesen Stand.\nwindow.TIERLIST_DATA = ' + JSON.stringify(data) + ';\n';
@@ -1323,9 +1340,9 @@ document.addEventListener('click', e=>{
     admStatus(`Exportiert: tierlist-data-${TFT_DATA.set}.js – neben die index.html legen.`); return;
   }
   if(t.id==='admReset'){
-    if(!confirm('Entwurf verwerfen? Danach gilt wieder der veröffentlichte Stand (tierlist-data-' + TFT_DATA.set + '.js) bzw. der eingebaute Stand.')) return;
-    try { localStorage.removeItem(TL_DRAFT_KEY); } catch(err){}
-    tierSource = loadTierSource(); ITEM_TL = tlPart('itemTL'); AUG_TL = tlPart('augTL'); HOLD_TL = tlPart('holdTL'); ENC_TL = tlPart('encTL'); adm = null; admSel = null; rebuildComps(tierSource.data.comps); filterComps(); renderItemTL(); renderAugTL(); renderHoldTL(); renderEncTL(); updateTlNote(); renderAdmin(); draftBadge(); return;
+    if(!confirm('Alle ungespeicherten Änderungen verwerfen? Danach siehst du wieder den gespeicherten Stand.')) return;
+    try { localStorage.removeItem(ADM_WIP_KEY); } catch(err){}
+    adm = null; admSel = null; admDirty = false; renderAdmin(); return;
   }
 });
 // Drag & Drop zwischen den Tiers
@@ -4393,7 +4410,7 @@ function route(){
   moreMenu.classList.remove('open'); drawer.classList.remove('open');
   closeModal(); window.scrollTo(0,0);
   if(ND) ndRoute(page, navKey);
-  setMeta(page, sub); draftBadge();
+  setMeta(page, sub);
   h1Sync(); requestAnimationFrame(()=>requestAnimationFrame(()=>{ h1Sync(); metaLead(META_DESC); }));   // zweiter Lauf für Inhalte, die erst im nächsten Bild entstehen
 }
 window.addEventListener(FILE_MODE ? 'hashchange' : 'popstate', route);

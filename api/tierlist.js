@@ -41,6 +41,7 @@ module.exports = async (req, res) => {
   let body;
   try { body = await readBody(req); } catch (e) { res.status(400).json({error: 'Anfrage nicht lesbar.'}); return; }
   if (!same(body.password || '', process.env.ADMIN_PASSWORD)) { failed(ip).push(Date.now()); res.status(401).json({error: 'Passwort falsch.'}); return; }
+  if (body.check) { res.status(200).json({ok: true}); return; }   // Anmeldung in /admin: nur das Passwort prüfen
 
   // Inhalt prüfen: nur eine Tierlist für ein Set, nur die eine Datei
   const set = Number(body.set), data = body.data;
@@ -62,7 +63,7 @@ module.exports = async (req, res) => {
     const json = JSON.stringify(data);
     if (Buffer.byteLength(json) > MAX_BYTES) { res.status(413).json({error: 'Tierlist zu groß.'}); return; }
     const stamp = new Date().toLocaleString('de-DE', {timeZone: 'Europe/Berlin'});
-    const content = '// TFTClimb – Tierlist-Daten, veröffentlicht aus der Redaktion am ' + stamp + '\n// Wird vom Knopf „Veröffentlichen“ in /admin geschrieben (api/tierlist.js).\nwindow.TIERLIST_DATA = ' + json + ';\n';
+    const content = '// TFTClimb – Tierlist-Daten, veröffentlicht aus der Redaktion am ' + stamp + '\n// Wird vom Knopf „Speichern“ in /admin geschrieben (api/tierlist.js).\nwindow.TIERLIST_DATA = ' + json + ';\n';
     const put = await gh(`/contents/${file}`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({
       message: `Tierlist Set ${set} aus der Redaktion veröffentlicht (${data.comps.length} Comps, Patch ${String(data.patch || '').slice(0, 12)})`,
       content: Buffer.from(content, 'utf8').toString('base64'), branch: BRANCH, committer: AUTHOR, author: AUTHOR,
