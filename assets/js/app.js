@@ -1600,6 +1600,9 @@ const BUDDY_LINES = {
     'Vor jeder Creep-Stage kommt von jeder Komponente eine dazu. Ein wunderbar logisches System!',
     'Prismatische Orbs gibt es erst ab 3-7. Geduld ist auch eine Wissenschaft!']; },
   augtool(){ return ['Silber, Gold oder Prismatisch? Die Wahrscheinlichkeit sagt es dir!', 'Trag dein Augment auf 2-1 ein – den Rest berechne ich.']; },
+  builder(){ return ['Ab aufs Brett mit euch! Zieh deine Units genau dahin, wo sie hingehören.',
+    'Gute Aufstellung gewinnt Kämpfe. Tanks nach vorn, Carrys schön nach hinten!',
+    'Fertig geplant? Mit „Teilen“ bekommst du einen Link für dein Board.']; },
   sim(){ return ['Willkommen in meinem Labor! Stell zwei Teams auf und starte das Experiment.',
     'Klick eine Unit an – dann siehst du ihr Ziel, ihren Laufweg und was sie als Nächstes vorhat.',
     'Ein Kampf ist Zufall, hundert Kämpfe sind Statistik. Probier „Siegchance“!']; },
@@ -1635,18 +1638,21 @@ function buddyWire(el){
 document.querySelectorAll('[data-buddy]').forEach(buddyWire);
 // Tool-Seiten: Heimerdinger in der Version des Tools (dasselbe Bild wie auf der Kachel) – nur, wenn es das Bild gibt.
 // Erst wenn die Seite geöffnet wird (route), damit nicht jeder Aufruf alle Tool-Bilder lädt
+// Team Builder und Kampf-Simulator teilen sich einen Kopf: data-art-builder = eigenes Maskottchen für den Team Builder (nur dort sichtbar)
 function toolArtLoad(root){ root.querySelectorAll('[data-tool-art]:not([data-art-done])').forEach(head=>{
   head.dataset.artDone = '1';
-  const src = head.dataset.artSrc || `assets/tools/${head.dataset.toolArt}.webp`, im = new Image();
-  im.onload = ()=>{
-    const sim = head.dataset.toolArt==='simulator';
-    head.classList.add('art-on');
-    head.insertAdjacentHTML('afterbegin', `<div class="buddy heimer${sim ? ' b-simonly' : ''}" data-buddy="${head.dataset.artBuddy}"><div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>`
-      + `<button class="buddy-img" type="button" style="background:url('${src}') center bottom/contain no-repeat" aria-label="Heimerdinger – nächster Tipp" title="Klick für den nächsten Tipp"><span></span></button></div>`);
-    buddyWire(head.firstElementChild);
-    tnEqualize();   // mit Bild bekommt der Kopf seine Seitenabstände – Höhen neu angleichen
-  };
-  im.src = src;
+  const add = (src, cls, key) => { const im = new Image();
+    im.onload = ()=>{
+      head.classList.add('art-on');
+      head.insertAdjacentHTML('afterbegin', `<div class="buddy heimer${cls}" data-buddy="${key}"><div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>`
+        + `<button class="buddy-img" type="button" style="background:url('${src}') center bottom/contain no-repeat" aria-label="Heimerdinger – nächster Tipp" title="Klick für den nächsten Tipp"><span></span></button></div>`);
+      buddyWire(head.firstElementChild);
+      tnEqualize();   // mit Bild bekommt der Kopf seine Seitenabstände – Höhen neu angleichen
+    };
+    im.src = src; };
+  const sim = head.dataset.toolArt==='simulator';
+  add(head.dataset.artSrc || `assets/tools/${head.dataset.toolArt}.webp`, sim ? ' b-simonly' : '', head.dataset.artBuddy);
+  if(head.dataset.artBuilder) add(`assets/tools/${head.dataset.artBuilder}.webp`, ' b-only', 'builder');
 }); }
 setInterval(()=>{
   const page = document.querySelector('.page.active'); if(!page || document.hidden) return;
@@ -4861,7 +4867,7 @@ function renderDash(){
           ['/tools/tft-item-drop-chance', 'drops', L('Item-Drop-Chance', 'Item Drop Chance'), L('Was droppt als Nächstes?', 'What drops next?')],
           ['/tools/tft-augment-vorhersage', 'augments', L('Augment-Vorhersage', 'Augment Prediction'), L('Welche Stufe kommt?', 'Which tier comes next?')],
           ['/tools/tft-tierlist-maker', 'tierlist', 'Tierlist-Maker', L('Eigene Tierlist bauen', 'Build your own tier list')],
-          ['/tft-team-builder', 'simulator', 'Team Builder', L('Board planen & teilen', 'Plan & share boards')]
+          ['/tft-team-builder', 'teambuilder', 'Team Builder', L('Board planen & teilen', 'Plan & share boards')]
         ].map(([h, img, t, d])=>`<a href="${h}"><img src="assets/tools/thumb/${img}.webp" alt="" width="34" height="34" loading="lazy"><span><b>${t}</b><small>${d}</small></span></a>`).join('')}</div></section>
       <section class="dsh-card dsh-cheats">
         <div class="dsh-h"><h2>Cheatsheets</h2><a href="/cheatsheet">${L('Alle', 'All')} →</a></div>

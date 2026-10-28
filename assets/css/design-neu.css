@@ -999,8 +999,9 @@ body.nd-mini .nds-soon{display:none}
 .nd .page-head .buddy.heimer .buddy-bubble{display:none}
 .nd .page-head .buddy.heimer.b-simonly{display:none}
 .nd .sim-mode .page-head .buddy.heimer.b-simonly{display:block}
+.nd .sim-mode .page-head .buddy.heimer.b-only{display:none}   /* Team-Builder-Maskottchen nur im Team Builder, im Simulator dessen eigenes */
 .nd .page-head.heimer-head>*:not(.buddy),.nd .page-head.art-on>*:not(.buddy){position:relative;z-index:1}
-@media (min-width:761px){.nd .page-head.heimer-head,.nd .page-head.art-on{padding-inline:calc(var(--hw) + 8px)}.nd #page-builder:not(.sim-mode) .page-head.art-on{padding-inline:0}}
+@media (min-width:761px){.nd .page-head.heimer-head,.nd .page-head.art-on{padding-inline:calc(var(--hw) + 8px)}}
 @media (max-width:760px){.nd .page-head .buddy.heimer,.nd .sim-mode .page-head .buddy.heimer.b-simonly{display:none}}
 /* ---------- Einheitliche Seitenbreiten (body[data-lvl], gesetzt in route()) ----------
    Übersichtsseiten (top): Inhalt bis 1452 px, 24 px Abstand zu Seitenleiste und rechtem Rand – wie das Dashboard.

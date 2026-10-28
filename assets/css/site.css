@@ -1431,7 +1431,6 @@ button.bt.on{background:rgba(46,230,214,.12);box-shadow:inset 0 0 0 1px rgba(46,
 .buddy.heimer .buddy-bubble .bd2{right:-42px;top:66px}
 @media (max-width:820px){ .has-buddy.heimer-head{padding-right:0} .buddy.heimer{width:100%} .buddy.heimer .buddy-img{width:220px;height:180px} .buddy.heimer .buddy-bubble{right:210px;top:10px;max-width:min(230px,calc(100vw - 240px))} }/* Heimerdinger in den Tool-Seiten (Kopfbereich wird erst mit Bild breiter) */
 .page-head.art-on{position:relative;padding-right:490px;min-height:256px}
-#page-builder:not(.sim-mode) .page-head.art-on{padding-right:0;min-height:0}
 @media (max-width:820px){ .page-head.art-on{padding-right:0;min-height:0} }/* ================= STATS ================= */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .statbar{display:block;background:none;border:0;color:var(--text);text-decoration:none}
