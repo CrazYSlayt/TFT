@@ -14,6 +14,13 @@ function load() {
   if (HTML === null) HTML = fs.readFileSync(path.join(process.cwd(), 'index.html'), 'utf8');
   if (PAGES === null) { try { PAGES = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'data', 'seo-meta.json'), 'utf8')).pages || {}; } catch (e) { PAGES = {}; } }
 }
+// Live-Set aus data/sets.js: seine Daten-Skripte lädt die Seite erst per document.write am Ende – der Browser findet sie dadurch spät.
+// Im Kopf als preload angemeldet, kommen sie parallel zu CSS und Schriften (am Handy deutlich früher fertig)
+let SETS = null;
+function liveSet() {
+  if (SETS === null) { try { const t = fs.readFileSync(path.join(process.cwd(), 'data', 'sets.js'), 'utf8'); SETS = JSON.parse(t.slice(t.indexOf('['), t.lastIndexOf(']') + 1)); } catch (e) { SETS = []; } }
+  return SETS.find(s => s.status === 'live') || SETS[0] || null;
+}
 const att = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const txt = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -38,6 +45,9 @@ function headBlock(m, base) {
     m.tw === 'summary_large_image' && m.img ? `<meta name="twitter:image" content="${att(abs(m.img))}">` : '',
     m.loc ? `<meta property="og:locale" content="${att(m.loc)}">` : '',
     m.ld ? `<script type="application/ld+json" id="ldPage">${m.ld.split('{{ORIGIN}}').join(base).replace(/</g, '\\u003c')}</script>` : '',
+    ...(() => { const s = liveSet(); if (!s) return []; const en = m.loc === 'en_GB';
+      return [s.file, `custom-${s.set}.js`, en ? s.file.replace(/\.js$/, '-en.js') : ''].filter(Boolean).map(f => `<link rel="preload" href="data/${f}" as="script">`)
+        .concat([`<link rel="preload" href="tierlist-data-${s.set}.js" as="script">`]); })(),
     '<!-- seo:end -->'].filter(Boolean).join('\n');
 }
 
@@ -49,6 +59,31 @@ function lookup(p) {
   return PAGES[p] || PAGES[p.replace(/\/\d+\/[^/]+$/, '')] || null;
 }
 
+// Ende eines <div>, das bei `start` beginnt (verschachtelte divs mitgezählt, Kommentare übersprungen)
+function divEnd(h, start) {
+  const re = /<!--[\s\S]*?-->|<div\b[^>]*>|<\/div>/g; re.lastIndex = start; let depth = 0, m;
+  while ((m = re.exec(h))) { if (m[0][1] === '!') continue; depth += m[0][1] === '/' ? -1 : 1; if (!depth) return m.index; }
+  return -1;
+}
+// index.html enthält alle Seiten der Website. Für die aufgerufene Adresse bleibt nur deren Seite (und bei Tools nur das gewählte Tool)
+// als Inhalt stehen; die übrigen stecken in <template class="pg-tpl"> – für Suchmaschinen kein Seiteninhalt (eine H1, kein fremder Text).
+// Im Browser holt ein kleines Skript direkt nach </main> alles wieder heraus, bevor app.js startet – die Seite funktioniert wie immer.
+function onlyPage(h, pg, tv) {
+  const wrap = (src, open, keep) => {   // alle <div …> mit passendem Anfang, die nicht `keep` sind, einpacken (von hinten nach vorn)
+    const hits = []; let i = -1;
+    while ((i = src.indexOf(open, i + 1)) >= 0) { const id = (src.slice(i, src.indexOf('>', i)).match(/(?:id="page-|data-tool=")([^"]*)"/) || [])[1]; hits.push([i, id]); }
+    for (const [i, id] of hits.reverse()) {
+      const s = src.indexOf('>', i) + 1, e = divEnd(src, i); if (e < 0 || id === keep) continue;
+      const inner = src.slice(s, e); if (!inner.trim()) continue;
+      src = src.slice(0, s) + '<template class="pg-tpl">' + inner + '</template>' + src.slice(e);
+    }
+    return src;
+  };
+  h = wrap(h, '<div class="page" id="page-', pg.replace(/^page-/, ''));
+  if (pg === 'page-tools' && tv != null) h = wrap(h, '<div class="tool-view" data-tool="', tv);
+  return h;
+}
+
 function render(p, base) {
   let h = HTML;
   const q = '/' + String(p || '').replace(/^\/+/, ''), m = lookup(q);
@@ -57,6 +92,7 @@ function render(p, base) {
     h = h.replace(BLOCK, () => headBlock(m, base));
     // fertige Artikel (data-pre) der Seite einsetzen – Suchmaschinen sehen sie so schon ohne JavaScript, in der richtigen Sprache
     if (m.pre) h = h.replace(/(<(\w+)[^>]*\sdata-pre="([\w-]+)"[^>]*>)(\s*)(<\/\2>)/g, (all, open, tag, key, ws, close) => m.pre[key] ? open + m.pre[key] + close : all);
+    if (m.pg) h = onlyPage(h, m.pg, m.tv);
     return h;
   }
   // unbekannte Adresse (z. B. 404): Titel und Beschreibung der Startseite bleiben, aber ohne Adress-Angaben der Startseite

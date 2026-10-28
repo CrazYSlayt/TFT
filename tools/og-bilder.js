@@ -57,6 +57,45 @@ const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
   .mascot{position:absolute;right:30px;bottom:24px;height:560px;z-index:1;filter:drop-shadow(0 18px 40px rgba(0,0,0,.6)) drop-shadow(0 0 40px rgba(167,139,250,.35))}
 </style></head><body>${body}</body></html>`;
 
+// ---------- PNG mit 256 Farben (statt ~850 KB Vollfarbe etwa 200–300 KB) ----------
+// Median-Cut wählt die 256 Farben, Floyd-Steinberg-Dithering verhindert Streifen in den Verläufen; Ausgabe als Paletten-PNG (Farbtyp 3)
+const zlib = require('zlib');
+function quantize(rgba, W, H){
+  // 1) Histogramm in 5 Bit pro Kanal
+  const hist = new Uint32Array(32768);
+  for (let i = 0; i < rgba.length; i += 4) hist[((rgba[i] >> 3) << 10) | ((rgba[i + 1] >> 3) << 5) | (rgba[i + 2] >> 3)]++;
+  const bins = []; for (let k = 0; k < 32768; k++) if (hist[k]) bins.push(k);
+  const ch = (k, c) => c === 0 ? k >> 10 : c === 1 ? (k >> 5) & 31 : k & 31;
+  // 2) Median-Cut: immer die Box mit der größten (gewichteten) Spannweite teilen
+  let boxes = [bins];
+  while (boxes.length < 256) {
+    let best = -1, bc = 0, bs = -1;
+    boxes.forEach((b, i) => { if (b.length < 2) return; for (let c = 0; c < 3; c++) { let lo = 31, hi = 0, n = 0; for (const k of b) { const v = ch(k, c); if (v < lo) lo = v; if (v > hi) hi = v; n += hist[k]; } const s = (hi - lo) * Math.sqrt(n); if (s > bs) { bs = s; best = i; bc = c; } } });
+    if (best < 0) break;
+    const b = boxes[best].sort((x, y) => ch(x, bc) - ch(y, bc)), tot = b.reduce((s, k) => s + hist[k], 0); let acc = 0, cut = 1;
+    for (let i = 0; i < b.length - 1; i++) { acc += hist[b[i]]; if (acc >= tot / 2) { cut = i + 1; break; } }
+    boxes.splice(best, 1, b.slice(0, cut), b.slice(cut));
+  }
+  const pal = boxes.map(b => { let r = 0, g = 0, bl = 0, n = 0; for (const k of b) { const w = hist[k]; r += (ch(k, 0) * 8 + 4) * w; g += (ch(k, 1) * 8 + 4) * w; bl += (ch(k, 2) * 8 + 4) * w; n += w; } return [Math.round(r / n), Math.round(g / n), Math.round(bl / n)]; });
+  // 3) nächste Palettenfarbe je 5-Bit-Farbe (zwischengespeichert), Floyd-Steinberg-Dithering
+  const near = new Int16Array(32768).fill(-1);
+  const pick = (r, g, b) => { const k = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3); if (near[k] >= 0) return near[k];
+    let bi = 0, bd = Infinity; pal.forEach((p, i) => { const d = (p[0] - r) ** 2 * 3 + (p[1] - g) ** 2 * 4 + (p[2] - b) ** 2 * 2; if (d < bd) { bd = d; bi = i; } }); return near[k] = bi; };
+  const buf = Float32Array.from(rgba), idx = new Uint8Array(W * H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const o = (y * W + x) * 4, r = Math.max(0, Math.min(255, buf[o])), g = Math.max(0, Math.min(255, buf[o + 1])), b = Math.max(0, Math.min(255, buf[o + 2]));
+    const i = pick(r, g, b), p = pal[i]; idx[y * W + x] = i;
+    const e = [r - p[0], g - p[1], b - p[2]];
+    const add = (dx, dy, f) => { const xx = x + dx, yy = y + dy; if (xx < 0 || xx >= W || yy >= H) return; const q = (yy * W + xx) * 4; buf[q] += e[0] * f; buf[q + 1] += e[1] * f; buf[q + 2] += e[2] * f; };
+    add(1, 0, 7 / 16); add(-1, 1, 3 / 16); add(0, 1, 5 / 16); add(1, 1, 1 / 16);
+  }
+  // 4) Paletten-PNG schreiben
+  const chunk = (type, data) => { const len = Buffer.alloc(4); len.writeUInt32BE(data.length); const td = Buffer.concat([Buffer.from(type, 'ascii'), data]); const crc = Buffer.alloc(4); crc.writeUInt32BE(zlib.crc32(td) >>> 0); return Buffer.concat([len, td, crc]); };
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(W, 0); ihdr.writeUInt32BE(H, 4); ihdr[8] = 8; ihdr[9] = 3;
+  const raw = Buffer.alloc((W + 1) * H); for (let y = 0; y < H; y++) { raw[y * (W + 1)] = 0; idx.subarray(y * W, (y + 1) * W).forEach((v, x) => { raw[y * (W + 1) + 1 + x] = v; }); }
+  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('PLTE', Buffer.from(pal.flat())), chunk('IDAT', zlib.deflateSync(raw, {level: 9})), chunk('IEND', Buffer.alloc(0))]);
+}
+
 // kleiner Webserver: Projektdateien + die aktuelle Vorlage unter /__og
 let current = '';
 function serve(){ return new Promise(res => { const srv = http.createServer((q, r) => {
@@ -84,8 +123,13 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
       current = j.html;
       await send('Page.navigate', {url: origin + '/__og?' + j.file}); await sleep(600);
       await send('Runtime.evaluate', {expression: 'document.fonts.ready.then(()=>Promise.all([...document.images].map(i=>i.decode().catch(()=>{}))))', awaitPromise: true});
+      // Pixel der Seite holen (für das 256-Farben-PNG): Screenshot im Browser auf ein Canvas zeichnen und als Rohdaten zurückgeben
+      const shot = (await send('Page.captureScreenshot', {format: 'png'})).result.data;
+      const px = (await send('Runtime.evaluate', {awaitPromise: true, returnByValue: true, expression: `new Promise(ok => { const i = new Image(); i.onload = () => { const c = document.createElement('canvas'); c.width = 1200; c.height = 630;
+        const x = c.getContext('2d'); x.drawImage(i, 0, 0); const d = x.getImageData(0, 0, 1200, 630).data; let s = ''; for (let k = 0; k < d.length; k += 32768) s += String.fromCharCode.apply(null, d.subarray(k, k + 32768)); ok(btoa(s)); }; i.src = 'data:image/png;base64,${shot}'; })`})).result.result.value;
+      const pngSmall = quantize(Buffer.from(px, 'base64'), 1200, 630);
       for (const [fmt, ext, q] of [['png', 'png'], ['webp', 'webp', 86]]) {
-        const s = await send('Page.captureScreenshot', {format: fmt, ...(q ? {quality: q} : {})}), buf = Buffer.from(s.result.data, 'base64'), f = path.join(OUT, `${j.file}.${ext}`);
+        const buf = ext === 'png' ? pngSmall : Buffer.from((await send('Page.captureScreenshot', {format: fmt, quality: q})).result.data, 'base64'), f = path.join(OUT, `${j.file}.${ext}`);
         // nur schreiben, wenn sich das Bild geändert hat (sonst gäbe jedes Daten-Update eine neue Datei)
         if (fs.existsSync(f) && fs.readFileSync(f).equals(buf)) { console.log(`  unverändert: assets\\og\\${j.file}.${ext}`); continue; }
         fs.writeFileSync(f, buf); console.log(`  geschrieben: assets\\og\\${j.file}.${ext}`);

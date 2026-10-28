@@ -55,6 +55,9 @@
 <meta name="twitter:card" content="summary">
 <meta property="og:locale" content="de_DE">
 <script type="application/ld+json" id="ldPage">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"TFTClimb","url":"https://www.tftclimb.com/","inLanguage":"de","publisher":{"@type":"Organization","name":"TFTClimb","url":"https://www.tftclimb.com/","logo":"https://www.tftclimb.com/assets/brand/logo-symbol-512.png","email":"info@tftclimb.com"}}]}</script>
+<link rel="preload" href="data/tft-data-18.js" as="script">
+<link rel="preload" href="data/custom-18.js" as="script">
+<link rel="preload" href="tierlist-data-18.js" as="script">
 <!-- seo:end -->
 <meta property="og:site_name" content="TFTClimb">
 <meta property="og:type" content="website">
@@ -67,6 +70,9 @@
 <!-- Champion-, Item- und Rang-Bilder kommen von CommunityDragon/Riot: Verbindung schon beim Laden der Seite aufbauen -->
 <link rel="preconnect" href="https://raw.communitydragon.org">
 <link rel="preconnect" href="https://ddragon.leagueoflegends.com">
+<!-- app.js und sim.js stehen am Ende von <body>: hier schon anmelden, damit sie am Handy vor den Bildern geladen werden -->
+<link rel="preload" href="assets/js/sim.js" as="script">
+<link rel="preload" href="assets/js/app.js" as="script">
 <link rel="stylesheet" href="assets/css/fonts.css">
 <link rel="stylesheet" href="assets/css/site.css">
 <script>
@@ -1331,6 +1337,8 @@
 </div>
 
 </main>
+<!-- Seiten, die api/page.js für Suchmaschinen in <template> gepackt hat, wieder einsetzen – vor allen anderen Skripten -->
+<script>document.querySelectorAll('template.pg-tpl').forEach(function(t){ t.replaceWith(t.content); });</script>
 
 <!-- ================= FOOTER ================= -->
 <footer>

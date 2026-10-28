@@ -674,6 +674,7 @@ body.nd-mini .nds-link{padding:9px 0}body.nd-mini .nds-gap{height:12px}
 .nds-vi2{display:block;flex:none;width:calc(100% + 12px);max-width:230px;height:auto;margin:auto 0 0 -12px;padding-top:16px;pointer-events:none;
   filter:drop-shadow(0 6px 16px rgba(0,0,0,.55));-webkit-mask:linear-gradient(180deg,#000 82%,transparent);mask:linear-gradient(180deg,#000 82%,transparent)}
 body.nd-mini .nds-vi2{display:none}
+.nds-vi2:not([src]){visibility:hidden}   /* Bild kommt erst nach dem Laden (shell.js data-later) – bis dahin kein leerer Bildrahmen */
 @media (max-height:760px){.nds-vi2{display:none}}
 
 /* ---------- Sprechblase im Comic-Stil: Oval mit geschwungenem Zipfel unten links ---------- */

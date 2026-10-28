@@ -2931,7 +2931,7 @@ function agArticle(){
   const sure = ['S', 'G', 'P', ...['S', 'G', 'P'].flatMap(a=>['S', 'G', 'P'].map(b=>a + b))].filter(k=>agSum(k) > 0)
     .map(k=>[k, Object.fromEntries(agDist(k, k.length)).G]).sort((a, b)=>b[1] - a[1])[0];
   const faq = [
-    [L('Wie hoch ist die Chance auf ein prismatisches Augment?', 'What are the odds of a prismatic augment?'),
+    [L('Wie hoch ist die Wahrscheinlichkeit für ein prismatisches Augment?', 'What is the chance of a prismatic augment in TFT?'),
      L(`In Set ${S} gibt es in ${P(prism)} aller Partien mindestens ein prismatisches Augment. Auf 2-1 liegt die Chance bei ${P(st[0].P)}, auf 3-2 bei ${P(st[1].P)} und auf 4-2 bei ${P(st[2].P)}.`,
        `In Set ${S}, ${P(prism)} of all games have at least one prismatic augment. The odds are ${P(st[0].P)} on 2-1, ${P(st[1].P)} on 3-2 and ${P(st[2].P)} on 4-2.`)],
     [L('Kann ich zwei oder drei prismatische Augments bekommen?', 'Can I get two or three prismatic augments?'),
@@ -2949,14 +2949,14 @@ function agArticle(){
   return `<div class="ts-main">
     <h2 id="ts-augments">${L(`TFT Augment-Chancen in Set ${S}: So wahrscheinlich ist ein prismatisches Augment`, `TFT augment odds in Set ${S}: how likely is a prismatic augment?`)}</h2>
     <figure class="art-fig"><img src="${og}" alt="${L('TFT Augment-Chancen: Silber, Gold oder Prismatisch – kostenloser Rechner von TFTClimb', 'TFT augment odds: silver, gold or prismatic – free calculator by TFTClimb')}" width="1200" height="630" loading="lazy"></figure>
-    <p>${L(`In jeder TFT-Partie bekommst du drei Augments – auf 2-1, 3-2 und 4-2. Ob sie Silber, Gold oder Prismatisch sind, wird nicht Runde für Runde ausgewürfelt: Die Stufen der ganzen Partie stehen als Kombination fest. In Set ${S} gibt es in <b>${P(prism)}</b> aller Partien mindestens ein prismatisches Augment. Hier findest du alle Augment-Chancen von Patch ${PT} – als Tabellen und live im Rechner oben.`,
-      `Every TFT game gives you three augments – on 2-1, 3-2 and 4-2. Whether they are silver, gold or prismatic is not rolled round by round: the tiers of the whole game are set as one combination. In Set ${S}, <b>${P(prism)}</b> of all games have at least one prismatic augment. Here you find every augment odd of patch ${PT} – as tables and live in the calculator above.`)}</p>
+    <p>${L(`In jeder TFT-Partie bekommst du drei Augments – auf 2-1, 3-2 und 4-2. Ob sie Silber, Gold oder Prismatisch sind, wird nicht Runde für Runde ausgewürfelt: Die Stufen der ganzen Partie stehen als Kombination fest. In Set ${S} gibt es in <b>${P(prism)}</b> aller Partien mindestens ein prismatisches Augment. Hier findest du alle Augment-Chancen und Augment-Wahrscheinlichkeiten von Patch ${PT} – als Tabellen und live im Rechner oben.`,
+      `Every TFT game gives you three augments – on 2-1, 3-2 and 4-2. Whether they are silver, gold or prismatic is not rolled round by round: the tiers of the whole game are set as one combination. In Set ${S}, <b>${P(prism)}</b> of all games have at least one prismatic augment. Here you find all augment tier odds of patch ${PT} – including your prismatic augment chance on 2-1, 3-2 and 4-2 – as tables and live in the calculator above.`)}</p>
     <div class="art-stats">
       <div class="p"><b>${P(prism)}</b><span>${L('mindestens ein prismatisches Augment pro Partie', 'at least one prismatic augment per game')}</span></div>
       <div class="p"><b>${P(st[0].P)}</b><span>${L('prismatisch schon auf 2-1', 'prismatic already on 2-1')}</span></div>
       <div class="g"><b>${P(top[0][1] / W * 100)}</b><span>${L(`häufigste Partie: ${top[0][0].split('').map(agName).join(' – ')}`, `most common game: ${top[0][0].split('').map(agName).join(' – ')}`)}</span></div>
     </div>
-    <h3 id="art-runde">${L('Augment-Chancen pro Runde', 'Augment odds per round')}</h3>
+    <h3 id="art-runde">${L('Augment-Wahrscheinlichkeiten pro Runde', 'Augment tier odds per round')}</h3>
     <div class="art-tw"><table class="art-table"><thead><tr><th>${L('Stufe', 'Tier')}</th>${AG_ST.map(x=>`<th>${x}</th>`).join('')}</tr></thead>
       <tbody>${'SGP'.split('').map(l=>`<tr><td>${tier(l)}</td>${AG_ST.map((_, i)=>`<td class="${st[i][l] === max(i) ? 'hi' : ''}">${P(st[i][l])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
     <p class="art-note">${L('Gilt für alle Partien, bevor du dein erstes Augment siehst. Danach ändern sich die Chancen – das rechnet der Rechner oben nach jedem Augment neu.', 'Applies to all games before you see your first augment. After that the odds change – the calculator above recalculates them after every augment.')}</p>
@@ -4566,8 +4566,8 @@ function pageMeta(page, sub){
       return ['TFT Guides', L(`TFT Guides von Challenger-Spielern für ${S}: Strategien, Comps und Encounters – bald hier auf TFTClimb.`, `TFT guides from Challenger players for ${S}: strategies, comps and encounters – coming soon to TFTClimb.`), true];
     case 'tools':
       // Keyword: „Augment-Chancen“ / „augment odds“ – so wird gesucht (nicht „Vorhersage“)
-      if(sub==='augments') return [L(`TFT Augment-Chancen ${S} – Prismatisch-Rechner`, `TFT Augment Odds ${S} – Prismatic Calculator`), L(`TFT Augment-Chancen für ${S}: Wie wahrscheinlich ist ein prismatisches Augment? Chancen für 2-1, 3-2 und 4-2 – live berechnet.`,
-        `TFT augment odds for ${S}: how likely is a prismatic augment? Odds for 2-1, 3-2 and 4-2 – calculated live after every pick.`)];
+      if(sub==='augments') return [L(`TFT Augment-Chancen ${S} – Prismatisch-Rechner`, `TFT Augment Odds ${S} – Prismatic Calculator`), L(`TFT Augment-Chancen ${S}: alle Augment-Wahrscheinlichkeiten für 2-1, 3-2 und 4-2 – wie oft kommt ein prismatisches Augment?`,
+        `TFT augment odds for ${S}: your prismatic augment chance and the tier odds for 2-1, 3-2 and 4-2 – calculated live after every pick.`)];
       if(sub==='tierlist') return [L(`TFT Tierlist-Maker ${S} – eigene Tierlist`, `TFT Tier List Maker ${S} – Your Own List`), L(`Kostenloser TFT Tierlist-Maker für ${S}: Champions, Items und Augments per Drag & Drop ranken und deine Tierlist als Link teilen.`,
         `Free TFT tier list maker for ${S}: rank champions, items and augments by drag & drop and share your tier list as a link.`)];
       if(sub==='rolldown') return [L(`TFT Rolldown-Rechner ${S} – Odds pro Level`, `TFT Rolldown Calculator ${S} – Odds per Level`), L(`TFT Rolldown-Rechner für ${S}: Wie wahrscheinlich triffst du deine Units? Mit Shop-Odds pro Level, Pool-Größen und Gold-Bedarf.`,

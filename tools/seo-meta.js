@@ -60,7 +60,9 @@ function findBrowser() {
       const pre = {}; document.querySelectorAll('.page.active [data-pre]').forEach(el => { if (el.getClientRects().length && el.innerHTML.trim()) pre[el.dataset.pre] = el.innerHTML.split(O + '/').join('/'); });
       return {t: document.title, d: m('meta[name="description"]'), r: m('meta[name="robots"]'), c: rel(a('link[rel="canonical"]').href),
         de: rel(a('link[hreflang="de"]').href), en: rel(a('link[hreflang="en"]').href), img: rel(m('meta[property="og:image"]')), loc: m('meta[property="og:locale"]'),
-        tw: m('meta[name="twitter:card"]'), ld: ld ? ld.textContent.split(O).join('{{ORIGIN}}') : '', ...(Object.keys(pre).length ? {pre} : {})}; })()`;
+        tw: m('meta[name="twitter:card"]'), ld: ld ? ld.textContent.split(O).join('{{ORIGIN}}') : '', ...(Object.keys(pre).length ? {pre} : {}),
+        // sichtbare Seite und (bei Tools) das sichtbare Tool – api/page.js lässt nur diese als Inhalt im HTML stehen
+        pg: (document.querySelector('.page.active') || {}).id || '', ...(() => { const v = [...document.querySelectorAll('#page-tools .tool-view')].find(x => !x.hidden); return v && document.querySelector('#page-tools.active') ? {tv: v.dataset.tool} : {}; })()}; })()`;
     const pages = {}; let lang = '';
     for (const p of paths) {
       const l = /^\/en(\/|$)/.test(p) ? 'en' : 'de';

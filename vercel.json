@@ -4,7 +4,7 @@
       "includeFiles": "{data/*.js,tierlist-data-*.js}"
     },
     "api/page.js": {
-      "includeFiles": "{index.html,data/seo-meta.json}"
+      "includeFiles": "{index.html,data/seo-meta.json,data/sets.js}"
     }
   },
   "headers": [
