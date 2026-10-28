@@ -1290,6 +1290,7 @@ window.I18N_EN = {
   "Stand: Patch {0} · aktualisiert am {1}/{2}/{3} · Bewertungen von TFTClimb": "As of patch {0} · updated on {1}/{2}/{3} · ratings by TFTClimb",
   "Stand: Patch {0} · Bewertungen von TFTClimb": "As of patch {0} · ratings by TFTClimb",
   "Augment-Chancen": "Augment odds",
+  "Wie wahrscheinlich Silber, Gold oder Prismatisch als Nächstes kommt, zeigen dir unsere": "How likely silver, gold or prismatic comes next is shown by our",
   "Vorhersage": "Prediction",
   "TFT Augment-Chancen": "TFT augment odds",
   "/ Augment-Chancen": "/ Augment odds",

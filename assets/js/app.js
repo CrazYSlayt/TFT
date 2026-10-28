@@ -12,12 +12,12 @@ const curPath = () => { const p = rawPath(); return fromEn(EN ? (p.replace(/^\/e
 // Sprechende Adressen für Google: das Keyword steht in der Adresse (/tools/tft-item-drop-chance), intern bleiben die kurzen Schlüssel (drops).
 // Alte Adressen leiten weiter – online per 301 (vercel.json), in der Seite über seoPath(). Gleiche Listen in api/sitemap.js
 const TOOL_SLUG = {rolldown:'tft-rolldown-rechner', drops:'tft-item-drop-chance', tierlist:'tft-tierlist-maker', simulator:'tft-kampf-simulator', dps:'tft-dps-vergleich', augments:'tft-augment-chancen'};
-const CS_SLUG = {shop:'tft-shop-odds', augments:'tft-augment-stufen', orbs:'tft-loot-orbs', loot:'tft-loot-verteilung', damage:'tft-spielerschaden', emblems:'tft-embleme', solo:'tft-stage-1-solo', 'patch-schedule':'tft-patch-plan', carousel:'tft-karussell'};   // sonst „tft-“ + Schlüssel
+const CS_SLUG = {shop:'tft-shop-odds', power:'tft-hierarchy-of-power', augments:'tft-augment-stufen', orbs:'tft-loot-orbs', loot:'tft-loot-verteilung', damage:'tft-spielerschaden', emblems:'tft-embleme', solo:'tft-stage-1-solo', 'patch-schedule':'tft-patch-plan', carousel:'tft-karussell'};   // sonst „tft-“ + Schlüssel
 const GUIDE_SLUG = {encounters:'tft-encounters'};
 // Englische Seite: eigene englische Adressen mit englischem Keyword (/en/tools/tft-rolldown-calculator, /en/library …).
 // toEn() macht aus einem internen (deutschen) Pfad den englischen, fromEn() umgekehrt
 const TOOL_SLUG_EN = {rolldown:'tft-rolldown-calculator', drops:'tft-item-drop-chance', tierlist:'tft-tier-list-maker', simulator:'tft-fight-simulator', dps:'tft-dps-comparison', augments:'tft-augment-odds'};
-const CS_SLUG_EN = {shop:'tft-shop-odds', augments:'tft-augment-tiers', orbs:'tft-loot-orbs', loot:'tft-loot-distribution', damage:'tft-player-damage', emblems:'tft-emblems', solo:'tft-solo-stage-1', 'patch-schedule':'tft-patch-schedule', carousel:'tft-carousel'};
+const CS_SLUG_EN = {shop:'tft-shop-odds', power:'tft-hierarchy-of-power', augments:'tft-augment-tiers', orbs:'tft-loot-orbs', loot:'tft-loot-distribution', damage:'tft-player-damage', emblems:'tft-emblems', solo:'tft-solo-stage-1', 'patch-schedule':'tft-patch-schedule', carousel:'tft-carousel'};
 const PAGE_EN = {tierlist:'tier-list', bibliothek:'library', impressum:'legal-notice', datenschutz:'privacy-policy', bedingungen:'terms', 'tft-patch-countdown':'tft-next-patch-countdown'};
 function langPath(p, en){   // en = true: deutsch → englisch, false: englisch → deutsch
   const i = p.search(/[?#]/), rest = i < 0 ? '' : p.slice(i), s = (i < 0 ? p : p.slice(0, i)).split('/');
@@ -2909,6 +2909,22 @@ function agUpdate(syncTree=true){
 const AG_EX = {S:['Component Buffet', 'Item Grab Bag', "Pandora's Items"], G:["Pandora's Items II", 'Heart of Steel', 'Gold Destiny', 'Solo Leveling'],
   P:['Golden Gamble', 'Hedge Fund', 'Prismatic Ticket', 'The Golden Egg', 'Nesting Anvils', 'The Trait Tree']};
 const augName = n => { const a = AUGS.find(x=>x.en === n); return a ? L(a.de || a.en, a.en) : n; };   // Augment-Name in der Sprache der Seite
+// ---------- Bausteine der Tool-Artikel (alle Tools) ----------
+// Link im Fließtext, Tool-Box für „Weitere Tools“, Autor-Kasten (Fachwissen für Google: wer steht hinter den Zahlen)
+const artA = (href, name) => `<a class="art-a" href="${href}">${name}</a>`;
+const artCard = (href, img, name, sub) => `<a class="art-link" href="${href}">${img}<span><b>${name}</b><small>${sub}</small></span><i aria-hidden="true">→</i></a>`;
+const ART_TOOLS = () => ({
+  augments:['/tools/tft-augment-chancen', 'augments', L('Augment-Chancen', 'Augment odds'), L('Wie oft kommt Prismatisch?', 'How often is prismatic?')],
+  rolldown:['/tools/tft-rolldown-rechner', 'rolldown', L('Rolldown-Rechner', 'Rolldown calculator'), L('Triffst du deine Units?', 'Will you hit your units?')],
+  dps:['/tools/tft-dps-vergleich', 'dps', L('DPS-Vergleich', 'DPS comparison'), L('Welcher Item-Build gewinnt?', 'Which item build wins?')],
+  drops:['/tools/tft-item-drop-chance', 'drops', L('Item-Drop-Chance', 'Item drop chance'), L('Welche Komponente kommt als Nächstes?', 'Which component comes next?')],
+  builder:['/tft-team-builder', 'teambuilder', 'Team Builder', L('Board planen und teilen', 'Plan and share your board')]});
+const artTools = keys => `<div class="art-links">${keys.map(k=>{ const t = ART_TOOLS()[k]; return t ? artCard(t[0], `<img src="${toolArtSrc(t[1], true)}" alt="" width="40" height="40">`, t[2], t[3]) : ''; }).join('')}</div>`;
+// Kopf des Profi-Tipps: kleines Foto, „Profi-Tipp“ und Claudio „CrazYSlayt“
+const artTipHead = () => `<div class="art-tiph"><a href="${PATCH_AUTHOR.href}" class="at-img"><img src="${PATCH_AUTHOR.img}" alt="" width="40" height="40" loading="lazy"></a><span><b class="art-bh">${L('Profi-Tipp', 'Pro tip')}</b><a href="${PATCH_AUTHOR.href}" class="at-name">Claudio „CrazYSlayt“</a></span></div>`;
+const artAuthor = () => `<div class="art-author"><a href="${PATCH_AUTHOR.href}" class="aa-img"><img src="${PATCH_AUTHOR.img}" alt="Claudio „CrazYSlayt“" width="64" height="64" loading="lazy"><img class="aa-emb" src="${rankImg(rankBy.challenger)}" alt="" width="24" height="24" loading="lazy"></a>
+  <div><small>${L('Inhalt geprüft von', 'Content checked by')}</small><a href="${PATCH_AUTHOR.href}" class="aa-name">Claudio „CrazYSlayt“</a><span class="aa-role">TFT Challenger · TFTClimb Coach</span>
+    <p>${L('Claudio spielt TFT auf Challenger-Niveau und coacht bei TFTClimb Spieler auf dem Weg nach oben.', 'Claudio plays TFT at Challenger level and coaches players on their way up at TFTClimb.')}</p></div></div>`;
 function agArticle(){
   const seq = CS.augments.seq, W = agSum(''), S = TFT_DATA.set, PT = TL_PATCH || (CURRENT_PATCH ? CURRENT_PATCH.id : '');
   const share = f => seq.filter(x=>f(x[0])).reduce((s, x)=>s + x[1], 0) / W * 100;
@@ -2968,7 +2984,7 @@ function agArticle(){
     <div class="art-tw"><table class="art-table"><thead><tr><th>${L('Auf 2-1', 'On 2-1')}</th><th>${L('Häufigkeit', 'Frequency')}</th><th>${L('Danach mind. 1× Prismatisch', 'At least 1 prismatic after')}</th><th>${L('Wahrscheinlich auf 3-2', 'Likely on 3-2')}</th></tr></thead>
       <tbody>${'SGP'.split('').map(l=>{ const w = agSum(l), later = seq.filter(x=>x[0][0] === l && /P/.test(x[0].slice(1))).reduce((s, x)=>s + x[1], 0) / w * 100, nx = agDist(l, 1).sort((a, b)=>b[1] - a[1])[0];
         return `<tr><td>${tier(l)}</td><td>${P(w / W * 100)}</td><td>${P(later)}</td><td>${tier(nx[0])} <small>${P(nx[1])}</small></td></tr>`; }).join('')}</tbody></table></div>
-    <div class="art-box tip" id="art-tipp"><b class="art-bh">${L('Profi-Tipp von CrazYSlayt', 'Pro tip from CrazYSlayt')}</b>
+    <div class="art-box tip" id="art-tipp">${artTipHead()}
       <p>${L('Weißt du, dass dein nächstes Augment Gold wird, kannst du das zu deinem Vorteil nutzen:', 'If you know your next augment will be gold, you can turn that into an advantage:')}</p>
       <ul class="art-list art-tips">
         <li>${aug('Augmented Power', 'S')} ${L('macht dein nächstes Augment eine Stufe höher – aus Gold wird Prismatisch.', 'makes your next augment one tier higher – gold turns into prismatic.')}</li>
@@ -3006,6 +3022,7 @@ function agArticle(){
     </ol>
     <h3 id="art-faq">${L('Häufige Fragen', 'FAQ')}</h3>
     <div class="art-faq">${faq.map(([q, a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</div>
+    ${artAuthor()}
     <h3>${L('Weitere Tools', 'More tools')}</h3>
     <div class="art-links">
       ${card('/tierlist/augments', `<span class="art-lic">${csSvg('<path d="M4 6h16M4 12h10M4 18h6"/>', 2)}</span>`, L('Augment-Tierlist', 'Augment tier list'), L('Welche Augments sind am stärksten?', 'Which augments are the strongest?'))}
@@ -3063,11 +3080,110 @@ function agMount(){
   }
   agUpdate();
 }
+// Artikel unter dem Rolldown-Rechner (SEO): Shop-Odds, Pool und Gold-Bedarf aus den Set-Daten, gerechnet mit derselben Logik wie der Rechner
+function rdArticle(){
+  const S = TFT_DATA.set, PT = TL_PATCH || (CURRENT_PATCH ? CURRENT_PATCH.id : ''), O = SHOP.odds;
+  const P = v => (v * 100 < 0.5 && v > 0 ? '<1' : Math.round(v * 100)) + L(' %', '%');
+  const prob = (lvl, cost, need, gold, out = 0) => rdAtLeast(rdDist(lvl, cost, out, rdOtherEst(lvl, cost), gold), need);
+  const goldFor = (lvl, cost, need, q, out = 0) => { if(!O[lvl-1][cost-1]) return null; let hi = 2; while(prob(lvl, cost, need, hi, out) < q){ hi *= 2; if(hi > 512) return null; }
+    let lo = 0; while(hi - lo > 1){ const m = (lo + hi) >> 1; if(prob(lvl, cost, need, m, out) >= q) hi = m; else lo = m; } return hi; };
+  const G = g => g == null ? L('über 500', 'over 500') : g + ' Gold';
+  const cdot = c => `<i class="cdot c${c}"></i>`;
+  const typ = RD_LVL, lvls = O.map((_, i)=>i + 1).filter(l=>l >= 3);
+  // Kennzahlen und Tipp-Zahlen
+  const c4 = 4, l4 = typ[c4 - 1], g4 = goldFor(l4, c4, 3, .8), g4lo = goldFor(l4 - 1, c4, 3, .8), xpUp = (SHOP.xp || [])[l4 - 2];
+  const r1 = [typ[0], typ[0] + 1, typ[0] + 2].map(l=>[l, goldFor(l, 1, 9, .8)]);
+  const cont = [0, 3].map(o=>prob(l4, c4, 3, 50, o)), contG = [0, 3].map(o=>goldFor(l4, c4, 3, .8, o));   // ohne / mit 3 Kopien beim Gegner
+  const encs = ENCS.filter(e=>e.cat === 'econ'), encW = ENCS.reduce((s, e)=>s + (+e.w || 0), 0) || 1;
+  const sec = {odds:L('Shop-Odds pro Level', 'Shop odds per level'), pool:L('Pool pro Champion', 'Pool per champion'), gold:L('Gold-Bedarf', 'Gold needed'), tipp:L('Profi-Tipp', 'Pro tip'),
+    ...(encs.length ? {encounter:L('Encounter', 'Encounters')} : {}), rechnung:L('So rechnet der Rechner', 'How it calculates'), anleitung:L('So benutzt du den Rechner', 'How to use it'), faq:L('Häufige Fragen', 'FAQ')};
+  const faq = [
+    [L('Was bedeutet Rolldown in TFT?', 'What does rolldown mean in TFT?'), L('Beim Rolldown steckst du viel Gold auf einmal in Rerolls, um die wichtigsten Units deiner Comp zu finden und dein Board stark zu machen.', 'In a rolldown you spend a lot of gold on rerolls at once to find the key units of your comp and make your board strong.')],
+    [L(`Wie hoch sind die Odds für 4-Kosten auf Level ${l4}?`, `What are the 4-cost odds at level ${l4}?`), L(`Auf Level ${l4} ist jeder Shop-Slot mit ${O[l4-1][3]} % ein 4-Koster – auf Level ${l4 - 1} nur mit ${O[l4-2][3]} %.`, `At level ${l4}, every shop slot is a 4-cost with ${O[l4-1][3]}% – at level ${l4 - 1} only with ${O[l4-2][3]}%.`)],
+    [L('Wie viele Kopien gibt es von jeder Unit?', 'How many copies of each unit are there?'), L(`In Set ${S}: ${SHOP.bag.map((b, i)=>`${b} pro ${i + 1}-Koster`).join(', ')}. Alle acht Spieler teilen sich diesen Pool.`, `In Set ${S}: ${SHOP.bag.map((b, i)=>`${b} per ${i + 1}-cost`).join(', ')}. All eight players share this pool.`)],
+    [L('Wie viel Gold brauche ich für einen 3-Sterne-1-Koster?', 'How much gold do I need for a 3-star 1-cost?'), L(`Auf Level ${typ[0]} etwa ${G(goldFor(typ[0], 1, 9, .5))} für 5 von 10 Spielen und ${G(goldFor(typ[0], 1, 9, .8))} für 8 von 10 – wenn niemand sonst die Unit spielt.`, `At level ${typ[0]} about ${G(goldFor(typ[0], 1, 9, .5))} for 5 out of 10 games and ${G(goldFor(typ[0], 1, 9, .8))} for 8 out of 10 – if nobody else plays the unit.`)],
+    [L('Wie viel kostet ein Reroll?', 'How much does a reroll cost?'), L('Ein Reroll kostet 2 Gold und zeigt dir 5 neue Units. Die Kostenstufen kommen mit den Chancen deines aktuellen Levels.', 'A reroll costs 2 gold and shows you 5 new units. The cost tiers come with the odds of your current level.')],
+    [L('Zählen gekaufte Units mit?', 'Do bought units count?'), L('Ja. Jeder Treffer kostet seinen Preis in Gold, wie im Spiel – je mehr du findest, desto weniger Gold bleibt zum Rollen.', 'Yes. Every hit costs its price in gold, like in the game – the more you find, the less gold is left to roll.')]];
+  const og = L('assets/og/tft-rolldown-rechner.webp', 'assets/og/tft-rolldown-calculator.webp');
+  return `<div class="ts-main">
+    <h2 id="ts-rolldown">${L(`TFT Rolldown-Rechner Set ${S}: Shop Odds, Pool und Gold-Bedarf`, `TFT rolldown calculator Set ${S}: shop odds, pool and gold needed`)}</h2>
+    <figure class="art-fig"><img src="${og}" alt="${L('TFT Rolldown-Rechner: Rollen oder leveln? – kostenloser Rechner von TFTClimb', 'TFT rolldown calculator: roll or level? – free calculator by TFTClimb')}" width="1200" height="630" loading="lazy"></figure>
+    <p>${L(`Im Rolldown entscheidet sich oft die ganze Partie: Rollst du jetzt alles runter oder levelst du erst? Der Rolldown-Rechner zeigt dir, wie wahrscheinlich du deine Units triffst. Dafür nutzt er die TFT Odds aus Set ${S}: die Shop Odds pro Level, die Pool-Größen jeder Kostenstufe und den geteilten Pool aller acht Spieler. Hier findest du alle Reroll-Chancen von Patch ${PT} als Tabellen – und live im Rechner oben.`,
+      `The rolldown often decides the whole game: do you roll down now or level first? The rolldown calculator shows how likely you are to hit your units. It uses the TFT odds of Set ${S}: the shop odds per level, the pool size of each cost tier and the shared pool of all eight players. Here you find all reroll odds of patch ${PT} as tables – and live in the calculator above.`)}</p>
+    <div class="art-stats">
+      <div class="p"><b>${O[l4-1][3]}${L(' %', '%')}</b><span>${L(`4-Kosten pro Shop-Slot auf Level ${l4}`, `4-costs per shop slot at level ${l4}`)}</span></div>
+      <div class="p"><b>${g4 == null ? '–' : g4}</b><span>${L(`Gold für einen 4-Koster auf ★★ (Level ${l4}, 8 von 10 Spielen)`, `gold for a 4-cost to ★★ (level ${l4}, 8 out of 10 games)`)}</span></div>
+      <div class="g"><b>${SHOP.bag[0]}</b><span>${L(`Kopien von jedem 1-Koster im Pool`, `copies of every 1-cost in the pool`)}</span></div>
+    </div>
+    <h3 id="art-odds">${L(`TFT Shop Odds pro Level (Set ${S})`, `TFT shop odds per level (Set ${S})`)}</h3>
+    <div class="art-tw"><table class="art-table art-odds"><thead><tr><th>Level</th>${[1,2,3,4,5].map(c=>`<th>${cdot(c)}${c} Gold</th>`).join('')}</tr></thead>
+      <tbody>${lvls.map(l=>`<tr><td><b>${l}</b></td>${O[l-1].map((o, i)=>`<td class="${typ[i] === l ? 'hi' : ''}">${o ? o + L(' %', '%') : '–'}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+    <p class="art-note">${L('Chance pro Shop-Slot. Hervorgehoben: das Level, auf dem die Kostenstufe meist gerollt wird. Alle Werte mit XP bis zum nächsten Level stehen im', 'Chance per shop slot. Highlighted: the level each cost tier is usually rolled at. All values with XP to the next level are in the')} ${artA(csHref('shop'), L('Shop-Odds-Cheatsheet', 'shop odds cheatsheet'))}.</p>
+    <h3 id="art-pool">${L('Pool: Kopien pro Champion', 'Pool: copies per champion')}</h3>
+    <div class="art-tw"><table class="art-table"><thead><tr><th>${L('Kosten', 'Cost')}</th><th>${L('Kopien je Champion', 'Copies per champion')}</th><th>Champions</th><th>${L('Beispiele', 'Examples')}</th></tr></thead>
+      <tbody>${SHOP.bag.map((b, i)=>`<tr><td>${cdot(i + 1)}<b>${i + 1} Gold</b></td><td>${b}</td><td>${SHOP_DISTINCT[i]}</td><td><span class="art-row art-avs">${champions.filter(c=>c.c === i + 1).slice(0, 5).map(c=>avatar(c.n, 34)).join('')}</span></td></tr>`).join('')}</tbody></table></div>
+    <p>${L('Alle acht Spieler ziehen aus demselben Pool. Hält ein Gegner Kopien deiner Unit, fehlen sie dir – deshalb lohnt sich Scouten vor dem Rolldown.', 'All eight players draw from the same pool. If an opponent holds copies of your unit, they are missing for you – that is why scouting before your rolldown pays off.')}</p>
+    <h3 id="art-gold">${L('Wie viel Gold brauchst du?', 'How much gold do you need?')}</h3>
+    <div class="art-tw"><table class="art-table"><thead><tr><th>${L('Kosten', 'Cost')}</th><th>Level</th><th>★★ · ${L('5 von 10', '5 of 10')}</th><th>★★ · ${L('8 von 10', '8 of 10')}</th><th>★★★ · ${L('5 von 10', '5 of 10')}</th><th>★★★ · ${L('8 von 10', '8 of 10')}</th></tr></thead>
+      <tbody>${[1,2,3,4,5].map(c=>{ const l = typ[c - 1]; return `<tr><td>${cdot(c)}<b>${c} Gold</b></td><td>${l}</td><td>${G(goldFor(l, c, 3, .5))}</td><td class="hi">${G(goldFor(l, c, 3, .8))}</td><td>${G(goldFor(l, c, 9, .5))}</td><td>${G(goldFor(l, c, 9, .8))}</td></tr>`; }).join('')}</tbody></table></div>
+    <p class="art-note">${L('Gold zum Rollen und Kaufen, ohne Kopien, die du schon hast, und ohne Gegner, die dieselbe Unit spielen – beides stellst du im Rechner oben ein.', 'Gold for rolling and buying, without copies you already have and without opponents playing the same unit – you can set both in the calculator above.')}</p>
+    <div class="art-box tip" id="art-tipp">${artTipHead()}
+      <div class="art-key"><b class="art-keyh">${L('Das Wichtigste: Scouten!', 'Most important: scout!')}</b>
+        <p>${L(`Mit 50 Gold triffst du einen 4-Koster auf ★★ in <b>${P(cont[0])}</b> der Spiele – hält ein Gegner schon 3 Kopien, nur noch in <b>${P(cont[1])}</b>.${contG[0] && contG[1] ? ` Für 8 von 10 Spielen brauchst du dann ${G(contG[1])} statt ${G(contG[0])}.` : ''} Spielt jemand deine Unit, hast du drei Möglichkeiten:`,
+          `With 50 gold you hit a 4-cost ★★ in <b>${P(cont[0])}</b> of games – if an opponent already holds 3 copies, only in <b>${P(cont[1])}</b>.${contG[0] && contG[1] ? ` For 8 out of 10 games you then need ${G(contG[1])} instead of ${G(contG[0])}.` : ''} If someone plays your unit, you have three options:`)}</p>
+        <ol class="art-opts">
+          <li>${L('<b>Früher rollen</b> – bevor dein Gegner noch mehr Kopien aus dem Pool zieht.', '<b>Roll earlier</b> – before your opponent takes even more copies out of the pool.')}</li>
+          <li>${L('<b>Mit mehr Gold rollen</b> – rechne den Unterschied oben im Rechner unter „Spielt noch jemand diese Unit?“ aus.', '<b>Roll with more gold</b> – work out the difference in the calculator above under “Is anyone else playing this unit?”.')}</li>
+          <li>${L('<b>Auf eine Unit wechseln, die niemand spielt</b> – uncontested triffst du deutlich günstiger.', '<b>Switch to a unit nobody plays</b> – uncontested units are much cheaper to hit.')}</li>
+        </ol></div>
+      <ul class="art-list art-tips">
+        ${g4 != null && g4lo != null ? `<li>${L(`<b>4-Kosten-Carry? Erst Level ${l4}, dann rollen.</b> Für ★★ in 8 von 10 Spielen brauchst du auf Level ${l4 - 1} etwa ${G(g4lo)}, auf Level ${l4} nur ${G(g4)}${xpUp ? ` – selbst mit den bis zu ${xpUp} Gold fürs Leveln bist du günstiger dran` : ''}.`,
+          `<b>4-cost carry? Level ${l4} first, then roll.</b> For ★★ in 8 out of 10 games you need about ${G(g4lo)} at level ${l4 - 1}, but only ${G(g4)} at level ${l4}${xpUp ? ` – even with up to ${xpUp} gold for levelling you come out cheaper` : ''}.`)}</li>` : ''}
+        <li>${L(`<b>1-Kosten-Reroll? Nicht zu früh leveln.</b> Für ★★★ in 8 von 10 Spielen brauchst du ${r1.map(([l, g])=>`${G(g)} auf Level ${l}`).join(', ')}. Höhere Level zeigen weniger 1-Koster.`,
+          `<b>1-cost reroll? Don't level too early.</b> For ★★★ in 8 out of 10 games you need ${r1.map(([l, g])=>`${G(g)} at level ${l}`).join(', ')}. Higher levels show fewer 1-costs.`)}</li>
+      </ul></div>
+    ${encs.length ? `<h3 id="art-encounter">${L('Encounter, die deinen Rolldown verändern', 'Encounters that change your rolldown')}</h3>
+    <p>${L('Manche Encounter geben dir Gold, Rerolls oder günstigere Level – dann lohnt sich ein anderer Plan für deinen Rolldown.', 'Some encounters give you gold, rerolls or cheaper levels – then a different plan for your rolldown pays off.')}</p>
+    <div class="art-tw"><table class="art-table"><thead><tr><th>Encounter</th><th>${L('Wirkung', 'Effect')}</th><th>${L('Chance pro Partie', 'Odds per game')}</th></tr></thead>
+      <tbody>${encs.map(e=>`<tr><td><span class="art-enc">${e.ch ? avatar(e.ch, 34) : ''}<b>${esc(e.n)}</b></span></td><td>${esc(L(e.de, e.en))}</td><td>${P(e.w / encW)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+    <h3 id="art-rechnung">${L('So rechnet der Rolldown-Rechner', 'How the rolldown calculator works')}</h3>
+    <ul class="art-list">
+      <li>${L('Shop für Shop mit dem geteilten Pool: Jede gefundene Kopie fehlt danach im Pool.', 'Shop by shop with the shared pool: every copy you find is then missing from the pool.')}</li>
+      <li>${L('Jeder Treffer kostet seinen Preis in Gold – so wie im Spiel. Viele andere Rechner lassen das weg und rechnen dadurch zu optimistisch.', 'Every hit costs its price in gold – just like in the game. Many other calculators leave that out and end up too optimistic.')}</li>
+      <li>${L('Der kostenlose Shop zu Beginn der Runde ist mit eingerechnet.', 'The free shop at the start of the round is included.')}</li>
+      <li>${L('Andere Units derselben Kostenstufe bei den Spielern machen deine Unit etwas häufiger. Ohne eigene Angabe nutzt der Rechner einen Richtwert je nach Level.', 'Other units of the same cost held by players make your unit a bit more common. Without your own input the calculator uses a guideline based on level.')}</li>
+      <li>${L('Nicht berücksichtigt sind Effekte, die Shops verändern, etwa Augments.', 'Effects that change shops, such as augments, are not included.')}</li>
+    </ul>
+    <h3 id="art-anleitung">${L('So benutzt du den Rolldown-Rechner', 'How to use the rolldown calculator')}</h3>
+    <ol class="ts-steps">
+      <li>${L('Wähl die Kosten deiner Unit. Welcher Champion es ist, ändert die Chance nicht – alle Champions einer Kostenstufe haben gleich viele Kopien.', 'Pick the cost of your unit. Which champion it is doesn’t change the odds – all champions of a cost tier have the same number of copies.')}</li>
+      <li>${L('Wähl dein Ziel – ★★ (3 Kopien) oder ★★★ (9 Kopien) – und wie viele Kopien du schon hast.', 'Pick your goal – ★★ (3 copies) or ★★★ (9 copies) – and how many copies you already have.')}</li>
+      <li>${L('Sag dem Rechner, ob noch jemand die Unit spielt. Unter „Detailliert“ vergleicht er auch, ob sich erst leveln lohnt.', 'Tell the calculator whether anyone else plays the unit. Under “Detailed” it also compares whether levelling first pays off.')}</li>
+      <li>${L('Wähl dein Level und das Gold, das du ausgeben willst – fürs Rollen und Kaufen.', 'Pick your level and the gold you want to spend – for rolling and buying.')}</li>
+    </ol>
+    <h3 id="art-faq">${L('Häufige Fragen', 'FAQ')}</h3>
+    <div class="art-faq">${faq.map(([q, a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</div>
+    ${artAuthor()}
+    <h3>${L('Weitere Tools', 'More tools')}</h3>
+    ${artTools(['augments', 'dps', 'drops', 'builder'])}
+    <p class="art-note">${L(`Stand: Set ${S}${PT ? ' · Patch ' + PT : ''} · Shop-Odds und Pool-Größen aus den Set-Daten`, `As of Set ${S}${PT ? ' · patch ' + PT : ''} · shop odds and pool sizes from the set data`)}</p>
+  </div>
+  <aside class="ts-side art-side">
+    <nav class="art-toc" aria-label="${L('Inhalt', 'Contents')}"><b>${L('Inhalt', 'Contents')}</b>
+      <ol>${Object.entries(sec).map(([id, t])=>`<li><a href="#art-${id}" data-toc="art-${id}">${t}</a></li>`).join('')}</ol></nav>
+    <div class="art-ad" hidden></div>
+  </aside>`;
+}
+const rdTrust = () => tioTrust(L('Wir halten unsere Tools für euren Climb aktuell: Shop-Odds und Pool-Größen prüfen wir nach jedem Patch – damit euer Rolldown auf echten Zahlen basiert.',
+  'We keep our tools up to date for your climb: we check shop odds and pool sizes after every patch – so your rolldown is based on real numbers.'));
 let rdMounted = false;
 function rdMount(){
   if(rdMounted) return; rdMounted = true;
   const app = $('#rdApp');
   if(!SHOP){ app.innerHTML = ornnSays(`Für Set ${TFT_DATA.set} fehlen mir noch die Shop-Chancen. Sobald sie feststehen, schmiede ich den Rechner nach.`); return; }
+  const art = document.querySelector('[data-pre="rolldown"]'), trust = document.querySelector('[data-pre="rolldown-trust"]');
+  if(art){ art.innerHTML = rdArticle(); enHrefs(art); artToc(art); }
+  if(trust) trust.innerHTML = rdTrust();
   app.innerHTML = `<div class="rd">
     <section class="card rd-in tio-in" aria-label="${L('Deine Angaben', 'Your input')}">
       ${tioHead(false, `<div class="tio-seg" id="rdMode" role="group" aria-label="${L('Ansicht', 'View')}"><button type="button" data-rdmode="easy" title="${L('Vier kurze Fragen', 'Four quick questions')}">${L('Einfach', 'Simple')}</button><button type="button" data-rdmode="pro" title="${L('Pool genau eingeben und Leveln vergleichen', 'Enter the pool exactly and compare levelling')}">${L('Detailliert', 'Detailed')}</button></div>${tioReset('id="rdReset"')}`,
@@ -3963,6 +4079,23 @@ function csSections(){
     out.push(['shop', L('Shop-Chancen, Pool & XP', 'Shop odds, pool & XP'), `<div class="cs-wrap"><table class="cs-table cs-hm cso"><thead>${head}</thead><tbody>${rows}</tbody></table></div>
       <p class="cs-note cs-after">${L('Chance pro Shop-Slot. Fett: die wahrscheinlichsten Kosten auf diesem Level. Die Zahl zwischen zwei Levels ist die XP bis zum nächsten Level – jede Runde gibt es 2 XP gratis, 4 Gold kaufen 4 XP. Treffer-Chancen rechnet der', 'Chance per shop slot. Bold: the most likely cost at that level. The number between two levels is the XP to the next level – you get 2 free XP every round, 4 gold buys 4 XP. Hit chances are in the')} <a href="/tools/tft-rolldown-rechner">${L('Rolldown-Rechner', 'rolldown calculator')}</a>.</p>`]);
   }
+  {
+    // Hierarchy of Power: welche Kosten auf welchem Sternlevel stärker sind (Faustregel, Vorlage von CrazYSlayt).
+    // y = Höhe in der Grafik (0 = am stärksten), ≈ verbindet gleich starke Einheiten über zwei Spalten
+    const cols = [[3, [[5, 0], [4, 41], [3, 95], [2, 149], [1, 231]]], [2, [[5, 95], [4, 190], [3, 272], [2, 354], [1, 395]]], [1, [[5, 272], [4, 313], [3, 436], [2, 477], [1, 518]]]];   // 1★ 4-Koster über 2★ 2-Koster (Einschätzung CrazYSlayt)
+    const eq = [[3, 3, 2, 5], [2, 3, 1, 5]];   // [Sterne, Kosten] ≈ [Sterne, Kosten]
+    const stars = s => '★'.repeat(s), nm = s => L(s === 1 ? '1 Stern' : s + ' Sterne', s === 1 ? '1 star' : s + ' stars');
+    // Pille: Champion-Symbol der Kostenstufe aus dem Spiel (champ-1 … champ-5) + Kosten
+    const pills = cols.map(([s, list], ci)=>`<div class="csp-col" style="grid-column:${ci + 2}"><div class="csp-h"><b class="s${s}">${stars(s)}</b><span>${nm(s)}</span></div>
+      <div class="csp-lane">${list.map(([c, y])=>`<span class="csp-p c${c}" style="top:${y}px"><img src="${TI('champ-' + c)}" alt="" width="26" height="26" loading="lazy">${c} Gold</span>`).join('')}</div></div>`).join('');
+    const lines = eq.map(([s1, c1])=>{ const y = cols.find(x=>x[0] === s1)[1].find(x=>x[0] === c1)[1], ci = cols.findIndex(x=>x[0] === s1);
+      return `<div class="csp-eq" style="top:${y}px;--from:${ci};--to:${ci + 1}"><em title="${L('etwa gleich stark', 'about equally strong')}">≈</em></div>`; }).join('');
+    const rules = eq.map(([s1, c1, s2, c2])=>`<li><b>${stars(s1)} ${c1}-${L('Koster', 'cost')}</b> ≈ <b>${stars(s2)} ${c2}-${L('Koster', 'cost')}</b></li>`).join('');
+    // Achse links: leuchtender Balken mit Pfeilspitze, oben „stärker“, unten „schwächer“ – damit man die Grafik sofort liest
+    out.push(['power', L('Hierarchy of Power: Kosten × Sterne', 'Hierarchy of Power: cost × stars'), `<div class="csp-wrap"><div class="csp"><div class="csp-axis"><b class="csp-up"><span class="csp-tri">▲</span>${L('Stärker', 'Stronger')}</b><i class="csp-bar"></i><b class="csp-down">${L('Schwächer', 'Weaker')}<span class="csp-tri">▼</span></b></div>${pills}<div class="csp-eqs">${lines}</div></div></div>
+      <ul class="csp-rules">${rules}</ul>
+      <p class="cs-note cs-after">${L('Je höher eine Einheit steht, desto stärker ist sie im Kampf. Faustregel – wie stark eine Einheit wirklich ist, hängt auch vom Patch, von Items, Traits und dem Champion selbst ab.', 'The higher a unit sits, the stronger it is in combat. Rule of thumb – how strong a unit really is also depends on the patch, items, traits and the champion itself.')}</p>`]);
+  }
   if(CS.augments){
     // Baum wie im Spiel: 1. Augment → 2. Augment (Chance, wenn das 1. so kam) → 3. Augment → Chance für genau diese Reihenfolge
     const seq = CS.augments.seq, W = seq.reduce((s, x)=>s + x[1], 0), sum = p => seq.filter(x=>x[0].startsWith(p)).reduce((s, x)=>s + x[1], 0);
@@ -4223,6 +4356,13 @@ function csPatchSection(){
 const CS_META = {
   shop:{s:['Shop & XP', 'Shop & XP'], h:['Wann du levelst. Wann du rollst.', 'Know when to level. Know when to roll.'], d:['Chancen pro Level, Pool & XP', 'Odds per level, pool & XP'], ic:'<path d="M3 4h2l2.4 11h11L21 7H6"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/>',
     tip:()=>SHOP && SHOP.odds[7] ? L(`Level 8 ist der wichtigste Breakpoint für 4-Kosten-Carries: ${SHOP.odds[7][3]} % pro Shop-Slot.`, `Level 8 is the key breakpoint for 4-cost carries: ${SHOP.odds[7][3]}% per shop slot.`) : ''},
+  power:{s:['Hierarchy of Power', 'Hierarchy of Power'], h:['Welche Kosten auf welchem Sternlevel stärker sind.', 'Which cost is stronger at which star level.'], d:['Welche Kosten auf welchem Sternlevel stärker sind', 'Which cost is stronger at which star level'],
+    ic:'<path d="M4 20h4v-5h4v-5h4V5h4"/><path d="M4 20V15"/>',
+    // SEO: der englische Begriff wird auch im Deutschen gesucht, dazu die Frage, die Spieler eigentlich haben
+    h1:['TFT Hierarchy of Power: Welche Unit ist stärker?', 'TFT Hierarchy of Power: Which Unit Is Stronger?'],
+    seo:['TFT Hierarchy of Power {S} – Sterne vs. Kosten', 'TFT Hierarchy of Power {S} – Stars vs. Cost',
+      'TFT Hierarchy of Power für {S}: Ist ein 3-Sterne-3-Koster stärker als ein 2-Sterne-5-Koster? Alle Sterne und Kosten im Vergleich.',
+      'TFT hierarchy of power for {S}: is a 3-star 3-cost stronger than a 2-star 5-cost? Every star level and cost compared.'], tip:()=>L('Ein 3-Sterne-3-Koster ist etwa so stark wie ein 2-Sterne-5-Koster.', 'A 3-star 3-cost is about as strong as a 2-star 5-cost.')},
   augments:{s:['Augment-Stufen', 'Augment tiers'], h:['Welche Stufen auf 2-1, 3-2 und 4-2 kommen.', 'Which tiers show up on 2-1, 3-2 and 4-2.'], d:['Silber, Gold & Prismatisch pro Partie', 'Silver, gold & prismatic per game'], ic:'<path d="M12 3l2.6 5.6L20 9.5l-4 4 1 5.5-5-2.8L7 19l1-5.5-4-4 5.4-.9z"/>',
     tip:()=>L('Ist das erste Augment Silber, kommt als Nächstes zu 61 % Gold.', 'If the first augment is silver, the next one is gold 61% of the time.')},
   encounters:{s:['Encounters', 'Encounters'], h:['Alle Encounters und wie oft sie kommen.', 'Every encounter and how often it shows up.'], d:['Wie oft jeder Encounter kommt', 'How often each one appears'], ic:'<path d="M4 20l7-7M13 4l7 7-3 1-4 4-1 3-6-6 3-1 4-4z"/>'},
@@ -4237,7 +4377,7 @@ const CS_META = {
   solo:{s:['Stage 1 solo', 'Solo Stage 1'], h:['Welche 1-Kosten Stage 1 allein schaffen.', 'Which 1-costs win Stage 1 on their own.'], d:['Wer Stage 1 allein schafft', 'Who solos Stage 1'], ic:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.8 3.6-6 7-6s6.2 2.2 7 6"/>'}
 };
 // Offizielle Riot-Symbole für die System-Tabellen (assets/icons/tft: Stage-Symbole, Shop-Knöpfe, Gold, Beutekugel; Embleme = Pfannenwender)
-const CS_RIOT_IC = {encounters:'stage-encounter', shop:'shop-xp', augments:'stage-augment', orbs:'orb-blue', loot:'stage-krugs', damage:'stage-damage',
+const CS_RIOT_IC = {power:'champ-5', encounters:'stage-encounter', shop:'shop-xp', augments:'stage-augment', orbs:'orb-blue', loot:'stage-krugs', damage:'stage-damage',
   'gold-subscription':'gold', 'reroll-subscription':'shop-reroll', solo:'stage-minions', carousel:'stage-carousel'};
 Object.entries(CS_RIOT_IC).forEach(([id, k])=>{ if(CS_META[id]) Object.assign(CS_META[id], {img:TI(k), rio:1}); });
 if(CS_META.emblems && itemById.DA_Component_Spatula) Object.assign(CS_META.emblems, {img:itemById.DA_Component_Spatula.img, rio:1});
@@ -4247,7 +4387,7 @@ if(CS_META.emblems && itemById.DA_Component_Spatula) Object.assign(CS_META.emble
 CS_META['patch-schedule'] = {s:['Patch-Plan', 'Patch schedule'], h:['Wann welcher Patch kommt.', 'When each patch lands.'], d:['Termine aller Patches des Sets', 'dates of every patch this set'], img:TI('tft-logo-game'), rio:1, ic:'<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'};
 // Gruppen: [Kurzname DE/EN (Seitenleiste), Überschrift DE/EN und Unterzeile DE/EN (Übersicht)], Tabellen – Reihenfolge wie bei Little Buddy Bot
 const CS_GROUPS = [
-  [['System', 'System', 'System-Tabellen', 'System tables', 'Shop-Chancen, Loot, Schaden – die festen Zahlen des Sets.', 'Shop odds, loot, damage – the fixed numbers of the set.'], ['encounters', 'shop', 'augments', 'orbs', 'loot', 'damage', 'gold-subscription', 'reroll-subscription']],
+  [['System', 'System', 'System-Tabellen', 'System tables', 'Shop-Chancen, Loot, Schaden – die festen Zahlen des Sets.', 'Shop odds, loot, damage – the fixed numbers of the set.'], ['encounters', 'shop', 'power', 'augments', 'orbs', 'loot', 'damage', 'gold-subscription', 'reroll-subscription']],
   [['Augments', 'Augments', 'Augment-Tabellen', 'Augment tables', 'Was einzelne Augments wirklich geben – mit allen Chancen.', 'What single augments really give – with every chance.'], CS.augTables ? CS.augTables.list.map(t=>t.id) : []],
   [['Attribute', 'Traits', 'Attribut-Tabellen', 'Trait tables', 'Was Attribute wirklich geben – Beute, Shop-Chancen und Boni.', 'What traits really give – loot, shop odds and bonuses.'], CS.traitTables ? CS.traitTables.list.map(t=>t.id) : []],
   [['Sonstiges', 'Other', 'Sonstiges', 'Other', 'Patch-Plan, Embleme bauen und Stage 1 allein schaffen.', 'Patch schedule, building emblems and winning Stage 1 solo.'], ['patch-schedule', 'emblems', 'solo']]
@@ -4259,7 +4399,7 @@ const csIco = id => { const m = CS_META[id] || {}; return m.trait ? csTrIc(m.tra
 const csName = id => { const m = CS_META[id]; return m ? L(m.s[0], m.s[1]) : id; };
 // Startseite (/cheatsheet): Reiter mit Karten. „TFTClimb Priority“ = unsere wichtigsten Tabellen (stehen zusätzlich in ihrer Gruppe).
 // Pro Reiter zuerst 9 Karten (bei 2 Spalten 8, damit keine einzelne Karte in der letzten Reihe steht), der Rest über „Alle … ansehen“
-const CS_PRIO = [['TFTClimb Priority', 'TFTClimb Priority'], ['augments', 'damage', 'coven', 'call-to-chaos', 'solo']];
+const CS_PRIO = [['TFTClimb Priority', 'TFTClimb Priority'], ['power', 'augments', 'damage', 'coven', 'call-to-chaos', 'solo']];
 const CS_IC_TRAIT = '<path d="M12 3c2.5 3 6 4 8 4-1 6-3.5 10.5-8 14-4.5-3.5-7-8-8-14 2 0 5.5-1 8-4z"/><path d="M12 9v6M9 12h6"/>';   // Attribut-Wappen
 const CS_TAB_IC = ['<path d="M13 2.5L5 13.5h6.2L10 21.5l9-11.5h-6.4z"/>', '<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>', '<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/>', CS_IC_TRAIT, '<circle cx="5.5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18.5" cy="12" r="1.6"/>'];
 function csCard(id, k=0){   // k = Position im Reiter: ab der 10. Karte ausgeblendet, die 9. nur bei 3 Spalten
@@ -4313,7 +4453,8 @@ function csPanel([id, t, html], flat){
   const main = framed
     ? `<div class="csf"><div class="csf-box"><svg class="csf-svg" aria-hidden="true"></svg><div class="csf-hd"><h2 class="csf-title">${csName(id)}</h2><span class="csf-brand">${csHex}<b>Cheat<i>sheet</i></b></span></div><div class="csf-body">${body}</div></div>
         <div class="csf-under">${csHex}<i class="csf-line"></i><i class="csf-dash"></i><span class="csf-gap"></span><i class="csf-dash"></i><i class="csf-line r"></i>${csHex}
-          <img class="csf-logo" src="assets/brand/logo-tftclimb.webp" alt="TFTClimb" width="720" height="265" loading="lazy"></div></div>`
+          <img class="csf-logo" src="assets/brand/logo-tftclimb.webp" alt="TFTClimb" width="720" height="265" loading="lazy"></div></div>
+      <div class="csf-act"><span class="csf-msg" role="status"></span><button type="button" class="csf-cut" data-cut="copy">${csSvg('<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.1 8.1L20 20M8.1 15.9L20 4"/>', 2)}${L('Ausschneiden', 'Cut out')}</button><button type="button" class="csf-cut csf-dl" data-cut="save" title="${L('Als PNG speichern', 'Save as PNG')}" aria-label="${L('Als PNG speichern', 'Save as PNG')}">${csSvg('<path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/>', 2)}</button></div>`
     : `<div class="csp-head"><span class="csp-ic">${csIco(id)}</span><div><h2>${csName(id)}</h2><p>${L(m.h[0], m.h[1])}</p></div></div>
     <div class="csp-box">${body}</div>`;
   return `<section class="cs-sec card${framed ? ' csf-sec' : ''}" id="cs-${id}" hidden>
@@ -4343,6 +4484,39 @@ function csfDraw(box){
 }
 csfDraw.n = 0;
 const csfRO = 'ResizeObserver' in window ? new ResizeObserver(es=>es.forEach(e=>csfDraw(e.target))) : null;
+// Ausschneiden: Rahmen bis unter das Logo als PNG (in die Zwischenablage oder als Datei). html-to-image wird erst beim ersten Klick geladen
+let csCutLib = null;
+const csCutLoad = () => csCutLib || (csCutLib = new Promise((ok, no)=>{ const s = document.createElement('script'); s.src = 'assets/vendor/html-to-image.js'; s.onload = ()=>ok(window.htmlToImage); s.onerror = ()=>{ csCutLib = null; no(); }; document.head.appendChild(s); }));
+async function csCutBlob(src){
+  // Immer in PC-Breite: Kopie unsichtbar neben der Seite aufbauen, Rahmen für diese Größe neu zeichnen
+  const h2i = await csCutLoad(), wrap = document.createElement('div'), csf = src.cloneNode(true), box = csf.querySelector('.csf-box');
+  wrap.style.cssText = 'position:absolute;left:-99999px;top:0;width:960px;pointer-events:none';
+  wrap.appendChild(csf); src.parentNode.appendChild(wrap);
+  try{
+    if(box){ delete box.dataset.fid; csfDraw(box); }
+    await Promise.all([...csf.querySelectorAll('img')].map(i=>{ i.loading = 'eager'; return i.complete ? 0 : new Promise(ok=>{ i.onload = i.onerror = ok; }); }));
+    const r = csf.getBoundingClientRect(), lg = csf.querySelector('.csf-logo');
+    const p = 12, pb = Math.max(p, Math.ceil((lg ? lg.getBoundingClientRect().bottom : 0) - r.bottom) + 20);   // Logo ragt unten über den Rahmen hinaus (+ Schatten)
+    const width = Math.ceil(r.width) + 2 * p, height = Math.ceil(r.height) + p + pb;
+    return await h2i.toBlob(csf, {width, height, pixelRatio: 2, style: {boxSizing: 'border-box', margin: '0', padding: `${p}px ${p}px ${pb}px`, width: width + 'px', height: height + 'px'}});
+  } finally { wrap.remove(); }
+}
+async function csCut(btn){
+  const sec = btn.closest('.cs-sec'), csf = sec.querySelector('.csf'), msg = sec.querySelector('.csf-msg'), act = btn.parentNode;
+  if(act.classList.contains('busy')) return;
+  const say = t => { msg.textContent = t; clearTimeout(msg._t); msg._t = setTimeout(()=>{ msg.textContent = ''; }, 3500); };
+  const save = async b => { const a = document.createElement('a'); a.href = URL.createObjectURL(await b); a.download = 'tftclimb-' + csHref(sec.id.slice(3)).split('/').pop().replace(/^tft-/, '') + '.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000); say(L('Gespeichert ✓', 'Saved ✓')); };
+  act.classList.add('busy'); say(L('Wird ausgeschnitten …', 'Cutting out …'));
+  const blob = csCutBlob(csf);   // Promise direkt an die Zwischenablage geben – Safari verlangt den Aufruf noch im Klick
+  try{
+    if(btn.dataset.cut === 'copy' && navigator.clipboard && window.ClipboardItem){
+      try{ await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]); say(L('Kopiert ✓ – mit Strg+V einfügen', 'Copied ✓ – paste with Ctrl+V')); }
+      catch(e){ await save(blob); }   // Zwischenablage gesperrt (z. B. manche Handys): stattdessen speichern
+    } else await save(blob);
+  }catch(e){ say(L('Ging leider nicht – bitte nochmal versuchen', 'That did not work – please try again')); }
+  act.classList.remove('busy');
+}
+document.addEventListener('click', e=>{ const b = e.target.closest && e.target.closest('.csf-cut'); if(b) csCut(b); });
 function csFilter(q){
   q = q.trim().toLowerCase();
   document.querySelectorAll('#csPage .cs-group').forEach(g=>{
@@ -4412,7 +4586,7 @@ function renderCheats(sub){
       side.scrollTop += tr.top - sr.top + tr.height / 2 - (side.clientHeight + hd) / 2; };
     if(!fromSide){ mid(); setTimeout(mid, 150); }   // zweiter Durchlauf, falls Schrift/Bilder die Höhen noch verschieben
   }
-  $('#csH1').innerHTML = cur ? 'TFT ' + esc(csName(cur[0])) : 'TFT <em>Cheatsheets</em>';
+  $('#csH1').innerHTML = cur ? (m && m.h1 ? esc(L(m.h1[0], m.h1[1])) : 'TFT ' + esc(csName(cur[0]))) : 'TFT <em>Cheatsheets</em>';   // eigene H1 (SEO), sonst „TFT “ + Name
   $('#csLead').textContent = m && m.h ? L(m.h[0], m.h[1]) : L(`Jede Zahl an einem Ort – dein Nachschlagewerk für Set ${S}.`, `Every number in one place – your quick reference for Set ${S}.`);
   $('#csCrumb').innerHTML = `Home / <a href="/cheatsheet">Cheatsheet</a>${cur ? ' / ' + esc(csName(cur[0])) : ''}`;
 }
@@ -4547,6 +4721,7 @@ function pageMeta(page, sub){
       const cs = csList().find(s=>s[0]===sub), m = cs && CS_META[cs[0]];
       if(cs){
         const nm = cs[1].replace(/ \(.*\)$/, ''), title = fitT(`TFT ${nm} ${S} – Cheatsheet`, `TFT ${nm} ${S}`, `TFT ${nm}`);
+        if(m && m.seo) return [L(m.seo[0], m.seo[1]).replace('{S}', S), L(m.seo[2], m.seo[3]).replace('{S}', S)];   // eigener Titel und Meta-Text
         if(cs[0]==='shop') return [`TFT Shop Odds & XP ${S} – Cheatsheet`, L(`TFT Shop Odds & XP für ${S}: Shop-Chancen pro Level, Pool-Größen und XP bis zum nächsten Level – übersichtlich als Tabelle.`,
           `TFT shop odds & XP for ${S}: shop odds per level, pool sizes and XP to the next level – neatly in one table.`)];
         // Keyword aus der Adresse fehlt im deutschen Namen (z. B. „Wir halten zusammen“ ↔ tft-we-stick-together): englischen Namen dazuschreiben
@@ -4570,8 +4745,9 @@ function pageMeta(page, sub){
         `TFT augment odds for ${S}: your prismatic augment chance and the tier odds for 2-1, 3-2 and 4-2 – calculated live after every pick.`)];
       if(sub==='tierlist') return [L(`TFT Tierlist-Maker ${S} – eigene Tierlist`, `TFT Tier List Maker ${S} – Your Own List`), L(`Kostenloser TFT Tierlist-Maker für ${S}: Champions, Items und Augments per Drag & Drop ranken und deine Tierlist als Link teilen.`,
         `Free TFT tier list maker for ${S}: rank champions, items and augments by drag & drop and share your tier list as a link.`)];
-      if(sub==='rolldown') return [L(`TFT Rolldown-Rechner ${S} – Odds pro Level`, `TFT Rolldown Calculator ${S} – Odds per Level`), L(`TFT Rolldown-Rechner für ${S}: Wie wahrscheinlich triffst du deine Units? Mit Shop-Odds pro Level, Pool-Größen und Gold-Bedarf.`,
-        `TFT rolldown calculator for ${S}: how likely are you to hit your units? With shop odds per level, pool sizes and gold needed.`)];
+      // Keyword: Rolldown-Rechner, dazu „Odds“ / „Shop Odds“ / „Reroll-Chancen“ (so wird auch gesucht)
+      if(sub==='rolldown') return [L(`TFT Rolldown-Rechner ${S} – Shop Odds pro Level`, `TFT Rolldown Calculator ${S} – Shop Odds`), L(`TFT Rolldown-Rechner ${S}: Shop Odds pro Level, Pool-Größen und Reroll-Chancen – wie viel Gold brauchst du für deine Units?`,
+        `TFT rolldown calculator ${S}: shop odds per level, pool sizes and reroll odds – how much gold do you need to hit your units?`)];
       if(sub==='drops') return [L(`TFT Item-Drop-Chance ${S} – nächste Komponente`, `TFT Item Drop Chance ${S} – Next Component`), L(`TFT Item-Drop-Chance für ${S}: Trag deine Drops aus den Creep-Runden ein und sieh, welche Komponente als Nächstes kommt.`,
         `TFT item drop chance for ${S}: enter your drops from the creep rounds and see which component comes next.`)];
       if(sub==='dps') return [L(`TFT DPS-Vergleich ${S} – Builds vergleichen`, `TFT DPS Comparison ${S} – Compare Builds`), L(`TFT DPS-Vergleich für ${S}: Vergleich bis zu vier Item-Builds eines Champions und sieh, welcher am meisten Schaden macht.`,
@@ -4623,7 +4799,7 @@ function setMeta(page, sub){
   const chN = page==='champion' ? champBySlug[sub].n : page==='comp' ? compByKey[sub].carry : '';   // Vorschaubild: Champion bzw. Carry der Comp
   const chImg = chN && (champImg(chN) || champFallback(chN));
   // Tools mit eigenem Vorschaubild (tools/og-bilder.js, 1200 × 630 PNG) – große Vorschau-Karte bei Google Discover, Discord, X
-  const OG_TOOL = {augments:L('assets/og/tft-augment-chancen.png', 'assets/og/tft-augment-odds.png')};
+  const OG_TOOL = {augments:L('assets/og/tft-augment-chancen.png', 'assets/og/tft-augment-odds.png'), rolldown:L('assets/og/tft-rolldown-rechner.png', 'assets/og/tft-rolldown-calculator.png')};
   const wide = !chImg && OG_TOOL[tool];
   const img = chImg || location.origin + '/' + (wide || {tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
   const og = (k, v) => { headTag(`meta[property="${k}"]`, ()=>{ const m = document.createElement('meta'); m.setAttribute('property', k); return m; }).content = v; };
@@ -4651,7 +4827,9 @@ function setLd(page, sub, tool, title, desc, url, path, ogImg){
     // Vorschaubild und Datenstand (Datum der Spieldaten) – Google kann das Bild neben dem Suchergebnis zeigen
     graph.push({'@type':'WebApplication', name:title.split(' – ')[0], url, description:desc, applicationCategory:'GameApplication', operatingSystem:'Web', browserRequirements:'JavaScript', inLanguage:EN ? 'en' : 'de', isAccessibleForFree:true, offers:{'@type':'Offer', price:'0', priceCurrency:'EUR'}, publisher:org,
       ...(ogImg ? {image:ogImg, screenshot:ogImg, dateModified:TFT_DATA.generated} : {})});
-    if(ogImg) graph.push({'@type':'WebPage', url, name:title.split(' | ')[0], primaryImageOfPage:{'@type':'ImageObject', url:ogImg, width:1200, height:630}, dateModified:TFT_DATA.generated, inLanguage:EN ? 'en' : 'de'});
+    // Seite mit Artikel: Hauptbild, Datenstand und wer die Inhalte prüft (Autor-Kasten im Artikel)
+    if(ogImg) graph.push({'@type':'WebPage', url, name:title.split(' | ')[0], primaryImageOfPage:{'@type':'ImageObject', url:ogImg, width:1200, height:630}, dateModified:TFT_DATA.generated, inLanguage:EN ? 'en' : 'de',
+      author:{'@type':'Person', name:'Claudio "CrazYSlayt"', alternateName:'CrazYSlayt', jobTitle:'TFT Challenger & TFTClimb Coach', url:location.origin + withLang(PATCH_AUTHOR.href)}, publisher:org});
     const box = tool==='builder' ? $('#page-builder .tool-seo.b-only') : tool==='simulator' ? $('#page-builder .tool-seo.b-simonly') : $(`#page-tools .tool-view[data-tool="${tool==='overview' ? '' : tool}"] .tool-seo`);
     const qa = box ? [...box.querySelectorAll('details')].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}})) : [];
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});

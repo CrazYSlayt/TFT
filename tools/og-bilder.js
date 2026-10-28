@@ -31,6 +31,25 @@ function augmentPages(){
     <img class="mascot" src="/assets/tools/augments.webp" alt="">`)}));
 }
 
+// ---------- Rolldown-Rechner ----------
+// Fünf Kosten-Chips in den Kostenfarben des Spiels (fest, ändern sich nicht), keine Prozente
+function rolldownPages(){
+  const T = {
+    de: {file: 'tft-rolldown-rechner', kick: 'Kostenloses TFT Tool', a: 'TFT Rolldown-', b: 'Rechner', sub: 'Rollen oder leveln?', line: 'Shop Odds · Pool · Gold-Bedarf'},
+    en: {file: 'tft-rolldown-calculator', kick: 'Free TFT tool', a: 'TFT Rolldown ', b: 'Calculator', sub: 'Roll or level?', line: 'Shop odds · Pool · Gold needed'}};
+  const col = ['#9aa4b2', '#2bb673', '#2f8cf0', '#b066f3', '#f2a516'];
+  return Object.values(T).map(t => ({file: t.file, html: page(`
+    <div class="l">
+      <img class="logo" src="/assets/brand/logo-tftclimb.webp" alt="">
+      <div class="kick">${t.kick}</div>
+      <h1>${t.a}<em>${t.b}</em></h1>
+      <div class="sub">${t.sub}</div>
+      <div class="line">${t.line}</div>
+      <div class="costs">${col.map((c, i) => `<span style="--c:${c}">${i + 1}<small>Gold</small></span>`).join('')}</div>
+    </div>
+    <img class="mascot rd" src="/assets/tools/rolldown.webp" alt="">`)}));
+}
+
 // Grundgerüst: Farben, Schrift und Hintergrund wie auf tftclimb.com
 const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
   @font-face{font-family:'Barlow Condensed';font-weight:900;font-style:italic;src:url(/assets/fonts/BarlowCondensed-900i-latin.woff2) format('woff2')}
@@ -54,6 +73,10 @@ const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
   .tier img{width:52px;height:77px;filter:drop-shadow(0 0 12px rgba(255,255,255,.25))}
   .tier b{font:900 italic 30px/1 'Barlow Condensed';text-transform:uppercase}
   .tier.t0 b{color:#d7dee8}.tier.t1 b{color:#f5b82e}.tier.t2 b{color:#c4b5fd}
+  .costs{display:flex;gap:12px;margin-top:30px}
+  .costs span{display:flex;flex-direction:column;align-items:center;justify-content:center;width:72px;height:72px;border-radius:16px;border:3px solid var(--c);background:color-mix(in srgb,var(--c) 22%,#061520);font:900 italic 34px/1 'Barlow Condensed';color:#fff;box-shadow:0 0 18px color-mix(in srgb,var(--c) 45%,transparent)}
+  .costs small{font:700 13px Barlow;color:#cfe3ee}
+  .mascot.rd{height:520px;bottom:40px;right:20px}
   .mascot{position:absolute;right:30px;bottom:24px;height:560px;z-index:1;filter:drop-shadow(0 18px 40px rgba(0,0,0,.6)) drop-shadow(0 0 40px rgba(167,139,250,.35))}
 </style></head><body>${body}</body></html>`;
 
@@ -109,7 +132,7 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
 
 (async () => {
   fs.mkdirSync(OUT, {recursive: true});
-  const jobs = [...augmentPages()];
+  const jobs = [...augmentPages(), ...rolldownPages()];
   const srv = await serve(), origin = 'http://127.0.0.1:' + srv.address().port;
   const port = 9300 + Math.floor(Math.random() * 500), prof = path.join(require('os').tmpdir(), 'tftclimb-og-' + port);
   const br = spawn(findBrowser(), ['--headless=new', '--hide-scrollbars', `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`, '--window-size=1200,630', 'about:blank'], {stdio: 'ignore'});

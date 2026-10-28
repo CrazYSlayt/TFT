@@ -922,6 +922,14 @@ body.nd-mini .nds-soon{display:none}
 @container (min-width:421px){.csf-under .csf-line.r{display:block;flex:1 1 0}}
 @container (max-width:559px){.csf-brand b{font-size:1.05rem}.csf-brand .csf-hex{width:16px;height:16px}.csf-hd{margin-bottom:12px}}
 @container (max-width:380px){.csf-brand .csf-hex{display:none}}
+/* Cheatsheet ausschneiden: Knöpfe rechts unter dem Rahmen */
+.csf-act{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:-12px 0 22px}
+.csf-msg{font-size:.85rem;font-weight:600;color:#7ff7ec;min-width:0}
+.csf-cut{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border:1px solid rgba(46,230,214,.45);border-radius:9px;background:rgba(3,17,27,.7);color:#e6f6ff;font-family:inherit;font-size:.88rem;font-weight:700;line-height:1;cursor:pointer;transition:border-color .15s,background .15s,color .15s}
+.csf-cut svg{width:17px;height:17px;flex:none;color:#2ee6d6}
+.csf-cut:hover,.csf-cut:focus-visible{border-color:#2ee6d6;background:rgba(46,230,214,.14);color:#fff}
+.csf-dl{width:36px;padding:0;justify-content:center}
+.csf-act.busy .csf-cut{opacity:.55;pointer-events:none}
 /* Cheatsheet breiter: Auswahlliste schmaler und näher am Rand, mehr Platz für die Tabellen (z. B. den Augment-Baum) */
 .nd #page-cheatsheet>.wrap{max-width:1500px;padding:0 24px}   /* gleiche Ränder und Maximalbreite wie das Dashboard */
 .nd .cs-layout{grid-template-columns:222px minmax(0,1fr);gap:16px}

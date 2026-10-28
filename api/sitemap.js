@@ -5,11 +5,11 @@ const path = require('path');
 
 // Sprechende Adressen mit Keyword – gleiche Liste wie in assets/js/app.js (TOOL_SLUG, CS_SLUG, BUILDER_PATH)
 const TOOL_SLUG = {rolldown: 'tft-rolldown-rechner', drops: 'tft-item-drop-chance', tierlist: 'tft-tierlist-maker', simulator: 'tft-kampf-simulator', dps: 'tft-dps-vergleich', augments: 'tft-augment-chancen'};
-const CS_SLUG = {shop: 'tft-shop-odds', augments: 'tft-augment-stufen', orbs: 'tft-loot-orbs', loot: 'tft-loot-verteilung', damage: 'tft-spielerschaden', emblems: 'tft-embleme', solo: 'tft-stage-1-solo', 'patch-schedule': 'tft-patch-plan', carousel: 'tft-karussell'};
+const CS_SLUG = {shop: 'tft-shop-odds', power: 'tft-hierarchy-of-power', augments: 'tft-augment-stufen', orbs: 'tft-loot-orbs', loot: 'tft-loot-verteilung', damage: 'tft-spielerschaden', emblems: 'tft-embleme', solo: 'tft-stage-1-solo', 'patch-schedule': 'tft-patch-plan', carousel: 'tft-karussell'};
 const csPath = id => '/cheatsheet/' + (CS_SLUG[id] || 'tft-' + id);
 // Englische Adressen – gleiche Tabellen wie in app.js (TOOL_SLUG_EN, CS_SLUG_EN, PAGE_EN, langPath)
 const TOOL_SLUG_EN = {rolldown: 'tft-rolldown-calculator', drops: 'tft-item-drop-chance', tierlist: 'tft-tier-list-maker', simulator: 'tft-fight-simulator', dps: 'tft-dps-comparison', augments: 'tft-augment-odds'};
-const CS_SLUG_EN = {shop: 'tft-shop-odds', augments: 'tft-augment-tiers', orbs: 'tft-loot-orbs', loot: 'tft-loot-distribution', damage: 'tft-player-damage', emblems: 'tft-emblems', solo: 'tft-solo-stage-1', 'patch-schedule': 'tft-patch-schedule', carousel: 'tft-carousel'};
+const CS_SLUG_EN = {shop: 'tft-shop-odds', power: 'tft-hierarchy-of-power', augments: 'tft-augment-tiers', orbs: 'tft-loot-orbs', loot: 'tft-loot-distribution', damage: 'tft-player-damage', emblems: 'tft-emblems', solo: 'tft-solo-stage-1', 'patch-schedule': 'tft-patch-schedule', carousel: 'tft-carousel'};
 const PAGE_EN = {tierlist: 'tier-list', bibliothek: 'library', impressum: 'legal-notice', datenschutz: 'privacy-policy', bedingungen: 'terms', 'tft-patch-countdown': 'tft-next-patch-countdown'};
 const keyOf = (map, slug) => (Object.entries(map).find(([, v]) => v === slug) || [slug])[0];
 function enPath(p) {
@@ -30,7 +30,7 @@ const PAGES = [
   ...['iron', 'bronze', 'silver', 'gold', 'platinum', 'emerald', 'diamond', 'master', 'grandmaster', 'challenger'].map(k => '/ranks/' + k),
   '/patches', '/tft-patch-countdown',
   '/cheatsheet',
-  ...['shop', 'augments', 'encounters', 'damage', 'orbs', 'loot', 'gold-subscription', 'reroll-subscription', 'emblems', 'solo'].map(csPath),
+  ...['shop', 'power', 'augments', 'encounters', 'damage', 'orbs', 'loot', 'gold-subscription', 'reroll-subscription', 'emblems', 'solo'].map(csPath),
   // Augment-Tabellen (ids wie in data/custom-<Set>.js → cheats.augTables)
   ...['trait-ladder', 'we-stick-together', 'loaded-dice', 'blossoms-call', 'expedition', 'booster-pack', 'frontline-foundation', 'backline-blueprint', 'warpath',
     'slightly-magic-roll', 'magic-roll', 'expected-unexpectedness', 'call-to-chaos', 'golden-egg', 'missed-connections', 'slice-of-life', 'hard-commit', 'solo-leveling'].map(csPath),
@@ -82,6 +82,26 @@ function compPages(){
 
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
+// Änderungsdatum: Seiten, die aus den Spieldaten entstehen (Tools, Cheatsheets, Champions), ändern sich mit jedem Daten-Update;
+// Patch-Seiten tragen ihr Patch-Datum. Andere Seiten bekommen kein Datum (lieber keins als ein falsches – Google nutzt es nur, wenn es stimmt)
+function lastmods(){
+  const out = {};
+  try {
+    const sets = fs.readFileSync(path.join(process.cwd(), 'data', 'sets.js'), 'utf8');
+    const live = JSON.parse(sets.slice(sets.indexOf('['), sets.lastIndexOf(']') + 1)).find(s => s.status === 'live');
+    if (live && live.generated) out.data = live.generated;
+    const txt = fs.readFileSync(path.join(process.cwd(), 'data', 'patches.js'), 'utf8');
+    JSON.parse(txt.slice(txt.indexOf('['), txt.lastIndexOf(']') + 1)).forEach(p => { if (p.date) out['/patches/' + String(p.id).replace('.', '-')] = p.date; });
+  } catch (e) {}
+  return out;
+}
+const modOf = (p, lm) => lm[p] || (/^\/(tools\/|cheatsheet|champions\/)/.test(p) ? lm.data : '');
+// Vorschaubilder (1200 × 630) aus den Kopfdaten der Seiten (data/seo-meta.json) – als Bild-Angabe in der Sitemap
+function ogImages(){
+  try { const pages = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'data', 'seo-meta.json'), 'utf8')).pages || {}; const out = {};
+    Object.entries(pages).forEach(([p, m]) => { if (m.img && /\/assets\/og\//.test(m.img)) out[p] = m.img; }); return out; } catch (e) { return {}; }
+}
+
 // Erst alle deutschen, dann alle englischen Seiten. Jeder Eintrag nennt beide Sprachfassungen (hreflang) –
 // so ordnet Google die deutsche und die englische Seite einander zu (zusätzlich zu den Verweisen im Kopf jeder Seite, app.js).
 module.exports = (req, res) => {
@@ -90,9 +110,11 @@ module.exports = (req, res) => {
   const base = (req.headers['x-forwarded-proto'] || 'https') + '://' + host;
   const paths = [...PAGES, ...compPages(), ...champions(), ...patches()];
   const alt = p => ['de', p, 'en', enPath(p), 'x-default', p].reduce((s, v, i, a) => i % 2 ? s : s + `\n    <xhtml:link rel="alternate" hreflang="${v}" href="${esc(base + a[i + 1])}"/>`, '');
-  const entry = (loc, p) => `  <url><loc>${esc(base + loc)}</loc>${alt(p)}\n  </url>`;
+  const lm = lastmods(), img = ogImages();
+  const entry = (loc, p) => { const d = modOf(p, lm), im = img[loc];
+    return `  <url><loc>${esc(base + loc)}</loc>${d ? `<lastmod>${esc(d)}</lastmod>` : ''}${alt(p)}${im ? `\n    <image:image><image:loc>${esc(/^https?:/.test(im) ? im : base + im)}</image:loc></image:image>` : ''}\n  </url>`; };
   const urls = [...paths.map(p => entry(p, p)), ...paths.map(p => entry(enPath(p), p))];
   res.setHeader('Content-Type', 'application/xml; charset=utf-8');
   res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=86400');
-  res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls.join('\n')}\n</urlset>\n`);
+  res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls.join('\n')}\n</urlset>\n`);
 };

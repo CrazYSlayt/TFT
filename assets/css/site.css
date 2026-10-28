@@ -2058,6 +2058,19 @@ details.card.dr-more{margin:0}
 .ag-art .ts-main h3::before{content:"";position:absolute;left:0;top:.12em;bottom:.12em;width:4px;border-radius:3px;background:linear-gradient(180deg,#2ee6d6,#a78bfa)}
 .ag-art .art-bh{font-size:1.2rem}
 .ag-art .art-col h4{font-size:1.05rem}
+/* Autor-Kasten am Ende jedes Tool-Artikels */
+.art-author{display:flex;align-items:center;gap:16px;margin:26px 0 6px;padding:16px 18px;border-radius:16px;border:1px solid var(--line-2);background:linear-gradient(135deg,rgba(255,59,107,.08),rgba(3,17,27,.5) 55%)}
+.aa-img{position:relative;flex:none;line-height:0}
+.aa-img>img:first-child{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,59,107,.6)}
+.aa-emb{position:absolute;right:-4px;bottom:-4px;width:26px;height:26px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
+.art-author small{display:block;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.aa-name{display:inline-block;margin-top:2px;font:800 italic 1.15rem var(--ff-head);color:#fff;text-decoration:none}
+.aa-name:hover{color:#ff7a9c}
+.aa-role{display:block;font-size:.82rem;font-weight:700;color:#ff7a9c}
+.tool-seo .art-author p{margin:6px 0 0;font-size:.88rem}
+.art-table .cdot{margin-right:6px;vertical-align:middle}
+.art-avs{gap:4px}
+.art-avs .av,.art-enc .av{width:34px;height:34px;flex:none;border-radius:8px}
 .art-enc{display:inline-flex;align-items:center;gap:10px}
 .art-enc b{color:#fff;white-space:nowrap}
 /* „Weitere Tools“: je Tool eine Box mit Symbol, Überschrift, kurzem Satz und Pfeil */
@@ -2072,6 +2085,52 @@ details.card.dr-more{margin:0}
 .art-link:hover i{transform:translateX(3px)}
 .art-lic{flex:none;display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:10px;background:rgba(46,230,214,.12);color:#7ff7ec}
 .art-lic svg{width:21px;height:21px}
+/* Cheatsheet „Hierarchy of Power“: drei Spalten-Karten (3/2/1 Stern), je höher die Pille, desto stärker; ≈ verbindet gleich starke.
+   Links eine leuchtende Achse mit „Stärker“ oben und „Schwächer“ unten, damit man die Grafik sofort liest */
+.csp-wrap{overflow-x:auto}
+.csp{--g:14px;--ax:86px;--top:79px;position:relative;display:grid;grid-template-columns:var(--ax) repeat(3,minmax(0,1fr));column-gap:var(--g);padding-bottom:6px}
+.csp-axis{grid-column:1;grid-row:1 / span 2;display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:calc(var(--top) - 46px);height:calc(560px + 92px)}
+.csp-axis b{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;font:900 italic .82rem/1 var(--ff-head);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.csp-up{color:#06202a;background:linear-gradient(90deg,#2ee6d6,#7ff7ec);box-shadow:0 0 16px rgba(46,230,214,.55)}
+.csp-down{color:#9fb3c0;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14)}
+.csp-bar{position:relative;flex:1;width:6px;border-radius:6px;background:linear-gradient(180deg,#7ff7ec,#2ee6d6 25%,rgba(46,230,214,.25) 70%,rgba(255,255,255,.05));box-shadow:0 0 14px rgba(46,230,214,.45)}
+.csp-bar::before{content:"";position:absolute;left:50%;top:-9px;transform:translateX(-50%);border:8px solid transparent;border-top:0;border-bottom:11px solid #7ff7ec;filter:drop-shadow(0 0 6px rgba(46,230,214,.8))}
+.csp-col{grid-row:1 / span 2;display:flex;flex-direction:column;align-items:center;padding:12px 8px 14px;border-radius:16px;border:1px solid rgba(46,230,214,.18);background:linear-gradient(180deg,rgba(13,42,52,.75),rgba(7,26,35,.55))}
+.csp-h{display:flex;flex-direction:column;align-items:center;gap:3px;width:100%;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08)}
+.csp-h b{font-size:1.25rem;line-height:1;letter-spacing:.06em;color:#f2c14e;text-shadow:0 0 12px rgba(242,193,78,.55)}
+.csp-h b.s2{color:#d7dee8;text-shadow:0 0 10px rgba(215,222,232,.4)}.csp-h b.s1{color:#c98a5a;text-shadow:0 0 10px rgba(201,138,90,.4)}
+.csp-h span{font:800 italic 1rem var(--ff-head);text-transform:uppercase;letter-spacing:.03em;color:#fff}
+.csp-lane{position:relative;width:100%;height:560px;margin-top:12px;background:linear-gradient(90deg,transparent calc(50% - .5px),rgba(255,255,255,.07) calc(50% - .5px),rgba(255,255,255,.07) calc(50% + .5px),transparent calc(50% + .5px))}
+.csp-p{--cc:#9aa4b2;position:absolute;left:50%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:8px;width:min(150px,100%);height:36px;padding:0 12px 0 5px;border-radius:99px;font:800 .86rem var(--ff-body);color:#fff;z-index:1;
+  border:1px solid color-mix(in srgb,var(--cc) 75%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--cc) 38%,#0b1d26),color-mix(in srgb,var(--cc) 14%,#071a23));box-shadow:0 0 14px color-mix(in srgb,var(--cc) 28%,transparent),inset 0 1px 0 rgba(255,255,255,.08)}
+.csp-p img{width:26px;height:26px;flex:none;filter:drop-shadow(0 0 4px color-mix(in srgb,var(--cc) 70%,transparent))}
+.csp-p.c1{--cc:#9aa4b2}.csp-p.c2{--cc:#2bb673}.csp-p.c3{--cc:#2f8cf0}.csp-p.c4{--cc:#b066f3}.csp-p.c5{--cc:#f2a516}
+.csp-p.c5{box-shadow:0 0 20px rgba(242,165,22,.45),inset 0 1px 0 rgba(255,255,255,.12)}
+.csp-eqs{position:absolute;left:calc(var(--ax) + var(--g));right:0;top:var(--top);pointer-events:none;z-index:0}   /* hinter den Pillen (z-index 1) */
+.csp-eq{position:absolute;left:calc((100% - 2 * var(--g)) / 3 * var(--from) + (100% - 2 * var(--g)) / 6 + var(--g) * var(--from));width:calc((100% - 2 * var(--g)) / 3 + var(--g));height:0;margin-top:18px;border-top:2px dashed rgba(242,193,78,.55)}
+.csp-eq em{position:absolute;left:50%;top:-13px;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#f2c14e;color:#3a2a05;font:900 1rem/1 var(--ff-body);font-style:normal;box-shadow:0 0 12px rgba(242,193,78,.6)}
+@media (max-width:600px){.csp{--g:5px;--ax:26px;--top:68px}.csp-eq{margin-top:16px}.csp-axis{margin-top:var(--top);height:560px}.csp-axis b{writing-mode:vertical-rl;transform:rotate(180deg);padding:8px 4px;font-size:.66rem}.csp-tri{display:none}.csp-axis .csp-up{order:0}.csp-col{padding:10px 3px 12px;border-radius:12px}
+  .csp-h b{font-size:1rem}.csp-h span{font-size:.78rem}.csp-p{width:96%;height:32px;gap:4px;padding:0 6px 0 3px;font-size:.72rem}.csp-p img{width:20px;height:20px}.csp-eq em{width:18px;height:18px;top:-10px;font-size:.8rem}}
+.csp-rules{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0;padding:0;list-style:none}
+.csp-rules li{padding:6px 12px;border-radius:99px;border:1px solid rgba(242,193,78,.35);background:rgba(242,193,78,.08);font-size:.84rem;color:var(--muted)}
+.csp-rules b{color:#fff}
+/* Kopf des Profi-Tipps: Foto + „Profi-Tipp“ + Name */
+.art-tiph{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.at-img{flex:none;line-height:0}
+.at-img img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid rgba(242,193,78,.7);box-shadow:0 0 12px rgba(242,193,78,.3)}
+.art-tiph>span{display:flex;flex-direction:column;line-height:1.1}
+.art-tiph .art-bh{margin:0}
+.at-name{font-size:.84rem;font-weight:700;color:#f3e6c8;text-decoration:none}
+.at-name:hover{color:#fff}
+/* hervorgehobener Kernpunkt im Profi-Tipp (z. B. Scouten beim Rolldown) */
+.art-key{position:relative;margin:4px 0 14px;padding:14px 16px 12px;border-radius:12px;border:1px solid rgba(255,59,107,.5);background:linear-gradient(135deg,rgba(255,59,107,.16),rgba(255,59,107,.04));box-shadow:0 0 22px rgba(255,59,107,.12)}
+.art-keyh{display:inline-flex;align-items:center;gap:8px;font:900 italic 1.15rem var(--ff-head);text-transform:uppercase;letter-spacing:.02em;color:#ff7a9c}
+.art-keyh::before{content:"!";display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#ff3b6b;color:#fff;font:900 .9rem/1 var(--ff-body);font-style:normal}
+.tool-seo .art-key p{margin:6px 0 8px;color:#f1dde3}
+.art-key p b{color:#fff}
+.art-opts{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px;color:#f1dde3;line-height:1.5}
+.art-opts li::marker{color:#ff7a9c;font-weight:800}
+.art-opts b{color:#fff}
 .art-tips{margin:4px 0 10px}
 .art-tips li{line-height:1.6}
 /* Vertrauens-Box zwischen Tool und Artikel: nur Symbol (Heimerdinger bzw. Vi aus dem Logo) und ein lockerer Satz */
