@@ -4538,6 +4538,27 @@ function h1Sync(){
     else if(!show && el.tagName === 'H1') h1Swap(el, 'div').setAttribute('data-h1', '');
   });
 }
+// Aufrufe der Tools (api/clicks.js): Öffnen eines Tools zählt einmal pro Browser-Sitzung; die Übersicht /tools zeigt
+// unter jeder Kachel einen Blitz mit der Zahl. Ohne Zahl (Speicher nicht verbunden, lokal) bleibt dort „Neu“ stehen.
+// TC_SORT_BY_HITS = true sortiert die Kacheln nach Aufrufen – vorerst gilt die feste Reihenfolge aus index.html
+const TC_SORT_BY_HITS = false;
+const TC_BOLT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4.5 13.5h6.2L9.5 22l9-11.5h-6.2z" fill="currentColor"/></svg>';
+function toolHit(key){
+  if(FILE_MODE || !key) return;
+  try { if(sessionStorage.getItem('tftfreaks_hit_' + key)) return; sessionStorage.setItem('tftfreaks_hit_' + key, '1'); } catch(e){}
+  try { navigator.sendBeacon('/api/clicks?t=' + encodeURIComponent(key)); } catch(e){}
+}
+let tcHitsLoaded = false;
+function tcHits(){
+  if(FILE_MODE || tcHitsLoaded) return; tcHitsLoaded = true;
+  fetch('/api/clicks').then(r=>r.ok ? r.json() : null).then(d=>{
+    const c = d && d.counts; if(!c) return;
+    document.querySelectorAll('#page-tools [data-hits]').forEach(el=>{ const n = c[el.dataset.hits]; if(n == null) return;
+      el.className = 'tc-hits'; el.innerHTML = `${TC_BOLT}<b>${Number(n).toLocaleString(LOC)}</b>`; el.title = L(`${n} Aufrufe`, `${n} views`); });
+    const hits = item => c[(item.querySelector('[data-hits]') || {dataset:{}}).dataset.hits] || 0;
+    if(TC_SORT_BY_HITS){ const g = $('#page-tools .tc-grid'); if(g) [...g.children].sort((a, b)=>hits(b) - hits(a)).forEach(x=>g.appendChild(x)); }
+  }).catch(()=>{ tcHitsLoaded = false; });
+}
 function route(){
   // lokal: normale Sprunganker (z. B. #main) nicht als Seite behandeln
   if(FILE_MODE && location.hash && !location.hash.startsWith('#/') && document.querySelector('.page.active')) return;
@@ -4572,6 +4593,8 @@ function route(){
   // Seitenbreite: Übersichtsseiten breit wie das Dashboard, Unterseiten (einzelnes Tool, Cheatsheet, Champion, Patch, Rang, Profil, Rechtliches) schmaler
   const subOk = {tools:['rolldown','tierlist','simulator','drops','dps','augments'], cheatsheet:csList().map(s=>s[0]), patches:Object.keys(patchBySlug), ranks:Object.keys(rankBy), about:['crazyslayt','humbadobo']}[page];
   document.body.dataset.lvl = ['champion','comp','builder','apply','impressum','datenschutz','bedingungen','countdown'].includes(page) || (subOk && subOk.includes(sub)) ? 'sub' : 'top';
+  toolHit(page==='builder' ? 'builder' : page==='tools' && subOk.includes(sub) ? sub : '');
+  if(page==='tools' && !sub) tcHits();
   let navKey = page==='champion' ? 'bibliothek' : page==='comp' ? 'tierlist' : page==='countdown' ? 'patches' : page;
   $('#statBar').classList.toggle('sb-off', page!=='home');   // LP-Grenzen und Patch-Countdown nur auf der Startseite
   if(page==='home') requestAnimationFrame(()=>sbCount(true));   // beim Öffnen der Startseite die LP hochzählen

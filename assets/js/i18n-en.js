@@ -139,6 +139,8 @@ window.I18N_EN = {
   "Kampf-Simulator": "Fight simulator",
   "Zwei Teams, ein Kampf. Wer läuft wohin – und wer gewinnt?": "Two teams, one fight. Who goes where – and who wins?",
   "TFT Kampf-Simulator": "TFT fight simulator",
+  "Planer": "Planner",
+  "Plan dein Board, probier Comps aus und teil sie mit Freunden.": "Plan your board, try out comps and share them with friends.",
   "In Arbeit": "In progress",
   "Econ- & XP-Rechner": "Econ & XP calculator",
   "Zinsen, XP und dein {0}-Plan für die nächsten Runden.": "Interest, XP and your {0} plan for the next rounds.",

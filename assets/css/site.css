@@ -1481,6 +1481,9 @@ a.tc:hover .tc-art img{transform:scale(1.05) rotate(-1deg)}
 a.tc:hover .tc-ph{transform:rotate(0) scale(1.05)}
 .tc-cap{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 4px;font-size:.76rem;color:var(--faint)}
 .tc-st{font-weight:700;color:var(--accent-2)}
+/* Aufrufe eines Tools: kleiner Blitz und die Zahl, rechts unter der Kachel (app.js tcHits) */
+.tc-hits{display:inline-flex;align-items:center;gap:4px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.tc-hits svg{width:13px;height:13px;color:#ff8a1f;filter:drop-shadow(0 0 4px rgba(255,138,31,.45))}
 .tc-st.wip{color:var(--gold)}
 .tc-st.soon{color:var(--faint)}
 .tc-item.tc-soon .tc{border-style:dashed;opacity:.7}
