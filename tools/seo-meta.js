@@ -56,9 +56,11 @@ function findBrowser() {
     // Kopfdaten der aktuellen Seite – Adressen ohne Server-Teil, damit api/page.js sie mit der echten Domain zusammensetzt
     const read = `(() => { const O = location.origin, rel = s => s && s.startsWith(O) ? s.slice(O.length) || '/' : s || '';
       const a = s => (document.querySelector(s) || {}), m = s => a(s).content || '', ld = document.getElementById('ldPage');
+      // pre: fertig gebaute Artikel der sichtbaren Seite ([data-pre], z. B. Augment-Chancen) – api/page.js schreibt sie ins HTML
+      const pre = {}; document.querySelectorAll('.page.active [data-pre]').forEach(el => { if (el.getClientRects().length && el.innerHTML.trim()) pre[el.dataset.pre] = el.innerHTML.split(O + '/').join('/'); });
       return {t: document.title, d: m('meta[name="description"]'), r: m('meta[name="robots"]'), c: rel(a('link[rel="canonical"]').href),
         de: rel(a('link[hreflang="de"]').href), en: rel(a('link[hreflang="en"]').href), img: rel(m('meta[property="og:image"]')), loc: m('meta[property="og:locale"]'),
-        ld: ld ? ld.textContent.split(O).join('{{ORIGIN}}') : ''}; })()`;
+        tw: m('meta[name="twitter:card"]'), ld: ld ? ld.textContent.split(O).join('{{ORIGIN}}') : '', ...(Object.keys(pre).length ? {pre} : {})}; })()`;
     const pages = {}; let lang = '';
     for (const p of paths) {
       const l = /^\/en(\/|$)/.test(p) ? 'en' : 'de';

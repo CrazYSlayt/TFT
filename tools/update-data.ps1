@@ -613,7 +613,11 @@ Step 'Kopfdaten für Suchmaschinen …'
 $node = (Get-Command node -ErrorAction SilentlyContinue).Source
 if (-not $node -and (Test-Path 'D:\Program Files\nodejs\node.exe')) { $node = 'D:\Program Files\nodejs\node.exe' }
 if (-not $node) { Warn 'Node.js nicht gefunden – Kopfdaten nicht aktualisiert.' }
-else { & $node (Join-Path $root 'tools\seo-meta.js'); if ($LASTEXITCODE -ne 0) { Warn 'Kopfdaten konnten nicht erzeugt werden – die alten bleiben bestehen.' } }
+else {
+  # Vorschaubilder der Tools (assets\og) – ohne Zahlen, ändern sich nur bei neuer Vorlage oder neuem Maskottchen; vor den Kopfdaten, die auf sie verweisen
+  & $node (Join-Path $root 'tools\og-bilder.js'); if ($LASTEXITCODE -ne 0) { Warn 'Vorschaubilder konnten nicht erzeugt werden – die alten bleiben bestehen.' }
+  & $node (Join-Path $root 'tools\seo-meta.js'); if ($LASTEXITCODE -ne 0) { Warn 'Kopfdaten konnten nicht erzeugt werden – die alten bleiben bestehen.' }
+}
 
 # ======================= 6. Optional: automatisch veröffentlichen (Ordner data und die Startseiten-Kopfdaten in index.html) =======================
 if ($Publish) {

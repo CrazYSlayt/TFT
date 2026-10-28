@@ -52,6 +52,7 @@
 <meta property="og:description" content="TFT Tierlist für Set 18 von Challenger-Spielern: die besten Comps mit Items, Augments und Aufstellung – dazu Tools und Coaching.">
 <meta property="og:url" content="https://www.tftclimb.com/">
 <meta property="og:image" content="https://www.tftclimb.com/assets/img/mascot-vi.webp">
+<meta name="twitter:card" content="summary">
 <meta property="og:locale" content="de_DE">
 <script type="application/ld+json" id="ldPage">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"TFTClimb","url":"https://www.tftclimb.com/","inLanguage":"de","publisher":{"@type":"Organization","name":"TFTClimb","url":"https://www.tftclimb.com/","logo":"https://www.tftclimb.com/assets/brand/logo-symbol-512.png","email":"info@tftclimb.com"}}]}</script>
 <!-- seo:end -->
@@ -570,11 +571,11 @@
           <div class="tc-cap"><span>TFT Team Builder</span><span class="tc-st" data-hits="builder">Neu</span></div>
         </div>
         <div class="tc-item">
-          <a class="tc" href="/tools/tft-augment-vorhersage">
-            <div class="tc-text"><span class="tc-tag">Vorhersage</span><h3>Augment-Vorhersage</h3><p>Silber, Gold oder Prismatisch? Sieh, was als Nächstes kommt.</p></div>
+          <a class="tc" href="/tools/tft-augment-chancen">
+            <div class="tc-text"><span class="tc-tag">Vorhersage</span><h3>Augment-Chancen</h3><p>Silber, Gold oder Prismatisch? Sieh, was als Nächstes kommt.</p></div>
             <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/augments.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 8v4l3 2"/></svg></span></div>
           </a>
-          <div class="tc-cap"><span>TFT Augment-Vorhersage</span><span class="tc-st" data-hits="augments">Neu</span></div>
+          <div class="tc-cap"><span>TFT Augment-Chancen</span><span class="tc-st" data-hits="augments">Neu</span></div>
         </div>
         <div class="tc-item">
           <a class="tc" href="/tools/tft-item-drop-chance">
@@ -623,7 +624,7 @@
             <li><a href="/tools/tft-item-drop-chance">Item-Drop-Chance</a><span>Welche Komponente kommt als Nächstes aus dem Item-Pool? Trag deine Drops ein und plan deine Items.</span></li>
             <li><a href="/tools/tft-tierlist-maker">Tierlist-Maker</a><span>Deine eigene Tierlist für Champions, Items, Artefakte, Embleme und Augments – per Link teilbar.</span></li>
             <li><a href="/tools/tft-kampf-simulator">Kampf-Simulator</a><span>Zwei Teams, ein Kampf: Laufwege, Ziele und Fähigkeiten Schritt für Schritt.</span></li>
-            <li><a href="/tools/tft-augment-vorhersage">Augment-Vorhersage</a><span>Silber, Gold oder Prismatisch? Gib deine Augment-Stufen ein und sieh, was als Nächstes kommt.</span></li>
+            <li><a href="/tools/tft-augment-chancen">Augment-Chancen</a><span>Wie wahrscheinlich ist ein prismatisches Augment? Gib deine Augment-Stufen ein und sieh, was als Nächstes kommt.</span></li>
             <li><a href="/tft-team-builder">Team Builder</a><span>Plan dein Board mit Items und Sternen und sieh sofort, welche Traits aktiv sind.</span></li>
           </ul>
         </div>
@@ -771,36 +772,18 @@
       </section>
     </div>
 
-    <!-- Augment-Vorhersage (Aufbau „Deine Angaben“ → „Dein Ergebnis“, Vorlage für die anderen Tools) -->
+    <!-- Augment-Chancen (Aufbau „Deine Angaben“ → „Dein Ergebnis“, Vorlage für die anderen Tools) -->
     <div class="tool-view" data-tool="augments" hidden>
       <div class="page-head" data-tool-art="augments" data-art-buddy="augtool">
-        <div class="crumb"><a href="/tools">Tools</a> / Augment-Vorhersage</div>
-        <h1 class="tool-h1"><span class="th-key">TFT Augment-Vorhersage:</span> Welche Stufe kommt?</h1>
-        <p>Silber, Gold oder Prismatisch? Gib ein, welche Augment-Stufen du schon gesehen hast – die Vorhersage zeigt dir, was auf 3-2 und 4-2 wahrscheinlich kommt.</p>
+        <div class="crumb"><a href="/tools">Tools</a> / Augment-Chancen</div>
+        <h1 class="tool-h1"><span class="th-key">TFT Augment-Chancen:</span> Silber, Gold oder Prismatisch?</h1>
+        <p>Wie wahrscheinlich ist ein prismatisches Augment? Gib ein, welche Augment-Stufen du schon gesehen hast – der Rechner zeigt dir, was auf 3-2 und 4-2 kommt.</p>
       </div>
       <div id="agApp"></div>
-      <section class="tool-seo" aria-labelledby="ts-augments">
-        <div class="ts-main">
-          <h2 id="ts-augments">TFT Augment-Vorhersage: Silber, Gold oder Prismatisch?</h2>
-          <p>Die Stufen der drei Augments einer Partie hängen zusammen: Auf jede Stufe auf 2-1 folgen die Stufen auf 3-2 und 4-2 mit festen Chancen. Die Augment-Vorhersage nutzt diese Verteilung und zeigt dir nach jedem Augment, was als Nächstes kommt.</p>
-          <h3>So benutzt du die Augment-Vorhersage</h3>
-          <ol class="ts-steps">
-            <li>Wähl unter „Deine Angaben“ die Stufe deines Augments auf 2-1.</li>
-            <li>Lies unter „Dein Ergebnis“ ab, welche Stufe auf 3-2 wahrscheinlich ist und wie hoch die Chance auf ein prismatisches Augment noch ist.</li>
-            <li>Trag auf 3-2 die nächste Stufe ein – die Vorhersage für 4-2 wird genauer.</li>
-          </ol>
-          <h3>Warum das im Spiel hilft</h3>
-          <p>Ob noch ein prismatisches Augment kommt, entscheidet oft, wie gierig du spielen kannst: Mit einem starken Augment auf 4-2 im Rücken lohnt es sich eher, Leben für Gold zu tauschen.</p>
-        </div>
-        <aside class="ts-side">
-          <h3>Häufige Fragen</h3>
-          <details><summary>Wie oft gibt es ein prismatisches Augment?</summary><p>In knapp der Hälfte aller Partien kommt mindestens ein prismatisches Augment. Wie hoch die Chance in deiner Partie noch ist, zeigt die Vorhersage nach jedem Augment.</p></details>
-          <details><summary>Kann ich die Stufe der Augments beeinflussen?</summary><p>Nein, die Reihenfolge der Stufen steht zu Beginn der Partie fest. Die Vorhersage zeigt dir, was nach deinen bisherigen Augments am wahrscheinlichsten ist.</p></details>
-          <details><summary>Woher kommen die Zahlen?</summary><p>Aus der Augment-Verteilung des aktuellen Sets – dieselben Werte wie im Augment-Baum unseres Cheatsheets.</p></details>
-          <h3>Weitere Tools</h3>
-          <ul class="ts-links"><li><a href="/cheatsheet/tft-augment-stufen">Augment-Cheatsheet</a></li><li><a href="/tierlist/augments">Augment-Tierlist</a></li><li><a href="/tools/tft-rolldown-rechner">Rolldown-Rechner</a></li><li><a href="/tools/tft-item-drop-chance">Item-Drop-Chance</a></li></ul>
-        </aside>
-      </section>
+      <!-- Artikel unter dem Tool: baut app.js (agArticle) aus den Set-Daten in der Sprache der Seite; tools/seo-meta.js liest ihn fertig aus
+           und api/page.js schreibt ihn beim Ausliefern hier hinein (data-pre) – Suchmaschinen sehen ihn so schon im HTML -->
+      <div class="tio-trust-wrap" data-pre="augments-trust" data-noi18n></div>
+      <section class="tool-seo ag-art" aria-labelledby="ts-augments" data-pre="augments" data-noi18n></section>
     </div>
   </div>
 </div>

@@ -1987,6 +1987,99 @@ details.card.dr-more{margin:0}
 .ts-links{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
 .ts-links a{display:inline-flex;padding:7px 12px;border-radius:99px;border:1px solid var(--line-2);color:var(--text);text-decoration:none;font-size:.82rem;font-weight:700}
 .ts-links a:hover{border-color:var(--accent);color:var(--accent-2)}
+/* Artikel unter einem Tool mit Tabellen, Kennzahlen, Boxen und Spielbildern (zuerst: Augment-Chancen, app.js agArticle) */
+.art-fig{float:right;width:min(300px,42%);margin:2px 0 12px 18px}
+.art-fig img{display:block;width:100%;height:auto;border-radius:12px;border:1px solid rgba(46,230,214,.25);box-shadow:0 10px 26px rgba(0,0,0,.4)}
+.art-stats{clear:both;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0 6px}
+.art-stats div{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:14px;border:1px solid rgba(167,139,250,.35);background:linear-gradient(135deg,rgba(167,139,250,.14),rgba(167,139,250,.03))}
+.art-stats div.g{border-color:rgba(245,184,46,.35);background:linear-gradient(135deg,rgba(245,184,46,.13),rgba(245,184,46,.03))}
+.art-stats b{font:900 italic 2.1rem/1 var(--ff-head);background:linear-gradient(90deg,#f0abfc,#93c5fd);-webkit-background-clip:text;background-clip:text;color:transparent}
+.art-stats .g b{background:none;color:#f5b82e}
+.art-stats span{font-size:.82rem;line-height:1.35;color:var(--muted)}
+.art-tw{overflow-x:auto}
+.art-table{width:100%;border-collapse:collapse;font-size:.9rem;margin:2px 0 6px}
+.art-table th{padding:8px 10px;border-bottom:1px solid var(--line-2);font-size:.72rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);text-align:left;white-space:nowrap}
+.art-table td{padding:8px 10px;border-bottom:1px solid var(--line);color:var(--text);font-variant-numeric:tabular-nums;vertical-align:middle}
+.art-table td small{display:block;margin-top:3px;font-size:.74rem;color:var(--faint)}
+.art-table td.hi{font-weight:800;color:#7ff7ec}
+.art-table tbody tr:hover td{background:rgba(46,230,214,.04)}
+.art-tier{display:inline-flex;align-items:center;gap:8px;font-weight:700;vertical-align:middle}
+.art-fr{width:20px;height:30px;flex:none}
+.art-tier.s b{color:#d7dee8}.art-tier.g b{color:#f5b82e}.art-tier.p b{color:#c4b5fd}
+.art-path{display:inline-flex;align-items:center;gap:4px}
+.art-path .ag-hx{width:20px;height:20px}
+.art-path i{font-style:normal;color:var(--faint);font-size:.8rem}
+.tool-seo p.art-note{font-size:.8rem;color:var(--faint);margin-top:4px}
+.art-box{margin:18px 0;padding:14px 16px;border-radius:14px;border:1px solid var(--line-2);background:rgba(3,17,27,.45)}
+.art-box.tip{border-color:rgba(242,193,78,.4);background:linear-gradient(135deg,rgba(242,193,78,.1),rgba(242,193,78,.02))}
+.art-bh{display:block;margin-bottom:6px;font:800 italic 1rem var(--ff-head);text-transform:uppercase;letter-spacing:.03em;color:#fff}
+.art-box.tip .art-bh{color:var(--tft-gold,#f2c14e)}
+.art-box p{margin-bottom:10px}
+.art-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.art-row img{border-radius:8px;border:1px solid var(--line-2)}
+.art-aug{display:inline-flex;align-items:center;gap:8px;vertical-align:middle}
+.art-aug img{width:28px;height:28px;border-radius:7px}
+.art-aug b{color:var(--text)}
+.art-augs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.art-col{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:14px;border:1px solid var(--line);background:#13131b}
+.art-col h4{margin:0 0 4px;font-size:.95rem}
+.art-col .art-aug{font-size:.84rem}
+.art-col .art-aug img{width:34px;height:34px}
+.art-col.p{border-color:rgba(167,139,250,.35)}.art-col.g{border-color:rgba(245,184,46,.3)}
+.art-list{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;color:var(--muted);line-height:1.55}
+.art-list li::marker{color:var(--accent-2)}
+/* Artikel-Aufbau: links der Text, rechts ein mitlaufendes Inhaltsverzeichnis (darunter später ein Werbebanner), die FAQ ganz unten */
+.tool-seo.ag-art{grid-template-columns:minmax(0,1fr) 240px;gap:32px}
+.art-side{position:sticky;top:calc(var(--topH, 64px) + 16px);align-self:start}
+.art-toc{padding:14px 16px;border-radius:14px;border:1px solid rgba(46,230,214,.22);background:rgba(3,17,27,.45)}
+.art-toc>b{display:block;margin-bottom:8px;font:800 italic 1rem var(--ff-head);text-transform:uppercase;letter-spacing:.03em;color:#fff}
+.art-toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;counter-reset:toc}
+.art-toc a{counter-increment:toc;display:flex;gap:8px;padding:5px 8px;border-radius:8px;border-left:2px solid transparent;color:var(--muted);font-size:.84rem;font-weight:600;text-decoration:none;line-height:1.3;transition:background .15s,color .15s,border-color .15s}
+.art-toc a::before{content:counter(toc);min-width:14px;color:var(--faint);font-weight:800;font-size:.76rem}
+.art-toc a:hover{color:#fff;background:rgba(46,230,214,.07)}
+.art-toc a.on{color:#7ff7ec;border-left-color:#2ee6d6;background:rgba(46,230,214,.1)}
+.art-toc a.on::before{color:#2ee6d6}
+.art-ad{margin-top:14px;min-height:250px}
+.art-faq{display:flex;flex-direction:column;gap:8px}
+.art-faq details{border:1px solid var(--line);border-radius:12px;background:#13131b;padding:0 14px}
+.art-faq summary{cursor:pointer;list-style:none;padding:12px 22px 12px 0;font-weight:700;font-size:.92rem;position:relative}
+.art-faq summary::-webkit-details-marker{display:none}
+.art-faq summary::after{content:"+";position:absolute;right:0;top:9px;color:var(--accent-2);font-size:1.1rem;font-weight:800}
+.art-faq details[open] summary::after{content:"–"}
+.art-faq details p{font-size:.88rem;margin:0 0 12px}
+/* Links im Text: sofort als Link erkennbar – Türkis, kräftiger Unterstrich, kleiner Pfeil; beim Drüberfahren hinterlegt */
+.art-a{color:#7ff7ec;font-weight:700;text-decoration:underline;text-decoration-thickness:2px;text-decoration-color:rgba(46,230,214,.55);text-underline-offset:4px;border-radius:4px;transition:color .15s,background .15s,text-decoration-color .15s}
+.art-a::after{content:"→";display:inline-block;margin-left:3px;font-size:.85em;text-decoration:none;transition:transform .15s}
+.art-a:hover{color:#fff;background:rgba(46,230,214,.14);text-decoration-color:#2ee6d6}
+.art-a:hover::after{transform:translateX(2px)}
+/* Überschriften im Artikel: größer und gut lesbar, Abschnitte mit Akzentstrich */
+.ag-art h2{font-size:clamp(1.6rem,2.6vw,2.15rem);line-height:1.12;letter-spacing:.01em;margin-bottom:16px}
+.ag-art .ts-main h3{position:relative;margin:30px 0 12px;padding-left:14px;font-size:clamp(1.25rem,1.8vw,1.5rem);line-height:1.2;letter-spacing:.015em;color:#fff}
+.ag-art .ts-main h3::before{content:"";position:absolute;left:0;top:.12em;bottom:.12em;width:4px;border-radius:3px;background:linear-gradient(180deg,#2ee6d6,#a78bfa)}
+.ag-art .art-bh{font-size:1.2rem}
+.ag-art .art-col h4{font-size:1.05rem}
+.art-enc{display:inline-flex;align-items:center;gap:10px}
+.art-enc b{color:#fff;white-space:nowrap}
+/* „Weitere Tools“: je Tool eine Box mit Symbol, Überschrift, kurzem Satz und Pfeil */
+.art-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.art-link{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid rgba(46,230,214,.3);background:linear-gradient(135deg,rgba(46,230,214,.1),rgba(46,230,214,.02));color:var(--text);text-decoration:none;transition:border-color .15s,transform .15s,box-shadow .15s}
+.art-link img{width:42px;height:42px;object-fit:contain;flex:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+.art-link>span:not(.art-lic){display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.art-link b{font:800 italic 1.08rem/1.15 var(--ff-head);color:#fff}
+.art-link small{font-size:.8rem;color:var(--muted)}
+.art-link i{font-style:normal;font-weight:800;color:#2ee6d6;transition:transform .15s}
+.art-link:hover{border-color:#2ee6d6;box-shadow:0 0 18px rgba(46,230,214,.18);transform:translateY(-1px)}
+.art-link:hover i{transform:translateX(3px)}
+.art-lic{flex:none;display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:10px;background:rgba(46,230,214,.12);color:#7ff7ec}
+.art-lic svg{width:21px;height:21px}
+.art-tips{margin:4px 0 10px}
+.art-tips li{line-height:1.6}
+/* Vertrauens-Box zwischen Tool und Artikel: nur Symbol (Heimerdinger bzw. Vi aus dem Logo) und ein lockerer Satz */
+.tio-trust{display:flex;align-items:center;gap:18px;margin-top:22px;padding:16px 22px;border-radius:18px;border:1px solid rgba(46,230,214,.3);background:radial-gradient(420px 160px at 0 50%,rgba(242,193,78,.12),transparent 70%),linear-gradient(135deg,rgba(46,230,214,.1),rgba(3,17,27,.5) 65%)}
+.tt-face{flex:none;width:76px;height:auto;filter:drop-shadow(0 6px 12px rgba(0,0,0,.5))}   /* freigestellter Kopf, kein Kreis */
+.tio-trust p{margin:0;color:#dbe8f0;font-size:1rem;line-height:1.55}
+@media (max-width:980px){.tool-seo.ag-art{grid-template-columns:minmax(0,1fr)}.art-side{position:static;order:-1}.art-ad{display:none}}
+@media (max-width:760px){.art-fig{float:none;width:100%;margin:0 0 14px}.art-stats,.art-augs,.art-links{grid-template-columns:minmax(0,1fr)}.tio-trust{align-items:flex-start;padding:14px 16px}.tt-face{width:56px}.tio-trust p{font-size:.92rem}}
 @media (max-width:900px){ .tool-seo{grid-template-columns:minmax(0,1fr);padding:20px} .ts-list{grid-template-columns:1fr} }
 
 /* Tool-Überschriften: Suchbegriff farbig mit Doppelpunkt, danach Beschreibung (normale Schreibweise) */

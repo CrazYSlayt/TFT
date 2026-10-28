@@ -11,12 +11,12 @@ const rawPath = () => (FILE_MODE ? location.hash.replace(/^#/, '') : location.pa
 const curPath = () => { const p = rawPath(); return fromEn(EN ? (p.replace(/^\/en(?=\/|$)/, '') || '/') : p); };
 // Sprechende Adressen für Google: das Keyword steht in der Adresse (/tools/tft-item-drop-chance), intern bleiben die kurzen Schlüssel (drops).
 // Alte Adressen leiten weiter – online per 301 (vercel.json), in der Seite über seoPath(). Gleiche Listen in api/sitemap.js
-const TOOL_SLUG = {rolldown:'tft-rolldown-rechner', drops:'tft-item-drop-chance', tierlist:'tft-tierlist-maker', simulator:'tft-kampf-simulator', dps:'tft-dps-vergleich', augments:'tft-augment-vorhersage'};
+const TOOL_SLUG = {rolldown:'tft-rolldown-rechner', drops:'tft-item-drop-chance', tierlist:'tft-tierlist-maker', simulator:'tft-kampf-simulator', dps:'tft-dps-vergleich', augments:'tft-augment-chancen'};
 const CS_SLUG = {shop:'tft-shop-odds', augments:'tft-augment-stufen', orbs:'tft-loot-orbs', loot:'tft-loot-verteilung', damage:'tft-spielerschaden', emblems:'tft-embleme', solo:'tft-stage-1-solo', 'patch-schedule':'tft-patch-plan', carousel:'tft-karussell'};   // sonst „tft-“ + Schlüssel
 const GUIDE_SLUG = {encounters:'tft-encounters'};
 // Englische Seite: eigene englische Adressen mit englischem Keyword (/en/tools/tft-rolldown-calculator, /en/library …).
 // toEn() macht aus einem internen (deutschen) Pfad den englischen, fromEn() umgekehrt
-const TOOL_SLUG_EN = {rolldown:'tft-rolldown-calculator', drops:'tft-item-drop-chance', tierlist:'tft-tier-list-maker', simulator:'tft-fight-simulator', dps:'tft-dps-comparison', augments:'tft-augment-prediction'};
+const TOOL_SLUG_EN = {rolldown:'tft-rolldown-calculator', drops:'tft-item-drop-chance', tierlist:'tft-tier-list-maker', simulator:'tft-fight-simulator', dps:'tft-dps-comparison', augments:'tft-augment-odds'};
 const CS_SLUG_EN = {shop:'tft-shop-odds', augments:'tft-augment-tiers', orbs:'tft-loot-orbs', loot:'tft-loot-distribution', damage:'tft-player-damage', emblems:'tft-emblems', solo:'tft-solo-stage-1', 'patch-schedule':'tft-patch-schedule', carousel:'tft-carousel'};
 const PAGE_EN = {tierlist:'tier-list', bibliothek:'library', impressum:'legal-notice', datenschutz:'privacy-policy', bedingungen:'terms', 'tft-patch-countdown':'tft-next-patch-countdown'};
 function langPath(p, en){   // en = true: deutsch → englisch, false: englisch → deutsch
@@ -2338,7 +2338,7 @@ ABOUT_COACHES.forEach(([k], i)=>{
 // die Kreise bekommen nur neues Ziel und Bild. Desktop: im Seitenrand auf halber Fensterhöhe (bleibt beim Scrollen stehen), Handy: obere Ecken.
 // Reihenfolge wie in der Tool-Übersicht
 const TOOL_NAV = [['rolldown', L('Rolldown-Rechner', 'Rolldown calculator')], ['drops', L('Item-Drop-Chance', 'Item Drop Chance')], ['tierlist', L('Tierlist-Maker', 'Tier list maker')],
-  ['simulator', L('Kampf-Simulator', 'Fight simulator')], ['dps', L('DPS-Vergleich', 'DPS Comparison')], ['augments', L('Augment-Vorhersage', 'Augment prediction')]];
+  ['simulator', L('Kampf-Simulator', 'Fight simulator')], ['dps', L('DPS-Vergleich', 'DPS Comparison')], ['augments', L('Augment-Chancen', 'Augment odds')]];
 ['#page-tools', '#page-builder'].forEach(sel=>{ const w = document.querySelector(sel + ' > .wrap'); if(!w) return;
   w.insertAdjacentHTML('afterbegin', `<div class="tn-nav" hidden><div class="tn-rail l">${pnArrow(-1, '/tools', '', '', L('Vorheriges Tool', 'Previous tool'), ' pn-tool')}</div><div class="tn-rail r">${pnArrow(1, '/tools', '', '', L('Nächstes Tool', 'Next tool'), ' pn-tool')}</div></div>`); });
 function tnUpdate(key){   // key = aktuelles Tool ('' = keins → Kreise aus)
@@ -2802,7 +2802,7 @@ function renderTools(sub, a, b){
     if(c && dps.champ !== c.n) dpsSetChamp(c.n);
   }
 }
-/* ================= AUGMENT-VORHERSAGE (/tools/tft-augment-vorhersage) ================= */
+/* ================= AUGMENT-VORHERSAGE (/tools/tft-augment-chancen) ================= */
 // „Deine Angaben“: die Augment-Stufen, die du schon gesehen hast (2-1, 3-2, 4-2). „Dein Ergebnis“: was als Nächstes kommt, Chance auf ein prismatisches Augment, wahrscheinlichste Verläufe.
 // Gleiche Daten wie der Augment-Baum im Cheatsheet (CS.augments.seq); der kleine Baum in der Ergebnis-Box zeigt dieselbe Auswahl und lässt sich auch anklicken.
 // Die Auswahl steht in der Adresse (?a=SG), damit man sie teilen kann
@@ -2904,7 +2904,146 @@ function agUpdate(syncTree=true){
   if(svg && syncTree){ svg.dataset.sel = ag.k; svg.dataset.hist = JSON.stringify(ag.k.split('').map((_, i)=>ag.k.slice(0, i))); atgMark(svg, ag.k); }   // Verlauf wie nach Klicks im Baum
   history.replaceState(history.state, '', location.pathname + (ag.k ? '?a=' + ag.k : '') + location.hash);
 }
+// Artikel unter dem Rechner (SEO): Zahlen, Tabellen und Bilder kommen aus den Set-Daten – nach einem Patch stimmt alles von selbst.
+// tools/seo-meta.js liest ihn fertig aus (beide Sprachen), api/page.js schreibt ihn schon beim Ausliefern ins HTML (data-pre="augments")
+const AG_EX = {S:['Component Buffet', 'Item Grab Bag', "Pandora's Items"], G:["Pandora's Items II", 'Heart of Steel', 'Gold Destiny', 'Solo Leveling'],
+  P:['Golden Gamble', 'Hedge Fund', 'Prismatic Ticket', 'The Golden Egg', 'Nesting Anvils', 'The Trait Tree']};
+const augName = n => { const a = AUGS.find(x=>x.en === n); return a ? L(a.de || a.en, a.en) : n; };   // Augment-Name in der Sprache der Seite
+function agArticle(){
+  const seq = CS.augments.seq, W = agSum(''), S = TFT_DATA.set, PT = TL_PATCH || (CURRENT_PATCH ? CURRENT_PATCH.id : '');
+  const share = f => seq.filter(x=>f(x[0])).reduce((s, x)=>s + x[1], 0) / W * 100;
+  const prism = share(k=>k.includes('P')), multi = share(k=>(k.match(/P/g) || []).length >= 2), three = share(k=>k === 'PPP');
+  const st = AG_ST.map((_, i)=>Object.fromEntries(agDist('', i)));   // {S: %, G: %, P: %} je Runde
+  const top = [...seq].sort((a, b)=>b[1] - a[1]);
+  const tier = l => `<span class="art-tier ${CS_AUG[l][0]}">${agFr(l, 'art-fr')}<b>${agName(l)}</b></span>`;
+  const path = k => `<span class="art-path">${k.split('').map(agHex).join('<i>›</i>')}</span>`;
+  const aug = (n, l) => { const a = AUGS.find(x=>x.en === n && (!l || x.lv === {S:1, G:2, P:3}[l])) || AUGS.find(x=>x.en === n); return a ? `<span class="art-aug"><img src="${augImg(a)}" alt="${esc(L(a.de || a.en, a.en))}" width="40" height="40" loading="lazy"><b>${esc(L(a.de || a.en, a.en))}</b></span>` : ''; };
+  const comps = COMPONENTS.slice(0, 8).map(id=>itemById[id]).filter(Boolean);
+  const encs = ENCS.filter(e=>e.cat === 'augments'), encW = ENCS.reduce((s, e)=>s + (+e.w || 0), 0) || 1;   // Encounter, die Augments beeinflussen
+  const gg = encs.find(e=>/all augments offered are gold/i.test(e.en));   // Beispiel „alle Augments Gold“ (nur, wenn es den Encounter im Set gibt)
+  const og = L('assets/og/tft-augment-chancen.webp', 'assets/og/tft-augment-odds.webp');
+  const P = v => agPct(v).replace(' ', ' '), max = i => Math.max(...'SGP'.split('').map(l=>st[i][l]));   // Zahl und % brechen nicht auseinander
+  // Links stehen im Text und sind dort deutlich als Link erkennbar (Farbe, Unterstrich, Pfeil – CSS .art-a)
+  const link = (href, name) => `<a class="art-a" href="${href}">${name}</a>`;
+  // „Weitere Tools“ unten: je Tool eine Box mit Symbol, Überschrift, Satz und Pfeil
+  const card = (href, img, name, sub) => `<a class="art-link" href="${href}">${img}<span><b>${name}</b><small>${sub}</small></span><i aria-hidden="true">→</i></a>`;
+  // Profi-Tipp: Fall, in dem das nächste Augment am sichersten Gold ist (nach einem oder zwei Augments)
+  const sure = ['S', 'G', 'P', ...['S', 'G', 'P'].flatMap(a=>['S', 'G', 'P'].map(b=>a + b))].filter(k=>agSum(k) > 0)
+    .map(k=>[k, Object.fromEntries(agDist(k, k.length)).G]).sort((a, b)=>b[1] - a[1])[0];
+  const faq = [
+    [L('Wie hoch ist die Chance auf ein prismatisches Augment?', 'What are the odds of a prismatic augment?'),
+     L(`In Set ${S} gibt es in ${P(prism)} aller Partien mindestens ein prismatisches Augment. Auf 2-1 liegt die Chance bei ${P(st[0].P)}, auf 3-2 bei ${P(st[1].P)} und auf 4-2 bei ${P(st[2].P)}.`,
+       `In Set ${S}, ${P(prism)} of all games have at least one prismatic augment. The odds are ${P(st[0].P)} on 2-1, ${P(st[1].P)} on 3-2 and ${P(st[2].P)} on 4-2.`)],
+    [L('Kann ich zwei oder drei prismatische Augments bekommen?', 'Can I get two or three prismatic augments?'),
+     L(`Ja, aber selten: In ${P(multi)} der Partien kommen mindestens zwei prismatische Augments${three ? `, drei in ${P(three)}` : `, drei prismatische kommen in Set ${S} nicht vor`}.`,
+       `Yes, but rarely: ${P(multi)} of games have at least two prismatic augments${three ? `, three in ${P(three)}` : `, three prismatics never happen in Set ${S}`}.`)],
+    [L('Bekommen alle Spieler dieselbe Augment-Stufe?', 'Do all players get the same augment tier?'),
+     L('Ja. In jeder Augment-Runde bekommen alle Spieler Augments derselben Stufe – nur die Auswahl ist verschieden.', 'Yes. In every augment round all players get augments of the same tier – only the choices differ.')],
+    [L('Kann ich die Stufe meiner Augments beeinflussen?', 'Can I influence the tier of my augments?'),
+     L('Nein. Die Stufen aller drei Augments stehen zu Beginn der Partie als Kombination fest. Neu würfeln ändert die angebotenen Augments, nicht ihre Stufe.', 'No. The tiers of all three augments are set as one combination at the start of the game. Rerolling changes the offered augments, not their tier.')],
+    [L('Woher kommen die Zahlen?', 'Where do the numbers come from?'),
+     L(`Aus der Augment-Verteilung von Set ${S} (${CS.augments.src}). Wir aktualisieren sie mit jedem Patch – dieselben Werte stehen im Augment-Baum unseres Cheatsheets.`, `From the augment distribution of Set ${S} (${CS.augments.src}). We update it with every patch – the same values are in the augment tree of our cheatsheet.`)]];
+  // Abschnitte: [id, Überschrift im Inhaltsverzeichnis]
+  const sec = {runde:L('Chancen pro Runde', 'Odds per round'), folge:L('Häufigste Reihenfolgen', 'Most common orders'), erstes:L('Nach dem ersten Augment', 'After your first augment'),
+    tipp:L('Profi-Tipp', 'Pro tip'), ...(encs.length ? {encounter:L('Encounter', 'Encounters')} : {}), beispiele:L('Beispiele', 'Examples'), stufen:L('So funktionieren die Stufen', 'How tiers work'), anleitung:L('So benutzt du den Rechner', 'How to use the calculator'), faq:L('Häufige Fragen', 'FAQ')};
+  return `<div class="ts-main">
+    <h2 id="ts-augments">${L(`TFT Augment-Chancen in Set ${S}: So wahrscheinlich ist ein prismatisches Augment`, `TFT augment odds in Set ${S}: how likely is a prismatic augment?`)}</h2>
+    <figure class="art-fig"><img src="${og}" alt="${L('TFT Augment-Chancen: Silber, Gold oder Prismatisch – kostenloser Rechner von TFTClimb', 'TFT augment odds: silver, gold or prismatic – free calculator by TFTClimb')}" width="1200" height="630" loading="lazy"></figure>
+    <p>${L(`In jeder TFT-Partie bekommst du drei Augments – auf 2-1, 3-2 und 4-2. Ob sie Silber, Gold oder Prismatisch sind, wird nicht Runde für Runde ausgewürfelt: Die Stufen der ganzen Partie stehen als Kombination fest. In Set ${S} gibt es in <b>${P(prism)}</b> aller Partien mindestens ein prismatisches Augment. Hier findest du alle Augment-Chancen von Patch ${PT} – als Tabellen und live im Rechner oben.`,
+      `Every TFT game gives you three augments – on 2-1, 3-2 and 4-2. Whether they are silver, gold or prismatic is not rolled round by round: the tiers of the whole game are set as one combination. In Set ${S}, <b>${P(prism)}</b> of all games have at least one prismatic augment. Here you find every augment odd of patch ${PT} – as tables and live in the calculator above.`)}</p>
+    <div class="art-stats">
+      <div class="p"><b>${P(prism)}</b><span>${L('mindestens ein prismatisches Augment pro Partie', 'at least one prismatic augment per game')}</span></div>
+      <div class="p"><b>${P(st[0].P)}</b><span>${L('prismatisch schon auf 2-1', 'prismatic already on 2-1')}</span></div>
+      <div class="g"><b>${P(top[0][1] / W * 100)}</b><span>${L(`häufigste Partie: ${top[0][0].split('').map(agName).join(' – ')}`, `most common game: ${top[0][0].split('').map(agName).join(' – ')}`)}</span></div>
+    </div>
+    <h3 id="art-runde">${L('Augment-Chancen pro Runde', 'Augment odds per round')}</h3>
+    <div class="art-tw"><table class="art-table"><thead><tr><th>${L('Stufe', 'Tier')}</th>${AG_ST.map(x=>`<th>${x}</th>`).join('')}</tr></thead>
+      <tbody>${'SGP'.split('').map(l=>`<tr><td>${tier(l)}</td>${AG_ST.map((_, i)=>`<td class="${st[i][l] === max(i) ? 'hi' : ''}">${P(st[i][l])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+    <p class="art-note">${L('Gilt für alle Partien, bevor du dein erstes Augment siehst. Danach ändern sich die Chancen – das rechnet der Rechner oben nach jedem Augment neu.', 'Applies to all games before you see your first augment. After that the odds change – the calculator above recalculates them after every augment.')}</p>
+    <h3 id="art-folge">${L('Die häufigsten Augment-Reihenfolgen', 'The most common augment orders')}</h3>
+    <div class="art-tw"><table class="art-table"><thead><tr><th>#</th><th>2-1 › 3-2 › 4-2</th><th>${L('Chance', 'Odds')}</th></tr></thead>
+      <tbody>${top.slice(0, 8).map(([k, w], i)=>`<tr><td>${i + 1}</td><td>${path(k)}<small>${k.split('').map(agName).join(' · ')}</small></td><td class="${i ? '' : 'hi'}">${P(w / W * 100)}</td></tr>`).join('')}</tbody></table></div>
+    <p class="art-note">${L(`${seq.length} von 27 möglichen Kombinationen kommen in Set ${S} vor.`, `${seq.length} of 27 possible combinations occur in Set ${S}.`)}</p>
+    <h3 id="art-erstes">${L('Was nach deinem ersten Augment kommt', 'What follows your first augment')}</h3>
+    <div class="art-tw"><table class="art-table"><thead><tr><th>${L('Auf 2-1', 'On 2-1')}</th><th>${L('Häufigkeit', 'Frequency')}</th><th>${L('Danach mind. 1× Prismatisch', 'At least 1 prismatic after')}</th><th>${L('Wahrscheinlich auf 3-2', 'Likely on 3-2')}</th></tr></thead>
+      <tbody>${'SGP'.split('').map(l=>{ const w = agSum(l), later = seq.filter(x=>x[0][0] === l && /P/.test(x[0].slice(1))).reduce((s, x)=>s + x[1], 0) / w * 100, nx = agDist(l, 1).sort((a, b)=>b[1] - a[1])[0];
+        return `<tr><td>${tier(l)}</td><td>${P(w / W * 100)}</td><td>${P(later)}</td><td>${tier(nx[0])} <small>${P(nx[1])}</small></td></tr>`; }).join('')}</tbody></table></div>
+    <div class="art-box tip" id="art-tipp"><b class="art-bh">${L('Profi-Tipp von CrazYSlayt', 'Pro tip from CrazYSlayt')}</b>
+      <p>${L('Weißt du, dass dein nächstes Augment Gold wird, kannst du das zu deinem Vorteil nutzen:', 'If you know your next augment will be gold, you can turn that into an advantage:')}</p>
+      <ul class="art-list art-tips">
+        <li>${aug('Augmented Power', 'S')} ${L('macht dein nächstes Augment eine Stufe höher – aus Gold wird Prismatisch.', 'makes your next augment one tier higher – gold turns into prismatic.')}</li>
+        <li>${aug('Advanced Loan', 'G')} ${L('gibt dir sofort Gold, dafür ist dein nächstes Augment eine Stufe niedriger. Aus Gold wird Silber – aber du verpasst kein prismatisches Augment.', 'gives you gold right away, but your next augment is one tier lower. Gold turns into silver – but you don’t miss out on a prismatic.')}</li>
+      </ul>
+      ${gg ? `<p>${L(`Am sichersten ist das bei <b>${esc(gg.n)}</b> (${P(gg.w / encW * 100)} der Partien): Dort sind alle Augments Gold – du weißt also schon ab 2-1, dass jedes nächste Augment Gold wird, und kannst deine Wahl von Anfang an darauf ausrichten.`,
+        `This is safest with <b>${esc(gg.n)}</b> (${P(gg.w / encW * 100)} of games): every augment is gold there – so from 2-1 on you know every next augment will be gold and can plan your picks around it right away.`)}</p>` : ''}
+      <p>${L(`So holst du dir einen Vorsprung gegenüber deinen Gegnern. Wie sicher dein nächstes Augment Gold ist, zeigt dir der Rechner oben: Nach ${sure[0].split('').map((l, i)=>`${agName(l)} auf ${AG_ST[i]}`).join(' und ')} ist ${AG_ST[sure[0].length]} zum Beispiel in ${P(sure[1])} der Partien Gold.`,
+        `That gives you an edge over your opponents. How sure your next augment is gold is shown by the calculator above: after ${sure[0].split('').map((l, i)=>`${agName(l)} on ${AG_ST[i]}`).join(' and ')}, ${AG_ST[sure[0].length]} is gold in ${P(sure[1])} of games, for example.`)}</p>
+      <div class="art-row">${path(sure[0] + 'G')}</div></div>
+    ${encs.length ? `<h3 id="art-encounter">${L('Encounter, die deine Augments verändern', 'Encounters that change your augments')}</h3>
+    <p>${L(`Manche Encounter legen die Augment-Stufen schon zu Beginn der Partie fest – für diese Augments gilt dann nicht die normale Verteilung oben.${gg ? ` Bei „${esc(gg.n)}“ sind zum Beispiel alle Augments Gold.` : ''} Du weißt also sicher, welche Stufe als Nächstes kommt, und kannst deine Augment-Wahl danach ausrichten – genau wie im Profi-Tipp oben.`,
+      `Some encounters fix the augment tiers at the start of the game – the normal distribution above doesn't apply to those augments.${gg ? ` With “${esc(gg.n)}”, for example, every augment is gold.` : ''} So you know for sure which tier comes next and can plan your augment picks around it – just like in the pro tip above.`)}</p>
+    <div class="art-tw"><table class="art-table"><thead><tr><th>Encounter</th><th>${L('Wirkung', 'Effect')}</th><th>${L('Chance pro Partie', 'Odds per game')}</th></tr></thead>
+      <tbody>${encs.map(e=>`<tr><td><span class="art-enc">${e.ch ? avatar(e.ch, 34) : ''}<b>${esc(e.n)}</b></span></td><td>${esc(L(e.de, e.en))}</td><td>${P(e.w / encW * 100)}</td></tr>`).join('')}</tbody></table></div>
+    <p>${L(`Alle Encounter von Set ${S} mit ihren Chancen findest du im ${link(csHref('encounters'), 'Encounter-Cheatsheet')}.`, `You can find every Set ${S} encounter with its odds in the ${link(csHref('encounters'), 'encounter cheatsheet')}.`)}</p>` : ''}
+    <h3 id="art-beispiele">${L(`Beispiele für Augments in Set ${S}`, `Augment examples in Set ${S}`)}</h3>
+    <div class="art-augs">${'PGS'.split('').map(l=>`<div class="art-col ${CS_AUG[l][0]}"><h4>${tier(l)}</h4>${AG_EX[l].map(n=>aug(n, l)).join('')}</div>`).join('')}</div>
+    <div class="art-box"><b class="art-bh">${L('Augments mit Items', 'Augments with items')}</b>
+      <p>${L(`Viele Augments bringen Komponenten oder fertige Items – etwa „${esc(augName('Nesting Anvils'))}“ oder „${esc(augName('Component Buffet'))}“. Welche Komponente als Nächstes aus den Creep-Runden kommt, zeigt dir unsere ${link('/tools/tft-item-drop-chance', 'Item-Drop-Chance')}.`, `Many augments give components or finished items – such as “${esc(augName('Nesting Anvils'))}” or “${esc(augName('Component Buffet'))}”. Which component comes next from the creep rounds is shown by our ${link('/tools/tft-item-drop-chance', 'item drop chance')}.`)}</p>
+      <div class="art-row">${comps.map(it=>itImg(it, 34)).join('')}</div></div>
+    <h3 id="art-stufen">${L('So funktionieren die Augment-Stufen', 'How augment tiers work')}</h3>
+    <ul class="art-list">
+      <li>${L('Die Stufen aller drei Augments stehen zu Beginn der Partie als Kombination fest – zum Beispiel Gold, Gold, Prismatisch.', 'The tiers of all three augments are fixed as one combination at the start of the game – for example gold, gold, prismatic.')}</li>
+      <li>${L('In jeder Augment-Runde bekommen alle Spieler Augments derselben Stufe.', 'In every augment round all players get augments of the same tier.')}</li>
+      <li>${L('Neu würfeln ändert die angebotenen Augments, nicht ihre Stufe.', 'Rerolling changes the offered augments, not their tier.')}</li>
+      <li>${L(`Die Chancen gelten für Set ${S} und können sich mit Patches ändern – wir aktualisieren sie mit jedem Patch.`, `The odds apply to Set ${S} and can change with patches – we update them with every patch.`)}</li>
+    </ul>
+    <p>${L(`Alle Reihenfolgen mit ihren Chancen siehst du als Baum im ${link('/cheatsheet/tft-augment-stufen', 'Augment-Cheatsheet')}.`, `You can see every order with its odds as a tree in the ${link('/cheatsheet/tft-augment-stufen', 'augment cheatsheet')}.`)}</p>
+    <h3 id="art-anleitung">${L('So benutzt du den Augment-Rechner', 'How to use the augment calculator')}</h3>
+    <ol class="ts-steps">
+      <li>${L('Wähl unter „Deine Angaben“ die Stufe deines Augments auf 2-1.', 'Under “Your input”, pick the tier of your augment on 2-1.')}</li>
+      <li>${L('Lies unter „Dein Ergebnis“ ab, welche Stufe auf 3-2 wahrscheinlich ist und wie hoch die Chance auf ein prismatisches Augment noch ist.', 'Under “Your result”, read which tier is likely on 3-2 and how high your odds of a prismatic augment still are.')}</li>
+      <li>${L('Trag auf 3-2 die nächste Stufe ein – die Chancen für 4-2 werden genauer.', 'On 3-2, enter the next tier – the odds for 4-2 get more precise.')}</li>
+    </ol>
+    <h3 id="art-faq">${L('Häufige Fragen', 'FAQ')}</h3>
+    <div class="art-faq">${faq.map(([q, a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</div>
+    <h3>${L('Weitere Tools', 'More tools')}</h3>
+    <div class="art-links">
+      ${card('/tierlist/augments', `<span class="art-lic">${csSvg('<path d="M4 6h16M4 12h10M4 18h6"/>', 2)}</span>`, L('Augment-Tierlist', 'Augment tier list'), L('Welche Augments sind am stärksten?', 'Which augments are the strongest?'))}
+      ${card('/tools/tft-rolldown-rechner', `<img src="${toolArtSrc('rolldown', true)}" alt="" width="40" height="40">`, L('Rolldown-Rechner', 'Rolldown calculator'), L('Triffst du deine Units?', 'Will you hit your units?'))}
+      ${card('/tools/tft-dps-vergleich', `<img src="${toolArtSrc('dps', true)}" alt="" width="40" height="40">`, L('DPS-Vergleich', 'DPS comparison'), L('Welcher Item-Build gewinnt?', 'Which item build wins?'))}
+      ${card('/tft-team-builder', `<img src="${toolArtSrc('teambuilder', true)}" alt="" width="40" height="40">`, 'Team Builder', L('Board planen und teilen', 'Plan and share your board'))}
+    </div>
+    <p class="art-note">${L(`Stand: Set ${S}${PT ? ' · Patch ' + PT : ''} · Quelle der Zahlen: ${CS.augments.src}`, `As of Set ${S}${PT ? ' · patch ' + PT : ''} · source of the numbers: ${CS.augments.src}`)}</p>
+  </div>
+  <aside class="ts-side art-side">
+    <nav class="art-toc" aria-label="${L('Inhalt', 'Contents')}"><b>${L('Inhalt', 'Contents')}</b>
+      <ol>${Object.entries(sec).map(([id, t])=>`<li><a href="#art-${id}" data-toc="art-${id}">${t}</a></li>`).join('')}</ol></nav>
+    <!-- Platz für einen mitlaufenden Werbebanner (kommt später, braucht dann einen zertifizierten Consent-Banner) -->
+    <div class="art-ad" hidden></div>
+  </aside>`;
+}
+// Vertrauens-Box zwischen Tool und Artikel: nur Symbol und ein lockerer Satz in den Farben der Seite (für alle Tools nutzbar).
+// Symbol: Heimerdinger bei den Tools, sonst Vi aus dem Logo
+const TT_FACE = {heimer:['assets/img/heimer-head.webp?v=2', 220, 203], vi:['assets/brand/logo-symbol-512.png', 512, 512]};
+const tioTrust = (txt, face = 'heimer') => { const [src, w, h] = TT_FACE[face] || TT_FACE.vi;
+  return `<div class="tio-trust"><img class="tt-face ${face}" src="${src}" alt="" width="${w}" height="${h}" loading="lazy"><p>${txt}</p></div>`; };
+const agTrust = () => tioTrust(L('Wir halten unsere Tools für euren Climb aktuell: Nach jedem Patch prüfen wir die Zahlen und passen die Augment-Chancen an – damit ihr euch auf das konzentrieren könnt, was zählt.',
+  'We keep our tools up to date for your climb: after every patch we check the numbers and adjust the augment odds – so you can focus on what matters.'));
+// Inhaltsverzeichnis: Klick scrollt sanft (unter die feste Kopfleiste), der Abschnitt im Blick ist hervorgehoben
+function artToc(root){
+  const toc = root.querySelector('.art-toc'); if(!toc) return;
+  toc.addEventListener('click', e=>{ const a = e.target.closest('a[data-toc]'); if(!a) return; e.preventDefault();
+    const t = document.getElementById(a.dataset.toc); if(t) window.scrollTo({top:t.getBoundingClientRect().top + scrollY - (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--topH')) || 64) - 16, behavior:'smooth'}); });
+  if(!('IntersectionObserver' in window)) return;
+  const links = [...toc.querySelectorAll('a[data-toc]')], seen = new Map();
+  const io = new IntersectionObserver(es=>{ es.forEach(x=>seen.set(x.target.id, x.isIntersecting));
+    const cur = links.map(a=>a.dataset.toc).filter(id=>seen.get(id))[0]; if(cur) links.forEach(a=>a.classList.toggle('on', a.dataset.toc === cur)); }, {rootMargin:'-80px 0px -55% 0px'});
+  links.forEach(a=>{ const t = document.getElementById(a.dataset.toc); if(t) io.observe(t); });
+}
 function agMount(){
+  const art = document.querySelector('[data-pre="augments"]'), trust = document.querySelector('[data-pre="augments-trust"]');
+  if(art && CS.augments && !art.dataset.done){ art.innerHTML = agArticle(); art.dataset.done = '1'; enHrefs(art); artToc(art); }
+  if(trust && CS.augments && !trust.dataset.done){ trust.innerHTML = agTrust(); trust.dataset.done = '1'; }
   const q = (qParam('a') || '').toUpperCase();
   if(/^[SGP]{1,3}$/.test(q) && agSum(q) > 0) ag.k = q;
   const app = $('#agApp'); if(!app) return;
@@ -3839,7 +3978,7 @@ function csSections(){
     const headRow = [[L('1. Augment', '1st augment'), '2-1'], [L('2. Augment', '2nd augment'), '3-2'], [L('3. Augment', '3rd augment'), '4-2'], [L('Chance', 'Odds'), '']].map(([t, s], i)=>`<div class="csa-h" style="grid-column:${i + 1}">${t}${s ? ` <small>${s}</small>` : ''}</div>`).join('');
     const {tree, legend} = atgTreeHTML();
     out.push(['augments', L('Augment-Stufen (2-1 · 3-2 · 4-2)', 'Augment tiers (2-1 · 3-2 · 4-2)'), `<div class="cst-tree">${legend}${tree}</div><div class="cst-table cs-wrap"><div class="csa">${headRow}${cells}</div></div>
-      <p class="cs-note cs-after">${L('Mindestens ein prismatisches Augment pro Partie', 'At least one prismatic per game')}: <b>${csPct(prism)}</b> · ${L('Für deine Partie:', 'For your game:')} <a href="/tools/tft-augment-vorhersage">${L('Augment-Vorhersage', 'Augment prediction')} →</a></p>` + csSrc(CS.augments.src)]);
+      <p class="cs-note cs-after">${L('Mindestens ein prismatisches Augment pro Partie', 'At least one prismatic per game')}: <b>${csPct(prism)}</b> · ${L('Für deine Partie:', 'For your game:')} <a href="/tools/tft-augment-chancen">${L('Augment-Chancen', 'Augment odds')} →</a></p>` + csSrc(CS.augments.src)]);
   }
   if(ENCS.length){
     const rows = [...ENCS].sort((a,b)=>b.w - a.w).map(e=>{ const src = csChampPic(e.ch);
@@ -4426,8 +4565,9 @@ function pageMeta(page, sub){
         `TFT encounters guide for ${S}: what each encounter does, how often it shows up and which comp to play on it.`)];
       return ['TFT Guides', L(`TFT Guides von Challenger-Spielern für ${S}: Strategien, Comps und Encounters – bald hier auf TFTClimb.`, `TFT guides from Challenger players for ${S}: strategies, comps and encounters – coming soon to TFTClimb.`), true];
     case 'tools':
-      if(sub==='augments') return [L(`TFT Augment-Vorhersage ${S} – nächste Stufe`, `TFT Augment Prediction ${S} – Next Tier`), L(`TFT Augment-Vorhersage für ${S}: Silber, Gold oder Prismatisch? Sieh, welche Augment-Stufe als Nächstes am wahrscheinlichsten kommt.`,
-        `TFT augment prediction for ${S}: silver, gold or prismatic? See which augment tier is most likely to come next.`)];
+      // Keyword: „Augment-Chancen“ / „augment odds“ – so wird gesucht (nicht „Vorhersage“)
+      if(sub==='augments') return [L(`TFT Augment-Chancen ${S} – Prismatisch-Rechner`, `TFT Augment Odds ${S} – Prismatic Calculator`), L(`TFT Augment-Chancen für ${S}: Wie wahrscheinlich ist ein prismatisches Augment? Chancen für 2-1, 3-2 und 4-2 – live berechnet.`,
+        `TFT augment odds for ${S}: how likely is a prismatic augment? Odds for 2-1, 3-2 and 4-2 – calculated live after every pick.`)];
       if(sub==='tierlist') return [L(`TFT Tierlist-Maker ${S} – eigene Tierlist`, `TFT Tier List Maker ${S} – Your Own List`), L(`Kostenloser TFT Tierlist-Maker für ${S}: Champions, Items und Augments per Drag & Drop ranken und deine Tierlist als Link teilen.`,
         `Free TFT tier list maker for ${S}: rank champions, items and augments by drag & drop and share your tier list as a link.`)];
       if(sub==='rolldown') return [L(`TFT Rolldown-Rechner ${S} – Odds pro Level`, `TFT Rolldown Calculator ${S} – Odds per Level`), L(`TFT Rolldown-Rechner für ${S}: Wie wahrscheinlich triffst du deine Units? Mit Shop-Odds pro Level, Pool-Größen und Gold-Bedarf.`,
@@ -4438,8 +4578,8 @@ function pageMeta(page, sub){
         `TFT DPS comparison for ${S}: compare up to four item builds of a champion and see which one deals the most damage.`)];
       if(sub==='simulator') return [L(`TFT Kampf-Simulator ${S} – Teams testen`, `TFT Fight Simulator ${S} – Test Teams`), L(`TFT Kampf-Simulator für ${S}: Lass zwei Teams gegeneinander kämpfen und sieh Laufwege, Ziele und Fähigkeiten Schritt für Schritt.`,
         `TFT fight simulator for ${S}: let two teams fight each other and see paths, targets and abilities step by step.`)];
-      return [L(`TFT Tools ${S} – Rolldown, DPS & Tierlist`, `TFT Tools ${S} – Rolldown, DPS & Tier List`), L(`Kostenlose TFT Tools für ${S}: Rolldown-Rechner, DPS-Vergleich, Item-Drop-Chance, Augment-Vorhersage und Tierlist-Maker.`,
-        `Free TFT tools for ${S}: rolldown calculator, DPS comparison, item drop chance, augment prediction and tier list maker.`)];
+      return [L(`TFT Tools ${S} – Rolldown, DPS & Tierlist`, `TFT Tools ${S} – Rolldown, DPS & Tier List`), L(`Kostenlose TFT Tools für ${S}: Rolldown-Rechner, DPS-Vergleich, Item-Drop-Chance, Augment-Chancen und Tierlist-Maker.`,
+        `Free TFT tools for ${S}: rolldown calculator, DPS comparison, item drop chance, augment odds and tier list maker.`)];
     case 'news': return ['TFT News', '', true];
     case 'admin': return ['Redaktion', '', true];
     default: return [L('Seite nicht gefunden', 'Page not found'), '', true];
@@ -4482,15 +4622,18 @@ function setMeta(page, sub){
   const url = location.origin + withLang(path), tool = page==='tools' ? (sub && keep.includes(sub) ? sub : 'overview') : page==='builder' ? 'builder' : '';
   const chN = page==='champion' ? champBySlug[sub].n : page==='comp' ? compByKey[sub].carry : '';   // Vorschaubild: Champion bzw. Carry der Comp
   const chImg = chN && (champImg(chN) || champFallback(chN));
-  const img = chImg || location.origin + '/' + ({tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp', augments:'assets/tools/augments.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
+  // Tools mit eigenem Vorschaubild (tools/og-bilder.js, 1200 × 630 PNG) – große Vorschau-Karte bei Google Discover, Discord, X
+  const OG_TOOL = {augments:L('assets/og/tft-augment-chancen.png', 'assets/og/tft-augment-odds.png')};
+  const wide = !chImg && OG_TOOL[tool];
+  const img = chImg || location.origin + '/' + (wide || {tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
   const og = (k, v) => { headTag(`meta[property="${k}"]`, ()=>{ const m = document.createElement('meta'); m.setAttribute('property', k); return m; }).content = v; };
   og('og:title', document.title); og('og:description', desc || ''); og('og:url', url); og('og:type', 'website'); og('og:site_name', 'TFTClimb'); og('og:locale', EN ? 'en_GB' : 'de_DE'); og('og:image', img);
-  headTag('meta[name="twitter:card"]', ()=>Object.assign(document.createElement('meta'), {name:'twitter:card'})).content = 'summary';
-  setLd(page, sub, tool, title, desc, url, path);
+  headTag('meta[name="twitter:card"]', ()=>Object.assign(document.createElement('meta'), {name:'twitter:card'})).content = wide ? 'summary_large_image' : 'summary';
+  setLd(page, sub, tool, title, desc, url, path, wide ? img : '');
 }
 // Strukturierte Daten für Google: Brotkrumen, bei Tools zusätzlich Web-App und die Fragen aus dem Textblock
 const LD_SECTION = {cheatsheet:'Cheatsheet', guides:'Guides', tierlist:'Tierlist', tools:'Tools', bibliothek:'Bibliothek', ranks:'Ranks', patches:'Patches', about:'Meet the Team', builder:'Team Builder', coaching:'Coaching', apply:'Coaching', impressum:'Impressum', datenschutz:'Datenschutz'};
-function setLd(page, sub, tool, title, desc, url, path){
+function setLd(page, sub, tool, title, desc, url, path, ogImg){
   const org = {'@type':'Organization', name:'TFTClimb', url:location.origin + withLang('/'), logo:location.origin + '/assets/brand/logo-symbol-512.png', email:'info@tftclimb.com'};
   const graph = [{'@type':'WebSite', name:'TFTClimb', url:location.origin + withLang('/'), inLanguage:EN ? 'en' : 'de', publisher:org}];
   if(page!=='home'){
@@ -4505,7 +4648,10 @@ function setLd(page, sub, tool, title, desc, url, path){
     graph.push({'@type':'BreadcrumbList', itemListElement:items.map(([n, p], i)=>({'@type':'ListItem', position:i + 1, name:n, item:location.origin + withLang(p)}))});
   }
   if(tool){
-    graph.push({'@type':'WebApplication', name:title.split(' – ')[0], url, description:desc, applicationCategory:'GameApplication', operatingSystem:'Web', browserRequirements:'JavaScript', inLanguage:EN ? 'en' : 'de', isAccessibleForFree:true, offers:{'@type':'Offer', price:'0', priceCurrency:'EUR'}, publisher:org});
+    // Vorschaubild und Datenstand (Datum der Spieldaten) – Google kann das Bild neben dem Suchergebnis zeigen
+    graph.push({'@type':'WebApplication', name:title.split(' – ')[0], url, description:desc, applicationCategory:'GameApplication', operatingSystem:'Web', browserRequirements:'JavaScript', inLanguage:EN ? 'en' : 'de', isAccessibleForFree:true, offers:{'@type':'Offer', price:'0', priceCurrency:'EUR'}, publisher:org,
+      ...(ogImg ? {image:ogImg, screenshot:ogImg, dateModified:TFT_DATA.generated} : {})});
+    if(ogImg) graph.push({'@type':'WebPage', url, name:title.split(' | ')[0], primaryImageOfPage:{'@type':'ImageObject', url:ogImg, width:1200, height:630}, dateModified:TFT_DATA.generated, inLanguage:EN ? 'en' : 'de'});
     const box = tool==='builder' ? $('#page-builder .tool-seo.b-only') : tool==='simulator' ? $('#page-builder .tool-seo.b-simonly') : $(`#page-tools .tool-view[data-tool="${tool==='overview' ? '' : tool}"] .tool-seo`);
     const qa = box ? [...box.querySelectorAll('details')].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}})) : [];
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
@@ -4869,7 +5015,7 @@ function renderDash(){
           ['/tools/tft-rolldown-rechner', 'rolldown', L('Rolldown-Rechner', 'Rolldown calculator'), L('Rollen oder leveln?', 'Roll or level?')],
           ['/tools/tft-dps-vergleich', 'dps', L('DPS-Vergleich', 'DPS Comparison'), L('Item-Builds vergleichen', 'Compare item builds')],
           ['/tools/tft-item-drop-chance', 'drops', L('Item-Drop-Chance', 'Item Drop Chance'), L('Was droppt als Nächstes?', 'What drops next?')],
-          ['/tools/tft-augment-vorhersage', 'augments', L('Augment-Vorhersage', 'Augment Prediction'), L('Welche Stufe kommt?', 'Which tier comes next?')],
+          ['/tools/tft-augment-chancen', 'augments', L('Augment-Chancen', 'Augment Odds'), L('Wie oft kommt Prismatisch?', 'How often is prismatic?')],
           ['/tools/tft-tierlist-maker', 'tierlist', 'Tierlist-Maker', L('Eigene Tierlist bauen', 'Build your own tier list')],
           ['/tft-team-builder', 'teambuilder', 'Team Builder', L('Board planen & teilen', 'Plan & share boards')]
         ].map(([h, img, t, d])=>`<a href="${h}"><img src="${toolArtSrc(img, true)}" alt="" width="34" height="34" loading="lazy"><span><b>${t}</b><small>${d}</small></span></a>`).join('')}</div></section>

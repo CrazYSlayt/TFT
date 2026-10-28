@@ -32,6 +32,10 @@ function headBlock(m, base) {
     `<meta property="og:description" content="${att(m.d)}">`,
     m.c ? `<meta property="og:url" content="${att(abs(m.c))}">` : '',
     m.img ? `<meta property="og:image" content="${att(abs(m.img))}">` : '',
+    // eigene Vorschaubilder (assets/og/, 1200 × 630): Größe und große Vorschau-Karte angeben
+    m.img && /\/assets\/og\//.test(m.img) ? `<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n<meta property="og:image:alt" content="${att(m.t)}">` : '',
+    m.tw ? `<meta name="twitter:card" content="${att(m.tw)}">` : '',
+    m.tw === 'summary_large_image' && m.img ? `<meta name="twitter:image" content="${att(abs(m.img))}">` : '',
     m.loc ? `<meta property="og:locale" content="${att(m.loc)}">` : '',
     m.ld ? `<script type="application/ld+json" id="ldPage">${m.ld.split('{{ORIGIN}}').join(base).replace(/</g, '\\u003c')}</script>` : '',
     '<!-- seo:end -->'].filter(Boolean).join('\n');
@@ -49,7 +53,12 @@ function render(p, base) {
   let h = HTML;
   const q = '/' + String(p || '').replace(/^\/+/, ''), m = lookup(q);
   if (/^\/en(\/|$)/.test(q)) h = h.replace('<html lang="de">', '<html lang="en">');
-  if (m) return h.replace(BLOCK, () => headBlock(m, base));
+  if (m) {
+    h = h.replace(BLOCK, () => headBlock(m, base));
+    // fertige Artikel (data-pre) der Seite einsetzen – Suchmaschinen sehen sie so schon ohne JavaScript, in der richtigen Sprache
+    if (m.pre) h = h.replace(/(<(\w+)[^>]*\sdata-pre="([\w-]+)"[^>]*>)(\s*)(<\/\2>)/g, (all, open, tag, key, ws, close) => m.pre[key] ? open + m.pre[key] + close : all);
+    return h;
+  }
   // unbekannte Adresse (z. B. 404): Titel und Beschreibung der Startseite bleiben, aber ohne Adress-Angaben der Startseite
   return h.replace(BLOCK, b => b.split('\n').filter(l => !/rel="(canonical|alternate)"|og:url|og:locale|application\/ld\+json/.test(l)).join('\n'));
 }
