@@ -257,6 +257,7 @@
       </div>
       <div id="augTiers"></div>
       <p class="note">Offizielle Set-<span data-setno>18</span>-Augments mit deutschen Spieltexten (CommunityDragon). Bewertung von TFTClimb (Patch 18.5), je nach Phase, in der du das Augment wählst.</p>
+      <p class="note">Wie wahrscheinlich Silber, Gold oder Prismatisch als Nächstes kommt, zeigen dir unsere <a class="art-a" href="/tools/tft-augment-chancen">Augment-Chancen</a>.</p>
     </div>
     <div id="tl-holds" hidden>
       <div class="toolbar" id="holdFilters">
@@ -651,30 +652,9 @@
         <p>Wie wahrscheinlich findest du deine Units, wenn du jetzt rollst? Wähl Champion, Level und Gold – gerechnet wird mit den Shop-Chancen und Pool-Größen von Set <span data-setno>18</span>.</p>
       </div>
       <div id="rdApp"></div>
-      <section class="tool-seo" aria-labelledby="ts-rolldown">
-        <div class="ts-main">
-          <h2 id="ts-rolldown">TFT Rolldown-Rechner: Wie hoch sind deine Chancen?</h2>
-          <p>Im Rolldown entscheidet sich oft die ganze Partie: Rollst du jetzt alles runter oder levelst du erst? Der Rolldown-Rechner zeigt dir, wie wahrscheinlich du eine bestimmte Unit findest – mit den Shop-Chancen pro Level und den Pool-Größen jeder Kostenstufe im aktuellen Set.</p>
-          <h3>So benutzt du den Rolldown-Rechner</h3>
-          <ol class="ts-steps">
-            <li>Wähl die Kosten deiner Unit. Welcher Champion es ist, ändert die Chance nicht – alle Champions einer Kostenstufe haben gleich viele Kopien.</li>
-            <li>Wähl dein Ziel – ★★ (3 Kopien) oder ★★★ (9 Kopien) – und wie viele Kopien du schon hast.</li>
-            <li>Sag dem Rechner, ob noch jemand die Unit spielt. Wer genau zählen will, schaltet oben auf „Detailliert“ – dort vergleicht der Rechner auch, ob sich erst leveln lohnt.</li>
-            <li>Wähl dein Level und das Gold, das du ausgeben willst – fürs Rollen und Kaufen. Jeder Reroll kostet 2 Gold und zeigt dir 5 neue Units.</li>
-          </ol>
-          <h3>Warum Pool und Level so viel ausmachen</h3>
-          <p>Jede Unit gibt es nur in begrenzter Anzahl im gemeinsamen Pool aller acht Spieler. Hält ein Gegner dieselbe Unit, findest du sie seltener – deshalb lohnt sich Scouten vor dem Rolldown. Dein Level bestimmt, wie oft eine Kostenstufe im Shop auftaucht. 4-Kosten-Comps rollen meist auf Level 8, Reroll-Comps mit 1- bis 3-Kostern auf einem niedrigeren Level.</p>
-        </div>
-        <aside class="ts-side">
-          <h3>Häufige Fragen</h3>
-          <details><summary>Was bedeutet Rolldown in TFT?</summary><p>Beim Rolldown steckst du viel Gold auf einmal in Rerolls, um die wichtigsten Units deiner Comp zu finden und dein Board stark zu machen.</p></details>
-          <details><summary>Wie viel kostet ein Reroll?</summary><p>Ein Reroll kostet 2 Gold. Jeder Shop zeigt 5 Units, die Kostenstufen kommen mit den Chancen deines aktuellen Levels.</p></details>
-          <details><summary>Wo sehe ich die Shop-Chancen pro Level?</summary><p>In der Tabelle direkt unter dem Rechner: dort stehen die Chancen jeder Kostenstufe für alle Level des aktuellen Sets.</p></details>
-          <details><summary>Zählen gekaufte Units mit?</summary><p>Ja. Jeder Treffer kostet seinen Preis in Gold, wie im Spiel – je mehr du findest, desto weniger Gold bleibt zum Rollen.</p></details>
-          <h3>Weitere Tools</h3>
-          <ul class="ts-links"><li><a href="/tools/tft-dps-vergleich">DPS-Vergleich</a></li><li><a href="/tools/tft-item-drop-chance">Item-Drop-Chance</a></li><li><a href="/tools/tft-tierlist-maker">Tierlist-Maker</a></li><li><a href="/tools/tft-kampf-simulator">Kampf-Simulator</a></li></ul>
-        </aside>
-      </section>
+      <!-- Vertrauens-Box und Artikel: baut app.js (rdTrust, rdArticle) aus den Set-Daten; api/page.js schreibt beides schon ins HTML (data-pre) -->
+      <div class="tio-trust-wrap" data-pre="rolldown-trust" data-noi18n></div>
+      <section class="tool-seo ag-art" aria-labelledby="ts-rolldown" data-pre="rolldown" data-noi18n></section>
     </div>
 
     <!-- Tierlist-Maker -->
