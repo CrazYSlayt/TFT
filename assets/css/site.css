@@ -985,7 +985,6 @@ a.tool-card:hover{transform:translateY(-3px);border-color:var(--accent)}
 .tio-seg button.on{background:rgba(46,230,214,.16);color:#7ff7ec}
 .tio-hd .tio-seg+.tio-reset{margin-left:0}
 @media (max-width:560px){.rd-lvls{grid-template-columns:repeat(5,minmax(0,1fr))}.rd-hero .rd-ring b{font-size:1.9rem}.rd-cost5 .rd-cost{font-size:.76rem}}
-.rd-table-card{margin-top:16px;padding:22px}
 .rd-table-wrap{overflow-x:auto;margin-top:12px}
 .rd-table{width:100%;border-collapse:collapse;font-size:.86rem;text-align:center;min-width:420px}
 .rd-table th,.rd-table td{padding:7px 10px;border-bottom:1px solid var(--line)}
@@ -1558,9 +1557,6 @@ a.tc:hover .tc-ph{transform:rotate(0) scale(1.05)}
 .dr-counts small{font-family:var(--ff-head);font-weight:700;color:var(--muted)}
 .dr-counts div.off{opacity:.3}
 .dr-up{display:inline-block;padding:0 6px;border-radius:99px;background:rgba(74,222,128,.14);color:var(--up);font-size:.68rem;font-weight:700}
-.dr-more{margin-top:12px}
-.dr-more summary{cursor:pointer;font-weight:700;font-size:.9rem}
-details.card.dr-more{margin:0}
 .dr-orbgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:12px}
 .dr-orbtbl h4{margin:0 0 6px;font-size:.95rem}
 .dr-orbtbl h4 small{display:block;font-weight:600;font-size:.74rem;color:var(--faint)}
@@ -2142,6 +2138,25 @@ details.card.dr-more{margin:0}
 .tio-trust p{margin:0;color:#f3e6c8;font-size:1rem;line-height:1.55}
 @media (max-width:980px){.tool-seo.ag-art{grid-template-columns:minmax(0,1fr)}.art-side{position:static;order:-1}.art-ad{display:none}}
 @media (max-width:760px){.art-fig{float:none;width:100%;margin:0 0 14px}.art-stats,.art-augs,.art-links{grid-template-columns:minmax(0,1fr)}.tio-trust{align-items:flex-start;padding:14px 16px}.tt-face{width:56px}.tio-trust p{font-size:.92rem}}
+/* Bausteine der weiteren Tool-Artikel: Trait-Symbol, Traits mit einem Champion, Beispiel-Teams mit „Im Team Builder öffnen“ */
+.ag-art h4{margin:18px 0 8px;font-size:1.05rem;color:#cfe3ee}
+.art-tric{width:26px;height:26px;flex:none;padding:3px;border-radius:7px;background:#0b2230;border:1px solid var(--line-2)}
+.art-avs small{color:var(--muted);font-weight:700;margin-left:2px}
+.art-wrap{gap:10px}
+.art-solo{display:inline-flex;align-items:center;gap:8px;padding:5px 8px 5px 6px;border-radius:10px;border:1px solid var(--line);background:rgba(3,17,27,.45)}
+.art-solo .av{width:34px;height:34px;border-radius:8px}
+.art-comps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.art-comp{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;gap:10px;padding:12px;border-radius:14px;border:1px solid var(--line);background:rgba(3,17,27,.45)}
+.art-comp .av{width:46px;height:46px;border-radius:10px}
+.art-comp>span:nth-child(3){display:flex;flex-direction:column;min-width:0}
+.art-comp>span:nth-child(3) b{color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.art-comp small{color:var(--muted)}
+.art-ct{display:grid;place-items:center;width:28px;height:28px;border-radius:7px;font-weight:900;color:#0b0b10;background:#8ee63a}
+.art-ct.tS{background:#ff4655}.art-ct.tA{background:#ff8a1f}.art-ct.tB{background:#ffd23f}
+.art-cacts{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
+.art-btn{padding:7px 12px;border-radius:9px;border:1px solid rgba(46,230,214,.45);background:rgba(46,230,214,.1);color:#e6f6ff;font:inherit;font-size:.86rem;font-weight:700;cursor:pointer}
+.art-btn:hover,.art-btn:focus-visible{border-color:#2ee6d6;background:rgba(46,230,214,.2)}
+@media (max-width:760px){.art-comps{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:900px){ .tool-seo{grid-template-columns:minmax(0,1fr);padding:20px} .ts-list{grid-template-columns:1fr} }
 
 /* Tool-Überschriften: Suchbegriff farbig mit Doppelpunkt, danach Beschreibung (normale Schreibweise) */
@@ -3200,11 +3215,23 @@ img.cs-ric{border-radius:0 !important;object-fit:contain;filter:drop-shadow(0 2p
 .ag-done p{margin:0;font-size:1rem;line-height:1.45;color:#c9d6e0}
 .ag-done p b{color:#fff;font-size:1.15rem}
 /* Augment-Baum in einer aufklappbaren Box (zu Beginn zu); am Handy stattdessen die Liste der Verläufe */
-.ag-tsec{margin-top:14px;border-radius:12px;border:1px solid rgba(46,230,214,.25);background:rgba(3,17,27,.45)}
-.ag-tsec>summary{display:flex;align-items:center;gap:14px;padding:10px 16px 10px 12px;border-radius:12px;list-style:none;cursor:pointer}
-.ag-tsec>summary::-webkit-details-marker{display:none}
-.ag-tsec>summary:hover{background:rgba(46,230,214,.06)}
-.ag-tsec>summary:focus-visible{outline:2px solid #2ee6d6;outline-offset:2px}
+/* Aufklappbare Box in „Dein Ergebnis“: Augment-Baum (.ag-tsec) und allgemein .tio-sec (Shop-Chancen, Orb-Inhalte) – .tio-sec bleibt auch am Handy sichtbar */
+.ag-tsec,.tio-sec{margin-top:14px;border-radius:12px;border:1px solid rgba(46,230,214,.25);background:rgba(3,17,27,.45)}
+.ag-tsec>summary,.tio-sec>summary{display:flex;align-items:center;gap:14px;padding:10px 16px 10px 12px;border-radius:12px;list-style:none;cursor:pointer}
+.ag-tsec>summary::-webkit-details-marker,.tio-sec>summary::-webkit-details-marker{display:none}
+.ag-tsec>summary:hover,.tio-sec>summary:hover{background:rgba(46,230,214,.06)}
+.ag-tsec>summary:focus-visible,.tio-sec>summary:focus-visible{outline:2px solid #2ee6d6;outline-offset:2px}
+.tio-sec>summary>svg:last-child{width:24px;height:24px;flex:none;color:#7ff7ec;transition:transform .2s}
+.tio-sec[open]>summary>svg:last-child{transform:rotate(180deg)}
+.tio-sic{display:grid;place-items:center;width:44px;height:44px;flex:none;border-radius:11px;border:1px solid rgba(46,230,214,.45);background:linear-gradient(180deg,rgba(46,230,214,.22),rgba(46,230,214,.05));color:#7ff7ec;box-shadow:0 0 12px rgba(46,230,214,.25)}
+.tio-sic svg{width:24px;height:24px}
+.tio-sic.orb{border:0;background:none;box-shadow:none}.tio-sic.orb img{width:40px;height:40px;filter:drop-shadow(0 0 8px rgba(245,184,46,.45))}
+.tio-sic>svg,.tio-sic>img{width:24px;height:24px}
+/* Cheatsheet in der Klappbox: dasselbe wie auf /cheatsheet/…, nur ohne Außenabstände */
+.tio-sec .cs-emb{padding:0;margin-top:6px}
+.tio-sec .cs-emb .csf{margin-bottom:18px}
+.tio-sec .cs-emb .csf-act{margin:-6px 0 4px}
+.cs-emb-link{margin:4px 0 2px;font-size:.92rem}
 .ag-ti{width:58px;height:auto;flex:none;overflow:visible}
 .ag-ti-l{fill:none;stroke:#2ee6d6;stroke-width:1.4;opacity:.7}
 .ag-ti-s{fill:#0b2a33;stroke:#2ee6d6;stroke-width:2;filter:drop-shadow(0 0 3px rgba(46,230,214,.7))}

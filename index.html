@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Automatisch erzeugt aus app.html (tools/startseite.js) – nicht von Hand bearbeiten -->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -116,7 +117,7 @@
 <main id="main">
 
 <!-- ================= HOME ================= -->
-<div class="page" id="page-home">
+<div class="page" id="page-home"><template class="pg-tpl">
   <section class="wrap" style="padding:0 20px">
     <div class="hero-card">
       <div class="hero-main">
@@ -194,13 +195,13 @@
       </div>
       <div class="team-actions"><a href="/about" class="btn btn-primary">Meet the Team</a><a href="/apply" class="btn btn-ghost">Kontakt</a></div>
     </div>
-  </section></div>
+  </section></template></div>
 
 <!-- ================= DASHBOARD (nur neues Design, Inhalt aus app.js: renderDash) ================= -->
-<div class="page" id="page-dash"><div class="dsh" id="dshApp" data-noi18n></div></div>
+<div class="page" id="page-dash"><div class="dsh" id="dshApp" data-noi18n><h1>TFT Tierlist, Comps <em>&amp; Coaching</em></h1><p data-meta>TFT Tierlist für Set 18 von Challenger-Spielern: die besten Comps mit Items, Augments und Aufstellung – dazu Tools und Coaching.</p></div></div>
 
 <!-- ================= TIERLIST ================= -->
-<div class="page" id="page-tierlist">
+<div class="page" id="page-tierlist"><template class="pg-tpl">
   <div class="wrap">
     <div class="page-head has-buddy">
       <div class="buddy" data-buddy="tierlist">
@@ -269,10 +270,10 @@
       <p class="note">Welche Champions lohnen sich von 1-1 bis 1-3 zu halten? Bewertet von S bis C. Klick auf einen Champion für seine Details.</p>
     </div>
   </div>
-</div>
+</template></div>
 
 <!-- ================= BIBLIOTHEK ================= -->
-<div class="page" id="page-library">
+<div class="page" id="page-library"><template class="pg-tpl">
   <div class="wrap">
     <div class="page-head has-buddy">
       <div class="buddy" data-buddy="bibliothek">
@@ -346,18 +347,18 @@
       <div class="trait-grid" id="traitGrid"></div>
     </div>
   </div>
-</div>
+</template></div>
 
 <!-- ================= CHAMPION-SEITE (/champions/<name>) ================= -->
-<div class="page" id="page-comp">
+<div class="page" id="page-comp"><template class="pg-tpl">
   <div class="wrap" id="compPage"></div>
-</div>
-<div class="page" id="page-champion">
+</template></div>
+<div class="page" id="page-champion"><template class="pg-tpl">
   <div class="wrap" id="chPage"></div>
-</div>
+</template></div>
 
 <!-- ================= RANKS ================= -->
-<div class="page" id="page-ranks">
+<div class="page" id="page-ranks"><template class="pg-tpl">
   <div class="wrap">
     <div id="rk-list">
       <div class="rk-hero">
@@ -374,10 +375,10 @@
     </div>
     <div id="rk-detail" hidden></div>
   </div>
-</div>
+</template></div>
 
 <!-- ================= TEAM BUILDER ================= -->
-<div class="page" id="page-builder">
+<div class="page" id="page-builder"><template class="pg-tpl">
   <div class="wrap">
     <div class="page-head" data-tool-art="simulator" data-art-buddy="sim" data-art-builder="teambuilder">
       <div class="crumb" id="bCrumb"><a href="/">Home</a> / Team Builder</div>
@@ -442,57 +443,16 @@
       </div>
       <div class="bp-body"><div class="bp-units" id="bPoolUnits"></div><div class="bp-items" id="bPoolItems"></div></div>
     </div>
-    <section class="tool-seo b-only" aria-labelledby="ts-builder">
-      <div class="ts-main">
-        <h2 id="ts-builder">TFT Team Builder: Plan dein Board</h2>
-        <p>Mit dem Team Builder stellst du dein Board zusammen, bevor du es spielst: Units platzieren, Items verteilen, Sterne setzen und sofort sehen, welche Traits aktiv sind. Fertige Teams teilst du als Link oder Team-Code – perfekt für Discord, Coaching oder deine nächste Ranked-Partie.</p>
-        <h3>So benutzt du den Team Builder</h3>
-        <ol class="ts-steps">
-          <li>Zieh Units aufs Brett – oder tipp erst eine Unit und dann ein Feld an.</li>
-          <li>Gib deinen Units Items und klick auf die Sterne, um das Sternelevel zu ändern.</li>
-          <li>Links siehst du alle aktiven Traits, rechts Augments und die Komponenten, die du für deine Items brauchst.</li>
-          <li>Teile dein Team als Link oder Team-Code. Mit „Gegner“ stellst du zusätzlich ein gegnerisches Board auf.</li>
-        </ol>
-        <h3>Aus der Tierlist direkt ins Board</h3>
-        <p>Jede Comp aus unserer TFT Tierlist kannst du mit einem Klick im Team Builder öffnen und dort anpassen. Willst du wissen, ob dein Board gegen ein anderes gewinnt, lädst du es im Kampf-Simulator.</p>
-      </div>
-      <aside class="ts-side">
-        <h3>Häufige Fragen</h3>
-        <details><summary>Ist der Team Builder kostenlos?</summary><p>Ja, kostenlos und ohne Anmeldung. Dein Board bleibt in deinem Browser gespeichert.</p></details>
-        <details><summary>Wie teile ich mein Team?</summary><p>Über die Symbole oben rechts: Link kopieren oder Team-Code kopieren. Mit „Importieren“ lädst du einen Code oder Link wieder.</p></details>
-        <details><summary>Kann ich Teams aus früheren Sets bauen?</summary><p>Ja. Über die Set-Auswahl wechselst du zu älteren Sets oder zur PBE-Vorschau, wenn sie verfügbar ist.</p></details>
-        <h3>Weitere Tools</h3>
-        <ul class="ts-links"><li><a href="/tools/tft-kampf-simulator">Kampf-Simulator</a></li><li><a href="/tools/tft-dps-vergleich">DPS-Vergleich</a></li><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="/tools/tft-rolldown-rechner">Rolldown-Rechner</a></li></ul>
-      </aside>
-    </section>
-    <section class="tool-seo b-simonly" aria-labelledby="ts-sim">
-      <div class="ts-main">
-        <h2 id="ts-sim">TFT Kampf-Simulator: Teste deine Teams, bevor du sie spielst</h2>
-        <p>Welches Board gewinnt – deins oder das des Gegners? Im Kampf-Simulator stellst du zwei Teams mit Items, Sternen und Augments auf und siehst den Kampf Schritt für Schritt: wer wohin läuft, wen er angreift, wann er seine Fähigkeit wirkt und wer am meisten Schaden macht.</p>
-        <h3>So benutzt du den Kampf-Simulator</h3>
-        <ol class="ts-steps">
-          <li>Stell dein Team und das Gegner-Team auf – oder lade Comps direkt aus der Tierlist.</li>
-          <li>Starte den Kampf und spul vor oder zurück.</li>
-          <li>Klick eine Unit an, um Ziel, Laufweg, Werte und ihre nächste Aktion zu sehen.</li>
-          <li>Rechne den Kampf 100-mal, um die Siegchance beider Teams zu sehen.</li>
-        </ol>
-        <h3>Gut zu wissen</h3>
-        <p>Grundwerte und Items kommen von Riot, Fähigkeiten werden aus den offiziellen Texten gelesen und geschätzt, wo Riot keine Zahlen liefert. Die Ergebnisse sind Richtwerte – ideal, um Aufstellungen und Item-Verteilungen zu vergleichen.</p>
-      </div>
-      <aside class="ts-side">
-        <h3>Häufige Fragen</h3>
-        <details><summary>Wie genau ist der Kampf-Simulator?</summary><p>Er folgt den bekannten Kampfregeln von TFT: Zielwahl, Laufwege, 10 Mana pro Angriff, Mana durch erlittenen Schaden und Verlängerung ab 30 Sekunden. Die Stärke mancher Fähigkeiten ist geschätzt, deshalb sind die Ergebnisse Richtwerte.</p></details>
-        <details><summary>Kann ich Comps aus der Tierlist laden?</summary><p>Ja, über die Auswahl über den Brettern. Die Augments wählst du selbst – die aus der Tierlist sind nur Vorschläge.</p></details>
-        <details><summary>Was zeigt das 100-mal-Rechnen?</summary><p>Weil Krits und manche Entscheidungen Zufall sind, rechnet der Simulator den Kampf 100-mal und zeigt, wie oft jedes Team gewinnt.</p></details>
-        <h3>Weitere Tools</h3>
-        <ul class="ts-links"><li><a href="/tools/tft-dps-vergleich">DPS-Vergleich</a></li><li><a href="/tft-team-builder">Team Builder</a></li><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="/tools/tft-rolldown-rechner">Rolldown-Rechner</a></li></ul>
-      </aside>
-    </section>
+    <!-- Vertrauens-Box und Artikel: baut app.js (artFill) aus den Set-Daten; api/page.js schreibt beides schon ins HTML (data-pre) -->
+    <div class="tio-trust-wrap b-only" data-pre="builder-trust" data-noi18n></div>
+    <section class="tool-seo b-only ag-art" aria-labelledby="ts-builder" data-pre="builder" data-noi18n></section>
+    <div class="tio-trust-wrap b-simonly" data-pre="sim-trust" data-noi18n></div>
+    <section class="tool-seo b-simonly ag-art" aria-labelledby="ts-sim" data-pre="sim" data-noi18n></section>
   </div>
-</div>
+</template></div>
 
 <!-- ================= REDAKTION (Tierlist bearbeiten) ================= -->
-<div class="page" id="page-admin">
+<div class="page" id="page-admin"><template class="pg-tpl">
   <div class="wrap">
     <div class="page-head">
       <div class="crumb">Home / Redaktion</div>
@@ -530,10 +490,10 @@
     <div id="admTL" hidden></div>
     </div>
   </div>
-</div>
+</template></div>
 
 <!-- ================= NEWS (Platzhalter) ================= -->
-<div class="page" id="page-news">
+<div class="page" id="page-news"><template class="pg-tpl">
   <div class="wrap">
     <div class="page-head has-buddy ornn-head">
       <div class="buddy ornn" data-buddy="news">
@@ -551,10 +511,10 @@
       <a href="/tierlist" class="link-arrow">Solange zur aktuellen Tierlist →</a>
     </div>
   </div>
-</div>
+</template></div>
 
 <!-- ================= TOOLS (Platzhalter) ================= -->
-<div class="page" id="page-tools">
+<div class="page" id="page-tools"><template class="pg-tpl">
   <div class="wrap">
     <!-- Übersicht -->
     <div class="tool-view" data-tool="">
@@ -592,11 +552,11 @@
           <div class="tc-cap"><span>TFT Item-Drop-Chance</span><span class="tc-st" data-hits="drops">Neu</span></div>
         </div>
         <div class="tc-item">
-          <a class="tc" href="/tools/tft-dps-vergleich">
-            <div class="tc-text"><span class="tc-tag">Vergleich</span><h3>DPS-Vergleich</h3><p>Welcher Item-Build macht mehr Schaden? Im Graph verglichen.</p></div>
+          <a class="tc" href="/tools/tft-dps-rechner">
+            <div class="tc-text"><span class="tc-tag">Vergleich</span><h3>DPS-Rechner</h3><p>Welcher Item-Build macht mehr Schaden? Im Graph verglichen.</p></div>
             <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/dps.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 20h18"/><path d="M4 16l5-5 4 3 7-8"/><path d="M16 6h4v4"/></svg></span></div>
           </a>
-          <div class="tc-cap"><span>TFT DPS-Vergleich</span><span class="tc-st" data-hits="dps">Neu</span></div>
+          <div class="tc-cap"><span>TFT DPS-Rechner</span><span class="tc-st" data-hits="dps">Neu</span></div>
         </div>
         <div class="tc-item">
           <a class="tc" href="/tools/tft-rolldown-rechner">
@@ -627,7 +587,7 @@
           <h3>Welches Tool hilft dir wobei?</h3>
           <ul class="ts-list">
             <li><a href="/tools/tft-rolldown-rechner">Rolldown-Rechner</a><span>Rollen oder leveln? Die Chancen, deine Units zu finden – mit Shop-Odds pro Level und Pool-Größen.</span></li>
-            <li><a href="/tools/tft-dps-vergleich">DPS-Vergleich</a><span>Vergleich bis zu vier Item-Builds eines Champions und sieh im Graph, welcher am meisten Schaden macht.</span></li>
+            <li><a href="/tools/tft-dps-rechner">DPS-Rechner</a><span>Vergleich bis zu vier Item-Builds eines Champions und sieh im Graph, welcher am meisten Schaden macht.</span></li>
             <li><a href="/tools/tft-item-drop-chance">Item-Drop-Chance</a><span>Welche Komponente kommt als Nächstes aus dem Item-Pool? Trag deine Drops ein und plan deine Items.</span></li>
             <li><a href="/tools/tft-tierlist-maker">Tierlist-Maker</a><span>Deine eigene Tierlist für Champions, Items, Artefakte, Embleme und Augments – per Link teilbar.</span></li>
             <li><a href="/tools/tft-kampf-simulator">Kampf-Simulator</a><span>Zwei Teams, ein Kampf: Laufwege, Ziele und Fähigkeiten Schritt für Schritt.</span></li>
@@ -665,29 +625,8 @@
         <p>Deine eigene Tierlist für Set <span data-setno>18</span>: Champions, Items, Artefakte, Embleme und Augments per Drag &amp; Drop einsortieren – und mit einem Link teilen.</p>
       </div>
       <div id="tmApp"></div>
-      <section class="tool-seo" aria-labelledby="ts-tierlist">
-        <div class="ts-main">
-          <h2 id="ts-tierlist">TFT Tierlist-Maker: Erstell deine eigene Tierlist</h2>
-          <p>Du hast deine eigene Meinung zur Meta? Mit dem Tierlist-Maker sortierst du Champions, Items, Artefakte, Embleme und Augments des aktuellen Sets in deine eigenen Reihen – und teilst das Ergebnis mit einem Link, zum Beispiel in Discord oder mit deinem Duo.</p>
-          <h3>So erstellst du deine Tierlist</h3>
-          <ol class="ts-steps">
-            <li>Wähl oben den Bereich: Champions, Items, Artefakte, Embleme oder Augments.</li>
-            <li>Zieh die Kacheln in die Reihen – oder tipp erst eine Kachel und dann eine Reihe an.</li>
-            <li>Benenn die Reihen um und änder Farben und Reihenfolge. Bis zu 12 Reihen sind möglich.</li>
-            <li>Mit „Teilen“ bekommst du einen Link, der genau deine Tierlist zeigt.</li>
-          </ol>
-          <h3>Ideen für deine Tierlist</h3>
-          <p>Bewerte Augments für 2-1 anders als für 4-2, ranke die besten Carrys eines Traits oder bau eine Tierlist nur aus Artefakten. Wenn du wissen willst, wie wir die Meta sehen, schau in unsere TFT Tierlist mit Comps, Items, Augments und Holds.</p>
-        </div>
-        <aside class="ts-side">
-          <h3>Häufige Fragen</h3>
-          <details><summary>Ist der Tierlist-Maker kostenlos?</summary><p>Ja, komplett kostenlos und ohne Anmeldung.</p></details>
-          <details><summary>Wird meine Tierlist gespeichert?</summary><p>Ja, dein Entwurf bleibt automatisch in deinem Browser. Zum Teilen erstellst du einen Link – wer ihn öffnet, sieht genau deine Tierlist.</p></details>
-          <details><summary>Woher kommen die Bilder und Namen?</summary><p>Aus den offiziellen Spieldaten des aktuellen Sets. Nach einem Patch sind neue Champions, Items und Augments automatisch dabei.</p></details>
-          <h3>Weitere Tools</h3>
-          <ul class="ts-links"><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="/tools/tft-dps-vergleich">DPS-Vergleich</a></li><li><a href="/tools/tft-rolldown-rechner">Rolldown-Rechner</a></li><li><a href="/tools/tft-item-drop-chance">Item-Drop-Chance</a></li></ul>
-        </aside>
-      </section>
+      <div class="tio-trust-wrap" data-pre="tierlist-trust" data-noi18n></div>
+      <section class="tool-seo ag-art" aria-labelledby="ts-tierlist" data-pre="tierlist" data-noi18n></section>
     </div>
 
     <!-- Item-Drop-Chance -->
@@ -698,64 +637,20 @@
         <p>Komponenten aus den Creep-Runden kommen aus einem Item-Pool: Was gedroppt ist, fehlt darin. Trag deine Drops ein und sieh, was als Nächstes kommen kann.</p>
       </div>
       <div id="drApp"></div>
-      <section class="tool-seo" aria-labelledby="ts-drops">
-        <div class="ts-main">
-          <h2 id="ts-drops">TFT Item-Drop-Chance: Welche Komponente kommt als Nächstes?</h2>
-          <p>Die Komponenten aus den Creep-Runden sind kein reiner Zufall: Sie kommen aus einem Item-Pool. Was schon gedroppt ist, fehlt im Pool – dadurch werden die übrigen Komponenten wahrscheinlicher. Die Item-Drop-Chance zählt für dich mit und zeigt dir die Chancen für den nächsten Drop.</p>
-          <h3>So benutzt du die Item-Drop-Chance</h3>
-          <ol class="ts-steps">
-            <li>Wähl die aktuelle Stage.</li>
-            <li>Klick jede Komponente an, sobald sie droppt.</li>
-            <li>Lies ab, welche Komponenten am wahrscheinlichsten als Nächstes kommen, und plan deine Items danach.</li>
-          </ol>
-          <h3>Warum das im Spiel hilft</h3>
-          <p>Wer weiß, welche Komponenten noch im Pool liegen, kann früher festlegen, welches Item er baut und welche Comp zu seinen Drops passt. Gerade im Early Game entscheidet das, ob du dein erstes Item früh slammen kannst.</p>
-        </div>
-        <aside class="ts-side">
-          <h3>Häufige Fragen</h3>
-          <details><summary>Sind Item-Drops in TFT zufällig?</summary><p>Nicht ganz. Die Komponenten kommen aus einem Item-Pool: Was schon gedroppt ist, fehlt darin, bis neue Komponenten dazukommen.</p></details>
-          <details><summary>Wann kommen neue Komponenten in den Pool?</summary><p>Vor jeder neuen Creep-Stage kommt von jeder Komponente eine dazu.</p></details>
-          <details><summary>Zeigt das Tool auch Orbs?</summary><p>Ja, pro Stage siehst du auch die Chancen auf Gold-Orbs und prismatische Orbs.</p></details>
-          <h3>Weitere Tools</h3>
-          <ul class="ts-links"><li><a href="/tools/tft-dps-vergleich">DPS-Vergleich</a></li><li><a href="/tools/tft-rolldown-rechner">Rolldown-Rechner</a></li><li><a href="/tierlist/items">Item-Tierlist</a></li><li><a href="/bibliothek/items">Item-Rezepte</a></li></ul>
-        </aside>
-      </section>
+      <div class="tio-trust-wrap" data-pre="drops-trust" data-noi18n></div>
+      <section class="tool-seo ag-art" aria-labelledby="ts-drops" data-pre="drops" data-noi18n></section>
     </div>
 
-    <!-- DPS-Vergleich -->
+    <!-- DPS-Rechner -->
     <div class="tool-view" data-tool="dps" hidden>
       <div class="page-head" data-tool-art="dps" data-art-buddy="dps">
-        <div class="crumb"><a href="/tools">Tools</a> / DPS-Vergleich</div>
-        <h1 class="tool-h1"><span class="th-key">TFT DPS-Vergleich:</span> Welcher Item-Build gewinnt?</h1>
+        <div class="crumb"><a href="/tools">Tools</a> / DPS-Rechner</div>
+        <h1 class="tool-h1"><span class="th-key">TFT DPS-Rechner:</span> Welcher Item-Build gewinnt?</h1>
         <p>Wie viel Schaden macht dein Carry mit welchen Items? Wähl einen Champion, stell bis zu vier Item-Builds zusammen und vergleich, wie sich der Schaden über 30 Sekunden aufbaut.</p>
       </div>
       <div id="dpsApp"></div>
-      <section class="tool-seo" aria-labelledby="ts-dps">
-        <div class="ts-main">
-          <h2 id="ts-dps">TFT DPS-Vergleich: Welcher Item-Build macht am meisten Schaden?</h2>
-          <p>Guinsoo's Rageblade und Kraken's Fury oder doch Infinity Edge und Striker's Flail? Manche Items brauchen Anlauf, andere wirken sofort. Der DPS-Vergleich lässt einen Champion 30 Sekunden auf Trainingspuppen schlagen und zeigt dir im Graph, wie sich der Schaden jedes Builds aufbaut.</p>
-          <h3>So benutzt du den DPS-Vergleich</h3>
-          <ol class="ts-steps">
-            <li>Wähl einen Champion und seine Sterne. Tanks fehlen bewusst – sie werden nicht auf Schaden gebaut.</li>
-            <li>Stell bis zu vier Item-Builds zusammen, auch mit Emblemen. Die Builds aus unserer Tierlist sind schon vorausgefüllt.</li>
-            <li>Hat ein anderer Champion in deinem Team Shred oder Sunder, schalte es ein – dann muss dein Carry das nicht selbst tragen.</li>
-            <li>Unter „Detailliert“ stellst du ein, auf welcher Stufe die Traits aktiv sind, und wählst die Gegner – Backline, Frontline oder Tank und wie viele nebeneinanderstehen.</li>
-            <li>Stell unten die Sekunde ein, bis zu der du vergleichen willst, und lies den Schaden in der Tabelle ab.</li>
-          </ol>
-          <h3>So wird gerechnet</h3>
-          <p>Der DPS-Vergleich rechnet mit der Engine des Kampf-Simulators: Grundwerte und Items nach Riot, die Stärke der Fähigkeiten ist geschätzt, wo Riot keine Zahlen liefert. Die Gegner greifen nicht an – Mana gibt es also nur über Angriffe und Items. Traits zählen in der einfachen Ansicht auf ihrer niedrigsten Stufe, Augments nicht. Shred und Sunder aus dem Team senken Magieresistenz bzw. Rüstung der Gegner dauerhaft um 30 % und stapeln nicht mit dem eigenen. Jeder Wert ist der Mittelwert aus 24 Kämpfen, weil Krits Zufall sind. Für den Vergleich von Builds gut geeignet, die absoluten Zahlen sind Richtwerte.</p>
-          <h3>Gesamtschaden oder Schaden pro Sekunde?</h3>
-          <p>„Gesamtschaden“ zeigt den aufsummierten Schaden – damit siehst du, welcher Build bis zur entscheidenden Sekunde vorne liegt. „Schaden pro Sekunde“ zeigt, wie stark ein Build gerade zuschlägt: Anlauf-Items wie Guinsoo's Rageblade oder Kraken's Fury steigen über die Zeit, Items wie Deathblade wirken ab der ersten Sekunde.</p>
-        </div>
-        <aside class="ts-side">
-          <h3>Häufige Fragen</h3>
-          <details><summary>Wie genau ist der DPS-Vergleich?</summary><p>Er rechnet mit der Engine unseres Kampf-Simulators: Grundwerte und Items kommen von Riot, die Stärke der Fähigkeiten wird geschätzt, wo Riot keine Zahlen liefert. Für den Vergleich von Builds ist das gut geeignet, die absoluten Zahlen sind Richtwerte.</p></details>
-          <details><summary>Zählen Traits und Embleme mit?</summary><p>Ja. Für jeden Trait des Champions stellst du ein, auf welcher Stufe er aktiv ist. Embleme im Build bringen ihren Trait dazu. Augments rechnet der DPS-Vergleich nicht mit.</p></details>
-          <details><summary>Warum ist das Ergebnis ein Mittelwert?</summary><p>Krits sind Zufall. Deshalb rechnet der DPS-Vergleich jeden Build 24-mal und zeigt den Durchschnitt.</p></details>
-          <h3>Weitere Tools</h3>
-          <ul class="ts-links"><li><a href="/tools/tft-kampf-simulator">Kampf-Simulator</a></li><li><a href="/tierlist/items">Item-Tierlist</a></li><li><a href="/tools/tft-item-drop-chance">Item-Drop-Chance</a></li><li><a href="/tools/tft-rolldown-rechner">Rolldown-Rechner</a></li></ul>
-        </aside>
-      </section>
+      <div class="tio-trust-wrap" data-pre="dps-trust" data-noi18n></div>
+      <section class="tool-seo ag-art" aria-labelledby="ts-dps" data-pre="dps" data-noi18n></section>
     </div>
 
     <!-- Augment-Chancen (Aufbau „Deine Angaben“ → „Dein Ergebnis“, Vorlage für die anderen Tools) -->
@@ -772,9 +667,9 @@
       <section class="tool-seo ag-art" aria-labelledby="ts-augments" data-pre="augments" data-noi18n></section>
     </div>
   </div>
-</div>
+</template></div>
 <!-- ================= 404 (Ornn) ================= -->
-<div class="page" id="page-notfound">
+<div class="page" id="page-notfound"><template class="pg-tpl">
   <div class="wrap">
     <div class="page-head has-buddy ornn-head">
       <div class="buddy ornn" data-buddy="notfound">
@@ -787,10 +682,10 @@
       <div class="hero-actions"><a href="/" class="btn btn-primary">Zur Startseite</a><a href="/tierlist" class="btn btn-ghost">Zur Tierlist</a></div>
     </div>
   </div>
-</div>
+</template></div>
 
 <!-- ================= COACHING ================= -->
-<div class="page" id="page-coaching">
+<div class="page" id="page-coaching"><template class="pg-tpl">
   <div class="wrap">
     <div class="page-head has-buddy">
       <div class="buddy" data-buddy="coaching">
@@ -916,10 +811,10 @@
       <details><summary>Geht auch Live-Coaching?</summary><p>Ja, wir empfehlen es aber nicht. Im VOD-Review können wir pausieren und Entscheidungen in Ruhe durchgehen – das bringt dir mehr.</p></details>
     </div>
   </div>
-</div>
+</template></div>
 
 <!-- ================= GUIDES ================= -->
-<div class="page" id="page-guides">
+<div class="page" id="page-guides"><template class="pg-tpl">
   <div class="wrap">
     <!-- Übersicht -->
     <div class="gd-view" data-guide="">
@@ -976,10 +871,10 @@
       </section>
     </div>
   </div>
-</div>
+</template></div>
 
 <!-- ================= ABOUT ================= -->
-<div class="page" id="page-about">
+<div class="page" id="page-about"><template class="pg-tpl">
   <div class="wrap">
     <!-- Übersicht: Meet the Team -->
     <div class="mt-view" data-about="">
@@ -1143,9 +1038,9 @@
     <a class="btn btn-ghost mt-back" href="/about">← Zurück zum Team</a>
     </div>
   </div>
-</div>
+</template></div>
 <!-- ================= APPLY ================= -->
-<div class="page" id="page-apply">
+<div class="page" id="page-apply"><template class="pg-tpl">
   <div class="wrap">
     <div class="page-head">
       <div class="crumb">Home / Bewerbung</div>
@@ -1169,20 +1064,20 @@
       <div class="ok err" id="applyErr" role="alert"></div>
     </form>
   </div>
-</div>
+</template></div>
 
 <!-- ================= PATCHES ================= -->
-<div class="page" id="page-patches">
+<div class="page" id="page-patches"><template class="pg-tpl">
   <div class="wrap" id="patchesApp"></div>
-</div>
+</template></div>
 
 <!-- ================= PATCH-COUNTDOWN (/tft-patch-countdown, Inhalt aus app.js: renderCountdown) ================= -->
-<div class="page" id="page-countdown">
+<div class="page" id="page-countdown"><template class="pg-tpl">
   <div class="wrap" id="cdApp" data-noi18n></div>
-</div>
+</template></div>
 
 <!-- ================= IMPRESSUM ================= -->
-<div class="page" id="page-impressum">
+<div class="page" id="page-impressum"><template class="pg-tpl">
   <div class="wrap">
     <div class="page-head"><div class="crumb">Home / Impressum</div><h1>Impressum</h1></div>
     <div class="card lg">
@@ -1203,20 +1098,20 @@
       <p class="lg-sub">TFTClimb ist eine Fan-Seite und steht in keiner Verbindung zu Riot Games. Teamfight Tactics, Spielgrafiken und Spieldaten sind Eigentum von Riot Games, Inc.</p>
     </div>
   </div>
-</div>
+</template></div>
 
 <!-- ================= CHAMPIONS V2 (Beta, Inhalt aus app.js: renderChampV2) ================= -->
-<div class="page" id="page-champv2">
+<div class="page" id="page-champv2"><template class="pg-tpl">
   <div class="wrap" id="cvApp" data-noi18n></div>
-</div>
+</template></div>
 
 <!-- ================= CHEATSHEET (Inhalt aus app.js: renderCheats) ================= -->
-<div class="page" id="page-cheatsheet">
+<div class="page" id="page-cheatsheet"><template class="pg-tpl">
   <div class="wrap" id="csPage" data-noi18n></div>
-</div>
+</template></div>
 
 <!-- ================= WIDERRUF & BEDINGUNGEN (Coaching) ================= -->
-<div class="page" id="page-bedingungen">
+<div class="page" id="page-bedingungen"><template class="pg-tpl">
   <div class="wrap">
     <div class="page-head"><div class="crumb">Home / Widerruf &amp; Bedingungen</div><h1>Widerruf &amp; Bedingungen</h1><p data-keep>Alles, was für ein gebuchtes Coaching gilt: dein Widerrufsrecht, die Bedingungen für Einzelstunde, Set-Pass und VIP-Mentoring und was bei einem Abbruch passiert.</p></div>
     <div class="card lg">
@@ -1265,10 +1160,10 @@
       <p class="lg-sub">Stand: 17. Oktober 2026</p>
     </div>
   </div>
-</div>
+</template></div>
 
 <!-- ================= DATENSCHUTZ ================= -->
-<div class="page" id="page-datenschutz">
+<div class="page" id="page-datenschutz"><template class="pg-tpl">
   <div class="wrap">
     <div class="page-head"><div class="crumb">Home / Datenschutz</div><h1>Datenschutzerklärung</h1><p data-keep>Kurz gesagt: Wir messen mit Google Analytics, wie viele Besucher kommen und welche Seiten sie nutzen. Dafür setzt Google Cookies – direkt beim Aufruf der Seite. Werbung gibt es keine. Du kannst der Messung jederzeit widersprechen, wie das geht, steht in Abschnitt 3.</p></div>
     <div class="card lg">
@@ -1314,10 +1209,10 @@
       <p class="lg-sub">Stand: Oktober 2026</p>
     </div>
   </div>
-</div>
+</template></div>
 
 </main>
-<!-- Seiten, die api/page.js für Suchmaschinen in <template> gepackt hat, wieder einsetzen – vor allen anderen Skripten -->
+<!-- Seiten, die api/page.js für Suchmaschinen in template-Tags (pg-tpl) gepackt hat, wieder einsetzen – vor allen anderen Skripten -->
 <script>document.querySelectorAll('template.pg-tpl').forEach(function(t){ t.replaceWith(t.content); });</script>
 
 <!-- ================= FOOTER ================= -->

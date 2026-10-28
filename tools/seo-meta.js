@@ -14,13 +14,13 @@ const ROOT = path.resolve(__dirname, '..');
 const TYPES = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.ico': 'image/x-icon'};
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// kleiner Webserver: Dateien aus dem Projekt, alle anderen Pfade → index.html (wie online)
+// kleiner Webserver: Dateien aus dem Projekt, alle anderen Pfade → Vorlage app.html (wie online über api/page.js, nur ohne Aufbereitung)
 function serve() {
   return new Promise(res => {
     const srv = http.createServer((req, rs) => {
       const u = decodeURIComponent(new URL(req.url, 'http://x').pathname);
       let f = path.join(ROOT, u);
-      if (!f.startsWith(ROOT) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) f = path.join(ROOT, 'index.html');
+      if (!f.startsWith(ROOT) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) f = path.join(ROOT, 'app.html');
       rs.writeHead(200, {'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream'});
       fs.createReadStream(f).pipe(rs);
     });
@@ -58,11 +58,20 @@ function findBrowser() {
       const a = s => (document.querySelector(s) || {}), m = s => a(s).content || '', ld = document.getElementById('ldPage');
       // pre: fertig gebaute Artikel der sichtbaren Seite ([data-pre], z. B. Augment-Chancen) – api/page.js schreibt sie ins HTML
       const pre = {}; document.querySelectorAll('.page.active [data-pre]').forEach(el => { if (el.getClientRects().length && el.innerHTML.trim()) pre[el.dataset.pre] = el.innerHTML.split(O + '/').join('/'); });
+      // h1/cr: sichtbare Überschrift und Brotkrumen darüber, fertig übersetzt – api/page.js ersetzt damit die Fassung aus index.html
+      // (englische Seiten, Simulator mit eigener H1 auf der Builder-Seite)
+      const vis = e => e && e.getClientRects().length, h1 = [...document.querySelectorAll('.page.active h1')].find(vis), cr = h1 && h1.parentNode.querySelector(':scope > .crumb');
+      // hh: Container (id), in den app.js die Überschrift baut – bei Seiten, die erst JavaScript füllt (Cheatsheets, Champions, Comps …), setzt api/page.js die H1 dort vorab ein
+      let host = h1 && h1.parentElement; while (host && !host.id) host = host.parentElement;
+      const hx = {...(h1 ? {h1: h1.innerHTML.split(O + '/').join('/')} : {}), ...(cr ? {cr: cr.innerHTML.split(O + '/').join('/')} : {}),   // Brotkrumen auch, wenn das Design sie ausblendet
+        ...(host && !host.classList.contains('page') ? {hh: host.id} : {})};
       return {t: document.title, d: m('meta[name="description"]'), r: m('meta[name="robots"]'), c: rel(a('link[rel="canonical"]').href),
         de: rel(a('link[hreflang="de"]').href), en: rel(a('link[hreflang="en"]').href), img: rel(m('meta[property="og:image"]')), loc: m('meta[property="og:locale"]'),
-        tw: m('meta[name="twitter:card"]'), ld: ld ? ld.textContent.split(O).join('{{ORIGIN}}') : '', ...(Object.keys(pre).length ? {pre} : {}),
+        tw: m('meta[name="twitter:card"]'), ld: ld ? ld.textContent.split(O).join('{{ORIGIN}}') : '', ...(Object.keys(pre).length ? {pre} : {}), ...hx,
         // sichtbare Seite und (bei Tools) das sichtbare Tool – api/page.js lässt nur diese als Inhalt im HTML stehen
-        pg: (document.querySelector('.page.active') || {}).id || '', ...(() => { const v = [...document.querySelectorAll('#page-tools .tool-view')].find(x => !x.hidden); return v && document.querySelector('#page-tools.active') ? {tv: v.dataset.tool} : {}; })()}; })()`;
+        // tv: sichtbare Unteransicht (Tool, Profil bei Meet the Team, Guide) – gleiche Tabelle wie SUBVIEWS in api/page.js
+        pg: (document.querySelector('.page.active') || {}).id || '', ...(() => { const pg = document.querySelector('.page.active'), sv = pg && {'page-tools': ['tool-view', 'tool'], 'page-about': ['mt-view', 'about'], 'page-guides': ['gd-view', 'guide']}[pg.id];
+          const v = sv && [...pg.querySelectorAll('.' + sv[0])].find(x => !x.hidden); return v ? {tv: v.dataset[sv[1]]} : {}; })()}; })()`;
     const pages = {}; let lang = '';
     for (const p of paths) {
       const l = /^\/en(\/|$)/.test(p) ? 'en' : 'de';
@@ -77,13 +86,15 @@ function findBrowser() {
     let old = null; try { old = JSON.parse(fs.readFileSync(file, 'utf8')); } catch (e) {}
     if (old && JSON.stringify(old.pages) === JSON.stringify(pages)) console.log(`  unverändert: data\\seo-meta.json (${Object.keys(pages).length} Seiten)`);
     else { fs.writeFileSync(file, JSON.stringify({generated: new Date().toISOString(), pages})); console.log(`  geschrieben: data\\seo-meta.json (${Object.keys(pages).length} von ${paths.length} Seiten)`); }
-    // Startseite: Vercel liefert / direkt als Datei aus (ohne api/page.js) – ihr Block steht deshalb fest in index.html
+    // Kopfdaten der Startseite als Grundblock in der Vorlage app.html (gilt auch für unbekannte Adressen, z. B. 404)
     const {headBlock, SITE} = require(path.join(ROOT, 'api', 'page.js'));
     if (pages['/']) {
-      const f = path.join(ROOT, 'index.html'), html = fs.readFileSync(f, 'utf8');
+      const f = path.join(ROOT, 'app.html'), html = fs.readFileSync(f, 'utf8');
       const next = html.replace(/<!-- seo:start -->[\s\S]*?<!-- seo:end -->/, () => headBlock(pages['/'], SITE));
-      if (next !== html) { fs.writeFileSync(f, next); console.log('  aktualisiert: Kopfdaten der Startseite in index.html'); }
+      if (next !== html) { fs.writeFileSync(f, next); console.log('  aktualisiert: Kopfdaten der Startseite in app.html'); }
     }
+    // Startseite index.html neu aufbereiten (Vercel liefert / direkt als Datei aus) – eigener Prozess, damit api/page.js die frischen Dateien liest
+    require('child_process').execFileSync(process.execPath, [path.join(ROOT, 'tools', 'startseite.js')], {stdio: 'inherit'});
     ws.close();
   } finally { br.kill(); srv.close(); try { fs.rmSync(prof, {recursive: true, force: true}); } catch (e) {} }
   process.exit(0);

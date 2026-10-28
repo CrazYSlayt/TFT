@@ -3,8 +3,9 @@
    Die Daten (CH_DATA, findItem, Builder-Bretter …) kommen erst beim Aufruf aus app.js.
 
    Regeln (Quellen: League-Wiki „TFT: Mana“, tftips.app „Battle“):
-   - Ziel: nächster Gegner – wenigste Schritte bis zu einer Angriffsposition, dann Feld-Abstand,
-     dann echter Abstand, dann bisheriges Ziel. Neuwahl nach jedem gelaufenen Feld, bis das Ziel in Reichweite ist.
+   - Ziel: nächster Gegner – wenigste Schritte bis zu einer Angriffsposition, dann Feld-Abstand, beim ersten Ziel
+     (vor dem ersten Angriff) bei Gleichstand Tanks zuerst, dann echter Abstand, dann bisheriges Ziel.
+     Neuwahl nach jedem gelaufenen Feld, bis das Ziel in Reichweite ist.
    - Bewegung 500 (Verlängerung 700) Einheiten/s, ein Feld ≈ 180 Einheiten. Das Zielfeld wird beim Losgehen belegt.
    - Mana: 10 pro Angriff, Schaden erhalten: 1 % vor + 3 % nach Abzug (max. 42,5). Kein Mana bei Betäubung/während der Fähigkeit.
    - Schaden = Basis × Krit × Schadenssteigerung × 100/(100+Resistenz) × Durchhaltevermögen (multiplikativ).
@@ -223,12 +224,15 @@ function sStepsTo(u, e, bfs){
 }
 function sPick(u, bfs){
   if(u.taunt && u.taunt.alive && u.tauntEnd > SS.t && sTargetable(u.taunt)) return u.taunt;
-  // Reihenfolge: Schritte bis zur Angriffsposition, Feld-Abstand, echter Abstand (±0,05 Felder), bisheriges Ziel, sonst Zufall
+  // Reihenfolge: Schritte bis zur Angriffsposition, Feld-Abstand, beim ersten Ziel (noch kein Angriff) Tanks zuerst,
+  // echter Abstand (±0,05 Felder), bisheriges Ziel, sonst Zufall
   const cmp = (a, b) => { for(let i=0;i<a.length;i++) if(a[i]!==b[i]) return a[i] - b[i]; return 0; };
+  const first = !u.attacks && !u.casts;
   let best = null, bk = null;
   for(const e of SS.units){
     if(e.side===u.side || !sTargetable(e)) continue;
-    const k = [sStepsTo(u, e, bfs).steps, SIM_GRID.D[u.cell][e.cell], Math.round(simEu(u.cell, e.cell)*20), e===u.tgt ? 0 : 1, SS.rng()];
+    const tank = first ? (e.isTank != null ? e.isTank : (e.isTank = !e.plant && simRole(e.n) === 'tank')) : false;
+    const k = [sStepsTo(u, e, bfs).steps, SIM_GRID.D[u.cell][e.cell], tank ? 0 : 1, Math.round(simEu(u.cell, e.cell)*20), e===u.tgt ? 0 : 1, SS.rng()];
     if(!bk || cmp(k, bk) < 0){ best = e; bk = k; }
   }
   return best;
@@ -756,7 +760,7 @@ function simMount(){
       <details class="card sim-rules"><summary>So rechnet der Simulator</summary>
         <ul>
           <li><b>Spielfeld:</b> 7 × 8 Felder, jede Seite 4 Reihen – genau wie im Spiel. Reichweite und Abstände zählen in Feldern.</li>
-          <li><b>Zielwahl:</b> der nächste Gegner – zuerst wenigste Schritte bis zu einer Angriffsposition, dann Feld-Abstand, dann echter Abstand, dann das bisherige Ziel. Nach jedem gelaufenen Feld wird neu gewählt, bis das Ziel in Reichweite ist. Stirbt es oder wird es unangreifbar, sucht sich die Unit ein neues.</li>
+          <li><b>Zielwahl:</b> der nächste Gegner – zuerst wenigste Schritte bis zu einer Angriffsposition, dann Feld-Abstand. Beim ersten Ziel (vor dem ersten Angriff) werden bei gleichem Abstand Tanks bevorzugt. Danach echter Abstand, dann das bisherige Ziel. Nach jedem gelaufenen Feld wird neu gewählt, bis das Ziel in Reichweite ist. Stirbt es oder wird es unangreifbar, sucht sich die Unit ein neues.</li>
           <li><b>Laufen:</b> 500 Einheiten pro Sekunde (≈ 0,36 s pro Feld), in der Verlängerung 700. Das nächste Feld wird beim Losgehen belegt, gelaufen wird der kürzeste freie Weg.</li>
           <li><b>Angriffe:</b> Tempo = Angriffe pro Sekunde (max. 5). Krit: 25 % Grundchance, 140 % Schaden. Fähigkeiten kritten nur mit Präzision (z. B. Infinity Edge, Jeweled Gauntlet, Henker).</li>
           <li><b>Mana:</b> 10 pro Angriff; erlittener Schaden gibt 1 % vor + 3 % nach Abzug (max. 42,5). Während einer Fähigkeit und bei Betäubung gibt es kein Mana.</li>

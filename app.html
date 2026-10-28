@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<!-- Online gelten alle Dateipfade ab der Startseite (auch unter /tierlist/items); lokal per Doppelklick bleiben sie relativ.
+     Fest im HTML statt per Skript: sonst lädt der Browser-Vorlader auf Unterseiten (/comps/…) alles erst unter falschen Adressen. -->
+<base href="/">
+<script>if (location.protocol === 'file:') document.querySelector('base').remove();</script>
+<script>
+// Sprache: Adressen mit /en/… sind Englisch, alle anderen Deutsch.
+// Erstbesuch ohne gespeicherte Wahl und mit nicht-deutschem Browser → englische Version (nicht für Suchmaschinen).
+(function(){
+  var file = location.protocol === 'file:', p = (file ? location.hash.replace(/^#/, '') : location.pathname) || '/';
+  var en = /^\/en(\/|$)/.test(p), pref = null;
+  try { pref = localStorage.getItem('tftfreaks_lang'); } catch(e){}
+  var bot = /bot|crawl|spider|slurp|lighthouse|preview/i.test(navigator.userAgent);
+  var langs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'de'];
+  var wantEn = pref === 'en' || (!pref && !bot && !langs.some(function(l){ return /^de/i.test(l); }));
+  if(!en && wantEn && !file){ location.replace('/en' + p + location.search); return; }
+  window.TFT_LANG = en ? 'en' : 'de';
+  if(en){ document.documentElement.lang = 'en'; document.write('<script src="assets/js/i18n-en.js"><\/script>'); }
+})();
+</script>
+<!-- Google Analytics (G-BTL7VP5CTK): misst jeden Besuch ab dem Aufruf, nicht erst nach Bestätigung im Hinweis-Banner (bewusste Entscheidung).
+     Wer im Banner oder in der Datenschutzerklärung „Ablehnen“ wählt, wird ab dann nicht mehr erfasst (tftfreaks_ga = 'no').
+     Lokal (localhost, Datei) wird nichts gesendet. -->
+<script>
+(function(){
+  var id = 'G-BTL7VP5CTK', off = false;
+  try { off = localStorage.getItem('tftfreaks_ga') === 'no'; } catch(e){}
+  if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return;
+  if (off) { window['ga-disable-' + id] = true; return; }
+  var s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id; document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){ dataLayer.push(arguments); };
+  gtag('js', new Date());
+  gtag('config', id);
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b1324">
+<!-- Kopfdaten für Suchmaschinen und Link-Vorschauen: hier die der Startseite. Für jede andere Adresse tauscht api/page.js den Block aus;
+     erzeugt von tools/seo-meta.js (nicht von Hand ändern – die Texte stehen in assets/js/app.js → pageMeta) -->
+<!-- seo:start -->
+<title>TFTClimb – TFT Tierlist, Comps &amp; Coaching</title>
+<meta name="description" content="TFT Tierlist für Set 18 von Challenger-Spielern: die besten Comps mit Items, Augments und Aufstellung – dazu Tools und Coaching.">
+<link rel="canonical" href="https://www.tftclimb.com/">
+<link rel="alternate" hreflang="de" href="https://www.tftclimb.com/">
+<link rel="alternate" hreflang="en" href="https://www.tftclimb.com/en/">
+<link rel="alternate" hreflang="x-default" href="https://www.tftclimb.com/">
+<meta property="og:title" content="TFTClimb – TFT Tierlist, Comps &amp; Coaching">
+<meta property="og:description" content="TFT Tierlist für Set 18 von Challenger-Spielern: die besten Comps mit Items, Augments und Aufstellung – dazu Tools und Coaching.">
+<meta property="og:url" content="https://www.tftclimb.com/">
+<meta property="og:image" content="https://www.tftclimb.com/assets/img/mascot-vi.webp">
+<meta name="twitter:card" content="summary">
+<meta property="og:locale" content="de_DE">
+<script type="application/ld+json" id="ldPage">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"TFTClimb","url":"https://www.tftclimb.com/","inLanguage":"de","publisher":{"@type":"Organization","name":"TFTClimb","url":"https://www.tftclimb.com/","logo":"https://www.tftclimb.com/assets/brand/logo-symbol-512.png","email":"info@tftclimb.com"}}]}</script>
+<link rel="preload" href="data/tft-data-18.js" as="script">
+<link rel="preload" href="data/custom-18.js" as="script">
+<link rel="preload" href="tierlist-data-18.js" as="script">
+<!-- seo:end -->
+<meta property="og:site_name" content="TFTClimb">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<!-- Tab-Symbol: Symbol aus dem TFTClimb-Logo (Vi im Sechseck), mehrere Größen -->
+<link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="assets/brand/favicon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/brand/favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/brand/apple-touch-icon.png">
+<!-- Champion-, Item- und Rang-Bilder kommen von CommunityDragon/Riot: Verbindung schon beim Laden der Seite aufbauen -->
+<link rel="preconnect" href="https://raw.communitydragon.org">
+<link rel="preconnect" href="https://ddragon.leagueoflegends.com">
+<!-- app.js und sim.js stehen am Ende von <body>: hier schon anmelden, damit sie am Handy vor den Bildern geladen werden -->
+<link rel="preload" href="assets/js/sim.js" as="script">
+<link rel="preload" href="assets/js/app.js" as="script">
+<link rel="stylesheet" href="assets/css/fonts.css">
+<link rel="stylesheet" href="assets/css/site.css">
+<script>
+// Design: das neue TFTClimb-Design gilt für alle. Nur zum Vergleich lässt sich mit ?design=alt das alte Design ansehen
+// (der Browser merkt sich die Wahl), ?design=neu schaltet zurück.
+(function(){
+  var alt = false;
+  try {
+    var q = new URLSearchParams(location.search).get('design');
+    if(q === 'alt') localStorage.setItem('tftfreaks_design', 'alt');
+    if(q === 'neu') localStorage.removeItem('tftfreaks_design');
+    alt = localStorage.getItem('tftfreaks_design') === 'alt';
+  } catch(e){}
+  if(!alt){
+    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css">');
+    // Topleiste und Seitenleiste stehen sofort (assets/js/shell.js), den Inhalt baut app.js: bis alle Skripte gelaufen sind, bleibt er verborgen und oben läuft ein Ladebalken
+    document.addEventListener('DOMContentLoaded', function(){ document.documentElement.classList.add('nd-ready'); });
+  }
+})();
+</script>
+</head>
+<body>
+<script src="assets/js/shell.js"></script>
+<a class="skip" href="#main">Zum Inhalt springen</a>
+
+
+<!-- ================= HEADER ================= -->
+<div class="set-banner" id="setBanner" hidden></div>
+<header class="topbar">
+  <button class="tb-icon-btn" id="burger" aria-label="Menü öffnen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <a href="/" class="tb-logo" aria-label="TFTClimb Startseite"><span class="tft-logo" aria-hidden="true"></span><div><span>TFT</span><b>Climb</b></div></a>
+  <div class="set-sw" id="setSw"></div>
+  <nav class="tb-nav" id="tbNav" aria-label="Hauptnavigation"></nav>
+  <button class="tb-icon-btn tb-search" id="openSearch" aria-label="Suchen (Taste /)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
+</header>
+<div class="more-menu" id="moreMenu"></div>
+<div class="drawer" id="drawer"><div class="drawer-bg" data-drawer-close></div><div class="drawer-panel" id="drawerPanel"></div></div>
+<!-- Leiste oben: LP-Grenzen Challenger/Großmeister (EUW) und nächster Patch -->
+<div class="statbar" id="statBar"></div>
+
+<main id="main">
+
+<!-- ================= HOME ================= -->
+<div class="page" id="page-home">
+  <section class="wrap" style="padding:0 20px">
+    <div class="hero-card">
+      <div class="hero-main">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="m-face" role="img" aria-label="TFTClimb Maskottchen"></span>Patch 18.5 · Enchanted Wilds</div>
+          <h1>Climb in TFT. <em class="serif">Mit Plan.</em></h1>
+          <p class="lead">Tierlist, Comps, Items und Augments für das aktuelle Set.<br>Dazu Coaching, das deine nächste Lobby besser macht.</p>
+          <a href="/tierlist" class="hero-cta"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Zur Comp-Tierlist<small>Patch 18.5 &nbsp;⟶</small></a>
+          <p class="hero-note">Wöchentlich aktualisiert · TFTClimb</p>
+          <div class="hero-links"><a href="/bibliothek/champions">Alle 65 Champions ↗</a><a href="/coaching">Coaching ansehen ↗</a></div>
+        </div>
+        <div class="hero-visual">
+          <div class="ring r1"></div><div class="ring r2"></div>
+          <img class="hero-emblem" src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt="TFT Challenger-Emblem" width="512" height="512"><div class="mascot-glow emb"></div>
+          <div class="chip-float a"><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt="" width="40" height="40" style="width:40px;height:40px;object-fit:contain"><div>Founder CrazYSlayt<b>Challenger seit Set 15</b></div></div>
+          <div class="chip-float b"><div>S-Tier Comps<b id="sCount">—</b></div></div>
+        </div>
+      </div>
+      <div class="rank-strip">
+        <h2>Jeder Rang. <em class="serif">Dein nächstes Level.</em></h2>
+        <div class="ranks" id="ranks"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section team-sec">
+    <div class="wrap">
+      <div class="team-head">
+        <span class="eyebrow-sm">Über uns</span>
+        <h2>Das TFTClimb Team</h2>
+        <p>Wir sind TFT-Spieler aus Deutschland. Wir bringen dir Tierlists, Daten und Coaching – übersichtlich und ehrlich: Jede Zahl hat ihre Quelle, und wenn sich der Patch ändert, ziehen wir nach. Vi hält dabei die Lobby in Schach.</p>
+      </div>
+      <div class="team-grid">
+        <a class="tcard" href="/about/crazyslayt">
+          <div class="tcard-img team-claudio" role="img" aria-label="Claudio „CrazYSlayt“"><span class="tcard-badge">TFT-Experte &amp; Founder</span></div>
+          <div class="tcard-body">
+            <h3>Claudio <em>„CrazYSlayt“</em></h3>
+            <div class="tcard-facts f3"><div><small>Rang</small><b>Challenger</b></div><div><small>Peak</small><b>1.002 LP</b></div><div><small>Aus</small><b>Frankfurt</b></div></div>
+            <small class="tcard-lbl">Challenger seit Set 15 · Coach seit Set 17</small>
+          </div>
+        </a>
+        <article class="tcard">
+          <div class="tcard-img team-kevin" role="img" aria-label="Kevin „Kevin10K“"><span class="tcard-badge">Partner &amp; Co-Founder</span></div>
+          <div class="tcard-body">
+            <h3>Kevin <em>„Kevin10K“</em></h3>
+            <div class="tcard-facts f3"><div><small>Rang</small><b>Unranked</b></div><div><small>Peak</small><b>in Dota</b></div><div><small>Aus</small><b>Hamburg</b></div></div>
+            <small class="tcard-lbl">Partner &amp; Co-Founder · spielt lieber Dota</small>
+          </div>
+        </article>
+        <a class="tcard" href="/about/humbadobo">
+          <div class="tcard-img team-romano" role="img" aria-label="Romano „humbadobo“"><span class="tcard-badge">Coach</span></div>
+          <div class="tcard-body">
+            <h3>Romano <em>„humbadobo“</em></h3>
+            <div class="tcard-facts f3"><div><small>Rang</small><b>Challenger</b></div><div><small>Peak</small><b>1.447 LP</b></div><div><small>Aus</small><b>Irland</b></div></div>
+            <small class="tcard-lbl">Challenger seit Set 15 · Coach seit Set 17</small>
+          </div>
+        </a>
+        <article class="tcard">
+          <div class="tcard-img team-vi" role="img" aria-label="Vi – Maskottchen von TFTClimb"><span class="m-chibi tcard-mascot"></span><span class="tcard-badge">Maskottchen</span></div>
+          <div class="tcard-body">
+            <h3>Vi</h3>
+            <div class="tcard-facts f3"><div><small>Rang</small><b>Enforcer</b></div><div><small>Peak</small><b>1 Schlag reicht</b></div><div><small>Aus</small><b>Zaun</b></div></div>
+            <small class="tcard-lbl">Maskottchen · regelt die Lobby mit den Fäusten</small>
+            <div class="tcard-traits" id="teamViTraits"></div>
+          </div>
+        </article>
+        <article class="tcard tcard-open">
+          <div class="tcard-img team-open"><span class="tcard-plus" aria-hidden="true">+</span><span class="tcard-badge">Freier Platz</span></div>
+          <div class="tcard-body">
+            <h3>Du?</h3>
+            <p>Du liebst TFT und willst Guides schreiben oder Content machen? Bei TFTClimb ist noch ein Platz frei.</p>
+            <a href="/apply" class="btn btn-primary tcard-btn">Mitmachen</a>
+          </div>
+        </article>
+      </div>
+      <div class="team-actions"><a href="/about" class="btn btn-primary">Meet the Team</a><a href="/apply" class="btn btn-ghost">Kontakt</a></div>
+    </div>
+  </section></div>
+
+<!-- ================= DASHBOARD (nur neues Design, Inhalt aus app.js: renderDash) ================= -->
+<div class="page" id="page-dash"><div class="dsh" id="dshApp" data-noi18n></div></div>
+
+<!-- ================= TIERLIST ================= -->
+<div class="page" id="page-tierlist">
+  <div class="wrap">
+    <div class="page-head has-buddy">
+      <div class="buddy" data-buddy="tierlist">
+        <div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>
+        <button class="buddy-img m-chibi" type="button" aria-label="Vi – nächster Tipp" title="Klick für den nächsten Tipp"></button>
+      </div>
+      <div class="crumb">Home / Tierlist</div>
+      <h1>TFT Tierlist <em class="serif">Set <span data-setno>18</span></em></h1>
+      <p>Comps, Items und Augments für Patch 18.5, bewertet von S bis C, dazu situative Comps (X). Klick auf eine Comp für Aufstellung, Items und Augments.</p>
+      <span class="updated" id="tlSrc">Stand: Patch 18.5 · Bewertungen von TFTClimb</span>
+    </div>
+    <div class="tabs" id="tlTabs">
+      <button class="tab active" data-tab="comps">Comps</button>
+      <button class="tab" data-tab="items">Items</button>
+      <button class="tab" data-tab="augments">Augments</button>
+      <button class="tab" data-tab="holds">Holds</button>
+    </div>
+
+    <div id="tl-comps">
+      <div class="toolbar" id="compFilters">
+        <button class="chip-btn active" data-style="all">Alle</button>
+        <button class="chip-btn" data-style="Reroll">Reroll</button>
+        <button class="chip-btn" data-style="Fast 8">Fast 8</button>
+        <button class="chip-btn" data-style="Fast 9">Fast 9</button>
+        <button class="chip-btn" data-style="Lose Streak">Lose Streak</button>
+        <input class="input" id="compSearch" placeholder="Comp, Unit oder Trait suchen…">
+      </div>
+      <div id="tierRows"></div>
+    </div>
+    <div id="tl-items" hidden>
+      <div class="toolbar" id="itemTlFilters">
+        <button class="chip-btn active" data-itl="craftables">Kombiniert</button>
+        <button class="chip-btn" data-itl="radiants">Lichtversionen</button>
+        <button class="chip-btn" data-itl="ornns">Artefakte</button>
+        <button class="chip-btn" data-itl="emblems">Embleme</button>
+      </div>
+      <div id="itemTiers"></div>
+      <p class="note">Offizielle Set-<span data-setno>18</span>-Items. Bewertung von TFTClimb (Patch 18.5). Klick auf ein Item für Werte und Rezept.</p>
+    </div>
+    <div id="tl-augments" hidden>
+      <div class="toolbar">
+        <div class="tag-row" id="augLvFilters">
+          <button class="chip-btn active" data-alv="1">Silber</button>
+          <button class="chip-btn" data-alv="2">Gold</button>
+          <button class="chip-btn" data-alv="3">Prismatisch</button>
+        </div>
+        <div class="tag-row" id="augStageFilters">
+          <button class="chip-btn active" data-ast="All">Alle Phasen</button>
+          <button class="chip-btn" data-ast="2-1">2-1</button>
+          <button class="chip-btn" data-ast="3-2">3-2</button>
+          <button class="chip-btn" data-ast="4-2">4-2</button>
+        </div>
+        <input class="input" id="augSearch" placeholder="Augment suchen…">
+      </div>
+      <div id="augTiers"></div>
+      <p class="note">Offizielle Set-<span data-setno>18</span>-Augments mit deutschen Spieltexten (CommunityDragon). Bewertung von TFTClimb (Patch 18.5), je nach Phase, in der du das Augment wählst.</p>
+      <p class="note">Wie wahrscheinlich Silber, Gold oder Prismatisch als Nächstes kommt, zeigen dir unsere <a class="art-a" href="/tools/tft-augment-chancen">Augment-Chancen</a>.</p>
+    </div>
+    <div id="tl-holds" hidden>
+      <div class="toolbar" id="holdFilters">
+        <button class="chip-btn active" data-hc="1">1-Kosten-Champions</button>
+        <button class="chip-btn" data-hc="2">2-Kosten-Champions</button>
+        <button class="chip-btn" data-hc="3">3-Kosten-Champions</button>
+      </div>
+      <div id="holdTiers"></div>
+      <p class="note">Welche Champions lohnen sich von 1-1 bis 1-3 zu halten? Bewertet von S bis C. Klick auf einen Champion für seine Details.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= BIBLIOTHEK ================= -->
+<div class="page" id="page-library">
+  <div class="wrap">
+    <div class="page-head has-buddy">
+      <div class="buddy" data-buddy="bibliothek">
+        <div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>
+        <button class="buddy-img m-chibi" type="button" aria-label="Vi – nächster Tipp" title="Klick für den nächsten Tipp"></button>
+      </div>
+      <div class="crumb">Home / Bibliothek / <span id="libCrumb">Champions</span></div>
+      <h1>Bibliothek <em class="serif">Set <span data-setno>18</span></em></h1>
+      <p>Alle offiziellen Champions, Items und Traits aus Enchanted Wilds an einem Ort. Klick auf einen Eintrag für Details.</p>
+    </div>
+    <div class="tabs" id="libTabs">
+      <a class="tab active" href="/bibliothek/champions" data-lib="champions">Champions</a>
+      <a class="tab" href="/bibliothek/items" data-lib="items">Items</a>
+      <a class="tab" href="/bibliothek/traits" data-lib="traits">Traits</a>
+    </div>
+
+    <!-- Champions -->
+    <div id="lib-champions">
+      <div class="toolbar" id="costFilters">
+        <button class="chip-btn active" data-cost="all">Alle</button>
+        <button class="chip-btn cb c1" data-cost="1">1 Gold</button>
+        <button class="chip-btn cb c2" data-cost="2">2 Gold</button>
+        <button class="chip-btn cb c3" data-cost="3">3 Gold</button>
+        <button class="chip-btn cb c4" data-cost="4">4 Gold</button>
+        <button class="chip-btn cb c5" data-cost="5">5 Gold</button>
+        <input class="input" id="champSearch" placeholder="Champion oder Trait suchen…">      </div>
+      <div class="count" id="champCount"></div>
+      <div class="champ-grid" id="champGrid"></div>
+      <p class="note data-src"></p>
+    </div>
+
+    <!-- Items -->
+    <div id="lib-items" hidden>
+      <div class="toolbar">
+        <div class="tag-row" id="itTabs">
+          <button class="chip-btn active" data-view="list">Item-Liste</button>
+          <button class="chip-btn" data-view="recipes">Rezept-Tabelle</button>
+        </div>
+        <a href="/tierlist/items" class="link-arrow" style="margin-left:auto">Zur Item-Tierlist →</a>
+      </div>
+      <div id="it-list">
+        <div class="toolbar" id="itemFilters" style="margin-top:0">
+          <button class="chip-btn active" data-icat="all">Alle</button>
+          <button class="chip-btn" data-icat="craft">Kombiniert</button>
+          <button class="chip-btn" data-icat="component">Komponenten</button>
+          <button class="chip-btn" data-icat="radiant">Lichtversionen</button>
+          <button class="chip-btn" data-icat="artifact">Artefakte</button>
+          <button class="chip-btn" data-icat="emblem">Embleme</button>
+          <button class="chip-btn" data-icat="other">Sonstiges</button>
+          <input class="input" id="itemSearch" placeholder="Item suchen…">
+        </div>
+        <div class="count" id="itemCount"></div>
+        <div id="itemGroups"></div>
+      </div>
+      <div id="it-recipes" hidden>
+        <p class="updated">Zeile + Spalte = kombiniertes Item. Klick auf ein Feld für Details.</p>
+        <div class="recipe-wrap"><table class="recipe-table" id="recipeTable"></table></div>
+      </div>
+      <p class="note data-src"></p>
+    </div>
+
+    <!-- Traits -->
+    <div id="lib-traits" hidden>
+      <div class="toolbar" id="traitFilters">
+        <button class="chip-btn active" data-cat="all">Alle</button>
+        <button class="chip-btn" data-cat="origin">Ursprünge</button>
+        <button class="chip-btn" data-cat="class">Klassen</button>
+        <input class="input" id="traitSearch" placeholder="Trait oder Unit suchen…">
+      </div>
+      <div class="count" id="traitCount"></div>
+      <div class="trait-grid" id="traitGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CHAMPION-SEITE (/champions/<name>) ================= -->
+<div class="page" id="page-comp">
+  <div class="wrap" id="compPage"></div>
+</div>
+<div class="page" id="page-champion">
+  <div class="wrap" id="chPage"></div>
+</div>
+
+<!-- ================= RANKS ================= -->
+<div class="page" id="page-ranks">
+  <div class="wrap">
+    <div id="rk-list">
+      <div class="rk-hero">
+        <div class="crumb">Home / Ranks</div>
+        <h1>TFT Ränge <em class="serif">&amp; Spielerverteilung</em></h1>
+        <p>Alle 10 Ränge von Eisen bis Challenger – mit Divisionen und dem Anteil der Spieler.</p>
+      </div>
+      <div class="rk-table" id="rkTable"></div>
+      <div class="rk-foot"><span>● Geschätzte Verteilung · <span id="rkWhen">Set 18, Stand September 2026</span>. Klick auf einen Rang für Details.</span><a id="rkSrcLink" href="#" target="_blank" rel="noopener">Über die Zahlen ↗</a></div>
+      <div class="buddy buddy-inline" data-buddy="ranks">
+        <button class="buddy-img m-chibi" type="button" aria-label="Vi – nächster Tipp" title="Klick für den nächsten Tipp"></button>
+        <div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>
+      </div>
+    </div>
+    <div id="rk-detail" hidden></div>
+  </div>
+</div>
+
+<!-- ================= TEAM BUILDER ================= -->
+<div class="page" id="page-builder">
+  <div class="wrap">
+    <div class="page-head" data-tool-art="simulator" data-art-buddy="sim" data-art-builder="teambuilder">
+      <div class="crumb" id="bCrumb"><a href="/">Home</a> / Team Builder</div>
+      <h1 id="bTitle" class="tool-h1"><span class="th-key">TFT Team Builder:</span> Board planen für Set <span data-setno>18</span></h1>
+      <p id="bIntro">Zieh Units aufs Brett, verteil Items und sieh sofort, welche Traits aktiv sind. Auf dem Handy: erst antippen, dann aufs Feld tippen.</p>
+    </div>
+    <div class="b-ctx" id="bCtx" hidden></div>
+    <div class="b-bar">
+      <button class="b-set" type="button" data-open-setmenu title="Set wechseln">Set <span data-setno>18</span> ▾</button>
+      <div class="b-tools">
+        <label class="b-sw b-only"><input type="checkbox" id="bEnemy"><span>Gegner</span><i aria-hidden="true"></i></label>
+        <label class="b-sw"><input type="checkbox" id="bNames"><span>Namen</span><i aria-hidden="true"></i></label>
+        <button class="b-tbtn" id="bUndo" type="button" title="Rückgängig (Strg+Z)">Rückgängig</button>
+        <button class="b-tbtn" id="bRedo" type="button" title="Wiederholen (Strg+Y)">Wiederholen</button>
+        <button class="b-tbtn" id="bClear" type="button">Leeren</button>
+        <span class="b-info" tabindex="0" title="Units und Items ziehen oder antippen · Unit vom Brett nach unten ziehen, ✕ oder Rechtsklick entfernt sie · Klick auf ein Item an der Unit entfernt es · Klick auf die Sterne ändert das Sternelevel · Strg+F sucht, Strg+Z macht rückgängig">!</span>
+      </div>
+      <div class="b-icons">
+        <button class="b-ibtn" id="bShare" type="button" title="Link kopieren" aria-label="Link kopieren"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
+        <button class="b-ibtn" id="bCopyCode" type="button" title="Team-Code kopieren" aria-label="Team-Code kopieren"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button>
+        <button class="b-ibtn" id="bImport" type="button" title="Team-Code oder Link importieren" aria-label="Importieren"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M4 12h11M11 8l4 4-4 4"/></svg></button>
+      </div>
+    </div>
+    <div class="sim b-simonly" id="simPanel"></div>
+    <div class="b-rows" id="bRows">
+    <div class="b-layout b-enemy" id="bRowE" hidden>
+      <aside class="b-panel b-left">
+        <div class="b-scroll"><h3>Traits <small>Gegner</small></h3><div id="bTraitsE"></div></div>
+        <div class="b-stats" id="bStatsE"></div>
+      </aside>
+      <div class="b-panel b-center" data-panel="e">
+        <span class="b-tag">Gegner</span>
+        <div class="b-boardwrap"><div class="board bboard" id="bBoardE"></div></div>
+      </div>
+      <div class="b-right">
+        <div class="b-panel b-mini"><h4>Augments</h4><div class="b-augs" id="bAugsE"></div></div>
+        <div class="b-panel b-mini b-grow"><h4>Komponenten</h4><div class="b-comps" id="bCompsE"></div></div>
+      </div>
+    </div>
+    <div class="b-layout" id="bRowM">
+      <aside class="b-panel b-left">
+        <div class="b-scroll"><h3>Traits</h3><div id="bTraits"></div></div>
+        <div class="b-stats" id="bStats"></div>
+      </aside>
+      <div class="b-panel b-center" data-panel="m">
+        <span class="b-tag">Dein Board</span>
+        <span class="b-hint" id="bHint" role="status" aria-live="polite"></span>
+        <div class="b-boardwrap"><div class="board bboard" id="bBoard"></div></div>
+      </div>
+      <div class="b-right">
+        <div class="b-panel b-mini"><h4>Augments</h4><div class="b-augs" id="bAugs"></div></div>
+        <div class="b-panel b-mini b-only"><h4>Alt Builds</h4><div class="b-alt" id="bAlt"></div></div>
+        <div class="b-panel b-mini b-grow"><h4>Komponenten</h4><div class="b-comps" id="bComps"></div></div>
+      </div>
+    </div>
+    </div>
+    <div class="card bpool" id="bPool">
+      <div class="bp-top">
+        <label class="bp-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="bSearch" placeholder="Alles durchsuchen" autocomplete="off"><span class="bp-kbd"><kbd>Strg</kbd>+<kbd>F</kbd></span></label>
+        <div class="bp-pills" id="bSortPills"><button type="button" data-bsort="cost" class="on">Kosten</button><button type="button" data-bsort="name">Name</button><button type="button" data-bsort="origin">Ursprung</button><button type="button" data-bsort="class">Klasse</button></div>
+        <div class="bp-pills" id="bItemPills"><button type="button" data-bcat="craft" class="on">Kombiniert</button><button type="button" data-bcat="radiant">Lichtversionen</button><button type="button" data-bcat="artifact">Artefakte</button><button type="button" data-bcat="other">Sonstiges</button></div>
+      </div>
+      <div class="bp-body"><div class="bp-units" id="bPoolUnits"></div><div class="bp-items" id="bPoolItems"></div></div>
+    </div>
+    <!-- Vertrauens-Box und Artikel: baut app.js (artFill) aus den Set-Daten; api/page.js schreibt beides schon ins HTML (data-pre) -->
+    <div class="tio-trust-wrap b-only" data-pre="builder-trust" data-noi18n></div>
+    <section class="tool-seo b-only ag-art" aria-labelledby="ts-builder" data-pre="builder" data-noi18n></section>
+    <div class="tio-trust-wrap b-simonly" data-pre="sim-trust" data-noi18n></div>
+    <section class="tool-seo b-simonly ag-art" aria-labelledby="ts-sim" data-pre="sim" data-noi18n></section>
+  </div>
+</div>
+
+<!-- ================= REDAKTION (Tierlist bearbeiten) ================= -->
+<div class="page" id="page-admin">
+  <div class="wrap">
+    <div class="page-head">
+      <div class="crumb">Home / Redaktion</div>
+      <h1>Redaktion <em class="serif">Tierlist bearbeiten</em></h1>
+      <p>Comps per Drag &amp; Drop zwischen den Tiers verschieben und anklicken zum Bearbeiten. Items, Augments und Holds bewertest du in ihren Tabs genauso. Deine Änderungen werden erst mit „Speichern“ live – dann nach etwa einer Minute auf allen Geräten. Jedes Set hat seine eigene Tierlist – das Set wechselst du oben links.</p>
+    </div>
+    <div class="card adm-login" id="admLogin" hidden>
+      <h2>Anmelden</h2>
+      <p class="note">Die Redaktion ist nur mit Passwort zugänglich.</p>
+      <div class="adm-login-row"><input class="input" type="password" id="admLoginPw" placeholder="Redaktions-Passwort" autocomplete="current-password" aria-label="Redaktions-Passwort"><button class="btn btn-primary" id="admLoginGo" type="button">Anmelden</button></div>
+      <p class="adm-login-msg" id="admLoginMsg" role="status"></p>
+    </div>
+    <div id="admWork" hidden>
+    <div class="tabs" id="admTabs">
+      <button class="tab active" data-adm-tab="comps">Comps</button>
+      <button class="tab" data-adm-tab="items">Items</button>
+      <button class="tab" data-adm-tab="augments">Augments</button>
+      <button class="tab" data-adm-tab="holds">Holds</button>
+      <button class="tab" data-adm-tab="encounters">Encounters</button>
+    </div>
+    <div class="adm-bar">
+      <button class="btn btn-primary adm-save" id="admPublish" type="button" disabled>Speichern</button>
+      <span class="adm-dirty" id="admDirty" hidden>● Nicht gespeichert</span>
+      <button class="btn btn-ghost" id="admNew" type="button">+ Neue Comp</button>
+      <button class="btn btn-ghost" id="admReset" type="button" disabled>Änderungen verwerfen</button>
+      <button class="btn btn-ghost" id="admExport" type="button" title="Sicherungskopie als Datei">Exportieren</button>
+      <label class="btn btn-ghost" style="cursor:pointer" title="Sicherungskopie laden">Importieren<input type="file" id="admImport" accept=".js,.json" hidden></label>
+      <button class="btn btn-ghost" id="admLogout" type="button">Abmelden</button>
+      <span class="adm-status" id="admStatus"></span>
+    </div>
+    <div class="adm-wrap" id="admCompsView">
+      <div id="admRows"></div>
+      <aside class="card adm-edit" id="admEdit"></aside>
+    </div>
+    <div id="admTL" hidden></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= NEWS (Platzhalter) ================= -->
+<div class="page" id="page-news">
+  <div class="wrap">
+    <div class="page-head has-buddy ornn-head">
+      <div class="buddy ornn" data-buddy="news">
+        <div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>
+        <button class="buddy-img m-ornn" type="button" aria-label="Ornn – nächster Spruch" title="Klick für den nächsten Spruch"></button>
+      </div>
+      <div class="crumb">Home / News</div>
+      <h1>News <em class="serif">Bald verfügbar</em></h1>
+      <p>Hier entstehen Patch-Zusammenfassungen, Meta-Updates und Ankündigungen rund um TFTClimb.</p>
+    </div>
+    <div class="soon card">
+      <span class="pill gold">Platzhalter</span>
+      <h3>Dieser Bereich ist in Arbeit</h3>
+      <p>Geplant: Patch-Notes kompakt auf Deutsch, Gewinner und Verlierer des Patches und Updates zu Coaching-Angeboten.</p>
+      <a href="/tierlist" class="link-arrow">Solange zur aktuellen Tierlist →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TOOLS (Platzhalter) ================= -->
+<div class="page" id="page-tools">
+  <div class="wrap">
+    <!-- Übersicht -->
+    <div class="tool-view" data-tool="">
+      <div class="page-head has-buddy heimer-head">
+        <div class="buddy heimer" data-buddy="tools">
+          <div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>
+          <button class="buddy-img m-heimer" type="button" aria-label="Heimerdinger – nächster Tipp" title="Klick für den nächsten Tipp"></button>
+        </div>
+        <div class="crumb">Home / Tools</div>
+        <h1 class="tool-h1"><span class="th-key">TFT Tools:</span> Kostenlose Rechner für Set <span data-setno>18</span></h1>
+        <p>Rechner und Werkzeuge für deine Partien – mit den offiziellen Daten von Set <span data-setno>18</span>.</p>
+      </div>
+      <!-- Kacheln: Maskottchen-Bild je Tool unter assets/tools/<name>.webp (transparent, ca. 420 × 420 px).
+           Fehlt das Bild, erscheint automatisch das Symbol als Platzhalter. -->
+      <div class="tc-grid">
+        <div class="tc-item">
+          <a class="tc" href="/tft-team-builder">
+            <div class="tc-text"><span class="tc-tag">Planer</span><h3>Team Builder</h3><p>Plan dein Board, probier Comps aus und teil sie mit Freunden.</p></div>
+            <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/teambuilder.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 7.5l4 2.3v4.4L12 16.5l-4-2.3V9.8z"/></svg></span></div>
+          </a>
+          <div class="tc-cap"><span>TFT Team Builder</span><span class="tc-st" data-hits="builder">Neu</span></div>
+        </div>
+        <div class="tc-item">
+          <a class="tc" href="/tools/tft-augment-chancen">
+            <div class="tc-text"><span class="tc-tag">Vorhersage</span><h3>Augment-Chancen</h3><p>Silber, Gold oder Prismatisch? Sieh, was als Nächstes kommt.</p></div>
+            <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/augments.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 8v4l3 2"/></svg></span></div>
+          </a>
+          <div class="tc-cap"><span>TFT Augment-Chancen</span><span class="tc-st" data-hits="augments">Neu</span></div>
+        </div>
+        <div class="tc-item">
+          <a class="tc" href="/tools/tft-item-drop-chance">
+            <div class="tc-text"><span class="tc-tag">Chancen</span><h3>Item-Drop-Chance</h3><p>Was droppt als Nächstes? Der Item-Pool verrät es.</p></div>
+            <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/drops.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 8h10l2 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><circle cx="12" cy="14" r="2"/></svg></span></div>
+          </a>
+          <div class="tc-cap"><span>TFT Item-Drop-Chance</span><span class="tc-st" data-hits="drops">Neu</span></div>
+        </div>
+        <div class="tc-item">
+          <a class="tc" href="/tools/tft-dps-rechner">
+            <div class="tc-text"><span class="tc-tag">Vergleich</span><h3>DPS-Rechner</h3><p>Welcher Item-Build macht mehr Schaden? Im Graph verglichen.</p></div>
+            <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/dps.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 20h18"/><path d="M4 16l5-5 4 3 7-8"/><path d="M16 6h4v4"/></svg></span></div>
+          </a>
+          <div class="tc-cap"><span>TFT DPS-Rechner</span><span class="tc-st" data-hits="dps">Neu</span></div>
+        </div>
+        <div class="tc-item">
+          <a class="tc" href="/tools/tft-rolldown-rechner">
+            <div class="tc-text"><span class="tc-tag">Rechner</span><h3>Rolldown-Rechner</h3><p>Rollen oder leveln? Rechne aus, ob du deine Units triffst.</p></div>
+            <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/rolldown.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.4" fill="currentColor"/><circle cx="16" cy="8" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="8" cy="16" r="1.4" fill="currentColor"/><circle cx="16" cy="16" r="1.4" fill="currentColor"/></svg></span></div>
+          </a>
+          <div class="tc-cap"><span>TFT Rolldown-Rechner</span><span class="tc-st" data-hits="rolldown">Neu</span></div>
+        </div>
+        <div class="tc-item">
+          <a class="tc" href="/tools/tft-kampf-simulator">
+            <div class="tc-text"><span class="tc-tag">Simulator</span><h3>Kampf-Simulator</h3><p>Zwei Teams, ein Kampf. Wer läuft wohin – und wer gewinnt?</p></div>
+            <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/simulator.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4l9 9M4 4h4M4 4v4"/><path d="M20 4l-9 9M20 4h-4M20 4v4"/><path d="M9 15l-4 4M15 15l4 4M7.5 13.5l3 3M16.5 13.5l-3 3"/></svg></span></div>
+          </a>
+          <div class="tc-cap"><span>TFT Kampf-Simulator</span><span class="tc-st" data-hits="simulator">Neu</span></div>
+        </div>
+        <div class="tc-item">
+          <a class="tc" href="/tools/tft-tierlist-maker">
+            <div class="tc-text"><span class="tc-tag">Ersteller</span><h3>Tierlist-Maker</h3><p>Deine eigene Tierlist. Sortieren, teilen, diskutieren.</p></div>
+            <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/tierlist.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="5" height="4" rx="1"/><rect x="3" y="10" width="5" height="4" rx="1"/><rect x="3" y="16" width="5" height="4" rx="1"/><path d="M11 6h10M11 12h7M11 18h4"/></svg></span></div>
+          </a>
+          <div class="tc-cap"><span>TFT Tierlist-Maker</span><span class="tc-st" data-hits="tierlist">Neu</span></div>
+        </div>
+      </div>
+      <section class="tool-seo" aria-labelledby="ts-tools">
+        <div class="ts-main">
+          <h2 id="ts-tools">Kostenlose TFT Tools für Set <span data-setno>18</span></h2>
+          <p>Bessere Entscheidungen in TFT fangen mit den richtigen Zahlen an. Unsere Tools rechnen mit den offiziellen Daten des aktuellen Sets und laufen direkt im Browser – kostenlos, ohne Anmeldung und auf dem Handy genauso wie am PC.</p>
+          <h3>Welches Tool hilft dir wobei?</h3>
+          <ul class="ts-list">
+            <li><a href="/tools/tft-rolldown-rechner">Rolldown-Rechner</a><span>Rollen oder leveln? Die Chancen, deine Units zu finden – mit Shop-Odds pro Level und Pool-Größen.</span></li>
+            <li><a href="/tools/tft-dps-rechner">DPS-Rechner</a><span>Vergleich bis zu vier Item-Builds eines Champions und sieh im Graph, welcher am meisten Schaden macht.</span></li>
+            <li><a href="/tools/tft-item-drop-chance">Item-Drop-Chance</a><span>Welche Komponente kommt als Nächstes aus dem Item-Pool? Trag deine Drops ein und plan deine Items.</span></li>
+            <li><a href="/tools/tft-tierlist-maker">Tierlist-Maker</a><span>Deine eigene Tierlist für Champions, Items, Artefakte, Embleme und Augments – per Link teilbar.</span></li>
+            <li><a href="/tools/tft-kampf-simulator">Kampf-Simulator</a><span>Zwei Teams, ein Kampf: Laufwege, Ziele und Fähigkeiten Schritt für Schritt.</span></li>
+            <li><a href="/tools/tft-augment-chancen">Augment-Chancen</a><span>Wie wahrscheinlich ist ein prismatisches Augment? Gib deine Augment-Stufen ein und sieh, was als Nächstes kommt.</span></li>
+            <li><a href="/tft-team-builder">Team Builder</a><span>Plan dein Board mit Items und Sternen und sieh sofort, welche Traits aktiv sind.</span></li>
+          </ul>
+        </div>
+        <aside class="ts-side">
+          <h3>Häufige Fragen</h3>
+          <details><summary>Sind die TFT Tools kostenlos?</summary><p>Ja. Alle Tools sind kostenlos und brauchen keine Anmeldung. Deine Eingaben bleiben in deinem Browser.</p></details>
+          <details><summary>Mit welchen Daten rechnen die Tools?</summary><p>Mit den offiziellen Spieldaten des aktuellen Sets von CommunityDragon: Champions, Items, Traits und Augments. Nach jedem Patch werden sie automatisch aktualisiert.</p></details>
+          <details><summary>Funktionieren die Tools auf dem Handy?</summary><p>Ja. Alle Tools sind für das Handy gebaut – statt zu ziehen tippst du einfach erst auf ein Element und dann auf das Ziel.</p></details>
+        </aside>
+      </section>
+    </div>
+
+    <!-- Rolldown-Rechner -->
+    <div class="tool-view" data-tool="rolldown" hidden>
+      <div class="page-head" data-tool-art="rolldown" data-art-buddy="rolldown">
+        <div class="crumb"><a href="/tools">Tools</a> / Rolldown-Rechner</div>
+        <h1 class="tool-h1"><span class="th-key">TFT Rolldown-Rechner:</span> Odds &amp; Chancen pro Level</h1>
+        <p>Wie wahrscheinlich findest du deine Units, wenn du jetzt rollst? Wähl Champion, Level und Gold – gerechnet wird mit den Shop-Chancen und Pool-Größen von Set <span data-setno>18</span>.</p>
+      </div>
+      <div id="rdApp"></div>
+      <!-- Vertrauens-Box und Artikel: baut app.js (rdTrust, rdArticle) aus den Set-Daten; api/page.js schreibt beides schon ins HTML (data-pre) -->
+      <div class="tio-trust-wrap" data-pre="rolldown-trust" data-noi18n></div>
+      <section class="tool-seo ag-art" aria-labelledby="ts-rolldown" data-pre="rolldown" data-noi18n></section>
+    </div>
+
+    <!-- Tierlist-Maker -->
+    <div class="tool-view" data-tool="tierlist" hidden>
+      <div class="page-head" data-tool-art="tierlist" data-art-buddy="tlmaker">
+        <div class="crumb"><a href="/tools">Tools</a> / Tierlist-Maker</div>
+        <h1 class="tool-h1"><span class="th-key">TFT Tierlist-Maker:</span> Eigene Tierlist erstellen &amp; teilen</h1>
+        <p>Deine eigene Tierlist für Set <span data-setno>18</span>: Champions, Items, Artefakte, Embleme und Augments per Drag &amp; Drop einsortieren – und mit einem Link teilen.</p>
+      </div>
+      <div id="tmApp"></div>
+      <div class="tio-trust-wrap" data-pre="tierlist-trust" data-noi18n></div>
+      <section class="tool-seo ag-art" aria-labelledby="ts-tierlist" data-pre="tierlist" data-noi18n></section>
+    </div>
+
+    <!-- Item-Drop-Chance -->
+    <div class="tool-view" data-tool="drops" hidden>
+      <div class="page-head" data-tool-art="drops" data-art-buddy="drops">
+        <div class="crumb"><a href="/tools">Tools</a> / Item-Drop-Chance</div>
+        <h1 class="tool-h1"><span class="th-key">TFT Item-Drop-Chance:</span> Welche Komponente kommt?</h1>
+        <p>Komponenten aus den Creep-Runden kommen aus einem Item-Pool: Was gedroppt ist, fehlt darin. Trag deine Drops ein und sieh, was als Nächstes kommen kann.</p>
+      </div>
+      <div id="drApp"></div>
+      <div class="tio-trust-wrap" data-pre="drops-trust" data-noi18n></div>
+      <section class="tool-seo ag-art" aria-labelledby="ts-drops" data-pre="drops" data-noi18n></section>
+    </div>
+
+    <!-- DPS-Rechner -->
+    <div class="tool-view" data-tool="dps" hidden>
+      <div class="page-head" data-tool-art="dps" data-art-buddy="dps">
+        <div class="crumb"><a href="/tools">Tools</a> / DPS-Rechner</div>
+        <h1 class="tool-h1"><span class="th-key">TFT DPS-Rechner:</span> Welcher Item-Build gewinnt?</h1>
+        <p>Wie viel Schaden macht dein Carry mit welchen Items? Wähl einen Champion, stell bis zu vier Item-Builds zusammen und vergleich, wie sich der Schaden über 30 Sekunden aufbaut.</p>
+      </div>
+      <div id="dpsApp"></div>
+      <div class="tio-trust-wrap" data-pre="dps-trust" data-noi18n></div>
+      <section class="tool-seo ag-art" aria-labelledby="ts-dps" data-pre="dps" data-noi18n></section>
+    </div>
+
+    <!-- Augment-Chancen (Aufbau „Deine Angaben“ → „Dein Ergebnis“, Vorlage für die anderen Tools) -->
+    <div class="tool-view" data-tool="augments" hidden>
+      <div class="page-head" data-tool-art="augments" data-art-buddy="augtool">
+        <div class="crumb"><a href="/tools">Tools</a> / Augment-Chancen</div>
+        <h1 class="tool-h1"><span class="th-key">TFT Augment-Chancen:</span> Silber, Gold oder Prismatisch?</h1>
+        <p>Wie wahrscheinlich ist ein prismatisches Augment? Gib ein, welche Augment-Stufen du schon gesehen hast – der Rechner zeigt dir, was auf 3-2 und 4-2 kommt.</p>
+      </div>
+      <div id="agApp"></div>
+      <!-- Artikel unter dem Tool: baut app.js (agArticle) aus den Set-Daten in der Sprache der Seite; tools/seo-meta.js liest ihn fertig aus
+           und api/page.js schreibt ihn beim Ausliefern hier hinein (data-pre) – Suchmaschinen sehen ihn so schon im HTML -->
+      <div class="tio-trust-wrap" data-pre="augments-trust" data-noi18n></div>
+      <section class="tool-seo ag-art" aria-labelledby="ts-augments" data-pre="augments" data-noi18n></section>
+    </div>
+  </div>
+</div>
+<!-- ================= 404 (Ornn) ================= -->
+<div class="page" id="page-notfound">
+  <div class="wrap">
+    <div class="page-head has-buddy ornn-head">
+      <div class="buddy ornn" data-buddy="notfound">
+        <div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>
+        <button class="buddy-img m-ornn" type="button" aria-label="Ornn – nächster Spruch" title="Klick für den nächsten Spruch"></button>
+      </div>
+      <div class="crumb">Home / 404</div>
+      <h1>Seite nicht gefunden <em class="serif">404</em></h1>
+      <p>Diese Adresse gibt es nicht – oder sie liegt noch auf Ornns Amboss.</p>
+      <div class="hero-actions"><a href="/" class="btn btn-primary">Zur Startseite</a><a href="/tierlist" class="btn btn-ghost">Zur Tierlist</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= COACHING ================= -->
+<div class="page" id="page-coaching">
+  <div class="wrap">
+    <div class="page-head has-buddy">
+      <div class="buddy" data-buddy="coaching">
+        <div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>
+        <button class="buddy-img m-chibi" type="button" aria-label="Vi – nächster Tipp" title="Klick für den nächsten Tipp"></button>
+      </div>
+      <div class="crumb">Home / Coaching</div>
+      <h1>TFT-Coaching <em class="serif">von Challengern</em></h1>
+      <p>Eine Stunde, ein Ziel: Fundamentals auffrischen und deine eigenen Partien im VOD-Review durchgehen. Auf Deutsch oder Englisch, für jeden Rang – und das Kennenlernen ist kostenlos.</p>
+      <div class="co-chips"><span>1 Stunde pro Session</span><span>Deutsch &amp; Englisch</span><span>Auf Discord</span><span>Für alle Ränge</span><span class="hl">Kennenlernen kostenlos</span></div>
+      <a href="/apply" class="btn btn-primary co-cta">Kostenloses Kennenlernen anfragen <span aria-hidden="true">→</span></a>
+    </div>
+
+    <!-- Coaches -->
+    <div class="section-head co-sec"><h2>Deine Coaches</h2><p>Wir coachen alle nach demselben Konzept – Inhalte und Ablauf stimmen wir untereinander ab. Welcher Coach zu dir passt, klärt Claudio mit dir im Kennenlernen.</p></div>
+    <div class="co-grid">
+      <a class="co-card" href="/about/crazyslayt">
+        <div class="co-pic team-claudio" role="img" aria-label="Claudio „CrazYSlayt“"></div>
+        <div class="co-body">
+          <span class="co-role">Founder · führt die Kennenlern-Gespräche</span>
+          <h3>Claudio <em>„CrazYSlayt“</em></h3>
+          <div class="co-langs"><span class="co-lang">Deutsch</span><span class="co-lang soft">Englisch nach Absprache</span></div>
+          <p>Challenger seit Set 15 · Peak 1.002 LP · Coach seit Set 17</p>
+          <span class="mt-go">Profil ansehen <span aria-hidden="true">→</span></span>
+        </div>
+      </a>
+      <a class="co-card" href="/about/humbadobo">
+        <div class="co-pic team-romano" role="img" aria-label="Romano „humbadobo“"></div>
+        <div class="co-body">
+          <span class="co-role">Coach</span>
+          <h3>Romano <em>„humbadobo“</em></h3>
+          <div class="co-langs"><span class="co-lang">Englisch</span></div>
+          <p>Challenger seit Set 15 · Peak 1.447 LP · Coach seit Set 17</p>
+          <span class="mt-go">Profil ansehen <span aria-hidden="true">→</span></span>
+        </div>
+      </a>
+      <div class="co-card co-soon">
+        <div class="co-pic team-open"><span class="tcard-plus" aria-hidden="true">+</span></div>
+        <div class="co-body">
+          <span class="co-role">Bald</span>
+          <h3>Coach für niedrigere Ränge</h3>
+          <p>Wir holen uns Verstärkung mit Fokus auf die unteren Ränge. Bis dahin coachen Claudio und Romano jeden Rang.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pakete -->
+    <div class="section-head co-sec"><h2>Pakete &amp; Preise</h2><p>Jede Session dauert eine Stunde. Bezahlt wird per PayPal – erst nach dem kostenlosen Kennenlernen.</p></div>
+    <div class="pkg-grid" id="coachPkgs"></div>
+    <div class="card pkg-vip">
+      <div class="vip-main">
+        <div class="vip-top"><span class="vip-badge">VIP-Mentoring</span><span class="vip-seats">Nur 4 Plätze pro Set</span></div>
+        <h3>Ein ganzes Set mit deinem Coach</h3>
+        <p>Für alle, die es ernst meinen: Dein Coach begleitet dich durch das komplette Set – mit festen Sessions jede Woche, direktem Draht dazwischen und einem Plan für jeden Patch.</p>
+        <ul>
+          <li>Bis zu 3 Stunden 1:1 Coaching pro Woche, das ganze Set lang</li>
+          <li>Direkter Draht auf Discord – Antwort innerhalb von 24 Stunden</li>
+          <li>VOD-Reviews ohne Termin: Spiel schicken, Analyse zurückbekommen</li>
+          <li>Persönlicher Patch-Plan nach jedem Patch</li>
+          <li>Wunschtermine zuerst – VIP bucht vor allen anderen</li>
+          <li>Auf Wunsch Live-Coaching in deinen Ranked-Partien</li>
+        </ul>
+      </div>
+      <div class="vip-side">
+        <div class="vip-price">2.500 €</div>
+        <small>für das ganze Set</small>
+        <p class="vip-rate">oder 4 × 625 € in Raten</p>
+        <a href="/apply?paket=vip" class="btn vip-btn">VIP-Platz anfragen</a>
+        <small class="vip-note">Wir nehmen pro Coach höchstens 2 VIPs pro Set, damit jeder genug Zeit bekommt. 14 Tage Widerrufsrecht.</small>
+      </div>
+    </div>
+
+    <!-- Eine Stunde -->
+    <div class="section-head co-sec"><h2>So läuft eine Stunde ab</h2></div>
+    <div class="card co-hour">
+      <div class="co-bar" aria-hidden="true"><span class="b1">10–15 Min.</span><span class="b2">ca. 45 Min.</span></div>
+      <div class="co-hour-grid">
+        <div><h4><i class="dot d1"></i>Fundamentals auffrischen</h4><p>Wir gehen die Grundlagen durch, die in deinem Rang den größten Unterschied machen – Econ, Leveln, Board-Stärke, Item- und Augment-Entscheidungen.</p></div>
+        <div><h4><i class="dot d2"></i>VOD-Review – oder dein Thema</h4><p>Wir schauen deine aufgenommenen Partien an, pausieren an den wichtigen Stellen und besprechen, was du anders machen kannst. Hast du ein eigenes Thema mitgebracht, nehmen wir uns die Zeit dafür.</p></div>
+      </div>
+    </div>
+
+    <!-- Aufnahme -->
+    <div class="card co-rec">
+      <div class="co-rec-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10.5l5-3v9l-5-3z"/><circle cx="9.5" cy="12" r="2.2" fill="currentColor" stroke="none"/></svg></div>
+      <div>
+        <h3>Wichtig: Nimm deine Spiele vorher auf</h3>
+        <p>Für das VOD-Review brauchen wir Aufnahmen deiner Partien. Installier dir deshalb <b>vor der ersten Session</b> ein Aufnahmeprogramm und nimm ein paar Spiele auf, zum Beispiel mit:</p>
+        <div class="co-tools"><span>TFT Academy</span><span>Outplayed</span><span>ein anderes Programm deiner Wahl</span></div>
+        <p class="co-rec-note"><b>Live-Coaching?</b> Ist möglich, empfehlen wir aber nicht. Im VOD-Review können wir pausieren, zurückspulen und Entscheidungen in Ruhe durchgehen – im laufenden Spiel fehlt dafür die Zeit.</p>
+      </div>
+    </div>
+
+    <!-- Ablauf -->
+    <div class="section-head co-sec"><h2>Vom Kennenlernen zur ersten Session</h2></div>
+    <div class="steps">
+      <div class="card step"><div class="step-n">1</div><h4>Anfrage</h4><p>Schreib uns kurz deinen Rang, dein Ziel und in welcher Sprache du gecoacht werden möchtest.</p></div>
+      <div class="card step"><div class="step-n">2</div><h4>Kostenloses Kennenlernen</h4><p>Auf unserem Discord-Server stimmt Claudio mit dir deine Ziele ab, schaut, ob Coaching für dich Sinn macht, und welcher Coach passt.</p></div>
+      <div class="card step"><div class="step-n">3</div><h4>Bezahlung</h4><p>Passt alles, bezahlst du nach dem Gespräch bequem per PayPal.</p></div>
+      <div class="card step"><div class="step-n">4</div><h4>Deine Session</h4><p>Den Termin sprechen wir direkt mit dir ab. Ein Buchungskalender kommt später dazu.</p></div>
+    </div>
+
+    <!-- Stimmen -->
+    <div class="section-head co-sec"><h2>Stimmen unserer Students</h2><p>Feedback aus dem Coaching – von Spielern, die wir bereits begleitet haben.</p></div>
+    <div class="co-quotes" id="coachQuotes"></div>
+
+    <!-- FAQ -->
+    <div class="section-head co-sec"><h2>Häufige Fragen</h2></div>
+    <div class="faq">
+      <details><summary>Für welchen Rang ist das Coaching?</summary><p>Für alle Ränge – egal ob du gerade aus Eisen raus willst oder um Challenger spielst.</p></details>
+      <details><summary>In welcher Sprache wird gecoacht?</summary><p>Claudio coacht auf Deutsch, bei Bedarf auch auf Englisch. Romano coacht auf Englisch.</p></details>
+      <details><summary>Wo findet das Coaching statt?</summary><p>Auf unserem Discord-Server – per Sprachchat und Bildschirmübertragung.</p></details>
+      <details><summary>Was kostet das Kennenlernen?</summary><p>Nichts. Im Kennenlernen stimmen wir deine Ziele ab, schauen, ob Coaching für dich Sinn macht, und welcher Coach zu dir passt.</p></details>
+      <details><summary>Wie bezahle ich?</summary><p>Per PayPal, nach dem kostenlosen Kennenlernen.</p></details>
+      <details><summary>Kann ich absagen oder verschieben?</summary><p>Ja, jederzeit. Sag uns einfach kurz Bescheid.</p></details>
+      <details><summary>Wie funktioniert der Set-Pass?</summary><p>Du bekommst 8 Stunden 1:1 Coaching und kannst bis zu 2 Stunden pro Woche einlösen – im laufenden Set, wann du willst.</p></details>
+      <details><summary>Was ist im VIP-Mentoring enthalten?</summary><p>Bis zu 3 Stunden 1:1 Coaching pro Woche für das ganze Set, ein direkter Draht auf Discord mit Antwort innerhalb von 24 Stunden, VOD-Reviews ohne Termin, ein persönlicher Patch-Plan nach jedem Patch und feste Wunschtermine. Es gibt nur 4 Plätze pro Set.</p></details>
+      <details><summary>Kann ich das VIP-Mentoring in Raten zahlen?</summary><p>Ja, in 4 Raten zu je 625 €. Die Details klären wir im kostenlosen Kennenlernen.</p></details>
+      <details><summary>Was passiert, wenn ich das VIP-Mentoring abbreche?</summary><p>Du bekommst den nicht verbrauchten Teil zurück. Wir vergleichen den Anteil der vergangenen Wochen mit deinen genutzten Stunden (40 € pro Stunde) und ziehen den höheren Wert ab. Offene Raten entfallen. Alle Details stehen unter Widerruf &amp; Bedingungen.</p></details>
+      <details><summary>Kann ich das VIP-Mentoring widerrufen?</summary><p>Ja, innerhalb von 14 Tagen nach der Buchung. Hast du in dieser Zeit auf deinen Wunsch schon Sessions genutzt, wird der genutzte Anteil verrechnet.</p></details>
+      <details><summary>Wie viele Leute können an einer Team-Session teilnehmen?</summary><p>2 bis 5 Personen. Die Session dauert wie immer eine Stunde und kostet 20 € pro Person.</p></details>
+      <details><summary>Wie nehme ich meine Spiele auf?</summary><p>Mit einem Aufnahmeprogramm wie TFT Academy oder Outplayed – oder einem anderen Programm deiner Wahl. Wichtig ist nur, dass du es vor der Session installierst und ein paar Partien aufnimmst.</p></details>
+      <details><summary>Geht auch Live-Coaching?</summary><p>Ja, wir empfehlen es aber nicht. Im VOD-Review können wir pausieren und Entscheidungen in Ruhe durchgehen – das bringt dir mehr.</p></details>
+    </div>
+  </div>
+</div>
+
+<!-- ================= GUIDES ================= -->
+<div class="page" id="page-guides">
+  <div class="wrap">
+    <!-- Übersicht -->
+    <div class="gd-view" data-guide="">
+      <div class="page-head has-buddy ornn-head">
+        <div class="buddy ornn" data-buddy="guides">
+          <div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>
+          <button class="buddy-img m-ornn" type="button" aria-label="Ornn – nächster Spruch" title="Klick für den nächsten Spruch"></button>
+        </div>
+        <div class="crumb">Home / Guides</div>
+        <h1>TFT-Guides</h1>
+      </div>
+      <div class="guides" id="allGuides"></div>
+    </div>
+
+    <!-- Guide: Encounters -->
+    <div class="gd-view" data-guide="encounters" hidden>
+      <div class="page-head">
+        <div class="crumb"><a href="/guides">Guides</a> / Encounters</div>
+        <h1 class="tool-h1"><span class="th-key">TFT Encounters:</span> Welche Comp du spielen solltest</h1>
+        <p>Jede Partie in Set <span data-setno>18</span> beginnt mit einem Encounter: Ambosse, Augments in Gold oder Prismatisch, besondere Start-Units oder mehr Gold. Hier siehst du alle Encounters, wie oft sie kommen und welche Comps du darauf spielst.</p>
+      </div>
+      <div class="enc-sum" id="encSum"></div>
+      <div class="toolbar" id="encFilters">
+        <button class="chip-btn active" data-ecat="all">Alle</button>
+        <button class="chip-btn" data-ecat="items">Items</button>
+        <button class="chip-btn" data-ecat="augments">Augments</button>
+        <button class="chip-btn" data-ecat="units">Start-Units</button>
+        <button class="chip-btn" data-ecat="econ">Gold &amp; Shop</button>
+        <button class="chip-btn" data-ecat="other">Sonstiges</button>
+      </div>
+      <div id="encList"></div>
+      <p class="note">Zu Beginn jeder Partie kommt genau ein Encounter. Die Chance pro Spiel ergibt sich aus festen Gewichten (Quelle: TFT Flow, Stand Patch 18.1, laut Riots Patchnotes seitdem unverändert). Die passenden Comps sind unsere Einschätzung – klick auf eine Comp für Aufstellung und Items.</p>
+      <section class="tool-seo" aria-labelledby="ts-enc">
+        <div class="ts-main">
+          <h2 id="ts-enc">Encounters in TFT: So nutzt du sie</h2>
+          <p>Der Encounter steht schon fest, bevor die erste Runde beginnt – und er verändert, was sich in dieser Partie lohnt. Mit Ambossen am Start hast du früh ein fertiges Item und kannst Streaks spielen. Bei Augments in Gold oder Prismatisch lohnt es sich, deine Comp um ein starkes Augment herum zu planen. Besondere Start-Units geben dir ein frühes Paar oder einen starken Opener.</p>
+          <h3>So liest du die Liste</h3>
+          <ol class="ts-steps">
+            <li>Schau zu Beginn der Partie, welcher Encounter aktiv ist.</li>
+            <li>Such ihn in der Liste – oder filter nach Items, Augments, Start-Units oder Gold &amp; Shop.</li>
+            <li>Steht dort eine Comp, passt sie besonders gut zu diesem Encounter. Klick sie an für Aufstellung und Items.</li>
+            <li>Steht dort „Egal“, ändert der Encounter nichts an deiner Comp-Wahl – spiel, was dir das Spiel gibt.</li>
+          </ol>
+        </div>
+        <aside class="ts-side">
+          <h3>Häufige Fragen</h3>
+          <details><summary>Was sind Encounters in TFT?</summary><p>Encounters sind Sonderregeln zu Beginn jeder Partie. Jedes Spiel bekommt genau einen – zum Beispiel Ambosse am Start, nur Gold-Augments oder einen besonderen Start-Champion.</p></details>
+          <details><summary>Wie wahrscheinlich ist ein Encounter?</summary><p>Jeder Encounter hat ein festes Gewicht. Die häufigsten kommen in etwa 6,8 % der Spiele, die seltensten – Emblem Ensemble und Prismatic Party – in etwa 2,3 %.</p></details>
+          <details><summary>Gibt es in jeder Partie einen Encounter?</summary><p>Fast: In etwa 3,4 % der Spiele gibt es keinen Encounter.</p></details>
+          <details><summary>Welche Comp spiele ich mit Ambossen am Start?</summary><p>Ambosse geben dir früh ein fertiges Item. Dann lohnen sich Comps, deren Carry früh Items braucht. Unsere Empfehlungen stehen bei Completed Item Anvil, Component Anvils und Item Forge.</p></details>
+          <h3>Weiterlesen</h3>
+          <ul class="ts-links"><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="/tierlist/augments">Augment-Tierlist</a></li><li><a href="/tierlist/holds">Holds</a></li><li><a href="/tools/tft-item-drop-chance">Item-Drop-Chance</a></li></ul>
+        </aside>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ABOUT ================= -->
+<div class="page" id="page-about">
+  <div class="wrap">
+    <!-- Übersicht: Meet the Team -->
+    <div class="mt-view" data-about="">
+      <div class="page-head"><div class="crumb">Home / Meet the Team</div><h1>Meet the <em class="serif">Team</em></h1><p>Wer hinter TFTClimb steckt. Klick auf eine Kachel, um das ganze Profil zu sehen.</p></div>
+      <div class="mt-list">
+        <a class="mt-card" href="/about/crazyslayt">
+          <div class="mt-pic team-claudio" role="img" aria-label="Claudio „CrazYSlayt“"></div>
+          <div class="mt-body">
+            <span class="mt-role">TFT-Experte &amp; Founder · Coach</span>
+            <h2>Claudio <em>„CrazYSlayt“</em></h2>
+            <p>Hat die ersten beiden Sets gespielt, ist mit Set 12 zurückgekommen und seit Set 15 jedes Set im Challenger. Coacht seit Set 17.</p>
+            <div class="mt-facts"><div><small>Challenger</small><b>Set 15–18</b></div><div><small>Peak</small><b>1.002 LP</b></div><div><small>Coach seit</small><b>Set 17</b></div></div>
+          </div>
+          <span class="mt-go">Profil ansehen <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="mt-card" href="/about/humbadobo">
+          <div class="mt-pic team-romano" role="img" aria-label="Romano „humbadobo“"></div>
+          <div class="mt-body">
+            <span class="mt-role">Coach</span>
+            <h2>Romano <em>„humbadobo“</em></h2>
+            <p>Kam beim Studium in Island zu TFT und ist seit Set 15 jedes Set im Challenger.</p>
+            <div class="mt-facts"><div><small>Challenger</small><b>Set 15–18</b></div><div><small>Peak</small><b>1.447 LP</b></div><div><small>Coach seit</small><b>Set 17</b></div></div>
+          </div>
+          <span class="mt-go">Profil ansehen <span aria-hidden="true">→</span></span>
+        </a>
+        <div class="mt-card mt-soon">
+          <div class="mt-pic team-kevin" role="img" aria-label="Kevin „Kevin10K“"></div>
+          <div class="mt-body">
+            <span class="mt-role">Partner &amp; Co-Founder</span>
+            <h2>Kevin <em>„Kevin10K“</em></h2>
+            <p>Partner und Co-Founder von TFTClimb.</p>
+          </div>
+          <span class="mt-go">Profil folgt</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profil: CrazYSlayt -->
+    <div class="mt-view" data-about="crazyslayt" hidden>
+    <div class="page-head"><div class="crumb"><a href="/about">Meet the Team</a> / CrazYSlayt</div><h1>Claudio <em class="serif">„CrazYSlayt“</em></h1></div>
+    <div class="card about has-mascot">
+      <img class="about-mascot" data-src="assets/img/mascot-vi-arms.webp" alt="" width="520" height="957" loading="lazy">
+      <div>
+        <div class="about-pic team-claudio" role="img" aria-label="Claudio „CrazYSlayt“" style="background-size:cover;background-position:center 20%"></div>
+        <div class="about-id"><b>CrazYSlayt</b><span>#siQVi · EUW</span></div>
+        <a class="btn btn-ghost about-link" href="https://www.metatft.com/player/euw/CrazYSlayt-siQVi" target="_blank" rel="noopener">MetaTFT-Profil ↗</a>
+      </div>
+      <div>
+        <p class="about-lead"><b>Claudio „CrazYSlayt“</b> – TFT-Experte und Founder von TFTClimb. Challenger seit mehreren Sets, Coach seit Set 17.</p>
+        <p>Competitive Games haben mich schon immer gepackt. TFT habe ich von Anfang an gespielt: die ersten beiden Sets, dann eine Pause bis Set 12. Seitdem bin ich voll zurück – und seit Set 15 jedes Set im Challenger.</p>
+        <p>Seit Set 17 coache ich andere Spieler und habe bisher 5 verschiedene Leute auf ihrem Weg begleitet. Dazu spiele ich Turniere: Tactician's Trials und Cups.</p>
+        <div class="stats">
+          <div class="stat"><b>Challenger</b><span>4 Sets in Folge (Set 15–18)</span></div>
+          <div class="stat"><b>1.002 LP</b><span>Peak in Set 15</span></div>
+          <div class="stat"><b>Set 17</b><span>Coach seit</span></div>
+          <div class="stat"><b>5</b><span>Gecoachte Spieler</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-grid">
+      <div class="card">
+        <h3 class="about-h">Rang-Historie</h3>
+        <p class="about-sub">Peak-LP pro Set (Ranked, EUW)</p>
+        <div class="lp-hist">
+          <div class="lp-row"><span>Set 18</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>557 LP</em></div>
+          <div class="lp-row"><span>Set 17</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>621 LP</em></div>
+          <div class="lp-row"><span>Set 16</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>511 LP</em></div>
+          <div class="lp-row best"><span>Set 15</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>1.002 LP</em></div>
+          <div class="lp-row"><span>Set 14</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Master.png" alt=""><b>Meister</b><em>390 LP</em></div>
+          <div class="lp-row"><span>Set 13</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Master.png" alt=""><b>Meister</b><em>380 LP</em></div>
+          <div class="lp-row"><span>Set 12</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Diamond.png" alt=""><b>Diamant IV</b><em>Wiedereinstieg</em></div>
+        </div>
+      </div>
+      <div class="about-col">
+        <div class="card">
+          <h3 class="about-h">Ziele</h3>
+          <ul class="about-list">
+            <li><b>Kurzfristig:</b> konstant auf Challenger-Niveau spielen.</li>
+            <li><b>Turniere:</b> Teilnahme an EM und WM.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3 class="about-h">Turniere</h3>
+          <ul class="about-list"><li>Tactician's Trials</li><li>Cups</li></ul>
+        </div>
+        <div class="card">
+          <h3 class="about-h">Spielstil</h3>
+          <p class="about-sub">Laut Tracker, letzte 20 Spiele</p>
+          <div class="tag-row"><span class="tag">Aphelios Main</span><span class="tag">Inferno Enjoyer</span><span class="tag">Prefers AP</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="note">Rang-Historie und Spielstil-Tags aus dem Profil-Tracker, Stand Oktober 2026.</p>
+    <a class="btn btn-ghost mt-back" href="/about">← Zurück zum Team</a>
+    </div>
+
+    <!-- Profil: humbadobo -->
+    <div class="mt-view" data-about="humbadobo" hidden>
+    <div class="page-head"><div class="crumb"><a href="/about">Meet the Team</a> / humbadobo</div><h1>Romano <em class="serif">„humbadobo“</em></h1></div>
+    <div class="card about has-mascot ks">
+      <img class="about-mascot" data-src="assets/img/mascot-kaisa.webp" alt="" width="520" height="786" loading="lazy">
+      <div>
+        <div class="about-pic team-romano" role="img" aria-label="Romano „humbadobo“" style="background-size:cover;background-position:center 20%"></div>
+        <div class="about-id"><b>humbadobo</b><span>#000 · EUW</span></div>
+        <a class="btn btn-ghost about-link" href="https://www.metatft.com/player/euw/humbadobo-000" target="_blank" rel="noopener">MetaTFT-Profil ↗</a>
+      </div>
+      <div>
+        <p class="about-lead"><b>Romano „humbadobo“</b> – Coach bei TFTClimb. Challenger seit Set 15, Coach seit Set 17.</p>
+        <p>Zu TFT kam Romano während seines Studiums in Island: League of Legends konnte er dort nicht mehr spielen, weil sein Internet zu schlecht war – also hat er mit TFT angefangen. Dabei ist er geblieben, und seit Set 15 landet er jedes Set im Challenger.</p>
+        <div class="stats">
+          <div class="stat"><b>Challenger</b><span>4 Sets in Folge (Set 15–18)</span></div>
+          <div class="stat"><b>1.447 LP</b><span>Peak in Set 15</span></div>
+          <div class="stat"><b>Set 17</b><span>Coach seit</span></div>
+          <div class="stat"><b>859 LP</b><span>Aktuell, Challenger</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-grid">
+      <div class="card">
+        <h3 class="about-h">Rang-Historie</h3>
+        <p class="about-sub">Peak-LP pro Set (Ranked, EUW)</p>
+        <div class="lp-hist">
+          <div class="lp-row"><span>Set 18</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>1.073 LP</em></div>
+          <div class="lp-row"><span>Set 17</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>1.078 LP</em></div>
+          <div class="lp-row"><span>Set 16</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>1.404 LP</em></div>
+          <div class="lp-row best"><span>Set 15</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>1.447 LP</em></div>
+          <div class="lp-row"><span>Set 14</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Master.png" alt=""><b>Meister</b><em>360 LP</em></div>
+          <div class="lp-row"><span>Set 13</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Master.png" alt=""><b>Meister</b><em>345 LP</em></div>
+          <div class="lp-row"><span>Set 12</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Master.png" alt=""><b>Meister</b><em>352 LP</em></div>
+          <div class="lp-row"><span>Set 11</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_GrandMaster.png" alt=""><b>Großmeister</b><em>832 LP</em></div>
+          <div class="lp-row"><span>Set 10</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>533 LP</em></div>
+          <div class="lp-row"><span>Set 9.5</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Master.png" alt=""><b>Meister</b><em>531 LP</em></div>
+        </div>
+      </div>
+      <div class="about-col">
+        <div class="card">
+          <h3 class="about-h">Ziele</h3>
+          <ul class="about-list">
+            <li><b>Turniere:</b> EM und WM erreichen.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3 class="about-h">Aktuelle Saison</h3>
+          <p class="about-sub">Alle Queues, 468 Spiele</p>
+          <div class="stats mt-season">
+            <div class="stat"><b>4,14</b><span>Ø-Platzierung</span></div>
+            <div class="stat"><b>56,4 %</b><span>Top 4</span></div>
+            <div class="stat"><b>16,9 %</b><span>Siege</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="about-h">Spielstil</h3>
+          <p class="about-sub">Laut Tracker, letzte 20 Spiele</p>
+          <div class="tag-row"><span class="tag">Good Economy</span><span class="tag">Riftbeast Enjoyer</span><span class="tag">Soraka God</span><span class="tag">Prefers AP</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="note">Rang-Historie, Saisonwerte und Spielstil-Tags aus MetaTFT, Stand Oktober 2026.</p>
+    <a class="btn btn-ghost mt-back" href="/about">← Zurück zum Team</a>
+    </div>
+  </div>
+</div>
+<!-- ================= APPLY ================= -->
+<div class="page" id="page-apply">
+  <div class="wrap">
+    <div class="page-head">
+      <div class="crumb">Home / Bewerbung</div>
+      <h1>Bewerbung fürs Coaching</h1>
+      <p data-keep>Erzähl kurz, wo du stehst und wohin du willst. Claudio meldet sich bei dir für ein kostenloses Kennenlernen auf Discord.</p>
+    </div>
+    <form class="card form" id="applyForm">
+      <div class="field"><label for="fName">Name / Riot-ID</label><input class="input" id="fName" required placeholder="Name#EUW"></div>
+      <div class="field"><label for="fDiscord">Discord</label><input class="input" id="fDiscord" required maxlength="60" placeholder="dein_name"></div>
+      <div class="field"><label for="fRank">Aktueller Rang</label><select class="input" id="fRank"></select></div>
+      <div class="field"><label for="fGoal">Rang-Ziel</label><select class="input" id="fGoal"></select></div>
+      <div class="field"><label for="fPkg">Interessiert an</label><select class="input" id="fPkg"><option>Einzelstunde (30 €)</option><option value="setpass">Set-Pass (200 € für 8 Stunden)</option><option value="vip">VIP-Mentoring (2.500 € für das ganze Set)</option><option>Team-Session (20 € pro Person, 2–5 Personen)</option><option>Noch unsicher</option></select></div>
+      <div class="field"><label for="fLang">Sprache</label><select class="input" id="fLang"><option>Deutsch</option><option>Englisch</option><option>Egal</option></select></div>
+      <div class="field"><label for="fMail">E-Mail <small>(optional)</small></label><input class="input" id="fMail" type="email" maxlength="120" autocomplete="email" placeholder="name@beispiel.de"></div>
+      <div class="field"><label for="fTime">Verfügbare Zeiten</label><input class="input" id="fTime" maxlength="200" placeholder="z. B. abends unter der Woche"></div>
+      <div class="field full"><label for="fMsg">Was möchtest du verbessern?</label><textarea class="input" id="fMsg" maxlength="2000" placeholder="Wisp-Timing, Positionierung, Econ, bestimmte Comps…"></textarea></div>
+      <div class="hp-field" aria-hidden="true"><label for="fWeb">Website</label><input id="fWeb" tabindex="-1" autocomplete="off"></div>
+      <p class="field full form-legal">Die Anfrage ist unverbindlich. Für eine Buchung gelten unsere <a href="/bedingungen">Widerrufsbelehrung &amp; Bedingungen</a>. Wie wir deine Angaben verarbeiten, steht in der <a href="/datenschutz">Datenschutzerklärung</a>.</p>
+      <div class="field full"><button class="btn btn-primary" type="submit" style="justify-content:center">Bewerbung senden</button></div>
+      <div class="ok" id="applyOk" role="status">Danke! Deine Bewerbung ist angekommen. Claudio meldet sich in den nächsten Tagen bei dir auf Discord.</div>
+      <div class="ok err" id="applyErr" role="alert"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= PATCHES ================= -->
+<div class="page" id="page-patches">
+  <div class="wrap" id="patchesApp"></div>
+</div>
+
+<!-- ================= PATCH-COUNTDOWN (/tft-patch-countdown, Inhalt aus app.js: renderCountdown) ================= -->
+<div class="page" id="page-countdown">
+  <div class="wrap" id="cdApp" data-noi18n></div>
+</div>
+
+<!-- ================= IMPRESSUM ================= -->
+<div class="page" id="page-impressum">
+  <div class="wrap">
+    <div class="page-head"><div class="crumb">Home / Impressum</div><h1>Impressum</h1></div>
+    <div class="card lg">
+      <h2>Angaben gemäß § 5 DDG</h2>
+      <p>Claudio Vecchione<br>Am Markt 15<br>65795 Hattersheim<br>Deutschland</p>
+      <h2>Kontakt</h2>
+      <p>E-Mail: <a href="mailto:info@tftclimb.com">info@tftclimb.com</a></p>
+      <h2>Umsatzsteuer</h2>
+      <p>Gemäß § 19 UStG wird keine Umsatzsteuer berechnet (Kleinunternehmerregelung).</p>
+      <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+      <p>Claudio Vecchione, Anschrift wie oben</p>
+      <h2>Verbraucherstreitbeilegung</h2>
+      <p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+      <h2>Haftung für Inhalte und Links</h2>
+      <p>Die Inhalte dieser Seite – insbesondere Tierlists, Comps und Statistiken – werden mit Sorgfalt erstellt, geben aber unsere Einschätzung wieder und können sich mit jedem Patch ändern. Für die Inhalte verlinkter externer Seiten sind ausschließlich deren Betreiber verantwortlich. Bei Bekanntwerden von Rechtsverletzungen entfernen wir entsprechende Links umgehend.</p>
+      <h2>Riot Games</h2>
+      <p>TFTClimb isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
+      <p class="lg-sub">TFTClimb ist eine Fan-Seite und steht in keiner Verbindung zu Riot Games. Teamfight Tactics, Spielgrafiken und Spieldaten sind Eigentum von Riot Games, Inc.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CHAMPIONS V2 (Beta, Inhalt aus app.js: renderChampV2) ================= -->
+<div class="page" id="page-champv2">
+  <div class="wrap" id="cvApp" data-noi18n></div>
+</div>
+
+<!-- ================= CHEATSHEET (Inhalt aus app.js: renderCheats) ================= -->
+<div class="page" id="page-cheatsheet">
+  <div class="wrap" id="csPage" data-noi18n></div>
+</div>
+
+<!-- ================= WIDERRUF & BEDINGUNGEN (Coaching) ================= -->
+<div class="page" id="page-bedingungen">
+  <div class="wrap">
+    <div class="page-head"><div class="crumb">Home / Widerruf &amp; Bedingungen</div><h1>Widerruf &amp; Bedingungen</h1><p data-keep>Alles, was für ein gebuchtes Coaching gilt: dein Widerrufsrecht, die Bedingungen für Einzelstunde, Set-Pass und VIP-Mentoring und was bei einem Abbruch passiert.</p></div>
+    <div class="card lg">
+      <h2>Widerrufsbelehrung</h2>
+      <h3>Widerrufsrecht</h3>
+      <p>Sie haben das Recht, binnen vierzehn Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen.</p>
+      <p>Die Widerrufsfrist beträgt vierzehn Tage ab dem Tag des Vertragsabschlusses.</p>
+      <p>Um Ihr Widerrufsrecht auszuüben, müssen Sie uns (Claudio Vecchione, Am Markt 15, 65795 Hattersheim, Deutschland, E-Mail: <a href="mailto:info@tftclimb.com">info@tftclimb.com</a>) mittels einer eindeutigen Erklärung (z. B. ein mit der Post versandter Brief oder eine E-Mail) über Ihren Entschluss, diesen Vertrag zu widerrufen, informieren. Sie können dafür das beigefügte Muster-Widerrufsformular verwenden, das jedoch nicht vorgeschrieben ist.</p>
+      <p>Zur Wahrung der Widerrufsfrist reicht es aus, dass Sie die Mitteilung über die Ausübung des Widerrufsrechts vor Ablauf der Widerrufsfrist absenden.</p>
+      <h3>Folgen des Widerrufs</h3>
+      <p>Wenn Sie diesen Vertrag widerrufen, haben wir Ihnen alle Zahlungen, die wir von Ihnen erhalten haben, unverzüglich und spätestens binnen vierzehn Tagen ab dem Tag zurückzuzahlen, an dem die Mitteilung über Ihren Widerruf dieses Vertrags bei uns eingegangen ist. Für diese Rückzahlung verwenden wir dasselbe Zahlungsmittel, das Sie bei der ursprünglichen Transaktion eingesetzt haben, es sei denn, mit Ihnen wurde ausdrücklich etwas anderes vereinbart; in keinem Fall werden Ihnen wegen dieser Rückzahlung Entgelte berechnet.</p>
+      <p>Haben Sie verlangt, dass die Dienstleistungen während der Widerrufsfrist beginnen sollen, so haben Sie uns einen angemessenen Betrag zu zahlen, der dem Anteil der bis zu dem Zeitpunkt, zu dem Sie uns von der Ausübung des Widerrufsrechts hinsichtlich dieses Vertrags unterrichten, bereits erbrachten Dienstleistungen im Vergleich zum Gesamtumfang der im Vertrag vorgesehenen Dienstleistungen entspricht.</p>
+
+      <h2>Muster-Widerrufsformular</h2>
+      <p>(Wenn Sie den Vertrag widerrufen wollen, dann füllen Sie bitte dieses Formular aus und senden Sie es zurück.)</p>
+      <div class="lg-form">
+        <p>An: Claudio Vecchione, Am Markt 15, 65795 Hattersheim, Deutschland, E-Mail: <a href="mailto:info@tftclimb.com">info@tftclimb.com</a></p>
+        <p>Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag über die Erbringung der folgenden Dienstleistung (*)</p>
+        <p>Bestellt am (*) / erhalten am (*)</p>
+        <p>Name des/der Verbraucher(s)</p>
+        <p>Anschrift des/der Verbraucher(s)</p>
+        <p>Unterschrift des/der Verbraucher(s) (nur bei Mitteilung auf Papier)</p>
+        <p>Datum</p>
+        <p class="lg-sub">(*) Unzutreffendes streichen.</p>
+      </div>
+
+      <h2>Bedingungen für das Coaching</h2>
+      <h3>Buchung und Bezahlung</h3>
+      <p>Nach deiner Anfrage findet ein kostenloses Kennenlernen auf Discord statt. Erst wenn du danach ein Paket buchst, kommt ein Vertrag zustande. Bezahlt wird per PayPal. Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.</p>
+      <h3>Einzelstunde und Team-Session</h3>
+      <p>Eine Session dauert eine Stunde. Termine stimmen wir mit dir ab; verschieben ist jederzeit möglich, sag uns einfach vorher Bescheid.</p>
+      <h3>Set-Pass</h3>
+      <p>Der Set-Pass umfasst 8 Stunden 1:1 Coaching. Du kannst bis zu 2 Stunden pro Woche einlösen. Der Set-Pass gilt bis zum Ende des laufenden TFT-Sets; nicht genutzte Stunden verfallen danach.</p>
+      <h3>VIP-Mentoring</h3>
+      <p>Das VIP-Mentoring läuft vom Tag der Buchung bis zum Ende des laufenden TFT-Sets. Es umfasst bis zu 3 Stunden 1:1 Coaching pro Woche, einen direkten Draht auf Discord mit Antwort innerhalb von 24 Stunden, VOD-Reviews ohne Termin, einen persönlichen Patch-Plan nach jedem Patch und bevorzugte Termine. Der Preis beträgt 2.500 €, auf Wunsch zahlbar in 4 Raten zu je 625 €.</p>
+      <h3>Abbruch des VIP-Mentorings nach der Widerrufsfrist</h3>
+      <p>Du kannst das VIP-Mentoring jederzeit beenden – eine kurze Nachricht auf Discord oder per E-Mail reicht. Wir erstatten dir dann den nicht verbrauchten Teil. Dafür vergleichen wir zwei Werte und ziehen den höheren ab:</p>
+      <ul>
+        <li><b>Zeitanteil:</b> der Anteil der bereits vergangenen Wochen an der gesamten Laufzeit, mal 2.500 €.</li>
+        <li><b>Genutzte Stunden:</b> die bereits genutzten Coaching-Stunden mal 40 €.</li>
+      </ul>
+      <p>Beispiel bei 16 Wochen Laufzeit: Du beendest nach 6 Wochen und hast 10 Stunden genutzt. Zeitanteil: 6/16 × 2.500 € = 937,50 €. Genutzte Stunden: 10 × 40 € = 400 €. Abgezogen wird der höhere Wert, du bekommst 1.562,50 € zurück.</p>
+      <p>Zahlst du in Raten, entfallen die noch offenen Raten. Wir verrechnen das bereits Gezahlte mit dem Verbrauch: Ist mehr gezahlt, erstatten wir die Differenz; ist mehr verbraucht, wird die Differenz fällig.</p>
+      <h3>Wenn wir nicht liefern können</h3>
+      <p>Fällt dein Coach längere Zeit aus und können wir keinen gleichwertigen Ersatz stellen, oder endet das Set früher als geplant, erstatten wir dir die nicht genutzten Wochen voll – ohne Abzug.</p>
+      <p class="lg-sub">Stand: 17. Oktober 2026</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DATENSCHUTZ ================= -->
+<div class="page" id="page-datenschutz">
+  <div class="wrap">
+    <div class="page-head"><div class="crumb">Home / Datenschutz</div><h1>Datenschutzerklärung</h1><p data-keep>Kurz gesagt: Wir messen mit Google Analytics, wie viele Besucher kommen und welche Seiten sie nutzen. Dafür setzt Google Cookies – direkt beim Aufruf der Seite. Werbung gibt es keine. Du kannst der Messung jederzeit widersprechen, wie das geht, steht in Abschnitt 3.</p></div>
+    <div class="card lg">
+      <h2>1. Verantwortlicher</h2>
+      <p>Claudio Vecchione, Am Markt 15, 65795 Hattersheim, Deutschland<br>E-Mail: <a href="mailto:info@tftclimb.com">info@tftclimb.com</a></p>
+
+      <h2>2. Hosting und Server-Logfiles</h2>
+      <p>Diese Website wird bei Vercel Inc. (USA) gehostet. Beim Aufruf jeder Seite verarbeitet der Server automatisch technisch notwendige Daten: IP-Adresse, Datum und Uhrzeit, aufgerufene Adresse, übertragene Datenmenge, Browser und Betriebssystem sowie die zuvor besuchte Seite. Das ist nötig, um die Seite auszuliefern und sicher zu betreiben (Art. 6 Abs. 1 lit. f DSGVO). Für Übermittlungen in die USA stützt sich Vercel auf geeignete Garantien nach Art. 44 ff. DSGVO (EU-US Data Privacy Framework bzw. EU-Standardvertragsklauseln). Mehr dazu in der <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener">Datenschutzerklärung von Vercel</a>.</p>
+
+      <h2>3. Reichweitenmessung mit Google Analytics</h2>
+      <p>Wir nutzen Google Analytics 4, einen Dienst der Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland („Google“). Damit sehen wir, wie viele Besucher unsere Seite hat, welche Seiten und Tools genutzt werden und woher die Besucher kommen. So können wir die Seite verbessern.</p>
+      <p>Google Analytics wird direkt beim Aufruf der Seite geladen – also auch dann, wenn du den Hinweis zu Cookies noch nicht bestätigt hast. Dabei speichert Google Cookies auf deinem Gerät (<code>_ga</code> und <code>_ga_BTL7VP5CTK</code>, Laufzeit bis zu 2 Jahre). Sie enthalten eine zufällige Kennung, mit der sich wiederkehrende Besuche desselben Browsers erkennen lassen. Wer du bist, erfahren wir dabei nicht.</p>
+      <p>Verarbeitet werden: die aufgerufenen Seiten und Interaktionen auf der Seite, Datum und Uhrzeit, die Seite, von der du kommst, Gerät, Browser, Betriebssystem, Bildschirmgröße und Spracheinstellung sowie dein ungefährer Standort (Land, Region, Stadt), den Google aus deiner IP-Adresse ableitet. Die IP-Adresse selbst wird von Google Analytics 4 nach Angaben von Google nicht gespeichert. Die Daten in Google Analytics werden nach 2 Monaten automatisch gelöscht.</p>
+      <p>Google kann die Daten auch in den USA verarbeiten. Google LLC ist nach dem EU-US Data Privacy Framework zertifiziert; für diese Übermittlungen gilt damit ein Angemessenheitsbeschluss der EU-Kommission (Art. 45 DSGVO). Mehr dazu in der <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Datenschutzerklärung von Google</a>.</p>
+      <p>Rechtsgrundlage ist unser berechtigtes Interesse an einer Reichweitenmessung, um unser Angebot zu verbessern (Art. 6 Abs. 1 lit. f DSGVO).</p>
+      <p><b>Widerspruch:</b> Du kannst der Messung jederzeit widersprechen – im Cookie-Hinweis mit „Ablehnen“ oder direkt hier. Danach lädt diese Seite Google Analytics nicht mehr und löscht die Analytics-Cookies. Deine Wahl merkt sich dein Browser (siehe Abschnitt 6). Alternativ kannst du Cookies in deinem Browser blockieren oder das <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener">Browser-Add-on von Google</a> nutzen.</p>
+      <p class="ga-ctl"><span id="gaState"></span><button type="button" class="btn btn-ghost" id="gaToggle"></button></p>
+
+      <h2>4. Schriften</h2>
+      <p>Die Schriften dieser Seite liegen auf unserem eigenen Server. Für die Schriften wird keine Verbindung zu Google Fonts oder anderen Schriftanbietern hergestellt.</p>
+
+      <h2>5. Spielgrafiken von externen Servern</h2>
+      <p>Bilder von Champions, Items, Augments, Traits und Rängen sowie die Titelbilder der Patches werden direkt von den Servern von Riot Games (ddragon.leagueoflegends.com und cmsassets.rgpub.io, Riot Games, Inc., USA) und des Community-Projekts CommunityDragon (raw.communitydragon.org) geladen. Dabei wird deine IP-Adresse an diese Server übertragen – technisch lässt sich ein Bild anders nicht abrufen. Rechtsgrundlage ist unser berechtigtes Interesse an einer vollständigen und aktuellen Darstellung der Spieldaten (Art. 6 Abs. 1 lit. f DSGVO).</p>
+
+      <h2>6. Speicherung im Browser</h2>
+      <p>Einige Funktionen speichern Einstellungen im lokalen Speicher deines Browsers (localStorage): das gewählte Set, die gewählte Sprache, ob du den Cookie-Hinweis gesehen und Google Analytics zugestimmt oder abgelehnt hast, dein Board im Team Builder, deine Tierlist im Tierlist-Maker und Entwürfe in der Redaktion. Diese Daten bleiben auf deinem Gerät und werden nicht an uns übertragen. Die Speicherung ist für die von dir genutzte Funktion erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG). Die Cookies von Google Analytics sind in Abschnitt 3 beschrieben. Du kannst sie jederzeit über die Einstellungen deines Browsers löschen.</p>
+
+      <h2>7. Bewerbungsformular</h2>
+      <p>Wenn du das Bewerbungsformular abschickst, schicken wir deine Angaben (Name bzw. Riot-ID, Discord-Name, freiwillig deine E-Mail-Adresse, Rang, Rang-Ziel, gewünschtes Paket, Sprache, Zeiten und deine Nachricht) über unseren Server bei Vercel per E-Mail an unser Postfach. Das Postfach liegt bei ALL-INKL.COM – Neue Medien Münnich, Hauptstraße 68, 02742 Friedersdorf, Deutschland. Wir nutzen die Angaben nur, um deine Anfrage zu beantworten und das Kennenlernen zu vereinbaren (Art. 6 Abs. 1 lit. b DSGVO). Kommt kein Coaching zustande, löschen wir die Anfrage spätestens nach sechs Monaten. Zum Schutz vor Spam wird deine IP-Adresse kurz im Arbeitsspeicher des Servers vorgehalten, um zu viele Anfragen in kurzer Zeit zu bremsen; dauerhaft gespeichert wird sie dabei nicht (Art. 6 Abs. 1 lit. f DSGVO).</p>
+
+      <h2>8. Coaching über Discord und PayPal</h2>
+      <p>Wenn du ein Coaching buchst, verarbeiten wir die Daten, die dafür nötig sind: deinen Namen bzw. Nickname, deinen Discord-Namen, deine Riot-ID, Termine sowie Zahlungsdaten (Art. 6 Abs. 1 lit. b DSGVO). Das Coaching findet auf Discord statt (Discord Inc., USA – <a href="https://discord.com/privacy" target="_blank" rel="noopener">Datenschutzerklärung</a>). Bezahlt wird über PayPal (PayPal (Europe) S.à r.l. et Cie, S.C.A., 22–24 Boulevard Royal, L-2449 Luxemburg – <a href="https://www.paypal.com/de/legalhub/privacy-full" target="_blank" rel="noopener">Datenschutzerklärung</a>). Zahlungsbelege bewahren wir im Rahmen der gesetzlichen Aufbewahrungsfristen auf.</p>
+
+      <h2>9. Stimmen aus dem Coaching</h2>
+      <p>Feedback von Students veröffentlichen wir nur mit deren Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Die Einwilligung kann jederzeit widerrufen werden – dann entfernen wir den Eintrag.</p>
+
+      <h2>10. Externe Links</h2>
+      <p>Links zu anderen Seiten (z. B. MetaTFT, TFTAcademy, EsportsTales) sind normale Verweise. Daten werden erst übertragen, wenn du sie anklickst; ab dann gilt die Datenschutzerklärung der jeweiligen Seite.</p>
+
+      <h2>11. Deine Rechte</h2>
+      <p>Du hast das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch gegen Verarbeitungen auf Grundlage berechtigter Interessen (Art. 21). Eine erteilte Einwilligung kannst du jederzeit widerrufen (Art. 7 Abs. 3). Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde beschweren, zum Beispiel beim <a href="https://datenschutz.hessen.de" target="_blank" rel="noopener">Hessischen Beauftragten für Datenschutz und Informationsfreiheit</a>.</p>
+
+      <p class="lg-sub">Stand: Oktober 2026</p>
+    </div>
+  </div>
+</div>
+
+</main>
+<!-- Seiten, die api/page.js für Suchmaschinen in template-Tags (pg-tpl) gepackt hat, wieder einsetzen – vor allen anderen Skripten -->
+<script>document.querySelectorAll('template.pg-tpl').forEach(function(t){ t.replaceWith(t.content); });</script>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="wrap">
+    <div class="foot-cta">
+      <h3>Bereit für den nächsten Rang? <em class="serif">Lass uns starten.</em></h3>
+      <a href="/apply" class="btn btn-primary">Coaching anfragen →</a>
+    </div>
+    <div class="foot">
+      <div>
+        <a href="/" class="logo foot-logo" style="padding:0" aria-label="TFTClimb Startseite"><img src="assets/brand/logo-tftclimb.webp" alt="TFTClimb" width="720" height="265" loading="lazy"></a>
+        <p style="margin-top:10px">Weniger Tabs. Mehr Top 4.</p>
+      </div>
+      <div><h5>Tierlist</h5><a href="/tierlist">Comps</a><a href="/tierlist/items">Items</a><a href="/tierlist/augments">Augments</a></div>
+      <div><h5>Bibliothek</h5><a href="/bibliothek/champions">Champions</a><a href="/bibliothek/items">Items</a><a href="/bibliothek/traits">Traits</a></div>
+      <div><h5>TFTClimb</h5><a href="/coaching">Coaching</a><a href="/about">Meet the Team</a><a href="/apply">Bewerbung</a><a href="/admin">Redaktion</a></div>
+    </div>
+    <div class="legal">© 2026 TFTClimb · Teamfight Tactics ist eine Marke von Riot Games, Inc. Diese Fan-Seite steht in keiner Verbindung zu Riot Games und wird nicht von Riot Games unterstützt. Spielgrafiken © Riot Games. · <a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a> · <a href="/datenschutz" data-ckb>Cookie-Einstellungen</a> · <a href="/bedingungen">Widerruf &amp; Bedingungen</a>
+      <span class="legal-riot" data-noi18n>TFTClimb was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project. TFTClimb isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</span></div>
+  </div>
+</footer>
+
+<!-- Modal + Search -->
+<div class="modal" id="modal" aria-hidden="true"><div class="modal-box" role="dialog"><button class="modal-close" id="modalClose" aria-label="Schließen">×</button><div id="modalBody"></div></div></div>
+<div class="search-ov" id="searchOv"><div class="search-box"><input id="searchInput" placeholder="Champions, Items, Augments, Traits, Comps suchen…" autocomplete="off"><div class="search-res" id="searchRes"></div></div></div>
+
+<!-- Offizielle Spieldaten: Übersicht aller Sets (erzeugt mit "Daten aktualisieren.cmd" / tools\update-data.ps1) -->
+<script src="data/sets.js"></script>
+<script src="data/ranks.js"></script>
+<script src="data/cutoffs.js"></script>
+<script src="data/patches.js"></script>
+<script src="data/patch-kommentare.js"></script>
+<script>if (window.TFT_LANG === 'en') document.write('<script src="data/patches-en.js"><\/script>');</script>
+<script>
+// Set wählen (Builder-Link > gespeicherte Auswahl > Live-Set) und dessen Daten + veröffentlichte Tierlist laden
+(function(){
+  var sets = window.TFT_SETS || [], want = 0, m = location.pathname.match(/^\/(?:en\/)?(?:builder|tools\/tierlist|tools\/simulator)\/(\d+)\//) || location.hash.match(/^#\/(?:en\/)?(?:builder|tools\/tierlist|tools\/simulator)\/(\d+)\//);
+  if (m) want = +m[1];
+  if (!want) { try { want = +localStorage.getItem('tftfreaks_set') || 0; } catch (e) {} }
+  var pick = sets.filter(function (s) { return s.set === want; })[0] || sets.filter(function (s) { return s.status === 'live'; })[0] || sets[0];
+  window.TFT_SET = pick || null;
+  if (pick) {
+    document.write('<script src="data/' + pick.file + '"><\/script>');
+    document.write('<script src="data/custom-' + pick.set + '.js"><\/script>');  // optional: eigene Trait-Texte, Icons, Pflanzen
+    document.write('<script src="tierlist-data-' + pick.set + '.js"><\/script>'); // optional: Tierlist (aus der Redaktion exportiert)
+    if (window.TFT_LANG === 'en') document.write('<script src="data/' + pick.file.replace(/\.js$/, '-en.js') + '"><\/script>');  // englische Beschreibungen
+  }
+})();
+</script>
+<script src="assets/js/sim.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

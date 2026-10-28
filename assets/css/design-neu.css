@@ -470,6 +470,8 @@ body.nd-mini .nds-vi{display:none}
 .nd .rk-hero{padding:30px 0 22px;background:none}
 .nd .cs-head{justify-content:center;text-align:center}
 .nd .cs-head>div{display:flex;flex-direction:column;align-items:center}
+/* Cheatsheet-Überschrift einheitlich etwas kleiner: bei 1920 passt auch „Blaupause für die hintere Reihe“ in eine Zeile, der Rahmen steht immer gleich hoch */
+@media (min-width:901px){.nd .cs-h1{font-size:clamp(2.4rem,3vw,3.6rem)}}
 @media (max-width:640px){.nd .page-head{padding:18px 0 14px}.nd .page-head h1.tool-h1,.nd h1.chp-h1{letter-spacing:.16em}}
 
 /* ---------- Meet the Team: Player Cards nebeneinander, größer, zentriert ---------- */
@@ -903,6 +905,8 @@ body.nd-mini .nds-soon{display:none}
 /* Cheatsheet-Seitenleiste: das allgemeine position:relative (für das Wabenmuster) hat zusammen mit top:100px die Leiste verschoben */
 .nd .cs-side{position:sticky}
 @media (max-width:900px){.nd .cs-side{position:relative;top:0}}
+/* Seitenleiste höchstens so lang wie ein bildschirmfüllendes Cheatsheet bei 1920×1080 (Shop & XP), Rest scrollt in der Leiste */
+@media (min-width:901px){.nd .cs-side{max-height:min(calc(100vh - 116px), 726px)}}
 /* Zierleiste unter dem Rahmen: bei mittlerer Breite „Cheatsheets“ und die rechte Linie weglassen, damit nichts übersteht */
 .csf-line{min-width:0}
 @container (max-width:760px){.csf-tag,.csf-line.r{display:none}}
@@ -922,6 +926,12 @@ body.nd-mini .nds-soon{display:none}
 @container (min-width:421px){.csf-under .csf-line.r{display:block;flex:1 1 0}}
 @container (max-width:559px){.csf-brand b{font-size:1.05rem}.csf-brand .csf-hex{width:16px;height:16px}.csf-hd{margin-bottom:12px}}
 @container (max-width:380px){.csf-brand .csf-hex{display:none}}
+/* Schmaler Rahmen (z. B. Cheatsheet in der Ergebnis-Box eines Tools): kompakte Tabellen wie am Handy – nach Rahmenbreite statt Bildschirmbreite */
+@container (max-width:640px){
+  .csf .cs-hm{min-width:0;font-size:.76rem}.csf .cs-hm th,.csf .cs-hm td{padding:7px 3px}.csf .cs-hm th{font-size:.64rem}.csf .cs-hm .hm-k{display:none}.csf .cs-hm th:first-child,.csf .cs-hm td:first-child{width:38px}
+  .csf .cso{min-width:0}.csf .cso tbody td{padding:8px 2px;font-size:.9rem}.csf .cso tbody td.top{font-size:1rem}.csf .cso td.cso-lv{font-size:.88rem}
+  .csf .cso-k{padding:3px 6px;font-size:.7rem}.csf .cso-bag b{font-size:.7rem}.csf .cso-bag small{display:none}.csf .cs-hm.cso th:first-child,.csf .cs-hm.cso td:first-child{width:30px}.csf .cso td.cso-xp span{font-size:.72rem}
+}
 /* Cheatsheet ausschneiden: Knöpfe rechts unter dem Rahmen */
 .csf-act{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:-12px 0 22px}
 .csf-msg{font-size:.85rem;font-weight:600;color:#7ff7ec;min-width:0}

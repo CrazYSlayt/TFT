@@ -17,7 +17,7 @@
     -Version 16.20     bestimmte CommunityDragon-Version statt der neuesten
     -ItemPrefix DA     Präfix der Set-Items, falls die automatische Erkennung danebenliegt
     -OnlyRanks         nur die Rangverteilung aktualisieren (dauert ein paar Sekunden)
-    -Publish           danach den Ordner data (und die Startseiten-Kopfdaten in index.html) automatisch committen und zu GitHub hochladen (für die geplante Aufgabe)
+    -Publish           danach den Ordner data (und die Startseite index.html samt Kopfdaten in app.html) automatisch committen und zu GitHub hochladen (für die geplante Aufgabe)
   Patches: Die Patch-Liste kommt von Riot (teamfighttactics.leagueoflegends.com). Pro Patch wird ein Datenstand in
   data\history\ abgelegt; fehlende Patches des Sets werden aus älteren CommunityDragon-Versionen nachgeholt.
   Daraus entsteht data\patches.js mit allen erkannten Änderungen. Eigene Kommentare: data\patch-kommentare.js.
@@ -607,7 +607,7 @@ UpdateCutoffs
 # ======================= 5. Patches: Liste von Riot, Archiv pro Patch, erkannte Änderungen =======================
 UpdatePatches $liveSet
 
-# ======================= 5b. Kopfdaten für Suchmaschinen: data\seo-meta.json (+ Startseite in index.html) =======================
+# ======================= 5b. Kopfdaten für Suchmaschinen: data\seo-meta.json (+ Startseite index.html aus app.html) =======================
 # Liest Titel, Meta-Text, canonical usw. jeder Seite aus der fertigen Seite (tools\seo-meta.js) – neue Patches/Daten sind so sofort dabei
 Step 'Kopfdaten für Suchmaschinen …'
 $node = (Get-Command node -ErrorAction SilentlyContinue).Source
@@ -619,17 +619,17 @@ else {
   & $node (Join-Path $root 'tools\seo-meta.js'); if ($LASTEXITCODE -ne 0) { Warn 'Kopfdaten konnten nicht erzeugt werden – die alten bleiben bestehen.' }
 }
 
-# ======================= 6. Optional: automatisch veröffentlichen (Ordner data und die Startseiten-Kopfdaten in index.html) =======================
+# ======================= 6. Optional: automatisch veröffentlichen (Ordner data, Startseite index.html und Kopfdaten in app.html) =======================
 if ($Publish) {
   Step 'Veröffentlichen …'
   $git = Join-Path $env:LOCALAPPDATA 'PortableGit\cmd\git.exe'
   if (-not (Test-Path $git)) { Warn 'Git nicht gefunden – nicht veröffentlicht.' }
   else {
     Push-Location $root
-    & $git add -- data index.html
-    & $git diff --cached --quiet -- data index.html
+    & $git add -- data index.html app.html
+    & $git diff --cached --quiet -- data index.html app.html
     if ($LASTEXITCODE -ne 0) {
-      & $git commit -q -m "Automatisches Daten-Update $today" -- data index.html
+      & $git commit -q -m "Automatisches Daten-Update $today" -- data index.html app.html
       $env:GCM_INTERACTIVE = 'never'
       & $git pull -q --rebase --autostash   # die Redaktion veröffentlicht die Tierlist direkt auf GitHub (api/tierlist.js) – erst deren Stand holen
       & $git push -q

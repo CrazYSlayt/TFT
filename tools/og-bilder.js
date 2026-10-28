@@ -50,6 +50,31 @@ function rolldownPages(){
     <img class="mascot rd" src="/assets/tools/rolldown.webp" alt="">`)}));
 }
 
+// ---------- Weitere Tools: Titel, Frage, Stichworte als Chips, Maskottchen ----------
+// Ebenfalls ohne veränderliche Daten. Gleiche Adresse in beiden Sprachen → englische Datei mit „-en“
+function toolPages(){
+  const T = [
+    {img: 'teambuilder', de: {file: 'tft-team-builder', a: 'TFT Team ', b: 'Builder', sub: 'Plan dein Board', chips: ['Units', 'Items', 'Traits', 'Teilen']},
+      en: {file: 'tft-team-builder-en', a: 'TFT Team ', b: 'Builder', sub: 'Plan your board', chips: ['Units', 'Items', 'Traits', 'Share']}},
+    {img: 'dps', de: {file: 'tft-dps-rechner', a: 'TFT DPS-', b: 'Rechner', sub: 'Welcher Item-Build gewinnt?', chips: ['Bis zu 4 Builds', 'Shred & Sunder', 'Graph']},
+      en: {file: 'tft-dps-calculator', a: 'TFT DPS ', b: 'Calculator', sub: 'Which item build wins?', chips: ['Up to 4 builds', 'Shred & sunder', 'Graph']}},
+    {img: 'drops', de: {file: 'tft-item-drop-chance', a: 'TFT Item-', b: 'Drop-Chance', sub: 'Welche Komponente kommt?', chips: ['Item-Pool', 'Orbs', 'Stage 1–4']},
+      en: {file: 'tft-item-drop-odds', a: 'TFT Item ', b: 'Drop Odds', sub: 'Which component is next?', chips: ['Item pool', 'Orbs', 'Stage 1–4']}},
+    {img: 'tierlist', de: {file: 'tft-tierlist-maker', a: 'TFT Tierlist ', b: 'erstellen', sub: 'Deine eigene Tierlist', chips: ['Champions', 'Items', 'Augments', 'Link teilen']},
+      en: {file: 'tft-tier-list-maker', a: 'TFT Tier List ', b: 'Maker', sub: 'Your own tier list', chips: ['Champions', 'Items', 'Augments', 'Share link']}},
+    {img: 'simulator', de: {file: 'tft-kampf-simulator', a: 'TFT Kampf-', b: 'Simulator', sub: 'Welches Board gewinnt?', chips: ['Schritt für Schritt', 'Siegchance', 'Items & Sterne']},
+      en: {file: 'tft-battle-simulator', a: 'TFT Battle ', b: 'Simulator', sub: 'Which board wins?', chips: ['Step by step', 'Win chance', 'Items & stars']}}];
+  return T.flatMap(t => ['de', 'en'].map(l => { const x = t[l]; return {file: x.file, html: page(`
+    <div class="l">
+      <img class="logo" src="/assets/brand/logo-tftclimb.webp" alt="">
+      <div class="kick">${l === 'de' ? 'Kostenloses TFT Tool' : 'Free TFT tool'}</div>
+      <h1>${x.a}<em>${x.b}</em></h1>
+      <div class="sub">${x.sub}</div>
+      <div class="chips">${x.chips.map(c => `<span>${c}</span>`).join('')}</div>
+    </div>
+    <img class="mascot" src="/assets/tools/${t.img}.webp" alt="">`)}; }));
+}
+
 // Grundgerüst: Farben, Schrift und Hintergrund wie auf tftclimb.com
 const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
   @font-face{font-family:'Barlow Condensed';font-weight:900;font-style:italic;src:url(/assets/fonts/BarlowCondensed-900i-latin.woff2) format('woff2')}
@@ -65,7 +90,9 @@ const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
   .logo{height:46px}
   .kick{margin-top:26px;font:700 22px Barlow;letter-spacing:.32em;text-transform:uppercase;color:#7ff7ec}
   h1{margin-top:6px;font:900 italic 104px/0.92 'Barlow Condensed';text-transform:uppercase;letter-spacing:-.01em}
-  h1 em{font-style:inherit;background:linear-gradient(90deg,#2ee6d6,#93c5fd,#f0abfc);-webkit-background-clip:text;background-clip:text;color:transparent}
+  /* Verlauf per background-clip:text reicht nur bis zum Rand des Textfelds – kursive Buchstaben ragen rechts darüber hinaus und würden abgeschnitten.
+     Innenabstand rechts (mit gleich großem negativem Rand, damit sich nichts verschiebt) gibt dem Verlauf Platz – gilt für alle Vorlagen */
+  h1 em{font-style:inherit;background:linear-gradient(90deg,#2ee6d6,#93c5fd,#f0abfc);-webkit-background-clip:text;background-clip:text;color:transparent;padding:0 .14em 0 .04em;margin:0 -.14em 0 -.04em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
   .sub{margin-top:10px;font:700 italic 38px 'Barlow Condensed';color:#cfe3ee}
   .line{display:inline-block;margin-top:24px;padding:10px 18px;border-radius:99px;border:2px solid rgba(46,230,214,.5);background:rgba(46,230,214,.1);font:700 22px Barlow;color:#7ff7ec}
   .tiers{display:flex;gap:20px;margin-top:30px}
@@ -76,6 +103,8 @@ const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
   .costs{display:flex;gap:12px;margin-top:30px}
   .costs span{display:flex;flex-direction:column;align-items:center;justify-content:center;width:72px;height:72px;border-radius:16px;border:3px solid var(--c);background:color-mix(in srgb,var(--c) 22%,#061520);font:900 italic 34px/1 'Barlow Condensed';color:#fff;box-shadow:0 0 18px color-mix(in srgb,var(--c) 45%,transparent)}
   .costs small{font:700 13px Barlow;color:#cfe3ee}
+  .chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px;max-width:640px}
+  .chips span{padding:10px 18px;border-radius:99px;border:2px solid rgba(46,230,214,.5);background:rgba(46,230,214,.1);font:700 22px Barlow;color:#7ff7ec}
   .mascot.rd{height:520px;bottom:40px;right:20px}
   .mascot{position:absolute;right:30px;bottom:24px;height:560px;z-index:1;filter:drop-shadow(0 18px 40px rgba(0,0,0,.6)) drop-shadow(0 0 40px rgba(167,139,250,.35))}
 </style></head><body>${body}</body></html>`;
@@ -132,7 +161,7 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
 
 (async () => {
   fs.mkdirSync(OUT, {recursive: true});
-  const jobs = [...augmentPages(), ...rolldownPages()];
+  const jobs = [...augmentPages(), ...rolldownPages(), ...toolPages()].filter(j => !process.argv[2] || j.file.includes(process.argv[2]));   // optional: nur Dateien mit diesem Namensteil
   const srv = await serve(), origin = 'http://127.0.0.1:' + srv.address().port;
   const port = 9300 + Math.floor(Math.random() * 500), prof = path.join(require('os').tmpdir(), 'tftclimb-og-' + port);
   const br = spawn(findBrowser(), ['--headless=new', '--hide-scrollbars', `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`, '--window-size=1200,630', 'about:blank'], {stdio: 'ignore'});

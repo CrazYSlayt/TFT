@@ -4,11 +4,11 @@ const fs = require('fs');
 const path = require('path');
 
 // Sprechende Adressen mit Keyword – gleiche Liste wie in assets/js/app.js (TOOL_SLUG, CS_SLUG, BUILDER_PATH)
-const TOOL_SLUG = {rolldown: 'tft-rolldown-rechner', drops: 'tft-item-drop-chance', tierlist: 'tft-tierlist-maker', simulator: 'tft-kampf-simulator', dps: 'tft-dps-vergleich', augments: 'tft-augment-chancen'};
+const TOOL_SLUG = {rolldown: 'tft-rolldown-rechner', drops: 'tft-item-drop-chance', tierlist: 'tft-tierlist-maker', simulator: 'tft-kampf-simulator', dps: 'tft-dps-rechner', augments: 'tft-augment-chancen'};
 const CS_SLUG = {shop: 'tft-shop-odds', power: 'tft-hierarchy-of-power', augments: 'tft-augment-stufen', orbs: 'tft-loot-orbs', loot: 'tft-loot-verteilung', damage: 'tft-spielerschaden', emblems: 'tft-embleme', solo: 'tft-stage-1-solo', 'patch-schedule': 'tft-patch-plan', carousel: 'tft-karussell'};
 const csPath = id => '/cheatsheet/' + (CS_SLUG[id] || 'tft-' + id);
 // Englische Adressen – gleiche Tabellen wie in app.js (TOOL_SLUG_EN, CS_SLUG_EN, PAGE_EN, langPath)
-const TOOL_SLUG_EN = {rolldown: 'tft-rolldown-calculator', drops: 'tft-item-drop-chance', tierlist: 'tft-tier-list-maker', simulator: 'tft-fight-simulator', dps: 'tft-dps-comparison', augments: 'tft-augment-odds'};
+const TOOL_SLUG_EN = {rolldown: 'tft-rolldown-calculator', drops: 'tft-item-drop-odds', tierlist: 'tft-tier-list-maker', simulator: 'tft-battle-simulator', dps: 'tft-dps-calculator', augments: 'tft-augment-odds'};
 const CS_SLUG_EN = {shop: 'tft-shop-odds', power: 'tft-hierarchy-of-power', augments: 'tft-augment-tiers', orbs: 'tft-loot-orbs', loot: 'tft-loot-distribution', damage: 'tft-player-damage', emblems: 'tft-emblems', solo: 'tft-solo-stage-1', 'patch-schedule': 'tft-patch-schedule', carousel: 'tft-carousel'};
 const PAGE_EN = {tierlist: 'tier-list', bibliothek: 'library', impressum: 'legal-notice', datenschutz: 'privacy-policy', bedingungen: 'terms', 'tft-patch-countdown': 'tft-next-patch-countdown'};
 const keyOf = (map, slug) => (Object.entries(map).find(([, v]) => v === slug) || [slug])[0];
