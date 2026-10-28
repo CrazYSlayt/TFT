@@ -3,11 +3,12 @@
    Die Daten (CH_DATA, findItem, Builder-Bretter …) kommen erst beim Aufruf aus app.js.
 
    Regeln (Quellen: League-Wiki „TFT: Mana“, tftips.app „Battle“):
-   - Ziel: nächster Gegner – wenigste Schritte bis zu einer Angriffsposition, dann Feld-Abstand, beim ersten Ziel
-     (vor dem ersten Angriff) bei Gleichstand Tanks zuerst, dann echter Abstand, dann bisheriges Ziel.
-     Neuwahl nach jedem gelaufenen Feld, bis das Ziel in Reichweite ist.
+   - Ziel: nächster Gegner – wenigste Schritte bis zu einer Angriffsposition, dann Feld-Abstand, bei Gleichstand nach Rolle
+     (Tanks zuerst, Assassins zuletzt – Riot, Patch 15.1), dann echter Abstand, dann bisheriges Ziel.
+     Neuwahl nach jedem gelaufenen Feld, bis das Ziel in Reichweite ist. Nach Betäubung kein neues Ziel (Riot, Set 18).
    - Bewegung 500 (Verlängerung 700) Einheiten/s, ein Feld ≈ 180 Einheiten. Das Zielfeld wird beim Losgehen belegt.
-   - Mana: 10 pro Angriff, Schaden erhalten: 1 % vor + 3 % nach Abzug (max. 42,5). Kein Mana bei Betäubung/während der Fähigkeit.
+   - Mana je Rolle (Riot, Patch 15.1): Tank 5 pro Angriff + erlittener Schaden (1 % vor + 3 % nach Abzug, max. 42,5),
+     Fighter/Assassin/Marksman 10, Caster 7 + 2 pro Sekunde. Kein Mana bei Betäubung/während der Fähigkeit.
    - Schaden = Basis × Krit × Schadenssteigerung × 100/(100+Resistenz) × Durchhaltevermögen (multiplikativ).
    - Verlängerung ab 30 s: pro Sekunde Schaden und Angriffstempo ×1,1, Heilung/Schilde/CC −10 % (bis −70 %), ab 38 s CC-immun.
 */
@@ -174,7 +175,7 @@ function sDamage(src, tgt, raw, type, o){
     if(o.atk) m *= tgt.atkTaken;
     dmg *= m;
   }
-  if(tgt.maxMana > 5 && tgt.manaLock <= SS.t && tgt.stunEnd <= SS.t) tgt.mana = Math.min(tgt.maxMana, tgt.mana + Math.min(42.5, pre*0.01 + dmg*0.03));
+  if(tgt.role === 'tank' && tgt.maxMana > 5 && tgt.manaLock <= SS.t && tgt.stunEnd <= SS.t) tgt.mana = Math.min(tgt.maxMana, tgt.mana + Math.min(42.5, pre*0.01 + dmg*0.03));
   let rest = dmg;
   if(tgt.shields.length){
     tgt.shields.sort((a,b)=>a.end - b.end);
@@ -224,15 +225,13 @@ function sStepsTo(u, e, bfs){
 }
 function sPick(u, bfs){
   if(u.taunt && u.taunt.alive && u.tauntEnd > SS.t && sTargetable(u.taunt)) return u.taunt;
-  // Reihenfolge: Schritte bis zur Angriffsposition, Feld-Abstand, beim ersten Ziel (noch kein Angriff) Tanks zuerst,
+  // Reihenfolge: Schritte bis zur Angriffsposition, Feld-Abstand, Rolle (Tanks zuerst, Assassins zuletzt – Riot seit Patch 15.1),
   // echter Abstand (±0,05 Felder), bisheriges Ziel, sonst Zufall
   const cmp = (a, b) => { for(let i=0;i<a.length;i++) if(a[i]!==b[i]) return a[i] - b[i]; return 0; };
-  const first = !u.attacks && !u.casts;
   let best = null, bk = null;
   for(const e of SS.units){
     if(e.side===u.side || !sTargetable(e)) continue;
-    const tank = first ? (e.isTank != null ? e.isTank : (e.isTank = !e.plant && simRole(e.n) === 'tank')) : false;
-    const k = [sStepsTo(u, e, bfs).steps, SIM_GRID.D[u.cell][e.cell], tank ? 0 : 1, Math.round(simEu(u.cell, e.cell)*20), e===u.tgt ? 0 : 1, SS.rng()];
+    const k = [sStepsTo(u, e, bfs).steps, SIM_GRID.D[u.cell][e.cell], SIM_AGGRO[e.role] != null ? SIM_AGGRO[e.role] : 1, Math.round(simEu(u.cell, e.cell)*20), e===u.tgt ? 0 : 1, SS.rng()];
     if(!bk || cmp(k, bk) < 0){ best = e; bk = k; }
   }
   return best;
@@ -281,7 +280,7 @@ function sAttack(u, tg){
   if(sp.onHit || (sp.transform && u.casts > 0)) sDamage(u, tg, simPow(u) * 0.15, 'magic', {ab:true});
   if(sp.splash) sEnemiesNear(u, tg.cell, 1).filter(e=>e!==tg).forEach(e=>sDamage(u, e, ad * sp.splash, 'phys', {noHooks:true}));
   if(sp.healOnHit) sHeal(u, u, u.maxHp * 0.02);
-  if(u.manaLock <= SS.t && u.maxMana > 5) u.mana = Math.min(u.maxMana, u.mana + 10 + u.manaOnAtk);
+  if(u.manaLock <= SS.t && u.maxMana > 5) u.mana = Math.min(u.maxMana, u.mana + u.manaAtk + u.manaOnAtk);   // Mana pro Angriff je Rolle
 }
 function sCast(u, tg){
   const sp = u.spec, t = SS.t;
@@ -452,6 +451,14 @@ const SIM_ITEMS = {
 const simBlackthorn = () => (typeof TFT_CUSTOM_SET!=='undefined' && TFT_CUSTOM_SET.blackthorn) || null;
 const SIM_ROLE_DE = {tank:'Tank', ad:'AD', ap:'AP'};
 const SIM_TANK_TRAITS = ['Defender','Juggernaut','Vanguard','Brawler','Monolith','Bastion','Bruiser','Warden','Guardian','Juggernaut'];
+// Kampf-Rollen (seit Set 15, Patch 15.1 – Riot): Mana pro Angriff je Rolle, Caster zusätzlich 2 Mana pro Sekunde, Mana aus erlittenem
+// Schaden nur für Tanks. Zielwahl bei gleichem Abstand: Tanks zuerst, Assassins zuletzt. Specialists haben eigene Regeln – hier wie Fighter.
+const SIM_ROLE_MANA = {tank:5, fighter:10, assassin:10, marksman:10, caster:7, specialist:10};
+const SIM_AGGRO = {tank:0, assassin:2};   // alle anderen 1
+function simCombatRole(n){
+  const r = ((typeof TFT_CUSTOM_SET!=='undefined' && TFT_CUSTOM_SET.combatRoles) || {})[n]; if(r) return r;
+  return simRole(n) === 'tank' ? 'tank' : 'fighter';   // ohne Eintrag: Tank-Traits und Nahkampf → Tank, sonst Fighter
+}
 function simRole(n){
   const r = ((typeof TFT_CUSTOM_SET!=='undefined' && TFT_CUSTOM_SET.roles) || {})[n]; if(r) return r;
   const d = CH_DATA[n] || {}, st = d.st || {};
@@ -584,6 +591,8 @@ function sNewUnit(S, b, side, h, label){
     atkCD:0, tgt:null, tgtSince:0, path:null, from:null, mvT0:0, mvT1:0, jump:false, castEnd:0, stunEnd:0, untarget:0, invuln:0, ccImm:0, manaLock:0, taunt:null, tauntEnd:0,
     attacks:0, casts:0, emp:0, empD:0, kills:0, deathT:null, st:'idle', dealt:{phys:0, magic:0, true:0}, taken:0, healed:0, shielded:0};
   (b.i||[]).forEach(id=>{ const it = findItem(id); if(it) u.items.push(it); });
+  u.role = plant ? '' : simCombatRole(b.u); u.manaAtk = SIM_ROLE_MANA[u.role] || 10;
+  if(u.role === 'caster') u.regen += 2;   // Caster: 2 Mana pro Sekunde
   u.omni += u.spec.omni || 0;
   if(u.spec.regen) sEvery(u, 1, ()=>sHeal(u, u, u.maxHp*0.015));
   if(u.spec.aura) sEvery(u, 1, ()=>sEnemiesNear(u, u.cell, 1).forEach(e=>sDamage(u, e, simPow(u)*0.1, 'magic', {noHooks:true})));
@@ -760,10 +769,10 @@ function simMount(){
       <details class="card sim-rules"><summary>So rechnet der Simulator</summary>
         <ul>
           <li><b>Spielfeld:</b> 7 × 8 Felder, jede Seite 4 Reihen – genau wie im Spiel. Reichweite und Abstände zählen in Feldern.</li>
-          <li><b>Zielwahl:</b> der nächste Gegner – zuerst wenigste Schritte bis zu einer Angriffsposition, dann Feld-Abstand. Beim ersten Ziel (vor dem ersten Angriff) werden bei gleichem Abstand Tanks bevorzugt. Danach echter Abstand, dann das bisherige Ziel. Nach jedem gelaufenen Feld wird neu gewählt, bis das Ziel in Reichweite ist. Stirbt es oder wird es unangreifbar, sucht sich die Unit ein neues.</li>
+          <li><b>Zielwahl:</b> der nächste Gegner – zuerst wenigste Schritte bis zu einer Angriffsposition, dann Feld-Abstand. Bei gleichem Abstand entscheidet die Rolle: Tanks zuerst, Assassins zuletzt. Danach echter Abstand, dann das bisherige Ziel. Nach jedem gelaufenen Feld wird neu gewählt, bis das Ziel in Reichweite ist. Stirbt es oder wird es unangreifbar, sucht sich die Unit ein neues – nach einer Betäubung behält sie ihr Ziel.</li>
           <li><b>Laufen:</b> 500 Einheiten pro Sekunde (≈ 0,36 s pro Feld), in der Verlängerung 700. Das nächste Feld wird beim Losgehen belegt, gelaufen wird der kürzeste freie Weg.</li>
           <li><b>Angriffe:</b> Tempo = Angriffe pro Sekunde (max. 5). Krit: 25 % Grundchance, 140 % Schaden. Fähigkeiten kritten nur mit Präzision (z. B. Infinity Edge, Jeweled Gauntlet, Henker).</li>
-          <li><b>Mana:</b> 10 pro Angriff; erlittener Schaden gibt 1 % vor + 3 % nach Abzug (max. 42,5). Während einer Fähigkeit und bei Betäubung gibt es kein Mana.</li>
+          <li><b>Mana:</b> je nach Rolle – Tank 5 pro Angriff plus Mana aus erlittenem Schaden, Fighter, Assassin und Marksman 10 pro Angriff, Caster 7 pro Angriff plus 2 pro Sekunde. Während einer Fähigkeit und bei Betäubung gibt es kein Mana.</li>
           <li><b>Schaden:</b> Basis × Krit × Schadenssteigerung × 100/(100 + Rüstung bzw. MR) × Durchhaltevermögen. Absoluter Schaden ignoriert Resistenzen. Schilde fangen zuerst ab, Omnivamp heilt nur aus Lebensschaden.</li>
           <li><b>Effekte:</b> Fraktur/Magiefraktur −30 %, Verwundung −33 % Heilung, Verbrennung 1 % max. Leben pro Sekunde. Bei gleichen Effekten zählt der stärkste.</li>
           <li><b>Sterne:</b> Leben ×1,8 und Angriffsschaden ×1,5 pro Stern. Items, Traits und Augments werden mit ihren offiziellen Werten eingerechnet.</li>
@@ -977,7 +986,7 @@ function simSide(fi){
     let next = '';
     if(f.st!=='dead' && !u.plant){
       if(u.spec.counter) next = `Verstärkter Angriff bei jedem ${u.spec.counter}. Angriff.`;
-      else if(f.mm > 5) next = f.m >= f.mm ? 'Mana voll – Fähigkeit kommt beim nächsten Schritt.' : `Fähigkeit bei vollem Mana: ${Math.floor(f.m)} / ${f.mm} (noch ≈ ${Math.ceil((f.mm - f.m)/10)} Angriffe).`;
+      else if(f.mm > 5) next = f.m >= f.mm ? 'Mana voll – Fähigkeit kommt beim nächsten Schritt.' : `Fähigkeit bei vollem Mana: ${Math.floor(f.m)} / ${f.mm} (noch ≈ ${Math.ceil((f.mm - f.m)/((u.manaAtk || 10) + (u.manaOnAtk || 0)))} Angriffe).`;
     }
     const its = u.items.map(it=>`<img src="${it.img}" alt="" title="${esc(it.en)}">`).join('');
     box.innerHTML = `<div class="ss-head">${PLANTS[u.n] ? `<div class="av av-46 c1"><img src="${PLANT_IMG[u.n]}" alt=""></div>` : avatar(u.n, 46)}<div><b class="sn s${u.side}">${esc(u.label)}</b> <span class="ss-star">${'★'.repeat(u.star)}</span><small>${u.side ? 'Gegner' : 'Dein Team'} · ${SIM_ST[f.st] || ''}</small></div><button class="ss-x" type="button" data-sim-desel aria-label="Auswahl aufheben">✕</button></div>

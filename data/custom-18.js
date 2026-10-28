@@ -109,6 +109,20 @@ window.TFT_CUSTOM = {
     'Ahri':'ap', 'Amumu':'tank', 'Aphelios':'ad', 'Brambleback':'ad', 'Ezreal':'ad', 'Lillia':'tank', 'Malphite':'tank', 'Morgana':'tank', 'Nidalee':'ap', 'Sentinel':'tank', 'Sett':'tank', 'Sivir':'ad', 'Soraka':'ap', 'Zyra':'ap',
     'Alune':'ap', 'Ashe':'ad', 'Draven':'ad', 'Elder Dragon':'ad', 'Gnar':'ad', 'Ivern':'ap', 'Kennen':'ap', 'Lux':'ap', 'Maokai':'tank', 'Taric':'tank'
   },
+  // Kampf-Rolle jedes Champions (seit Set 15, Patch 15.1): bestimmt Mana und Zielwahl im Kampf-Simulator.
+  // Tank 5 Mana pro Angriff + Mana aus erlittenem Schaden · Fighter/Assassin/Marksman 10 pro Angriff · Caster 7 pro Angriff + 2 pro Sekunde · Specialist eigen.
+  // Bei gleichem Abstand werden Tanks eher angegriffen, Assassins am wenigsten. Riot liefert die Rolle für Set 18 nicht in den Spieldaten –
+  // Quelle: topmeta.gg (Patch 18.5c), abgeglichen mit roles oben (alle Tanks gleich, außer Diana und Morgana: dort Fighter).
+  combatRoles: {
+    'Kobuko':'tank', 'Leona':'tank', 'Ornn':'tank', 'Rakan':'tank', "Rek'Sai":'tank', 'Alistar':'tank', 'Elise':'tank', 'Sejuani':'tank', 'Shen':'tank', 'Fiddlesticks':'tank', 'Hecarim':'tank',
+    'Amumu':'tank', 'Lillia':'tank', 'Malphite':'tank', 'Sentinel':'tank', 'Maokai':'tank', 'Taric':'tank', 'Yorick':'tank', 'Scuttlecrab':'tank', 'Krug':'tank', 'Rammus':'tank', 'Vi':'tank', 'Sett':'tank',
+    'Karma':'caster', 'Pebbles':'caster', 'Veigar':'caster', 'Gromp':'caster', 'LeBlanc':'caster', 'Teemo':'caster', 'Cassiopeia':'caster', 'Ahri':'caster', 'Soraka':'caster', 'Zyra':'caster', 'Alune':'caster', 'Ivern':'caster', 'Lux':'caster',
+    'Cinderling':'caster', 'Varus':'caster', 'Yunara':'caster', "Kog'Maw":'caster', 'Ezreal':'caster', 'Sivir':'caster', 'Ashe':'caster',
+    'Akali':'fighter', 'Camille':'fighter', 'Warwick':'fighter', 'Rengar':'fighter', 'Brambleback':'fighter', 'Elder Dragon':'fighter', 'Diana':'fighter', 'Morgana':'fighter',
+    'Xayah':'marksman', 'Mama Beak':'marksman', 'Tristana':'marksman', 'Aphelios':'marksman', 'Draven':'marksman', 'Azir':'marksman', 'Nidalee':'marksman',
+    "Kha'Zix":'assassin', 'Kennen':'assassin', 'Murkwolf':'assassin',
+    'Caitlyn':'specialist', 'Master Yi':'specialist', 'Gnar':'specialist', 'Kayle':'specialist'
+  },
   // Encounters (Beginn jeder Partie, genau einer pro Spiel). w = Gewicht: Chance = w / Summe aller Gewichte (88 = 100 %).
   // Quelle: TFT Flow / TFTips, Stand Patch 18.1, bis 18.4 laut Riots Patchnotes unverändert. Einschätzungen (passende Comps) pflegst du in der Redaktion.
   encounters: [
