@@ -1638,6 +1638,10 @@ function buddyWire(el){
 document.querySelectorAll('[data-buddy]').forEach(buddyWire);
 // Tool-Seiten: Heimerdinger in der Version des Tools (dasselbe Bild wie auf der Kachel) – nur, wenn es das Bild gibt.
 // Erst wenn die Seite geöffnet wird (route), damit nicht jeder Aufruf alle Tool-Bilder lädt
+// Maskottchen-Bilder der Tools werden einen Tag zwischengespeichert (vercel.json) – nach einem neuen Bild TOOL_ART_V erhöhen,
+// dann lädt jeder Browser sofort die neue Fassung (gilt für Kacheln, Seitenköpfe und die kleinen Vorschaubilder)
+const TOOL_ART_V = '3';
+const toolArtSrc = (k, thumb) => `assets/tools/${thumb ? 'thumb/' : ''}${k}.webp?v=${TOOL_ART_V}`;
 // Team Builder und Kampf-Simulator teilen sich einen Kopf: data-art-builder = eigenes Maskottchen für den Team Builder (nur dort sichtbar)
 function toolArtLoad(root){ root.querySelectorAll('[data-tool-art]:not([data-art-done])').forEach(head=>{
   head.dataset.artDone = '1';
@@ -1651,8 +1655,8 @@ function toolArtLoad(root){ root.querySelectorAll('[data-tool-art]:not([data-art
     };
     im.src = src; };
   const sim = head.dataset.toolArt==='simulator';
-  add(head.dataset.artSrc || `assets/tools/${head.dataset.toolArt}.webp`, sim ? ' b-simonly' : '', head.dataset.artBuddy);
-  if(head.dataset.artBuilder) add(`assets/tools/${head.dataset.artBuilder}.webp`, ' b-only', 'builder');
+  add(head.dataset.artSrc || toolArtSrc(head.dataset.toolArt), sim ? ' b-simonly' : '', head.dataset.artBuddy);
+  if(head.dataset.artBuilder) add(toolArtSrc(head.dataset.artBuilder), ' b-only', 'builder');
 }); }
 setInterval(()=>{
   const page = document.querySelector('.page.active'); if(!page || document.hidden) return;
@@ -2344,7 +2348,7 @@ function tnUpdate(key){   // key = aktuelles Tool ('' = keins → Kreise aus)
     [[-1, '.mt-prev', L('Vorheriges Tool', 'Previous tool')], [1, '.mt-next', L('Nächstes Tool', 'Next tool')]].forEach(([d, s, label])=>{
       const [k, name] = TOOL_NAV[(i + d + n) % n], a = nav.querySelector(s), img = a.querySelector('.pn-av');
       a.setAttribute('href', toolHref(k)); a.title = name; a.setAttribute('aria-label', `${label}: ${name}`);
-      img.removeAttribute('data-src'); img.src = `assets/tools/thumb/${k}.webp`;
+      img.removeAttribute('data-src'); img.src = toolArtSrc(k, true);
     });
   });
   if(i >= 0) requestAnimationFrame(tnEqualize);
@@ -4593,7 +4597,7 @@ function route(){
   const pageId = isCv ? 'champv2' : page==='bibliothek' ? 'library' : isSim ? 'builder' : ND && page==='home' ? 'dash' : page;
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+pageId));
   // Große Bilder versteckter Seiten (Tool-Karten, Maskottchen) stehen als data-src im HTML und laden erst, wenn die Seite zu sehen ist
-  document.querySelectorAll(`#page-${pageId} img[data-src]`).forEach(i=>{ i.src = i.dataset.src; i.removeAttribute('data-src'); });
+  document.querySelectorAll(`#page-${pageId} img[data-src]`).forEach(i=>{ i.src = i.dataset.src.startsWith('assets/tools/') ? i.dataset.src + '?v=' + TOOL_ART_V : i.dataset.src; i.removeAttribute('data-src'); });
   const pageEl = $('#page-' + pageId); if(pageEl && pageId !== 'tools') toolArtLoad(pageEl);   // Tools: nur das geöffnete Tool (renderTools)
   tnUpdate(isSim ? 'simulator' : page === 'tools' ? sub : '');
   // Seitenbreite: Übersichtsseiten breit wie das Dashboard, Unterseiten (einzelnes Tool, Cheatsheet, Champion, Patch, Rang, Profil, Rechtliches) schmaler
@@ -4868,7 +4872,7 @@ function renderDash(){
           ['/tools/tft-augment-vorhersage', 'augments', L('Augment-Vorhersage', 'Augment Prediction'), L('Welche Stufe kommt?', 'Which tier comes next?')],
           ['/tools/tft-tierlist-maker', 'tierlist', 'Tierlist-Maker', L('Eigene Tierlist bauen', 'Build your own tier list')],
           ['/tft-team-builder', 'teambuilder', 'Team Builder', L('Board planen & teilen', 'Plan & share boards')]
-        ].map(([h, img, t, d])=>`<a href="${h}"><img src="assets/tools/thumb/${img}.webp" alt="" width="34" height="34" loading="lazy"><span><b>${t}</b><small>${d}</small></span></a>`).join('')}</div></section>
+        ].map(([h, img, t, d])=>`<a href="${h}"><img src="${toolArtSrc(img, true)}" alt="" width="34" height="34" loading="lazy"><span><b>${t}</b><small>${d}</small></span></a>`).join('')}</div></section>
       <section class="dsh-card dsh-cheats">
         <div class="dsh-h"><h2>Cheatsheets</h2><a href="/cheatsheet">${L('Alle', 'All')} →</a></div>
         <div class="dsh-tlist dsh-clist">${(()=>{ const has = new Set(csList().map(s=>s[0]));   // unsere wichtigsten Tabellen (wie „TFTClimb Priority“ auf der Cheatsheet-Seite)
