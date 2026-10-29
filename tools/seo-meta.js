@@ -57,7 +57,10 @@ function findBrowser() {
     const read = `(() => { const O = location.origin, rel = s => s && s.startsWith(O) ? s.slice(O.length) || '/' : s || '';
       const a = s => (document.querySelector(s) || {}), m = s => a(s).content || '', ld = document.getElementById('ldPage');
       // pre: fertig gebaute Artikel der sichtbaren Seite ([data-pre], z. B. Augment-Chancen) – api/page.js schreibt sie ins HTML
-      const pre = {}; document.querySelectorAll('.page.active [data-pre]').forEach(el => { if (el.getClientRects().length && el.innerHTML.trim()) pre[el.dataset.pre] = el.innerHTML.split(O + '/').join('/'); });
+      // data-pre-sel: nur die sichtbaren Teile, die der Selektor trifft (Cheatsheets: Kopf, gezeigte Tabelle, Artikel – nicht alle 38 versteckten Tabellen)
+      const pre = {}; document.querySelectorAll('.page.active [data-pre]').forEach(el => { if (!el.getClientRects().length || !el.innerHTML.trim()) return;
+        const html = el.dataset.preSel ? [...el.querySelectorAll(el.dataset.preSel)].filter(x => x.getClientRects().length).map(x => x.outerHTML).join('') : el.innerHTML;
+        if (html.trim()) pre[el.dataset.pre] = html.split(O + '/').join('/'); });
       // h1/cr: sichtbare Überschrift und Brotkrumen darüber, fertig übersetzt – api/page.js ersetzt damit die Fassung aus index.html
       // (englische Seiten, Simulator mit eigener H1 auf der Builder-Seite)
       const vis = e => e && e.getClientRects().length, h1 = [...document.querySelectorAll('.page.active h1')].find(vis), cr = h1 && h1.parentNode.querySelector(':scope > .crumb');
@@ -84,6 +87,8 @@ function findBrowser() {
     // nur schreiben, wenn sich etwas geändert hat (sonst gäbe jedes automatische Update einen neuen Commit)
     const file = path.join(ROOT, 'data', 'seo-meta.json');
     let old = null; try { old = JSON.parse(fs.readFileSync(file, 'utf8')); } catch (e) {}
+    // Sicherung: fehlt bei mehr als der Hälfte der Seiten alles (z. B. Fehler im Skript oben), die alte Datei nicht überschreiben
+    if (Object.keys(pages).length < paths.length / 2) throw new Error(`nur ${Object.keys(pages).length} von ${paths.length} Seiten gelesen – data/seo-meta.json bleibt unverändert`);
     if (old && JSON.stringify(old.pages) === JSON.stringify(pages)) console.log(`  unverändert: data\\seo-meta.json (${Object.keys(pages).length} Seiten)`);
     else { fs.writeFileSync(file, JSON.stringify({generated: new Date().toISOString(), pages})); console.log(`  geschrieben: data\\seo-meta.json (${Object.keys(pages).length} von ${paths.length} Seiten)`); }
     // Kopfdaten der Startseite als Grundblock in der Vorlage app.html (gilt auch für unbekannte Adressen, z. B. 404)

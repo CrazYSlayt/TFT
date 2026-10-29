@@ -75,6 +75,26 @@ function toolPages(){
     <img class="mascot" src="/assets/tools/${t.img}.webp" alt="">`)}; }));
 }
 
+// ---------- Cheatsheets: je Seite und Sprache ein Bild mit dem Namen (aus data/seo-meta.json, also genau die H1), Maskottchen Vel'Koz ----------
+// Als JPG (assets/og/cs/), damit 2 × 39 Bilder das Projekt nicht aufblähen. DE: <adresse>.jpg, EN: en-<adresse>.jpg
+function cheatPages(){
+  let pages = {}; try { pages = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'seo-meta.json'), 'utf8')).pages || {}; } catch (e) {}
+  return Object.entries(pages).filter(([p]) => /^(\/en)?\/cheatsheet(\/|$)/.test(p)).map(([p, m]) => {
+    const en = p.startsWith('/en/'), slug = p.split('/').pop(), full = String(m.h1 || '').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/^TFT\s+/, '');
+    const [, name, alt] = full.match(/^(.*?)(?: \((.+)\))?$/);   // englischer Name in Klammern → eigene, kleinere Zeile
+    const fs_ = name.length <= 14 ? 100 : name.length <= 22 ? 84 : name.length <= 32 ? 70 : 60, e = s => s.replace(/&/g, '&amp;');
+    return {file: `cs/${en ? 'en-' : ''}${slug}`, jpg: true, html: page(`
+    <img class="logo cs-logo" src="/assets/brand/logo-tftclimb.webp" alt="">
+    <div class="l cs">
+      <div class="kick">TFT Cheatsheet</div>
+      <h1 style="font-size:${fs_}px">${name === 'Cheatsheets' ? 'TFT <em>Cheatsheets</em>' : `<em>${e(name)}</em>`}</h1>
+      ${alt ? `<div class="alt">${e(alt)}</div>` : ''}
+      <div class="sub">${en ? 'Every number at a glance' : 'Alle Werte auf einen Blick'}</div>
+    </div>
+    <img class="mascot vk" src="/assets/img/mascot-velkoz.webp" alt="">`)};
+  });
+}
+
 // Grundgerüst: Farben, Schrift und Hintergrund wie auf tftclimb.com
 const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
   @font-face{font-family:'Barlow Condensed';font-weight:900;font-style:italic;src:url(/assets/fonts/BarlowCondensed-900i-latin.woff2) format('woff2')}
@@ -106,6 +126,11 @@ const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
   .chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px;max-width:640px}
   .chips span{padding:10px 18px;border-radius:99px;border:2px solid rgba(46,230,214,.5);background:rgba(46,230,214,.1);font:700 22px Barlow;color:#7ff7ec}
   .mascot.rd{height:520px;bottom:40px;right:20px}
+  .mascot.vk{height:auto;width:470px;bottom:60px;right:40px}
+  .cs-logo{position:absolute;left:66px;top:58px;z-index:2}
+  .l.cs{top:120px;bottom:60px;display:flex;flex-direction:column;justify-content:center}
+  .l.cs .kick{margin-top:0}
+  .alt{margin-top:8px;font:900 italic 40px/1 'Barlow Condensed';text-transform:uppercase;color:#7ff7ec}
   .mascot{position:absolute;right:30px;bottom:24px;height:560px;z-index:1;filter:drop-shadow(0 18px 40px rgba(0,0,0,.6)) drop-shadow(0 0 40px rgba(167,139,250,.35))}
 </style></head><body>${body}</body></html>`;
 
@@ -161,7 +186,8 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
 
 (async () => {
   fs.mkdirSync(OUT, {recursive: true});
-  const jobs = [...augmentPages(), ...rolldownPages(), ...toolPages()].filter(j => !process.argv[2] || j.file.includes(process.argv[2]));   // optional: nur Dateien mit diesem Namensteil
+  fs.mkdirSync(path.join(OUT, 'cs'), {recursive: true});
+  const jobs = [...augmentPages(), ...rolldownPages(), ...toolPages(), ...cheatPages()].filter(j => !process.argv[2] || j.file.includes(process.argv[2]));   // optional: nur Dateien mit diesem Namensteil
   const srv = await serve(), origin = 'http://127.0.0.1:' + srv.address().port;
   const port = 9300 + Math.floor(Math.random() * 500), prof = path.join(require('os').tmpdir(), 'tftclimb-og-' + port);
   const br = spawn(findBrowser(), ['--headless=new', '--hide-scrollbars', `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`, '--window-size=1200,630', 'about:blank'], {stdio: 'ignore'});
@@ -175,6 +201,11 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
       current = j.html;
       await send('Page.navigate', {url: origin + '/__og?' + j.file}); await sleep(600);
       await send('Runtime.evaluate', {expression: 'document.fonts.ready.then(()=>Promise.all([...document.images].map(i=>i.decode().catch(()=>{}))))', awaitPromise: true});
+      if (j.jpg) {   // Cheatsheets: nur ein JPG (klein genug für viele Seiten)
+        const buf = Buffer.from((await send('Page.captureScreenshot', {format: 'jpeg', quality: 78})).result.data, 'base64'), f = path.join(OUT, `${j.file}.jpg`);
+        if (fs.existsSync(f) && fs.readFileSync(f).equals(buf)) { console.log(`  unverändert: assets\\og\\${j.file}.jpg`); continue; }
+        fs.writeFileSync(f, buf); console.log(`  geschrieben: assets\\og\\${j.file}.jpg`); continue;
+      }
       // Pixel der Seite holen (für das 256-Farben-PNG): Screenshot im Browser auf ein Canvas zeichnen und als Rohdaten zurückgeben
       const shot = (await send('Page.captureScreenshot', {format: 'png'})).result.data;
       const px = (await send('Runtime.evaluate', {awaitPromise: true, returnByValue: true, expression: `new Promise(ok => { const i = new Image(); i.onload = () => { const c = document.createElement('canvas'); c.width = 1200; c.height = 630;
