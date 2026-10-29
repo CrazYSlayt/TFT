@@ -303,7 +303,7 @@ const TL2_TREND = Object.fromEntries(Object.entries({up:'<path d="M12 19V6M6 11.
 // Bildausschnitt je Champion, wenn das Gesicht sonst hinter den Items liegt: [Bildhöhe in %, Lage von oben in %] – höher = Bild weiter nach oben
 const TL2_FOCUS = {Karma:[140, 100], Azir:[126, 100]};
 const TL2_RATIO = 396 / 360;   // Höhe : Breite des Rahmenkörpers (comp-<tier>-3.webp), CSS aspect-ratio passend
-function tile2HTML(c){
+function tile2HTML(c, href){   // href: als Link (Dashboard → Comp in der Tierlist aufklappen), sonst Knopf
   const st = STICKER[c.sticker], ch = champBy[c.carry] || {t:[]};
   const tr = compTraits(c).find(t=>ch.t.includes(t.n)) || tileTrait(c);   // höchster aktiver Trait des Carrys (compTraits ist nach Stufe sortiert)
   const items = compItemsOf(c, c.carry).slice(0, 3);
@@ -313,14 +313,15 @@ function tile2HTML(c){
   // Rahmen = comp-<tier>-3.webp (Körper 360 × 396, 6 px Rand rundum), Carry füllt die Fläche, Items unten rechts;
   // oben rechts der Trend, bei Niche stattdessen das Emblem der Bewertung (c.sub)
   const t = c.tier.toLowerCase(), fo = TL2_FOCUS[c.carry];
-  return `<button class="ct tl2-card" data-slug="${c.slug}" data-name="${esc(label)}" aria-label="${esc(label)}">
+  const tag = href ? 'a' : 'button';
+  return `<${tag} class="ct tl2-card${href ? ' dsh-ct' : ''}"${href ? ` href="${href}"` : ''} data-slug="${c.slug}" data-name="${esc(label)}" aria-label="${esc(label)}">
     <span class="tl2-frame"><span class="tl2-pic" style="background-image:url('${img}')${fo ? `;--ps:${fo[0]}%;--py:${fo[1]}%` : ''}"></span>
       <span class="tl2-items">${items.map(it=>`<img src="${it.img}" alt="" title="${esc(L(it.de || it.en, it.en))}" width="30" height="30" loading="lazy">`).join('')}</span>
       <img class="tl2-fr" src="assets/tierlist/comp-${t}-3.webp" alt="" width="372" height="408" loading="lazy"></span>
     ${c.tier === 'X' ? (c.sub ? `<img class="tl2-rate r-${c.sub.toLowerCase()}" src="assets/tierlist/tier-${c.sub.toLowerCase()}.webp" alt="${TL2_NAME[c.sub]}" title="${L('Bewertung, wenn die Bedingungen passen', 'Rating when the conditions are met')}: ${TL2_NAME[c.sub]}" width="173" height="160">` : '')
       : st ? `<span class="tl2-trend ${st[0]}" title="${st[2]}">${TL2_TREND[st[0]]}</span>` : ''}
     ${tr ? `<span class="tl2-trait">${traitHex(tr.n, traitCls(tr), 34)}</span>` : ''}
-    <span></span></button>`;
+    <span></span></${tag}>`;
 }
 // Kartengröße so wählen, dass die ganze Tierlist auf einen Bildschirm passt: jede Reihe einzeilig (größte Reihe bestimmt die Breite)
 // und alle Reihen zusammen nicht höher als das Fenster unter der Leiste. Am Handy feste Größe (CSS)
@@ -336,10 +337,15 @@ function tl2Fit(){
   const topH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--topH')) || 64;
   box.style.setProperty('--tl2w', Math.floor(Math.max(56, Math.min(150, byW))) + 'px');   // erst einzeilig messen, sonst zählen umgebrochene Reihen mit
   const w0 = rows[0].querySelector('.tl2-frame').offsetWidth, perRow = TL2_RATIO + .1;
-  const fixed = (box.offsetHeight - rows.length * perRow * w0) * nRows / rows.length, byH = (innerHeight - topH - 16 - fixed) / (nRows * perRow);
+  const open = [...box.querySelectorAll('.tl-detail:not([hidden])')].reduce((s, d)=>{ const m = getComputedStyle(d); return s + d.offsetHeight + parseFloat(m.marginTop) + parseFloat(m.marginBottom); }, 0);   // aufgeklappte Comp zählt nicht mit
+  const fixed = (box.offsetHeight - open - rows.length * perRow * w0) * nRows / rows.length, byH = (innerHeight - topH - 16 - fixed) / (nRows * perRow);
   box.style.setProperty('--tl2w', Math.floor(Math.max(56, Math.min(150, byW, byH))) + 'px');
 }
 addEventListener('resize', tl2Fit);
+// Auch wenn die Tierlist erst später sichtbar wird (Start auf Dashboard oder Items/Augments/Holds, dann zu Comps) oder ihre Breite
+// sich ändert (Scrollleiste, Sidebar eingeklappt) – sonst bliebe der CSS-Startwert stehen und die Karten wären zu groß
+if(window.ResizeObserver){ let lastW = -1;
+  new ResizeObserver(([e])=>{ const w = Math.round(e.contentRect.width); if(w && w !== lastW){ lastW = w; tl2Fit(); } }).observe($('#tl-comps')); }
 // Beim Drüberfahren (nur mit Maus): kleiner Tooltip mit Comp-Name und Spielfeld, über der Karte – oben kein Platz, dann darunter.
 // Erscheint nach kurzer Pause weich (kein Flackern beim Überfahren), von Karte zu Karte dann sofort; Rand im Schimmer der Rangfarbe
 let tl2Tip, tl2TipT = 0, tl2TipHid = 0;
@@ -355,9 +361,11 @@ function tl2RenderTip(card){
   tl2Tip.style.setProperty('--tg', getComputedStyle(card.closest('.tl2-tier')).getPropertyValue('--g1').trim() || '#2ee6d6');
   const r = card.querySelector('.tl2-frame').getBoundingClientRect(), w = tl2Tip.offsetWidth, h = tl2Tip.offsetHeight;
   const topH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--topH')) || 64;
-  let top = r.top - h - 12; if(top < topH + 6) top = r.bottom + 12;
-  tl2Tip.style.left = Math.round(Math.min(innerWidth - w - 8, Math.max(8, r.left + r.width / 2 - w / 2))) + 'px';
-  tl2Tip.style.top = Math.round(top) + 'px';
+  let top = r.top - h - 14; const below = top < topH + 6; if(below) top = r.bottom + 14;
+  const left = Math.round(Math.min(innerWidth - w - 8, Math.max(8, r.left + r.width / 2 - w / 2)));
+  tl2Tip.style.left = left + 'px'; tl2Tip.style.top = Math.round(top) + 'px';
+  tl2Tip.style.setProperty('--ax', Math.round(Math.min(w - 22, Math.max(22, r.left + r.width / 2 - left))) + 'px');   // Spitze zeigt auf die Karte
+  tl2Tip.classList.toggle('below', below);
   tl2Tip.classList.add('on');
 }
 function tl2ShowTip(card){
@@ -370,10 +378,12 @@ function tl2HideTip(){
   if(tl2Tip && tl2Tip.classList.contains('on')){ tl2Tip.classList.remove('on'); tl2TipHid = Date.now(); }
 }
 if(matchMedia('(hover:hover)').matches){
-  const rowsEl = $('#tierRows');
-  rowsEl.addEventListener('mouseover', e=>{ const card = e.target.closest('.tl2-card'); if(card && !card.contains(e.relatedTarget)) tl2ShowTip(card); });
-  rowsEl.addEventListener('mouseout', e=>{ const card = e.target.closest('.tl2-card'); if(card && !card.contains(e.relatedTarget)) tl2HideTip(); });
-  rowsEl.addEventListener('click', tl2HideTip);
+  ['#tierRows', '#dshApp'].forEach(sel=>{   // Tierlist und Mini-Tierlist im Dashboard
+    const el = $(sel); if(!el) return;
+    el.addEventListener('mouseover', e=>{ const card = e.target.closest('.tl2-card'); if(card && !card.contains(e.relatedTarget)) tl2ShowTip(card); });
+    el.addEventListener('mouseout', e=>{ const card = e.target.closest('.tl2-card'); if(card && !card.contains(e.relatedTarget)) tl2HideTip(); });
+    el.addEventListener('click', tl2HideTip);
+  });
   addEventListener('scroll', tl2HideTip, {passive:true});
 }
 function renderTiers(target, list){
@@ -382,7 +392,7 @@ function renderTiers(target, list){
     if(!rows.length) return '';
     return `<div class="tl-tier tl2-tier tl2-${t.toLowerCase()}" style="--tc:${TIER_COL[t]}">
       <div class="tl2-row"><div class="tl2-head tl2-f${t.toLowerCase()}"><img src="assets/tierlist/tier-${t.toLowerCase()}.webp" alt="" width="173" height="160"><b>${TL2_NAME[t]}</b></div>
-        <div class="tl2-cards">${rows.map(tile2HTML).join('')}${t === 'X' ? `<span class="tl2-sit" title="${L('Stark unter bestimmten Bedingungen (Augments, Items, Emblem)', 'Strong under certain conditions (augments, items, emblem)')}"><i>Situational</i></span>` : ''}</div></div>
+        <div class="tl2-cards">${rows.map(c=>tile2HTML(c)).join('')}${t === 'X' ? `<span class="tl2-sit" title="${L('Stark unter bestimmten Bedingungen (Augments, Items, Emblem)', 'Strong under certain conditions (augments, items, emblem)')}"><i>Situational</i></span>` : ''}</div></div>
       <div class="tl-detail" hidden></div>
     </div>`;
   }).join('');
@@ -5715,10 +5725,11 @@ function renderDash(){
   // Player Card: Bild mit Challenger-Emblem, Name, Rolle, darunter Rang / Peak / Aus
   const pcard = (href, img, name, role, peak, from) => `<a class="dsh-pcard" href="${href}"><span class="dsh-pav"><img src="${img}" alt="${esc(name)}"><img class="dsh-pemb" src="${rankImg(rankBy.challenger)}" alt="Challenger"></span><b>${esc(name)}<i>#EUW</i></b><span class="dsh-prole">${esc(role)}</span><span class="dsh-pfacts"><span><small>${L('Rang', 'Rank')}</small><em>Challenger</em></span><span><small>Peak</small><em>${peak}</em></span><span><small>${L('Aus', 'From')}</small><em>${esc(from)}</em></span></span></a>`;
   const live = `<i class="sb-dot${ST_CUT_LIVE ? ' live' : ''}" title="${ST_CUT_LIVE ? L('Live-Daten', 'Live data') : L('Gespeicherter Stand', 'Saved data')}"></i>`;
-  // Tierlist im Kleinformat: dieselben Reihen und Kacheln wie auf /tierlist (S bis C; je Reihe bis zu 7 Comps), Klick → Comp-Seite
-  const mtl = ['S', 'A', 'B', 'C'].map(t=>{ const list = mainComps.filter(c=>c.tier === t).slice(0, 7); if(!list.length) return '';
-    return `<div class="tl-tier" style="--tc:${TIER_COL[t]}"><div class="tl-row"><div class="tl-letter"><b>${t}</b></div><div class="tl-tiles">${list.map(c=>{ const tr = tileTrait(c);
-      return `<a class="ct dsh-ct" href="/tierlist?comp=${encodeURIComponent(c.slug)}" title="${esc(c.name)}" aria-label="${esc(c.name)}">${hexHTML(c.carry, 'ct-main')}${tr ? `<span class="ct-tr">${traitHex(tr.n, traitCls(tr), 20)}</span>` : ''}</a>`; }).join('')}</div></div></div>`; }).join('');
+  // Tierlist im Kleinformat: dieselben Reihen (Emblem + Name) und Comp-Karten wie auf /tierlist, kleiner (alle fünf Reihen inkl. Niche;
+  // je Reihe bis zu 7 Comps, Niche nach Bewertung), Klick → Comp in der Tierlist aufklappen
+  const mtl = ['S', 'A', 'B', 'C', 'X'].map(t=>{ const list = mainComps.filter(c=>c.tier === t).sort((a,b)=>t === 'X' ? 'SABC'.indexOf(a.sub) - 'SABC'.indexOf(b.sub) : 0).slice(0, 7); if(!list.length) return '';
+    return `<div class="tl2-tier tl2-${t.toLowerCase()}"><div class="tl2-row"><div class="tl2-head"><img src="assets/tierlist/tier-${t.toLowerCase()}.webp" alt="" width="173" height="160"><b>${TL2_NAME[t]}</b></div>
+      <div class="tl2-cards">${list.map(c=>tile2HTML(c, `/tierlist?comp=${encodeURIComponent(c.slug)}`)).join('')}</div></div></div>`; }).join('');
   const lpStat = (key, v, tier, label) => `<a class="dsh-lp" href="/ranks/${tier.k}"><img src="${rankImg(tier)}" alt=""><span><b data-dlp="${v || 0}" data-key="${key}">${v ? fmt(v) + ' LP' : '–'}</b><small>${live}${label}</small></span></a>`;
   box.innerHTML = `
     <div class="dsh-title"><h1>${L('TFT Tierlist, Comps', 'TFT Tier List, Comps')} <em>&amp; Coaching</em></h1></div>
