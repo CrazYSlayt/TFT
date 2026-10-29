@@ -689,9 +689,10 @@ body.nd-mini .nds-vi2{display:none}
 @media (max-width:640px){.dsh-bar .dsh-bubble{padding:14px 28px 26px;max-width:220px}}
 
 /* ---------- Dashboard-Bibliothek: größere Waben, Kartengröße bleibt (füllt den freien Platz) ---------- */
-.dsh-lib{container-type:inline-size}
-.dsh-comb{--s:min(71px, calc((100cqw - 76px) / 6));padding:8px 0 4px}
-.dsh-comb>div{gap:6px}
+.dsh-lib{container-type:inline-size;display:flex;flex-direction:column}
+.dsh-comb{--s:min(84px, calc((100cqw - 80px) / 6));flex:1;justify-content:center;padding:10px 0 6px}   /* Waben füllen die Kartenhöhe neben Tools/Cheatsheets, mittig mit Luft */
+.dsh-comb>div{gap:7px}
+.dsh-comb>div+div{margin-top:calc(var(--h) * -.25 + 5px)}
 
 /* ---------- Coaching-Seite: Gold aus dem alten Design durch das Pink-Highlight ersetzen (wie die Coaching-Karte im Dashboard) ---------- */
 .nd .pkg .pill.gold{background:rgba(247,22,110,.14);color:#ff6fa6;box-shadow:inset 0 0 0 1px rgba(247,22,110,.35)}
