@@ -9,7 +9,7 @@
 const http = require('http'), fs = require('fs'), path = require('path'), {spawn} = require('child_process');
 const ROOT = path.resolve(__dirname, '..'), OUT = path.join(ROOT, 'assets', 'og');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const TYPES = {'.webp': 'image/webp', '.png': 'image/png', '.woff2': 'font/woff2', '.css': 'text/css'};
+const TYPES = {'.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.html': 'text/html; charset=utf-8'};
 
 // ---------- Augment-Chancen ----------
 // Nur eine Vorschau: keine Zahlen, kein Set, kein Patch – die ändern sich, das Bild soll trotzdem dauerhaft stimmen (Wunsch des Users)
@@ -75,25 +75,34 @@ function toolPages(){
     <img class="mascot" src="/assets/tools/${t.img}.webp" alt="">`)}; }));
 }
 
-// ---------- Cheatsheets: je Seite und Sprache ein Bild mit dem Namen (aus data/seo-meta.json, also genau die H1), Maskottchen Vel'Koz ----------
-// Als JPG (assets/og/cs/), damit 2 × 39 Bilder das Projekt nicht aufblähen. DE: <adresse>.jpg, EN: en-<adresse>.jpg
+// ---------- Cheatsheets: je Seite und Sprache ein Bild – nur der Inhalt der Tabelle an der wichtigsten Stelle, ohne Titel, Logo, Set oder Patch ----------
+// (Wunsch des Users: kein eigener Text auf dem Bild). Der Ausschnitt kommt von der echten Seite (CS_SHOT), das Bild ändert sich also nur, wenn sich die Tabelle ändert.
+// Nur von den englischen Cheatsheets – das Bild gilt auch für die deutsche Seite (Wunsch des Users). Als JPG: assets/og/cs/<englische adresse>.jpg (app.js: csOgImg)
 function cheatPages(){
   let pages = {}; try { pages = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'seo-meta.json'), 'utf8')).pages || {}; } catch (e) {}
-  return Object.entries(pages).filter(([p]) => /^(\/en)?\/cheatsheet(\/|$)/.test(p)).map(([p, m]) => {
-    const en = p.startsWith('/en/'), slug = p.split('/').pop(), full = String(m.h1 || '').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/^TFT\s+/, '');
-    const [, name, alt] = full.match(/^(.*?)(?: \((.+)\))?$/);   // englischer Name in Klammern → eigene, kleinere Zeile
-    const fs_ = name.length <= 14 ? 100 : name.length <= 22 ? 84 : name.length <= 32 ? 70 : 60, e = s => s.replace(/&/g, '&amp;');
-    return {file: `cs/${en ? 'en-' : ''}${slug}`, jpg: true, html: page(`
-    <img class="logo cs-logo" src="/assets/brand/logo-tftclimb.webp" alt="">
-    <div class="l cs">
-      <div class="kick">TFT Cheatsheet</div>
-      <h1 style="font-size:${fs_}px">${name === 'Cheatsheets' ? 'TFT <em>Cheatsheets</em>' : `<em>${e(name)}</em>`}</h1>
-      ${alt ? `<div class="alt">${e(alt)}</div>` : ''}
-      <div class="sub">${en ? 'Every number at a glance' : 'Alle Werte auf einen Blick'}</div>
-    </div>
-    <img class="mascot vk" src="/assets/img/mascot-velkoz.webp" alt="">`)};
-  });
+  return Object.keys(pages).filter(p => /^\/en\/cheatsheet(\/|$)/.test(p)).map(p => ({file: `cs/${p.split('/').pop()}`, jpg: true, site: p,
+    make: shot => page(`<div class="cs-shot"><img src="${shot}" alt=""></div>`)}));
 }
+// Auf der echten Cheatsheet-Seite: Inhalt des Tabellen-Rahmens (ohne Überschrift, Rahmen, Logo, Riot-Beschreibung, Hinweise und Reiter) als transparentes PNG –
+// wie beim „Ausschneiden“: Kopie unsichtbar in fester Breite aufbauen und mit html-to-image rendern. Höhe passend zum Bildformat, längere Tabellen laufen unten weich aus.
+// shop: nur Level 7–10 (die Zeilen, auf denen gerollt wird)
+const CS_SHOT = `(async () => {
+  const sec = document.querySelector('#csPage .cs-sec:not([hidden])'), id = sec ? sec.id.slice(3) : '';
+  const src = sec ? sec.querySelector('.csf') : document.querySelector('#csOv .cs-panes'); if (!src) return null;
+  const W = sec ? 760 : 1100, H = Math.round(W * 550 / 1120), h2i = await csCutLoad(), wrap = document.createElement('div'), c = src.cloneNode(true);
+  wrap.style.cssText = 'position:absolute;left:-99999px;top:0;width:' + W + 'px;pointer-events:none'; wrap.appendChild(c); src.parentNode.appendChild(wrap);
+  try {
+    c.querySelectorAll('img').forEach(i => { i.loading = 'eager'; });
+    c.querySelectorAll('.cax-info,.cs-note,.cs-src,.csp-tabs').forEach(x => { x.style.display = 'none'; });
+    if (id === 'shop') c.querySelectorAll('.cso tbody tr').forEach(tr => { const l = +((tr.querySelector('.cso-lv') || {}).textContent || '').replace(/\\D/g, ''); if (l && l < 7) tr.style.display = 'none'; });
+    const t = sec ? c.querySelector('.csf-body') : c;
+    Object.assign(t.style, {margin: '0', width: W + 'px'});
+    if (t.offsetHeight > H) Object.assign(t.style, {height: H + 'px', overflow: 'hidden', webkitMaskImage: 'linear-gradient(to bottom,#000 78%,transparent)', maskImage: 'linear-gradient(to bottom,#000 78%,transparent)'});
+    await Promise.race([Promise.all([...c.querySelectorAll('img')].map(i => i.complete ? 0 : new Promise(ok => { i.onload = i.onerror = ok; }))), new Promise(ok => setTimeout(ok, 4000))]);
+    const blob = await h2i.toBlob(t, {width: W, height: t.offsetHeight, pixelRatio: 2});
+    return await new Promise(ok => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.readAsDataURL(blob); });
+  } finally { wrap.remove(); }
+})()`;
 
 // Grundgerüst: Farben, Schrift und Hintergrund wie auf tftclimb.com
 const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
@@ -126,11 +135,9 @@ const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
   .chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px;max-width:640px}
   .chips span{padding:10px 18px;border-radius:99px;border:2px solid rgba(46,230,214,.5);background:rgba(46,230,214,.1);font:700 22px Barlow;color:#7ff7ec}
   .mascot.rd{height:520px;bottom:40px;right:20px}
-  .mascot.vk{height:auto;width:470px;bottom:60px;right:40px}
-  .cs-logo{position:absolute;left:66px;top:58px;z-index:2}
-  .l.cs{top:120px;bottom:60px;display:flex;flex-direction:column;justify-content:center}
-  .l.cs .kick{margin-top:0}
-  .alt{margin-top:8px;font:900 italic 40px/1 'Barlow Condensed';text-transform:uppercase;color:#7ff7ec}
+  /* Cheatsheets: nur die Tabelle, mittig auf der Fläche innerhalb der Umrandung (die liegt 14 px vom Rand) */
+  .cs-shot{position:absolute;inset:40px;display:flex;align-items:center;justify-content:center;z-index:1}
+  .cs-shot img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 14px 30px rgba(0,0,0,.5))}
   .mascot{position:absolute;right:30px;bottom:24px;height:560px;z-index:1;filter:drop-shadow(0 18px 40px rgba(0,0,0,.6)) drop-shadow(0 0 40px rgba(167,139,250,.35))}
 </style></head><body>${body}</body></html>`;
 
@@ -173,12 +180,13 @@ function quantize(rgba, W, H){
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('PLTE', Buffer.from(pal.flat())), chunk('IDAT', zlib.deflateSync(raw, {level: 9})), chunk('IEND', Buffer.alloc(0))]);
 }
 
-// kleiner Webserver: Projektdateien + die aktuelle Vorlage unter /__og
+// kleiner Webserver: Projektdateien + die aktuelle Vorlage unter /__og; Seitenadressen ohne Dateiendung → app.html (für die Cheatsheet-Ausschnitte)
 let current = '';
 function serve(){ return new Promise(res => { const srv = http.createServer((q, r) => {
   const u = decodeURIComponent(new URL(q.url, 'http://x').pathname);
   if (u === '/__og') { r.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'}); return r.end(current); }
-  const f = path.join(ROOT, u); if (!f.startsWith(ROOT) || !fs.existsSync(f)) { r.writeHead(404); return r.end(); }
+  let f = path.join(ROOT, u); if (!path.extname(u)) f = path.join(ROOT, 'app.html');
+  if (!f.startsWith(ROOT) || !fs.existsSync(f)) { r.writeHead(404); return r.end(); }
   r.writeHead(200, {'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream'}); fs.createReadStream(f).pipe(r);
 }); srv.listen(0, '127.0.0.1', () => res(srv)); }); }
 function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || '', 'Microsoft/Edge/Application/msedge.exe'), path.join(process.env.ProgramFiles || '', 'Microsoft/Edge/Application/msedge.exe'),
@@ -195,9 +203,27 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
     let tabs; for (let i = 0; i < 60; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); if (tabs.length) break; } catch (e) {} await sleep(250); }
     const ws = new WebSocket(tabs.find(t => t.type === 'page').webSocketDebuggerUrl); await new Promise(r => ws.onopen = r);
     let id = 0; const pend = {}; ws.onmessage = m => { const d = JSON.parse(m.data); if (d.id && pend[d.id]) { pend[d.id](d); delete pend[d.id]; } };
-    const send = (method, params = {}) => new Promise(r => { const i = ++id; pend[i] = r; ws.send(JSON.stringify({id: i, method, params})); });
-    await send('Page.enable'); await send('Emulation.setDeviceMetricsOverride', {width: 1200, height: 630, deviceScaleFactor: 1, mobile: false});
+    const send = (method, params = {}) => new Promise((r, no) => { const i = ++id; pend[i] = r; ws.send(JSON.stringify({id: i, method, params}));
+      setTimeout(() => { if (pend[i]) { delete pend[i]; no(new Error(`${method} antwortet nicht`)); } }, 60000); });
+    await send('Page.enable');
+    const ev = async e => (await send('Runtime.evaluate', {expression: e, awaitPromise: true, returnByValue: true})).result.result.value;
+    // 1) Cheatsheets: echte Seite öffnen (pro Sprache einmal laden, dann innerhalb der Seite wechseln), Tabellen-Rahmen in 1,5-facher Größe ausschneiden
+    const cs = jobs.filter(j => j.site);
+    if (cs.length) {
+      await send('Emulation.setDeviceMetricsOverride', {width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false});
+      let lang = '';
+      for (const j of cs) {
+        const l = /^\/en(\/|$)/.test(j.site) ? 'en' : 'de';
+        if (l !== lang) { await send('Page.navigate', {url: origin + j.site}); await sleep(3500); lang = l; await ev(`document.head.insertAdjacentHTML('beforeend', '<style>#ckb{display:none!important}</style>')`); }
+        else { await ev(`go(${JSON.stringify(j.site.replace(/^\/en(?=\/|$)/, '') || '/')})`); await sleep(500); }
+        const img = await ev(CS_SHOT); if (!img) { console.warn('  ohne Tabelle:', j.site); continue; }
+        j.html = j.make(img);
+      }
+    }
+    await send('Emulation.setDeviceMetricsOverride', {width: 1200, height: 630, deviceScaleFactor: 1, mobile: false});
+    // 2) Vorlagen rendern und speichern
     for (const j of jobs) {
+      if (!j.html) continue;
       current = j.html;
       await send('Page.navigate', {url: origin + '/__og?' + j.file}); await sleep(600);
       await send('Runtime.evaluate', {expression: 'document.fonts.ready.then(()=>Promise.all([...document.images].map(i=>i.decode().catch(()=>{}))))', awaitPromise: true});
@@ -218,6 +244,9 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
         fs.writeFileSync(f, buf); console.log(`  geschrieben: assets\\og\\${j.file}.${ext}`);
       }
     }
+    // alte Cheatsheet-Bilder ohne Seite (z. B. frühere deutsche Fassungen) entfernen – nur bei einem vollständigen Lauf
+    if (!process.argv[2]) { const keep = new Set(jobs.filter(j => j.site).map(j => path.basename(j.file) + '.jpg'));
+      fs.readdirSync(path.join(OUT, 'cs')).filter(f => !keep.has(f)).forEach(f => { fs.unlinkSync(path.join(OUT, 'cs', f)); console.log(`  entfernt: assets\\og\\cs\\${f}`); }); }
     ws.close();
   } finally { br.kill(); srv.close(); try { fs.rmSync(prof, {recursive: true, force: true}); } catch (e) {} }
   process.exit(0);
