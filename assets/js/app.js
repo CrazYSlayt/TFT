@@ -5115,6 +5115,26 @@ function metaLead(desc){
   if(!p){ p = document.createElement('p'); p.className = 'meta-lead'; ref.after(p); }
   p.setAttribute('data-meta', ''); p.textContent = desc;
 }
+// Patch-Stand sichtbar unter der Einleitung jeder Datenseite (wie das Abzeichen der Tierlist): Patch und Datum der Daten.
+// Comp- und Champion-Seiten nutzen das Datum der Tierlist, alle anderen das der Spieldaten. Grüner Punkt „Live“, wenn es der aktuelle Patch ist
+const STAMP_PAGES = ['tools', 'builder', 'cheatsheet', 'bibliothek', 'champion', 'comp'];
+function patchStamp(page){
+  document.querySelectorAll('.pt-stamp').forEach(e=>e.remove());
+  const pg = document.querySelector('.page.active'), p = String(TL_PATCH || (CURRENT_PATCH ? CURRENT_PATCH.id : ''));
+  if(!pg || !p || !STAMP_PAGES.includes(page)) return;
+  const vis = e => e.getClientRects().length > 0, h1 = [...pg.querySelectorAll('h1')].find(vis); if(!h1) return;
+  // unter die Einleitung (Meta-Text) – auch wenn dazwischen eine Unterzeile steht (Bibliothek: .cv-sub)
+  let lead = h1.nextElementSibling;
+  while(lead && lead.matches('.cv-sub')) lead = lead.nextElementSibling;
+  if(!(lead && lead.matches('p') && vis(lead))) lead = h1.nextElementSibling && h1.nextElementSibling.matches('.cv-sub') ? h1.nextElementSibling : null;
+  const tl = page === 'comp' || page === 'champion', raw = tl ? (tierSource.data || {}).updated : TFT_DATA.generated;
+  const d = raw ? new Date(raw).toLocaleDateString(LOC) : '', live = p === String(((window.TFT_PATCHES || [])[0] || {}).id || p);
+  const el = document.createElement('div'); el.className = 'tl-badge pt-stamp' + (live ? '' : ' old');
+  el.title = tl ? L('Stand unserer Tierlist', 'As of our tier list') : L('Stand der Spieldaten', 'As of the game data');
+  el.innerHTML = `<i class="tl-dot"></i>${live ? '<b>Live</b>' : ''}<span>Patch ${esc(p)}</span>${d ? `<span>${esc(d)}</span>` : ''}`;
+  if(/left|start/.test(getComputedStyle(h1).textAlign)) el.style.marginLeft = '0';   // linksbündige Köpfe: Abzeichen auch links
+  (lead || h1).after(el);
+}
 function headTag(sel, make){ let el = document.head.querySelector(sel); if(!el){ el = make(); document.head.appendChild(el); } return el; }
 function setMeta(page, sub){
   let [title, desc, noindex] = pageMeta(page, sub);
@@ -5304,7 +5324,7 @@ function route(){
   route.last = page;
   if(ND) ndRoute(page, navKey);
   setMeta(page, sub);
-  h1Sync(); requestAnimationFrame(()=>requestAnimationFrame(()=>{ h1Sync(); metaLead(META_DESC); }));   // zweiter Lauf für Inhalte, die erst im nächsten Bild entstehen
+  h1Sync(); requestAnimationFrame(()=>requestAnimationFrame(()=>{ h1Sync(); metaLead(META_DESC); patchStamp(page); }));   // zweiter Lauf für Inhalte, die erst im nächsten Bild entstehen
 }
 window.addEventListener(FILE_MODE ? 'hashchange' : 'popstate', route);
 
