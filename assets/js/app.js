@@ -4267,7 +4267,7 @@ const stNextLabel = () => { const n = stNextPatch(); if(!n) return ''; return n.
 let ST_CUT = window.TFT_CUTOFFS && window.TFT_CUTOFFS.regions ? window.TFT_CUTOFFS : null, ST_CUT_LIVE = false;
 const stCut = r => ST_CUT && ST_CUT.regions[r];
 if(!FILE_MODE) fetch('/api/cutoffs').then(r=>r.ok ? r.json() : null).then(d=>{
-  if(d && d.regions && Object.keys(d.regions).length){ ST_CUT = d; ST_CUT_LIVE = true; renderStatBar(); sbCount(false);
+  if(d && d.regions && Object.keys(d.regions).length){ ST_CUT = d; ST_CUT_LIVE = true; renderStatBar(); sbCount(false); if(ND) ndStats();
     if(ND){ document.querySelectorAll('#dshApp .dsh-lp .sb-dot').forEach(e=>{ e.classList.add('live'); e.title = L('Live-Daten', 'Live data'); }); dshCount(false); } }
 }).catch(()=>{});
 const fmtLP = v => v.toLocaleString(LOC) + ' LP';
@@ -5127,6 +5127,7 @@ function pageMeta(page, sub){
       `TFT cheatsheets for ${S}: shop odds, augment tiers, encounters, loot orbs, player damage and more – every number at a glance.`)];
     case 'bedingungen': return [L('Widerruf & Bedingungen', 'Withdrawal & Terms'), L('Widerruf & Bedingungen für das TFT Coaching bei TFTClimb: Widerrufsbelehrung, Muster-Formular und Regeln für alle Pakete.',
       'Withdrawal & terms for TFT coaching at TFTClimb: withdrawal policy, model form and the rules for every package.')];
+    case 'gameplans': return ['TFT Gameplans', L(`TFT Gameplans für jeden Patch: wie du die besten Comps von Start bis Late Game spielst – bald hier auf TFTClimb.`, `TFT game plans for every patch: how to play the best comps from start to late game – coming soon to TFTClimb.`), true];   // Platzhalter, noindex
     case 'guides':
       if(GUIDES_LIVE && sub==='encounters') return [`TFT Encounters Guide ${S}`, L(`TFT Encounters Guide für ${S}: was jeder Encounter macht, wie oft er kommt und welche Comp du darauf spielst.`,
         `TFT encounters guide for ${S}: what each encounter does, how often it shows up and which comp to play on it.`)];
@@ -5168,30 +5169,11 @@ function metaLead(desc){
   if(!p){ p = document.createElement('p'); p.className = 'meta-lead'; ref.after(p); }
   p.setAttribute('data-meta', ''); p.textContent = desc;
 }
-// Patch-Stand sichtbar unter der Einleitung jeder Datenseite (wie das Abzeichen der Tierlist): Patch und Datum der Daten.
-// Comp- und Champion-Seiten nutzen das Datum der Tierlist, alle anderen das der Spieldaten. Grüner Punkt „Live“, wenn es der aktuelle Patch ist
-const STAMP_PAGES = ['tools', 'builder', 'cheatsheet', 'bibliothek', 'champion', 'comp'];
 // Variante des Patches aus Riots Nachträgen: jedes Datum einer „Patch-Aktualisierung“ ist ein B-, C- … Patch (18.5 + 2 Nachträge = 18.5c)
 function patchVariant(pt){
   const days = new Set();
   (pt && pt.notes || []).forEach(s=>{ const g = String(s.grp || ''); if(/AKTUALISIERUNG|MID-PATCH/i.test(g)) (g.match(/\d{1,2}\.\s*[A-ZÄÖÜ]{3,}|[A-Z]{3,}\s+\d{1,2}(?:ST|ND|RD|TH)?\b/gi) || []).forEach(d=>days.add(d.replace(/\s+/g, ' ').toUpperCase())); });
   return days.size ? String.fromCharCode(97 + Math.min(days.size, 25)) : '';
-}
-function patchStamp(page){
-  document.querySelectorAll('.pt-stamp').forEach(e=>e.remove());
-  const pg = document.querySelector('.page.active'), p = String(TL_PATCH || (CURRENT_PATCH ? CURRENT_PATCH.id : ''));
-  if(!pg || !p || !STAMP_PAGES.includes(page)) return;
-  const vis = e => e.getClientRects().length > 0, h1 = [...pg.querySelectorAll('h1')].find(vis); if(!h1) return;
-  const cur = (window.TFT_PATCHES || [])[0] || {}, live = p === String(cur.id || p), v = live ? patchVariant(cur) : '';
-  const tl = page === 'comp' || page === 'champion', raw = tl ? (tierSource.data || {}).updated : TFT_DATA.generated;
-  const el = document.createElement('span'); el.className = 'tl-badge pt-stamp' + (live ? '' : ' old');   // span: Köpfe stylen ihre div-Kinder (z. B. .cs-head > div)
-  el.title = (tl ? L('Stand unserer Tierlist', 'As of our tier list') : L('Stand der Spieldaten', 'As of the game data')) + (raw ? ': ' + new Date(raw).toLocaleDateString(LOC) : '');
-  el.innerHTML = `<i class="tl-dot"></i>${live ? '<b>Live</b>' : ''}<span>Patch ${esc(p + v)}</span>`;
-  // oben links in den Kopf der Seite (wie das Abzeichen der Tierlist oben rechts)
-  // Bibliothek: am äußeren Rahmen (Champions und Traits/Items/Augments gleich hoch), sonst am Kopf der Seite
-  const head = h1.closest('.cv-stage, #page-library > .wrap') || h1.closest('.page-head, .cv-head, .cs-head, .chp-hero, .cp-hero') || h1.parentElement;
-  if(getComputedStyle(head).position === 'static') head.style.position = 'relative';
-  head.prepend(el);
 }
 function headTag(sel, make){ let el = document.head.querySelector(sel); if(!el){ el = make(); document.head.appendChild(el); } return el; }
 function setMeta(page, sub){
@@ -5333,7 +5315,7 @@ function route(){
   // alte Adressen weiter unterstützen
   if(['champions','items','traits'].includes(page)){ sub = page; page = 'bibliothek'; }
   if(page==='augments'){ sub = 'augments'; page = 'tierlist'; }
-  const valid = ['home','tierlist','bibliothek','champion','comp','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches','countdown'];
+  const valid = ['home','tierlist','bibliothek','champion','comp','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','gameplans','about','apply','impressum','datenschutz','patches','countdown'];
   if(!valid.includes(page)) page='notfound';
   const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche
   const isCv = page==='bibliothek' && !['items','traits','augments'].includes(sub);   // Champions: Wabenansicht (auch alte Adresse /bibliothek/v2)
@@ -5358,6 +5340,8 @@ function route(){
   if(!isSim) simPause();
   if(page==='tierlist') setTab(['items','augments','holds'].includes(sub)?sub:'comps');
   if(page==='guides') setGuide(sub);
+  if(page==='gameplans'){ if(sub) setUrl('/gameplans');   // Platzhalter bis Set 19: Gamepläne pro Patch
+    $('#gpSoon').innerHTML = `<div class="gd-soon"><img class="gd-soon-img" src="assets/icons/side-gameplans.webp" alt="" width="96" height="96"><b>Coming in Set 19</b><p>${L('Hier entstehen Gamepläne für jeden Patch: wie du die besten Comps vom Start bis ins Late Game spielst – mit dem Start von Set 19.', 'Game plans for every patch are coming here: how to play the best comps from the start to the late game – with the launch of Set 19.')}</p></div>`; }
   if(isCv) renderChampV2();   // sofort (die Seite ist schon sichtbar) – sonst blitzt beim Wechsel ein leeres Bild auf
   else if(page==='bibliothek') setLib(['items','traits','augments'].includes(sub)?sub:'champions');
   if(page==='ranks') setRank(sub);
@@ -5373,7 +5357,7 @@ function route(){
   if(page==='cheatsheet') renderCheats(sub);
   if(page==='apply'){ const pk = qParam('paket'), sel = $('#fPkg'); if(pk && sel && [...sel.options].some(o=>o.value===pk)) sel.value = pk; }   // z. B. /apply?paket=vip
   document.querySelectorAll('[data-route]').forEach(a=>a.classList.toggle('active', a.dataset.route===navKey));
-  if(['cheatsheet','guides','about','apply','patches'].includes(navKey)) $('#moreBtn').classList.add('active');
+  if(['cheatsheet','guides','gameplans','about','apply','patches'].includes(navKey)) $('#moreBtn').classList.add('active');
   else $('#moreBtn').classList.remove('active');
   moreMenu.classList.remove('open'); drawer.classList.remove('open');
   closeModal();
@@ -5386,7 +5370,7 @@ function route(){
   route.last = page;
   if(ND) ndRoute(page, navKey);
   setMeta(page, sub);
-  h1Sync(); requestAnimationFrame(()=>requestAnimationFrame(()=>{ h1Sync(); metaLead(META_DESC); patchStamp(page); }));   // zweiter Lauf für Inhalte, die erst im nächsten Bild entstehen
+  h1Sync(); requestAnimationFrame(()=>requestAnimationFrame(()=>{ h1Sync(); metaLead(META_DESC); }));   // zweiter Lauf für Inhalte, die erst im nächsten Bild entstehen
 }
 window.addEventListener(FILE_MODE ? 'hashchange' : 'popstate', route);
 
@@ -5520,11 +5504,11 @@ i18nStart();
 function ndInit(){
   const S = TFT_DATA.set;
   if(!$('#ndTop')) document.body.insertAdjacentHTML('afterbegin', ndShellHTML(EN));   // normalerweise schon von shell.js gebaut
-  // Set- und Sprachschalter aus der alten Kopfzeile übernehmen (Funktionen bleiben erhalten)
-  // Sprache: nur die Flagge, ein Klick öffnet ein kleines Menü
+  // Set-Schalter aus der alten Kopfzeile übernehmen (Funktionen bleiben erhalten).
+  // Einstellungen: Zahnrad, ein Klick öffnet ein kleines Menü – vorerst mit der Sprache, später weitere Optionen
   const p0 = curPath(), deHref = p0, enHref = enPath(p0);
-  const lang = `<div class="nd-lang" id="ndLang"><button type="button" class="nd-lang-btn" aria-haspopup="true" aria-expanded="false" aria-label="${L('Sprache', 'Language')}" title="${L('Sprache', 'Language')}">${EN ? FLAG_US : FLAG_DE}<svg class="nd-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg><span></span></button>
-    <div class="nd-lang-menu" role="menu"><a role="menuitemradio" aria-checked="${!EN}" href="${deHref}" hreflang="de" data-lang="de" data-noi18n>${FLAG_DE}Deutsch</a><a role="menuitemradio" aria-checked="${EN}" href="${enHref}" hreflang="en" data-lang="en" data-noi18n>${FLAG_US}English</a></div></div>`;
+  const lang = `<div class="nd-lang nd-set" id="ndLang"><button type="button" class="nd-lang-btn" aria-haspopup="true" aria-expanded="false" aria-label="${L('Einstellungen', 'Settings')}" title="${L('Einstellungen', 'Settings')}"><svg class="nd-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span></span></button>
+    <div class="nd-lang-menu" role="menu"><b class="nd-set-h">${L('Einstellungen', 'Settings')}</b><small class="nd-set-l">${L('Sprache', 'Language')}</small><a role="menuitemradio" aria-checked="${!EN}" href="${deHref}" hreflang="de" data-lang="de" data-noi18n>${FLAG_DE}Deutsch</a><a role="menuitemradio" aria-checked="${EN}" href="${enHref}" hreflang="en" data-lang="en" data-noi18n>${FLAG_US}English</a></div></div>`;
   const slot = $('#ndSlot'); slot.insertAdjacentHTML('afterend', lang); slot.replaceWith($('#setSw'));
   const nl = $('#ndLang');
   nl.querySelector('.nd-lang-btn').addEventListener('click', e=>{ e.stopPropagation(); const o = nl.classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded', o); });
@@ -5551,11 +5535,22 @@ function ndInit(){
     </div>`);
   }
   $('#ndSide').addEventListener('click', e=>{ if(e.target.closest('a')) document.body.classList.remove('nd-drawer'); });
-  $('#ndTop').addEventListener('click', e=>{ if(e.target.closest('.nd-tabs a')) document.body.classList.remove('nd-drawer'); });
+  $('#ndSearch').addEventListener('click', openSearch);
+  ndStats();
 }
+// Oben rechts: LP-Grenzen (Challenger, Großmeister · EUW) und Patch-Stand mit Variante und Countdown zum nächsten Patch
+function ndStats(){
+  const el = $('#ndStats'); if(!el) return;
+  const cut = stCut('euw'), cur = (window.TFT_PATCHES || [])[0] || {}, p = ST_PATCH ? String(ST_PATCH) + (String(cur.id) === String(ST_PATCH) ? patchVariant(cur) : '') : '';
+  // grüner Punkt (pulsiert) = Live-Daten von /api/cutoffs, grau = gespeicherter Stand
+  const lp = (v, t) => v ? `<a class="nd-lp" href="/ranks/${t.k}" title="${esc(t.n)} · EUW · ${ST_CUT_LIVE ? 'Live' : L('Gespeicherter Stand', 'Saved data')}"><img src="${rankImg(t)}" alt="" width="56" height="56"><i class="tl-dot${ST_CUT_LIVE ? '' : ' off'}"></i><b data-noi18n>${Number(v).toLocaleString(LOC)} LP</b></a>` : '';
+  el.innerHTML = (cut ? lp(cut.ch, rankBy.challenger) + lp(cut.gm, rankBy.grandmaster) : '')
+    + (p ? `<a class="nd-patch" href="${COUNTDOWN_PATH}" title="${L('Nächster Patch', 'Next patch')}: ${esc(stNextLabel())}"><i class="tl-dot"></i><b>Patch ${esc(p)}</b><span>${L('Nächster in', 'Next in')} <em data-countdown>${stCountdown()}</em></span></a>` : '');
+}
+document.addEventListener('keydown', e=>{ if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && !$('#page-builder').classList.contains('active')){ e.preventDefault(); openSearch(); } });   // Strg+K: Suche (im Team Builder hat Strg eigene Kürzel)
 function ndRoute(page, navKey){
   const key = page==='champion' ? 'bibliothek' : page==='apply' ? 'coaching' : navKey;
-  document.querySelectorAll('#ndTop [data-nd], #ndSide [data-nd]').forEach(a=>a.classList.toggle('on', a.dataset.nd===key));
+  document.querySelectorAll('#ndSide [data-nd]').forEach(a=>a.classList.toggle('on', a.dataset.nd===key));
   document.body.classList.remove('nd-drawer');
   if(page==='home'){ renderDash(); requestAnimationFrame(()=>dshCount(true)); }
   setTimeout(ndColon, 0);   // erst nach der Übersetzung (läuft vorher als Microtask)
@@ -5594,14 +5589,6 @@ function renderDash(){
   const lpStat = (key, v, tier, label) => `<a class="dsh-lp" href="/ranks/${tier.k}"><img src="${rankImg(tier)}" alt=""><span><b data-dlp="${v || 0}" data-key="${key}">${v ? fmt(v) + ' LP' : '–'}</b><small>${live}${label}</small></span></a>`;
   box.innerHTML = `
     <div class="dsh-title"><h1>${L('TFT Tierlist, Comps', 'TFT Tier List, Comps')} <em>&amp; Coaching</em></h1></div>
-    <section class="dsh-card dsh-hero dsh-bar">
-      <div class="dsh-hi"><img class="dsh-vihi" src="assets/img/mascot-vi-look.webp" alt="Vi" width="520" height="624"><div class="dsh-bubble"><b>${L('BEREIT FÜR<br>DEN CLIMB?', 'READY FOR<br>THE CLIMB?')}</b></div></div>
-      <div class="dsh-stats">
-        ${cut.ch ? lpStat('ch', cut.ch, rankBy.challenger, L('Challenger · EUW', 'Challenger · EUW')) : ''}
-        ${cut.gm ? lpStat('gm', cut.gm, rankBy.grandmaster, L('Großmeister · EUW', 'Grandmaster · EUW')) : ''}
-        ${ST_PATCH ? `<a class="dsh-np" href="${COUNTDOWN_PATH}" title="${esc(stNextLabel())}"><span class="dsh-pbadge">${esc(ST_PATCH)}</span><span><small>${L('Nächster Patch in', 'Next patch in')}</small><b data-countdown>${stCountdown()}</b></span></a>` : ''}
-      </div>
-    </section>
     <div class="dsh-row2">
       <section class="dsh-card dsh-mtl"><div class="dsh-h"><h2>Tierlist</h2><a href="/tierlist">${L('Ganze Tierlist', 'Full tier list')} →</a></div>
         ${mtl || `<p class="dsh-empty">${L('Die Tierlist wird gerade neu aufgebaut.', 'The tier list is being rebuilt.')}</p>`}

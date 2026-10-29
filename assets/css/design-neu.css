@@ -37,6 +37,7 @@ body.nd-mini .nd-brand img{width:44px;height:50px;object-fit:cover;object-positi
 .nd-search kbd{font:inherit;font-size:.7rem;border:1px solid var(--line-2);border-radius:5px;padding:0 6px;color:var(--muted)}
 .nd-search:hover{border-color:var(--cy);box-shadow:0 0 18px rgba(46,230,214,.15)}
 .nd-top .set-sw{display:flex;align-items:center;border:0}
+.nd-top .set-menu{left:auto;right:0;top:calc(100% + 6px)}   /* Menü rechtsbündig unter dem Knopf – ragt nicht aus dem Bild (kein seitliches Verschieben) */
 .nd-top .tb-lang{margin:0}
 .nd-me{display:flex;align-items:center;gap:10px}
 .nd-me>img{width:38px;height:38px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--pink),0 0 14px rgba(247,22,110,.35)}
@@ -840,6 +841,7 @@ body.nd-mini .nds-soon{display:none}
   border:1px solid rgba(46,230,214,.22);background:radial-gradient(420px 220px at 50% 0%,rgba(46,230,214,.12),transparent 70%),radial-gradient(360px 200px at 50% 110%,rgba(247,22,110,.12),transparent 70%),linear-gradient(160deg,rgba(9,36,50,.82),rgba(3,17,27,.92));box-shadow:0 18px 40px rgba(0,0,0,.3)}
 .gd-soon-ic{display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:18px;color:var(--cy2);background:rgba(46,230,214,.1);border:1px solid rgba(46,230,214,.3);box-shadow:0 0 24px rgba(46,230,214,.2)}
 .gd-soon-ic svg{width:34px;height:34px}
+.gd-soon-img{width:96px;height:96px;filter:drop-shadow(0 0 18px rgba(46,230,214,.35))}   /* Gameplans: eigenes Symbol statt Strich-Symbol */
 .gd-soon b{font-family:var(--ff-head);font-style:italic;font-weight:900;font-size:clamp(2rem,5vw,3.2rem);line-height:1;text-transform:uppercase;letter-spacing:.01em;
   background:linear-gradient(90deg,#fff 0%,var(--cy2) 55%,#ff6fa6 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(46,230,214,.25))}
 .gd-soon p{margin:0;max-width:440px;color:var(--muted);font-size:.95rem}
@@ -1113,3 +1115,37 @@ html.nd{scrollbar-gutter:stable}
 .dsh-mtl .ct:hover{transform:translateY(-3px);filter:brightness(1.12)}
 .dsh-mtl .ct-tr{bottom:-9px}
 @media (max-width:640px){.dsh-mtl .tl-row{grid-template-columns:40px 1fr}.dsh-mtl .tl-letter b{font-size:1.8rem}.dsh-mtl .ct{width:44px;height:51px}}
+/* Topleiste neu: Logo → Dashboard, Suche über die ganze Seite, rechts LP-Grenzen, Patch-Stand, Set und Einstellungen (Zahnrad) */
+.nd-top .nd-search{flex:0 1 480px;width:auto;min-width:0;height:42px;margin-left:6px}
+.nd-top .nd-search span{color:var(--faint)}
+.nd-r{gap:14px}
+.nd-stats{display:flex;align-items:center;gap:14px;flex:none}
+.nd-r,.nd-r>*,.nd-lp,.nd-patch{flex:none}   /* rechte Seite nie stauchen – das Suchfeld wird schmaler */
+.nd-lp{display:flex;align-items:center;gap:6px;height:var(--topH);font-size:1.35rem;color:var(--text);white-space:nowrap}
+.nd-lp img{width:62px;height:62px;margin:0 -6px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(0,0,0,.55))}   /* fast so hoch wie die Leiste (64 px) – die Embleme haben eigenen Rand */
+.nd-lp .tl-dot.off{background:var(--faint);animation:none;box-shadow:none}
+/* leeres Effekt-Element in den Knöpfen nimmt keinen Platz – Zahnrad mittig, Pfeil der Set-Auswahl ganz rechts */
+.nd-set .nd-lang-btn>span,.nd-top .set-btn>span:last-child{position:absolute}
+.nd-lp b{font-weight:800}
+.nd-lp:hover b{color:var(--cy2)}
+.nd-patch{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:99px;border:1px solid rgba(148,200,255,.18);background:rgba(15,20,35,.72);font-size:.78rem;color:#b9c3dd;white-space:nowrap}
+.nd-patch b{color:var(--text);font-weight:800}
+.nd-patch span{color:var(--faint)}.nd-patch em{font-style:normal;color:#b9c3dd;font-weight:700}
+.nd-patch:hover{border-color:var(--cy)}
+.nd-gear{width:20px;height:20px}
+.nd-set .nd-lang-btn{width:38px;height:38px;justify-content:center;padding:0}
+.nd-set .nd-lang-btn:hover .nd-gear,.nd-set.open .nd-gear{transform:rotate(45deg)}
+.nd-gear{transition:transform .25s}
+.nd-set-h{display:block;padding:6px 10px 2px;font-size:.9rem;color:var(--text)}
+.nd-set-l{display:block;padding:6px 10px 4px;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.nd-set .nd-lang-menu{min-width:190px}
+@media (max-width:1380px){.nd-lp:nth-child(2){display:none}}
+@media (max-width:1200px){.nd-lp{display:none}}
+@media (max-width:980px){.nd-patch span{display:none}}
+@media (max-width:760px){.nd-stats{display:none}.nd-top .nd-search{flex:none;width:40px;justify-content:center;padding:0;margin-left:auto}.nd-top .nd-search span,.nd-top .nd-search kbd{display:none}.nd-r{margin-left:0}}
+/* Einklappen: Symbole bleiben exakt an ihrer Stelle – gleiche Größe und Abstände wie offen, Zwischenüberschriften behalten ihren Platz (unsichtbar) */
+body.nd-mini .nds-link{justify-content:flex-start;padding:9px 0 9px 12px}
+body.nd-mini .nds-link>.nds-ic,body.nd-mini .nds-link>svg{flex:none}
+body.nd-mini .nds-ic{width:31px;height:31px}
+body.nd-mini .nds-cap{display:block;visibility:hidden;overflow:hidden}
+body.nd-mini .nds-gap{height:30px}
