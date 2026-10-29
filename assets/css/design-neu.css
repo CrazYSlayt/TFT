@@ -861,9 +861,14 @@ body.nd-mini .nds-soon{display:none}
 .nd .page-head .updated.tl-badge{position:absolute;top:-14px;right:-6px;margin:0;display:inline-flex;align-items:center;gap:8px;padding:5px 12px;border-radius:99px;
   font-size:.72rem;font-weight:600;color:#b9c3dd;background:rgba(15,20,35,.72);border:1px solid rgba(148,200,255,.18);white-space:nowrap}
 .tl-badge span+span::before{content:"·";margin-right:8px;color:var(--faint)}
-/* Patch-Stand auf den übrigen Datenseiten: gleiches Abzeichen, aber unter der Einleitung statt oben rechts (dort sitzen oft Maskottchen) */
-.pt-stamp{display:flex;width:fit-content;max-width:100%;margin:12px auto 0;align-items:center;gap:8px;padding:5px 12px;border-radius:99px;
+/* Patch-Stand auf den übrigen Datenseiten: gleiches Abzeichen wie bei der Tierlist, aber oben links (rechts sitzen oft Maskottchen) */
+/* !important: Tool-Köpfe setzen alle Kinder auf position:relative (.page-head.art-on > :not(.buddy)) */
+.pt-stamp{position:absolute !important;top:0;left:0;z-index:2;display:inline-flex;align-items:center;gap:8px;padding:5px 12px;border-radius:99px;
   font-size:.72rem;font-weight:600;color:#b9c3dd;background:rgba(15,20,35,.72);border:1px solid rgba(148,200,255,.18);white-space:nowrap}
+.chp-hero>.pt-stamp{top:16px;left:18px}   /* Champion- und Comp-Karten: nicht auf die abgerundete Ecke */
+.cv-stage>.pt-stamp,#page-library>.wrap>.pt-stamp{top:44px;left:28px}   /* Bibliothek: innerhalb des Rahmens, auf Höhe der Überschrift */
+.page-head>.pt-stamp{top:26px}   /* Tools: der Kopf beginnt direkt unter der Leiste – auf Höhe der Cheatsheet- und Bibliotheks-Abzeichen */
+@media (max-width:760px){.pt-stamp{position:static !important;margin:0 0 10px;width:fit-content}}
 .tl-badge b{color:#3ddc84;font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.68rem}
 .tl-badge b+span::before{content:"·";margin-right:8px;color:var(--faint)}
 .tl-dot{width:8px;height:8px;border-radius:50%;flex:none;background:#3ddc84;box-shadow:0 0 0 0 rgba(61,220,132,.6);animation:tl-live 2s ease-out infinite}
@@ -1095,3 +1100,16 @@ html.nd{scrollbar-gutter:stable}
 }
 @media (min-width:1201px){.dsh-bar .dsh-bubble{transform:translateY(-26px);margin-left:-40px;padding:12px 26px 22px}.dsh-bar .dsh-bubble b{font-size:1.02rem}}
 @media (min-width:901px) and (max-width:1200px){.dsh-bar[class]{flex-wrap:nowrap;margin-top:14px}.dsh-bar .dsh-bubble{display:none}.dsh-bar .dsh-hi{flex:0 0 0}.dsh-bar .dsh-stats{flex:1 1 auto;margin-left:0;justify-content:space-between;flex-wrap:nowrap;gap:10px}}   /* mittlere Breite: eine Reihe statt Umbruch */
+/* Dashboard: Tierlist im Kleinformat (gleiche Reihen und Kacheln wie /tierlist) */
+.dsh-mtl .tl-tier{margin:0 0 10px}
+.dsh-mtl .tl-tier:last-child{margin-bottom:0}
+.dsh-mtl .tl-row{grid-template-columns:54px 1fr;gap:10px}
+.dsh-mtl .tl-letter{min-height:84px;border-radius:12px;box-shadow:0 0 16px color-mix(in srgb,var(--tc) 40%,transparent)}
+.dsh-mtl .tl-letter::before,.dsh-mtl .tl-letter::after{display:none}
+.dsh-mtl .tl-letter b{font-size:2.4rem}
+.dsh-mtl .tl-tiles{min-height:84px;gap:14px 12px;padding:8px 14px 14px;border:1px solid color-mix(in srgb,var(--tc) 55%,transparent);border-radius:14px;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 10%,transparent),transparent 60%),rgba(3,17,27,.55)}
+.dsh-mtl .ct{width:58px;height:67px}
+.dsh-mtl .ct:hover{transform:translateY(-3px);filter:brightness(1.12)}
+.dsh-mtl .ct-tr{bottom:-9px}
+@media (max-width:640px){.dsh-mtl .tl-row{grid-template-columns:40px 1fr}.dsh-mtl .tl-letter b{font-size:1.8rem}.dsh-mtl .ct{width:44px;height:51px}}

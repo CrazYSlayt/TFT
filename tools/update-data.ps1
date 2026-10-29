@@ -150,6 +150,8 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
     $o['api'] = [string]$t['apiName']; $o['n'] = [string]$t['name']
     $o['de'] = $(if ($d) { [string]$d['name'] } else { [string]$t['name'] })
     $o['bp'] = [int[]]$bp; $o['icon'] = Png $t['icon']
+    # Farbe jeder Stufe wie im Spiel (Riot „style“): 1 Bronze, 3 Silber, 4 einzigartig, 5 Gold, 6 Prismatisch – bei doppelter Stufe die niedrigere
+    $o['bs'] = [int[]]@($bp | ForEach-Object { $m = $_; [int](@(@($t['effects']) | Where-Object { $_ -and [int]$_['minUnits'] -eq $m } | ForEach-Object { [int]$_['style'] }) | Measure-Object -Minimum).Minimum })
     $o['desc'] = $(if ($d -and $d['desc']) { [string]$d['desc'] } else { [string]$t['desc'] })
     if ($t['desc']) { $enTraits[$o['api']] = [string]$t['desc'] }
     # Werte je Stufe (z. B. 3/5/7 Units) mit entschlüsselten Namen

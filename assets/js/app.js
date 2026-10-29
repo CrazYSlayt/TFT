@@ -84,7 +84,7 @@ function traitDesc(x){
     manaregen:['Manaregeneration', 'Mana Regen'], mana:['Mana', 'Mana'], crit:['Krit-Chance', 'Crit Chance'], critmult:['Krit-Schaden', 'Crit Damage'], da:['Schadensverstärkung', 'Damage Amp'], dr:['Haltbarkeit', 'Durability'], sv:['Omnivampir', 'Omnivamp'], omnivamp:['Omnivampir', 'Omnivamp']};
   return plainDesc(s.replace(/%i:scale([A-Za-z]+)%/g, (m, k)=>{ const t = ST[k.toLowerCase()]; return t ? L(t[0], t[1]) : k.replace(/([a-z])([A-Z])/g, '$1 $2'); }).replace(/%i:[^%]*%/g, '')).replace(/\(\)\s*/g, '');
 }
-const traits = TFT_DATA.traits.map(x=>{ const m = TRAIT_META[x.n] || {}; return {n:x.n, cat:m.cat||'origin', bp:x.bp.map(String), d:(!EN && m.d) || traitDesc(x)}; });
+const traits = TFT_DATA.traits.map(x=>{ const m = TRAIT_META[x.n] || {}; return {n:x.n, cat:m.cat||'origin', bp:x.bp.map(String), bs:x.bs || null, d:(!EN && m.d) || traitDesc(x)}; });
 
 
 
@@ -249,14 +249,20 @@ function compTraits(c){
     (b.i||[]).forEach(id=>{ const it=findItem(id); const tr = it && emblemTrait(it); if(tr && !(ch && ch.t.includes(tr))) cnt[tr]=(cnt[tr]||0)+1; });
   });
   return Object.entries(cnt).map(([n,k])=>{
-    const bp = (traitBy[n]||{bp:['1']}).bp.map(Number);
+    const t = traitBy[n] || {bp:['1']}, bp = t.bp.map(Number);
     const lvl = bp.filter(x=>x<=k).length, max = bp.length;
-    const cls = !lvl ? 0 : max===1 ? 3 : lvl===max ? (max>=4?4:3) : lvl===1 ? 1 : 2;
-    return {n,k,lvl,cls,uniq:max===1};
+    // Farbe der erreichten Stufe aus Riots Daten (bs), sonst wie früher geschätzt (ältere Set-Dateien ohne bs)
+    const st = t.bs && lvl ? t.bs[lvl - 1] : 0;
+    const cls = !lvl ? 0 : st ? (TRAIT_STYLE[st] || 0) : max===1 ? 3 : lvl===max ? (max>=4?4:3) : lvl===1 ? 1 : 2;
+    return {n,k,lvl,cls,uniq:st ? st===4 : max===1};
   }).filter(t=>t.lvl>0).sort((a,b)=>b.cls-a.cls || b.k-a.k);
 }
 // Offizielle Trait-Glyphe im Hex-Rahmen wie im Spiel (Bronze/Silber/Gold/Prisma, Unique = orange)
 const HEX_LVL = ['base','bronze','silver','gold','prism'];
+// Riot „style“ je Trait-Stufe → Rahmen: 1 Bronze, 3 Silber, 5 Gold, 6 Prismatisch (4 = einzigartig, eigene Farbe)
+const TRAIT_STYLE = {1:1, 3:2, 4:3, 5:3, 6:4};
+// Stufen-Zahlen eines Traits in ihrer Spiel-Farbe (Bibliothek, Champion-Seiten)
+const bpHTML = t => t.bp.map((b, i)=>{ const s = t.bs && t.bs[i]; return `<span${s ? ` class="bp-${s === 4 ? 'unique' : HEX_LVL[TRAIT_STYLE[s]] || 'base'}"` : ''}>${b}</span>`; }).join('');
 function traitHex(n, cls='base', size=28){ return `<span class="thx thx-${cls}" style="--s:${size}px" title="${esc(n)}"><img src="${traitImg(n)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"></span>`; }
 const traitCls = t => t.uniq ? 'unique' : HEX_LVL[t.cls];
 const tBadge = (t,withName) => `<span class="tbadge" title="${esc(t.n)} (${t.k})">${traitHex(t.n, traitCls(t), 18)}<span>${t.k}${withName?' '+esc(t.n):''}</span></span>`;
@@ -1140,10 +1146,11 @@ function updateTlNote(){
   if(D.source==='TFTAcademy'){ el.innerHTML = `Stand: Patch ${esc(D.patch||TL_PATCH)} · Bewertungen und Aufstellungen nach ${link}`; return; }
   const d = D.updated ? new Date(D.updated).toLocaleDateString(LOC) : '';
   if(ND){   // neues Design: kompaktes Abzeichen oben rechts – grüner Punkt „Live“, wenn die Tierlist zum aktuellen Patch passt
-    const p = String(D.patch||TL_PATCH), live = p === String(((window.TFT_PATCHES||[])[0]||{}).id || TL_PATCH);
+    // Patch mit Variante (18.5c) wie auf den Datenseiten, dazu „geändert am“ = Tag der letzten Änderung in der Redaktion (admSave setzt updated)
+    const cur = (window.TFT_PATCHES||[])[0] || {}, p = String(D.patch||TL_PATCH), live = p === String(cur.id || TL_PATCH), v = live ? patchVariant(cur) : '';
     el.classList.add('tl-badge'); el.classList.toggle('old', !live);
-    el.title = `${L('Bewertungen von TFTClimb', 'Ratings by TFTClimb')}${d ? ' · ' + L('aktualisiert am ', 'updated on ') + d : ''}`;
-    el.innerHTML = `<i class="tl-dot"></i>${live ? '<b>Live</b>' : ''}<span>Patch ${esc(p)}</span>${d ? `<span>${esc(d)}</span>` : ''}${D.basedOn==='TFTAcademy' || (TL_FILE && TL_FILE.source==='TFTAcademy') ? `<span>${L('Aufstellungen nach', 'Boards from')} ${link}</span>` : ''}`;
+    el.title = L('Bewertungen von TFTClimb', 'Ratings by TFTClimb');
+    el.innerHTML = `<i class="tl-dot"></i>${live ? '<b>Live</b>' : ''}<span>Patch ${esc(p + v)}</span>${d ? `<span>${L('geändert am', 'updated')} ${esc(d)}</span>` : ''}${D.basedOn==='TFTAcademy' || (TL_FILE && TL_FILE.source==='TFTAcademy') ? `<span>${L('Aufstellungen nach', 'Boards from')} ${link}</span>` : ''}`;
     return;
   }
   el.innerHTML = `Stand: Patch ${esc(D.patch||TL_PATCH)}${d?' · aktualisiert am '+d:''} · Bewertungen von TFTClimb${D.basedOn==='TFTAcademy' || (TL_FILE && TL_FILE.source==='TFTAcademy') ? ' · Aufstellungen ursprünglich nach ' + link : ''}`;
@@ -1671,8 +1678,39 @@ $('#tlTabs').addEventListener('click', e=>{
 });
 
 /* bibliothek tabs */
-const LIB_LABEL = {champions:'Champions',items:'Items',traits:'Traits'};
+const LIB_LABEL = {champions:'Champions',traits:'Traits',items:'Items',augments:'Augments'};
+// Augments der Bibliothek: alle aus den Spieldaten, gleicher Name + Stufe nur einmal (die Set-Fassung DA_<Set>_ vor älteren Kopien),
+// ohne Einträge ohne Stufe. Werte im Text kommen aus fx – bevorzugt die Fassung, bei der alle Werte bekannt sind
+const LIB_AUGS = (()=>{
+  const set = new RegExp('^DA_' + TFT_DATA.set + '_'), open = a => { const f = Object.keys(a.fx || {}).map(k=>k.toLowerCase());
+    return [...String(a.desc || '').matchAll(/@([A-Za-z0-9_]+)(\*100)?@/g)].filter(m=>!f.includes(m[1].toLowerCase())).length; };
+  const rank = a => (set.test(a.id) ? 0 : /^DA_/.test(a.id) ? 1 : 2) * 100 + open(a), best = {};
+  AUGS.filter(a=>[1, 2, 3].includes(a.lv)).forEach(a=>{ const k = a.en + '|' + a.lv; if(!best[k] || rank(a) < rank(best[k])) best[k] = a; });
+  return Object.values(best);
+})();
+let libAugLv = 'all', libAugDone = false;
+const augTxt = a => String(a.desc || '').replace(/<[^>]+>/g, ' ').toLowerCase();
+function renderLibAugs(){
+  const q = $('#libAugSearch').value.toLowerCase().trim();
+  const list = LIB_AUGS.filter(a=>(libAugLv === 'all' || a.lv === +libAugLv) && (!q || a.en.toLowerCase().includes(q) || a.de.toLowerCase().includes(q) || augTxt(a).includes(q)));
+  $('#libAugCount').textContent = L(`${list.length} von ${LIB_AUGS.length} Augments`, `${list.length} of ${LIB_AUGS.length} augments`);
+  const FR = {1:'silver', 2:'gold', 3:'prism'}, NAME = {1:L('Silber', 'Silver'), 2:'Gold', 3:L('Prismatisch', 'Prismatic')};
+  $('#libAugGroups').innerHTML = [1, 2, 3].map(lv=>{
+    const g = list.filter(a=>a.lv === lv).sort((a, b)=>L(a.de, a.en).localeCompare(L(b.de, b.en)));
+    if(!g.length) return '';
+    return `<div class="group-title"><img class="la-fr" src="assets/icons/tft/augment-frame-${FR[lv]}.webp" alt="" width="18" height="27"><h3 style="margin:0">${NAME[lv]}</h3><span class="count" style="margin:0">${g.length}</span></div>
+      <div class="la-grid">${g.map(a=>{ const n = L(a.de || a.en, a.en), alt = EN || a.de === a.en ? '' : a.en;
+        return `<div class="la-card t${lv}"><img class="la-ic" src="${augImg(a)}" alt="" width="56" height="56" loading="lazy"><div><h4>${esc(n)}</h4>${alt ? `<small>${esc(alt)}</small>` : ''}<p>${fmtDesc(a.desc, a.fx)}</p></div></div>`; }).join('')}</div>`;
+  }).join('') || viSays(L('Kein Augment gefunden. Probier einen anderen Namen oder Effekt!', 'No augment found. Try another name or effect!'));
+}
+$('#libAugFilters').addEventListener('click', e=>{
+  const b = e.target.closest('.chip-btn'); if(!b) return;
+  $('#libAugFilters').querySelectorAll('.chip-btn').forEach(x=>x.classList.toggle('active', x===b));
+  libAugLv = b.dataset.alv; renderLibAugs();
+});
+$('#libAugSearch').addEventListener('input', renderLibAugs);
 function setLib(tab){
+  if(tab === 'augments' && !libAugDone){ libAugDone = true; renderLibAugs(); }   // erst beim ersten Öffnen bauen (gut 400 Karten)
   Object.keys(LIB_LABEL).forEach(t=>{ $('#lib-'+t).hidden = t!==tab; });
   $('#libTabs').querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.lib===tab));
   $('#libCrumb').textContent = LIB_LABEL[tab];
@@ -1680,8 +1718,13 @@ function setLib(tab){
   if(ND){
     let h = $('#ndLibHead');
     if(!h){ $('#page-library>.wrap').insertAdjacentHTML('afterbegin', '<div class="cv-head" id="ndLibHead"></div>'); h = $('#ndLibHead'); }
-    const all = {items:L('Alle Items', 'All items'), traits:L('Alle Traits', 'All traits')}[tab] || '';
-    h.innerHTML = `<div class="cv-crumb">Home / ${L('Bibliothek', 'Library')} / ${LIB_LABEL[tab]}</div><h1 class="cv-h1"><span>TFT</span> ${LIB_LABEL[tab]}</h1><p class="cv-sub">${all} · Set ${TFT_DATA.set}</p>`;
+    const all = {items:L('Alle Items', 'All items'), traits:L('Alle Traits', 'All traits'), augments:L('Alle Augments', 'All augments')}[tab] || '';
+    // Reiter im Kopf wie bei den Champions (gleiche Stelle, kein Sprung beim Wechsel); die alte Reiterleiste #libTabs bleibt nur fürs alte Design
+    const nav = `<nav class="cv-tabs" aria-label="${L('Bibliothek', 'Library')}">${Object.keys(LIB_LABEL).map(k=>`<a${k === tab ? ' class="on"' : ''} href="/bibliothek/${k}">${LIB_LABEL[k]}</a>`).join('')}</nav>`;
+    const lead = h.querySelector('p[data-meta]');   // Einleitung (metaLead) behalten, damit nichts nachrutscht
+    h.innerHTML = `<div class="cv-crumb">Home / ${L('Bibliothek', 'Library')} / ${LIB_LABEL[tab]}</div><h1 class="cv-h1"><span>TFT</span> ${LIB_LABEL[tab]}</h1><p class="cv-sub">${all} · Set ${TFT_DATA.set}</p>${nav}`;
+    if(lead) h.querySelector('.cv-sub').after(lead);
+    $('#libTabs').style.display = 'none';   // hidden reicht nicht – .tabs setzt display
   }
   if(libTab!==tab){ libTab = tab; buddyNext('bibliothek', true); }
 }
@@ -1700,7 +1743,7 @@ function renderChampV2(){
         <div class="cv-crumb">Home / ${L('Bibliothek', 'Library')} / Champions</div>
         <h1 class="cv-h1"><span>TFT</span> Champions</h1>
         <p class="cv-sub">${L('Alle Champions', 'All champions')} · Set ${TFT_DATA.set}</p>
-        <nav class="cv-tabs" aria-label="${L('Bibliothek', 'Library')}"><a class="on" href="/bibliothek/champions">Champions</a><a href="/bibliothek/items">Items</a><a href="/bibliothek/traits">Traits</a></nav>
+        <nav class="cv-tabs" aria-label="${L('Bibliothek', 'Library')}"><a class="on" href="/bibliothek/champions">Champions</a><a href="/bibliothek/traits">Traits</a><a href="/bibliothek/items">Items</a><a href="/bibliothek/augments">Augments</a></nav>
       </div>
       <div class="cv-filters">
         <button type="button" class="cv-chip on" data-cvcost="all">${L('Alle', 'All')}<span></span></button>
@@ -1873,13 +1916,14 @@ function traitTiersHTML(name){
   else { rows = [...d.matchAll(/<row>([\s\S]*?)<\/row>/gi)].map(m=>m[1]); d = d.replace(/<row>[\s\S]*?<\/row>/gi, ''); }
   const sub = (txt, e) => fmtDesc(txt.replace(/@MinUnits@/gi, e.min), e.v);
   const intro = sub(d, fx[0]);
-  const list = rows.map((r,i)=>fx[i] ? `<li><span class="tt-bp">${fx[i].min}</span><span>${sub(r, fx[i]).replace(/^\(\d+\)\s*/, '')}</span></li>` : '').join('');
+  const t = traitBy[name], bpCls = m => { const i = t ? t.bp.map(Number).indexOf(+m) : -1, s = i >= 0 && t.bs ? t.bs[i] : 0; return s ? ' bp-' + (s === 4 ? 'unique' : HEX_LVL[TRAIT_STYLE[s]] || 'base') : ''; };   // Stufe in Spielfarbe
+  const list = rows.map((r,i)=>fx[i] ? `<li><span class="tt-bp${bpCls(fx[i].min)}">${fx[i].min}</span><span>${sub(r, fx[i]).replace(/^\(\d+\)\s*/, '')}</span></li>` : '').join('');
   return `${intro ? `<p class="tt-intro">${intro}</p>` : ''}${list ? `<ul class="tt-rows">${list}</ul>` : ''}`;
 }
 
 function openChamp(name){
   const c = champBy[name]; if(!c) return;
-  const tr = c.t.map(tn=>{const t=traits.find(x=>x.n===tn); return t?`<div class="trait" style="margin-top:10px"><div class="trait-top">${traitHex(t.n, t.bp.length===1?'unique':'base', 28)}<h4>${esc(t.n)}</h4><div class="bp">${t.bp.map(b=>`<span>${b}</span>`).join('')}</div></div><p style="margin:0">${esc(t.d)}</p>${traitMore(t.n)}</div>`:'';}).join('');
+  const tr = c.t.map(tn=>{const t=traits.find(x=>x.n===tn); return t?`<div class="trait" style="margin-top:10px"><div class="trait-top">${traitHex(t.n, t.bp.length===1?'unique':'base', 28)}<h4>${esc(t.n)}</h4><div class="bp">${bpHTML(t)}</div></div><p style="margin:0">${esc(t.d)}</p>${traitMore(t.n)}</div>`:'';}).join('');
   const inComps = comps.filter(x=>x.core.includes(c.n)).map(x=>`<button class="it-link" data-comp="${x.slug}" style="padding:4px 12px">${x.tier} · ${esc(x.name)}<span></span></button>`).join('') || '<span class="note" style="margin:0">Noch in keiner Tierlist-Comp.</span>';
   // Häufigste Items auf diesem Champion über alle Comps
   const freq = {};
@@ -1939,7 +1983,7 @@ function renderChampPage(slug){
   const card = (title, body, cls) => `<section class="card chp-card ${cls||''}"><h2>${title}</h2>${body}</section>`;
   const traitCards = c.t.map(tn=>{ const t = traits.find(x=>x.n===tn); if(!t) return '';
     const mates = champions.filter(x=>x.n!==n && x.t.includes(tn));
-    return `<div class="chp-trait"><div class="trait-top">${traitHex(t.n, t.bp.length===1 ? 'unique' : 'base', 30)}<h3>${esc(t.n)}</h3><div class="bp">${t.bp.map(b=>`<span>${b}</span>`).join('')}</div></div>
+    return `<div class="chp-trait"><div class="trait-top">${traitHex(t.n, t.bp.length===1 ? 'unique' : 'base', 30)}<h3>${esc(t.n)}</h3><div class="bp">${bpHTML(t)}</div></div>
       <p>${esc(t.d)}</p>${traitMore(t.n)}${mates.length ? `<div class="chp-mates">${mates.map(x=>chLink(x, 34)).join('')}</div>` : ''}</div>`; }).join('');
   box.innerHTML = `
     <div class="crumb"><a href="/">Home</a> / <a href="/bibliothek">Bibliothek</a> / <a href="/bibliothek/champions">Champions</a> / ${esc(n)}</div>
@@ -2002,8 +2046,8 @@ function renderTraits(){
     const units = champions.filter(c=>c.t.includes(t.n));
     const col = t.cat==='origin' ? 'var(--accent)' : 'var(--gold)';
     const icon = t.cat==='origin' ? '<path d="M12 3c-3 3-6 6-6 10a6 6 0 0 0 12 0c0-4-3-7-6-10Z"/>' : '<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/>';
-    return `<div class="trait"><div class="trait-top">${traitHex(t.n, t.bp.length===1?'unique':'base', 34)}<div><h4>${esc(t.n)}</h4><small style="color:var(--faint);font-size:.72rem">${t.cat==='origin'?'Ursprung':'Klasse'}</small></div></div>
-      <div class="bp">${t.bp.map(b=>`<span>${b}</span>`).join('')}</div><p>${esc(t.d)}</p>${traitMore(t.n)}
+    return `<div class="trait"><div class="trait-top">${traitHex(t.n, t.bp.length===1?'unique':'base', 44)}<div><h4>${esc(t.n)}</h4><small style="color:var(--faint);font-size:.72rem">${t.cat==='origin'?'Ursprung':'Klasse'}</small></div></div>
+      <div class="bp">${bpHTML(t)}</div><p>${esc(t.d)}</p>${(h=>h ? `<div class="tt-open">${h}</div>` : '')(traitTiersHTML(t.n))}
       <div class="trait-units">${units.map(u=>`<button data-champ="${esc(u.n)}" style="background:none;border:0;padding:0;cursor:pointer">${avatar(u.n,40)}<span></span></button>`).join('')}</div></div>`;
   }).join('');
 }
@@ -2073,10 +2117,17 @@ function fmtDesc(desc, fx){
 const itImg = (it,size) => `<img src="${it.img}" alt="" width="${size}" height="${size}" loading="lazy">`;
 const itLink = it => `<button class="it-link" data-item="${it.id}">${itImg(it,26)}${esc(it.en)}<span></span></button>`;
 
+// Bibliothek: alle Infos direkt in der Karte (Rezept, Werte, Beschreibung, Baut in / Lichtversion) – nichts zum Aufklappen
 function itemCardHTML(it){
-  const rec = it.comp.length===2 ? `<div class="it-recipe">${it.comp.map(c=>itemById[c]?itImg(itemById[c],22):'').join('+')}</div>` : '';
-  const st = itemStats(it);
-  return `<button class="it-card" data-item="${it.id}"><img class="it-ic" src="${it.img}" alt="" width="48" height="48" loading="lazy"><div><h4>${esc(it.en)}</h4>${it.de!==it.en?`<small>${esc(it.de)}</small>`:''}${rec}${st?`<div class="it-stats">${st}</div>`:''}</div><span></span></button>`;
+  const mini = x => `<img src="${x.img}" alt="${esc(L(x.de || x.en, x.en))}" title="${esc(L(x.de || x.en, x.en))}" width="24" height="24" loading="lazy">`;
+  const rec = it.comp.length===2 ? `<div class="it-recipe">${it.comp.map(c=>itemById[c]?mini(itemById[c]):'').join('+')}</div>` : '';
+  const st = itemStats(it), desc = it.cat==='component' && st ? '' : itemDescHTML(it);
+  const into = it.cat==='component' ? ITEMS.filter(r=>r.comp.includes(it.id)).sort((a,b)=>a.en.localeCompare(b.en)) : [];
+  const base = it.cat==='radiant' ? radiantBase(it) : null;
+  const n = L(it.de || it.en, it.en), alt = EN || !it.de || it.de === it.en ? '' : it.en;
+  return `<div class="it-card"><img class="it-ic" src="${it.img}" alt="" width="56" height="56" loading="lazy"><div><h4>${esc(n)}</h4>${alt?`<small>${esc(alt)}</small>`:''}${rec}${st?`<div class="it-stats">${st}</div>`:''}
+    ${desc?`<p class="it-cdesc">${desc}</p>`:''}${into.length?`<div class="it-into"><small>${L('Baut in', 'Builds into')}</small><span>${into.map(mini).join('')}</span></div>`:''}
+    ${base?`<div class="it-into"><small>${L('Lichtversion von', 'Radiant version of')}</small><span>${mini(base)}<b>${esc(L(base.de || base.en, base.en))}</b></span></div>`:''}</div></div>`;
 }
 let itemCatF = 'all';
 function renderItems(){
@@ -4995,6 +5046,8 @@ function pageMeta(page, sub){
     case 'bibliothek':
       if(sub==='items') return [L(`TFT Items ${S} – Rezepte & Werte`, `TFT Items ${S} – Recipes & Stats`), L(`Alle TFT Items in ${S}: Rezepte, Komponenten, Lichtversionen, Artefakte und Embleme mit ihren Werten auf einen Blick.`,
         `All TFT items in ${S}: recipes, components, radiant items, artifacts and emblems with their stats at a glance.`)];
+      if(sub==='augments') return [L(`TFT Augments ${S} – alle Effekte`, `TFT Augments ${S} – All Effects`), L(`Alle TFT Augments in ${S}: Silber, Gold und Prismatisch mit ihren Effekten und Werten – durchsuchbar auf einen Blick.`,
+        `All TFT augments in ${S}: silver, gold and prismatic with their effects and values – searchable at a glance.`)];
       if(sub==='traits') return [L(`TFT Traits ${S} – Stufen & Units`, `TFT Traits ${S} – Tiers & Units`), L(`Alle TFT Traits in ${S}: Ursprünge und Klassen mit Stufen, Effekten und den passenden Champions auf einen Blick.`,
         `All TFT traits in ${S}: origins and classes with tiers, effects and the matching champions at a glance.`)];
       return [L(`TFT Champions ${S} – Kosten & Traits`, `TFT Champions ${S} – Cost & Traits`), L(`Alle ${champions.length} TFT Champions in ${S}: Kosten, Traits und Fähigkeiten – mit den besten Items und Builds aus unserer Tierlist.`,
@@ -5118,22 +5171,27 @@ function metaLead(desc){
 // Patch-Stand sichtbar unter der Einleitung jeder Datenseite (wie das Abzeichen der Tierlist): Patch und Datum der Daten.
 // Comp- und Champion-Seiten nutzen das Datum der Tierlist, alle anderen das der Spieldaten. Grüner Punkt „Live“, wenn es der aktuelle Patch ist
 const STAMP_PAGES = ['tools', 'builder', 'cheatsheet', 'bibliothek', 'champion', 'comp'];
+// Variante des Patches aus Riots Nachträgen: jedes Datum einer „Patch-Aktualisierung“ ist ein B-, C- … Patch (18.5 + 2 Nachträge = 18.5c)
+function patchVariant(pt){
+  const days = new Set();
+  (pt && pt.notes || []).forEach(s=>{ const g = String(s.grp || ''); if(/AKTUALISIERUNG|MID-PATCH/i.test(g)) (g.match(/\d{1,2}\.\s*[A-ZÄÖÜ]{3,}|[A-Z]{3,}\s+\d{1,2}(?:ST|ND|RD|TH)?\b/gi) || []).forEach(d=>days.add(d.replace(/\s+/g, ' ').toUpperCase())); });
+  return days.size ? String.fromCharCode(97 + Math.min(days.size, 25)) : '';
+}
 function patchStamp(page){
   document.querySelectorAll('.pt-stamp').forEach(e=>e.remove());
   const pg = document.querySelector('.page.active'), p = String(TL_PATCH || (CURRENT_PATCH ? CURRENT_PATCH.id : ''));
   if(!pg || !p || !STAMP_PAGES.includes(page)) return;
   const vis = e => e.getClientRects().length > 0, h1 = [...pg.querySelectorAll('h1')].find(vis); if(!h1) return;
-  // unter die Einleitung (Meta-Text) – auch wenn dazwischen eine Unterzeile steht (Bibliothek: .cv-sub)
-  let lead = h1.nextElementSibling;
-  while(lead && lead.matches('.cv-sub')) lead = lead.nextElementSibling;
-  if(!(lead && lead.matches('p') && vis(lead))) lead = h1.nextElementSibling && h1.nextElementSibling.matches('.cv-sub') ? h1.nextElementSibling : null;
+  const cur = (window.TFT_PATCHES || [])[0] || {}, live = p === String(cur.id || p), v = live ? patchVariant(cur) : '';
   const tl = page === 'comp' || page === 'champion', raw = tl ? (tierSource.data || {}).updated : TFT_DATA.generated;
-  const d = raw ? new Date(raw).toLocaleDateString(LOC) : '', live = p === String(((window.TFT_PATCHES || [])[0] || {}).id || p);
-  const el = document.createElement('div'); el.className = 'tl-badge pt-stamp' + (live ? '' : ' old');
-  el.title = tl ? L('Stand unserer Tierlist', 'As of our tier list') : L('Stand der Spieldaten', 'As of the game data');
-  el.innerHTML = `<i class="tl-dot"></i>${live ? '<b>Live</b>' : ''}<span>Patch ${esc(p)}</span>${d ? `<span>${esc(d)}</span>` : ''}`;
-  if(/left|start/.test(getComputedStyle(h1).textAlign)) el.style.marginLeft = '0';   // linksbündige Köpfe: Abzeichen auch links
-  (lead || h1).after(el);
+  const el = document.createElement('span'); el.className = 'tl-badge pt-stamp' + (live ? '' : ' old');   // span: Köpfe stylen ihre div-Kinder (z. B. .cs-head > div)
+  el.title = (tl ? L('Stand unserer Tierlist', 'As of our tier list') : L('Stand der Spieldaten', 'As of the game data')) + (raw ? ': ' + new Date(raw).toLocaleDateString(LOC) : '');
+  el.innerHTML = `<i class="tl-dot"></i>${live ? '<b>Live</b>' : ''}<span>Patch ${esc(p + v)}</span>`;
+  // oben links in den Kopf der Seite (wie das Abzeichen der Tierlist oben rechts)
+  // Bibliothek: am äußeren Rahmen (Champions und Traits/Items/Augments gleich hoch), sonst am Kopf der Seite
+  const head = h1.closest('.cv-stage, #page-library > .wrap') || h1.closest('.page-head, .cv-head, .cs-head, .chp-hero, .cp-hero') || h1.parentElement;
+  if(getComputedStyle(head).position === 'static') head.style.position = 'relative';
+  head.prepend(el);
 }
 function headTag(sel, make){ let el = document.head.querySelector(sel); if(!el){ el = make(); document.head.appendChild(el); } return el; }
 function setMeta(page, sub){
@@ -5146,7 +5204,7 @@ function setMeta(page, sub){
   if(FILE_MODE) return;
   if(noindex){ const c = document.head.querySelector('link[rel="canonical"]'); if(c) c.remove(); return; }
   // kanonische Adresse: eine Adresse pro Inhalt (z. B. /bibliothek statt /bibliothek/champions, Builder ohne Team-Code)
-  const keep = {cheatsheet:csList().map(s=>s[0]), guides:['encounters'], tierlist:['items','augments','holds'], bibliothek:['items','traits'], tools:['rolldown','tierlist','simulator','drops','dps','augments'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
+  const keep = {cheatsheet:csList().map(s=>s[0]), guides:['encounters'], tierlist:['items','augments','holds'], bibliothek:['items','traits','augments'], tools:['rolldown','tierlist','simulator','drops','dps','augments'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
   const path = page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : page==='comp' ? compHref(compByKey[sub]) : seoPath('/' + page + (keep.includes(sub) ? '/' + sub : ''));
   headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + withLang(path);
   // beide Sprachfassungen für Suchmaschinen verknüpfen
@@ -5278,9 +5336,13 @@ function route(){
   const valid = ['home','tierlist','bibliothek','champion','comp','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','about','apply','impressum','datenschutz','patches','countdown'];
   if(!valid.includes(page)) page='notfound';
   const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche
-  const isCv = page==='bibliothek' && !['items','traits'].includes(sub);   // Champions: Wabenansicht (auch alte Adresse /bibliothek/v2)
+  const isCv = page==='bibliothek' && !['items','traits','augments'].includes(sub);   // Champions: Wabenansicht (auch alte Adresse /bibliothek/v2)
   const pageId = isCv ? 'champv2' : page==='bibliothek' ? 'library' : isSim ? 'builder' : ND && page==='home' ? 'dash' : page;
-  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+pageId));
+  // Champions ↔ Traits/Items/Augments: zwei Seiten, die wie eine wirken sollen – dort ohne Einblenden (wie beim Reiterwechsel)
+  const prevId = (document.querySelector('.page.active') || {}).id, LIB = ['page-champv2', 'page-library'];
+  const calm = LIB.includes(prevId) && LIB.includes('page-' + pageId) && prevId !== 'page-' + pageId;
+  // nofade nur beim echten Seitenwechsel setzen – bleibt die Seite gleich (Reiter Traits → Items), würde das Entfernen das Einblenden neu starten
+  document.querySelectorAll('.page').forEach(p=>{ p.classList.toggle('active', p.id==='page-'+pageId); if(prevId !== 'page-'+pageId) p.classList.toggle('nofade', calm && p.id==='page-'+pageId); });
   // Große Bilder versteckter Seiten (Tool-Karten, Maskottchen) stehen als data-src im HTML und laden erst, wenn die Seite zu sehen ist
   document.querySelectorAll(`#page-${pageId} img[data-src]`).forEach(i=>{ i.src = i.dataset.src.startsWith('assets/tools/') ? i.dataset.src + '?v=' + TOOL_ART_V : i.dataset.src; i.removeAttribute('data-src'); });
   const pageEl = $('#page-' + pageId); if(pageEl && pageId !== 'tools') toolArtLoad(pageEl);   // Tools: nur das geöffnete Tool (renderTools)
@@ -5296,8 +5358,8 @@ function route(){
   if(!isSim) simPause();
   if(page==='tierlist') setTab(['items','augments','holds'].includes(sub)?sub:'comps');
   if(page==='guides') setGuide(sub);
-  if(isCv) requestAnimationFrame(renderChampV2);
-  else if(page==='bibliothek') setLib(['items','traits'].includes(sub)?sub:'champions');
+  if(isCv) renderChampV2();   // sofort (die Seite ist schon sichtbar) – sonst blitzt beim Wechsel ein leeres Bild auf
+  else if(page==='bibliothek') setLib(['items','traits','augments'].includes(sub)?sub:'champions');
   if(page==='ranks') setRank(sub);
   if(page==='builder') builderRoute(sub, parts[2], 'builder');
   if(page==='admin') renderAdmin();
@@ -5525,6 +5587,10 @@ function renderDash(){
   // Player Card: Bild mit Challenger-Emblem, Name, Rolle, darunter Rang / Peak / Aus
   const pcard = (href, img, name, role, peak, from) => `<a class="dsh-pcard" href="${href}"><span class="dsh-pav"><img src="${img}" alt="${esc(name)}"><img class="dsh-pemb" src="${rankImg(rankBy.challenger)}" alt="Challenger"></span><b>${esc(name)}<i>#EUW</i></b><span class="dsh-prole">${esc(role)}</span><span class="dsh-pfacts"><span><small>${L('Rang', 'Rank')}</small><em>Challenger</em></span><span><small>Peak</small><em>${peak}</em></span><span><small>${L('Aus', 'From')}</small><em>${esc(from)}</em></span></span></a>`;
   const live = `<i class="sb-dot${ST_CUT_LIVE ? ' live' : ''}" title="${ST_CUT_LIVE ? L('Live-Daten', 'Live data') : L('Gespeicherter Stand', 'Saved data')}"></i>`;
+  // Tierlist im Kleinformat: dieselben Reihen und Kacheln wie auf /tierlist (S bis C; je Reihe bis zu 7 Comps), Klick → Comp-Seite
+  const mtl = ['S', 'A', 'B', 'C'].map(t=>{ const list = mainComps.filter(c=>c.tier === t).slice(0, 7); if(!list.length) return '';
+    return `<div class="tl-tier" style="--tc:${TIER_COL[t]}"><div class="tl-row"><div class="tl-letter"><b>${t}</b></div><div class="tl-tiles">${list.map(c=>{ const tr = tileTrait(c);
+      return `<a class="ct" href="${compHref(c)}" title="${esc(c.name)}" aria-label="${esc(c.name)}">${hexHTML(c.carry, 'ct-main')}${tr ? `<span class="ct-tr">${traitHex(tr.n, traitCls(tr), 20)}</span>` : ''}</a>`; }).join('')}</div></div></div>`; }).join('');
   const lpStat = (key, v, tier, label) => `<a class="dsh-lp" href="/ranks/${tier.k}"><img src="${rankImg(tier)}" alt=""><span><b data-dlp="${v || 0}" data-key="${key}">${v ? fmt(v) + ' LP' : '–'}</b><small>${live}${label}</small></span></a>`;
   box.innerHTML = `
     <div class="dsh-title"><h1>${L('TFT Tierlist, Comps', 'TFT Tier List, Comps')} <em>&amp; Coaching</em></h1></div>
@@ -5537,11 +5603,8 @@ function renderDash(){
       </div>
     </section>
     <div class="dsh-row2">
-      <section class="dsh-card"><div class="dsh-h"><h2>Top Comps</h2><a href="/tierlist">${L('Ganze Tierlist', 'Full tier list')} →</a></div>
-        ${top.length ? top.map(c=>{
-          const units = c.board.map(b=>b.u).filter(u=>champBy[u]).sort((a,b)=>(b===c.carry) - (a===c.carry) || costOf(b) - costOf(a)).slice(0, 7);
-          return `<a class="dsh-comp" href="${compHref(c)}">${tierBadge(c.tier)}<span class="dsh-cn"><b>${esc(c.name)}</b><small>${esc(compStyleName(c))} · ${esc(compDiffName(c))}</small></span><span class="dsh-units">${units.map(u=>dshHex(u)).join('')}</span><span class="dsh-pill">Carry: ${esc(c.carry)}</span></a>`; }).join('')
-          : `<p class="dsh-empty">${L('Die Tierlist wird gerade neu aufgebaut.', 'The tier list is being rebuilt.')}</p>`}
+      <section class="dsh-card dsh-mtl"><div class="dsh-h"><h2>Tierlist</h2><a href="/tierlist">${L('Ganze Tierlist', 'Full tier list')} →</a></div>
+        ${mtl || `<p class="dsh-empty">${L('Die Tierlist wird gerade neu aufgebaut.', 'The tier list is being rebuilt.')}</p>`}
       </section>
       <section class="dsh-card dsh-coach">
         <p>${L('Fundamentals und VOD-Review mit uns – auf Deutsch oder Englisch.', 'Fundamentals and VOD reviews with us – in German or English.')}</p>

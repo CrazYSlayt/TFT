@@ -25,7 +25,7 @@ const PAGES = [
   '/',
   '/tierlist', '/tierlist/items', '/tierlist/augments', '/tierlist/holds',
   '/tools', ...Object.values(TOOL_SLUG).map(s => '/tools/' + s), '/tft-team-builder',
-  '/bibliothek', '/bibliothek/items', '/bibliothek/traits',
+  '/bibliothek', '/bibliothek/traits', '/bibliothek/items', '/bibliothek/augments',
   '/ranks',
   ...['iron', 'bronze', 'silver', 'gold', 'platinum', 'emerald', 'diamond', 'master', 'grandmaster', 'challenger'].map(k => '/ranks/' + k),
   '/patches', '/tft-patch-countdown',

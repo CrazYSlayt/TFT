@@ -88,6 +88,8 @@ em.serif{font-family:inherit;font-style:italic;font-weight:inherit;color:var(--a
 main{padding-bottom:40px}
 .page{display:none}
 .page.active{display:block;animation:fade .3s ease}
+.page.active.nofade{animation:none}   /* Wechsel innerhalb der Bibliothek (Champions ↔ Traits, Items, Augments) */
+.nd #page-library [id^="lib-"]>.toolbar:first-child{margin-top:24px}   /* gleicher Abstand unter den Reitern wie bei den Champions (.cv-filters) */
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .section{padding:64px 0 0}
 .section-head{max-width:720px;margin-bottom:26px}
@@ -233,8 +235,19 @@ main{padding-bottom:40px}
 .trait-ic{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center}
 .trait-ic svg{width:16px;height:16px}
 .trait h4{margin:0;font-size:1rem}
+#lib-traits .trait h4{font-size:1.15rem}   /* Bibliothek: größere Überschrift wie bei Items und Augments */
+#lib-traits .trait-top{gap:12px;margin-bottom:8px}
 .bp{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0 8px}
 .bp span{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--bg-2);border:1px solid var(--line-2);color:var(--muted)}
+/* Stufen als Sechseck wie die Trait-Symbole, in der Farbe des Spiels (Riot „style“): Bronze, Silber, Gold, Prismatisch, einzigartig – gleiche Töne wie die Trait-Rahmen (.thx-*) */
+.bp{gap:5px}
+.bp span{display:grid;place-items:center;width:26px;height:30px;padding:0;border:0;border-radius:0;font-size:.74rem;font-weight:800;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--line-2);color:var(--text)}
+.bp span.bp-bronze{color:#2a170c;border-color:transparent;background:linear-gradient(160deg,#e0a27a,#a8673f)}
+.bp span.bp-silver{color:#1f242c;border-color:transparent;background:linear-gradient(160deg,#f1f4f8,#a3acb9)}
+.bp span.bp-gold{color:#3a2706;border-color:transparent;background:linear-gradient(160deg,#ffe592,#d19a35)}
+.bp span.bp-prism{color:#2a1840;border-color:transparent;background:linear-gradient(135deg,#f9a8ff,#8ee6ff 50%,#ffe18a)}
+.bp span.bp-unique{color:#2e0f02;border-color:transparent;background:linear-gradient(160deg,#ffbf7a,#e8692c)}
 .trait p{font-size:.86rem;color:var(--muted);margin-bottom:10px}
 .trait-units{display:flex;gap:5px;flex-wrap:wrap}
 
@@ -419,13 +432,20 @@ footer{margin-top:80px;border-top:1px solid var(--line);background:var(--bg-2)}
 
 /* ---------- Items ---------- */
 .item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
-.it-card{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:14px;border:1px solid var(--line);background:var(--panel);cursor:pointer;text-align:left;color:inherit;font-family:inherit;transition:.15s}
-.it-card:hover{border-color:var(--line-2);background:var(--panel-2)}
-.it-ic{width:48px;height:48px;border-radius:8px;flex-shrink:0;background:var(--panel-3);border:1px solid var(--line-2)}
-.it-card h4{font-size:1rem;margin:0 0 1px}
+#lib-items .item-grid{grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}   /* Karten mit Beschreibung: breiter, wie Traits und Augments */
+@media (max-width:520px){#lib-items .item-grid{grid-template-columns:minmax(0,1fr)}}
+.it-card{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:var(--panel);text-align:left;color:inherit;font-family:inherit}
+.it-ic{width:56px;height:56px;border-radius:10px;flex-shrink:0;background:var(--panel-3);border:1px solid var(--line-2)}
+.it-card h4{font-size:1.15rem;margin:0 0 1px;line-height:1.2}
+.it-cdesc{margin:8px 0 0;font-size:.86rem;line-height:1.5;color:var(--muted)}
+.it-into{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:8px}
+.it-into small{display:inline;margin-right:2px;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}
+.it-into span{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.it-into img{width:24px;height:24px;border-radius:5px}
+.it-into b{font-size:.84rem;color:var(--text);margin-left:2px}
 .it-card small{display:block;font-size:.74rem;color:var(--faint)}
 .it-recipe{display:flex;align-items:center;gap:4px;margin-top:7px;color:var(--faint);font-size:.75rem}
-.it-recipe img{width:22px;height:22px;border-radius:5px}
+.it-recipe img{width:24px;height:24px;border-radius:5px}
 .it-stats{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
 .it-stat{font-size:.7rem;padding:2px 7px;border-radius:99px;background:var(--accent-soft);color:var(--accent-2);font-weight:600;white-space:nowrap}
 .it-desc{font-size:.9rem;color:var(--muted);line-height:1.55;margin-top:14px}
@@ -791,6 +811,13 @@ a.tcard:hover{border-color:var(--accent)}
 .tt-rows{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:5px}
 .tt-rows li{display:flex;gap:8px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.45}
 .tt-bp{flex:none;min-width:24px;height:20px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;background:var(--panel-3);color:var(--text);font-weight:800;font-size:.74rem}
+/* Stufe in der Spielfarbe, als Sechseck wie in .bp */
+.tt-bp[class*="bp-"]{min-width:0;width:22px;height:25px;border-radius:0;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.tt-bp.bp-bronze{color:#2a170c;background:linear-gradient(160deg,#e0a27a,#a8673f)}.tt-bp.bp-silver{color:#1f242c;background:linear-gradient(160deg,#f1f4f8,#a3acb9)}
+.tt-bp.bp-gold{color:#3a2706;background:linear-gradient(160deg,#ffe592,#d19a35)}.tt-bp.bp-prism{color:#2a1840;background:linear-gradient(135deg,#f9a8ff,#8ee6ff 50%,#ffe18a)}
+.tt-bp.bp-unique{color:#2e0f02;background:linear-gradient(160deg,#ffbf7a,#e8692c)}
+.tt-rows li:has(.tt-bp[class*="bp-"]){align-items:center}
+.tt-open{margin:2px 0 10px}
 /* Patches */
 .pt-set{margin-top:26px}.pt-set h2{font-size:1.4rem;margin:0 0 12px}
 .pt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
@@ -3390,3 +3417,14 @@ img.cs-ric{border-radius:0 !important;object-fit:contain;filter:drop-shadow(0 2p
 .cs-cd{margin:10px 0 0;font-size:.88rem}
 .cs-cd a{color:#7ff7ec;font-weight:700}
 .cs-cd a:hover{color:#fff}
+/* Bibliothek: Augments (alle aus den Spieldaten, nach Stufe gruppiert, Text direkt sichtbar) */
+.la-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;margin:0 0 8px}
+.la-card{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:14px;border:1px solid var(--line);border-left:3px solid var(--lc,#cbd5e1);background:var(--panel)}
+.la-card.t1{--lc:#cbd5e1}.la-card.t2{--lc:#f5b82e}.la-card.t3{--lc:#c4b5fd}
+.la-ic{width:56px;height:56px;flex:none;border-radius:10px}
+.la-card h4{margin:0;font-size:1.15rem;line-height:1.2}
+.la-card small{display:block;margin-top:2px;color:var(--faint);font-size:.74rem}
+.la-card p{margin:6px 0 0;font-size:.86rem;line-height:1.5;color:var(--muted)}
+.la-fr{width:18px;height:auto;flex:none}
+#libAugFilters .input{margin-left:auto}
+@media (max-width:520px){.la-grid{grid-template-columns:minmax(0,1fr)}}
