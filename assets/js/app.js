@@ -293,30 +293,101 @@ function boardHTML(c){
   return `<div class="board">${rows}</div>`;
 }
 
-/* --- Übersicht: eine Kachel pro Comp --- */
-function tileHTML(c){
-  // Karte dahinter nur, wenn es echte Varianten gibt (Comps mit demselben Carry, in der Redaktion als Variante angelegt)
+/* --- Übersicht: eine Karte pro Comp --- */
+// Reihen mit eigenem Emblem und Namen (Overpowered … Niche), je Comp ein Rahmen in Tier-Farbe: Carry groß, darunter seine 3 Items,
+// oben rechts über der Ecke der Trend, unten links über der Ecke der höchste aktive Trait des Carrys
+const TL2_NAME = {S:'Overpowered', A:'Strong', B:'Meh', C:'Euuuuw', X:'Niche'};
+// Trend-Zeichen (Pfeil hoch, Pfeil runter, Plus für neu) als kräftige Striche im Stil der Vorlage
+const TL2_TREND = Object.fromEntries(Object.entries({up:'<path d="M12 19V6M6 11.5L12 5.5l6 6"/>', down:'<path d="M12 5v13M6 12.5l6 6 6-6"/>', new:'<path d="M12 5.5v13M5.5 12h13"/>'})
+  .map(([k, d])=>[k, `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`]));
+// Bildausschnitt je Champion, wenn das Gesicht sonst hinter den Items liegt: [Bildhöhe in %, Lage von oben in %] – höher = Bild weiter nach oben
+const TL2_FOCUS = {Karma:[140, 100], Azir:[126, 100]};
+const TL2_RATIO = 396 / 360;   // Höhe : Breite des Rahmenkörpers (comp-<tier>-3.webp), CSS aspect-ratio passend
+function tile2HTML(c){
+  const st = STICKER[c.sticker], ch = champBy[c.carry] || {t:[]};
+  const tr = compTraits(c).find(t=>ch.t.includes(t.n)) || tileTrait(c);   // höchster aktiver Trait des Carrys (compTraits ist nach Stufe sortiert)
+  const items = compItemsOf(c, c.carry).slice(0, 3);
   const vars = comps.filter(x=>x!==c && !x.main && x.carry===c.carry);
-  const st = STICKER[c.sticker];
-  const tr = tileTrait(c);
   const label = c.name + (vars.length ? ' · ' + L(`+${vars.length} ${vars.length > 1 ? 'Varianten' : 'Variante'}`, `+${vars.length} ${vars.length > 1 ? 'variants' : 'variant'}`) : '');
-  return `<button class="ct" data-slug="${c.slug}" data-name="${esc(label)}" aria-label="${esc(label)}">
-    ${vars.length?`<span class="ct-back">${hexHTML(vars[0].carry)}</span>`:''}${hexHTML(c.carry,'ct-main')}
-    ${st?`<span class="ct-st ${st[0]}" title="${st[2]}">${st[1]}</span>`:''}
-    ${c.sub?`<span class="ct-st sub" style="background:${TIER_COL[c.sub]}" title="Situativ – Bewertung ${c.sub}">${c.sub}</span>`:''}
-    ${tr?`<span class="ct-tr">${traitHex(tr.n, traitCls(tr), 24)}</span>`:''}
-  <span></span></button>`;
+  const img = champImg(c.carry) || champFallback(c.carry);
+  // Rahmen = comp-<tier>-3.webp (Körper 360 × 396, 6 px Rand rundum), Carry füllt die Fläche, Items unten rechts;
+  // oben rechts der Trend, bei Niche stattdessen das Emblem der Bewertung (c.sub)
+  const t = c.tier.toLowerCase(), fo = TL2_FOCUS[c.carry];
+  return `<button class="ct tl2-card" data-slug="${c.slug}" data-name="${esc(label)}" aria-label="${esc(label)}">
+    <span class="tl2-frame"><span class="tl2-pic" style="background-image:url('${img}')${fo ? `;--ps:${fo[0]}%;--py:${fo[1]}%` : ''}"></span>
+      <span class="tl2-items">${items.map(it=>`<img src="${it.img}" alt="" title="${esc(L(it.de || it.en, it.en))}" width="30" height="30" loading="lazy">`).join('')}</span>
+      <img class="tl2-fr" src="assets/tierlist/comp-${t}-3.webp" alt="" width="372" height="408" loading="lazy"></span>
+    ${c.tier === 'X' ? (c.sub ? `<img class="tl2-rate r-${c.sub.toLowerCase()}" src="assets/tierlist/tier-${c.sub.toLowerCase()}.webp" alt="${TL2_NAME[c.sub]}" title="${L('Bewertung, wenn die Bedingungen passen', 'Rating when the conditions are met')}: ${TL2_NAME[c.sub]}" width="173" height="160">` : '')
+      : st ? `<span class="tl2-trend ${st[0]}" title="${st[2]}">${TL2_TREND[st[0]]}</span>` : ''}
+    ${tr ? `<span class="tl2-trait">${traitHex(tr.n, traitCls(tr), 34)}</span>` : ''}
+    <span></span></button>`;
+}
+// Kartengröße so wählen, dass die ganze Tierlist auf einen Bildschirm passt: jede Reihe einzeilig (größte Reihe bestimmt die Breite)
+// und alle Reihen zusammen nicht höher als das Fenster unter der Leiste. Am Handy feste Größe (CSS)
+function tl2Fit(){
+  const box = $('#tierRows'), rows = box ? [...box.querySelectorAll('.tl2-cards')] : [];
+  if(!rows.length || !rows[0].offsetParent || innerWidth <= 760){ if(box) box.style.removeProperty('--tl2w'); return; }
+  // Größe immer aus der ungefilterten Tierlist (alle Reihen, längste Reihe), damit Filter und Suche die Karten nicht umspringen lassen
+  const full = ['S','A','B','C','X'].map(t=>mainComps.filter(c=>c.tier===t).length).filter(Boolean), nRows = full.length;
+  const cs = getComputedStyle(rows[0]), gap = parseFloat(cs.columnGap) || 14, maxN = Math.max(...full);
+  const area = rows[0].clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight), byW = (area - (maxN - 1) * gap) / maxN;
+  // Höhe der Tierlist wächst linear mit der Kartenbreite: je Reihe Rahmen (TL2_RATIO) + Platz fürs Trait-Symbol (0,1) –
+  // aus der aktuellen Höhe den festen Anteil (Innenabstände, Abstände, Niche-Absatz) ableiten, auf alle Reihen hochrechnen und den Rest aufs Fenster verteilen
+  const topH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--topH')) || 64;
+  box.style.setProperty('--tl2w', Math.floor(Math.max(56, Math.min(150, byW))) + 'px');   // erst einzeilig messen, sonst zählen umgebrochene Reihen mit
+  const w0 = rows[0].querySelector('.tl2-frame').offsetWidth, perRow = TL2_RATIO + .1;
+  const fixed = (box.offsetHeight - rows.length * perRow * w0) * nRows / rows.length, byH = (innerHeight - topH - 16 - fixed) / (nRows * perRow);
+  box.style.setProperty('--tl2w', Math.floor(Math.max(56, Math.min(150, byW, byH))) + 'px');
+}
+addEventListener('resize', tl2Fit);
+// Beim Drüberfahren (nur mit Maus): kleiner Tooltip mit Comp-Name und Spielfeld, über der Karte – oben kein Platz, dann darunter.
+// Erscheint nach kurzer Pause weich (kein Flackern beim Überfahren), von Karte zu Karte dann sofort; Rand im Schimmer der Rangfarbe
+let tl2Tip, tl2TipT = 0, tl2TipHid = 0;
+function tl2RenderTip(card){
+  const c = compBySlug[card.dataset.slug]; if(!c) return;
+  if(!tl2Tip){ tl2Tip = document.createElement('div'); tl2Tip.className = 'tl2-tip'; tl2Tip.setAttribute('role', 'tooltip'); document.body.append(tl2Tip); }
+  // Kopf: Carry im Tier-Rahmen wie in der Tierlist, Name und Comp-Art (schlicht wie im Spiel: „Fast 9“, „2-Cost Reroll“), darunter die aktiven Traits
+  const fo = TL2_FOCUS[c.carry], img = champImg(c.carry) || champFallback(c.carry);
+  tl2Tip.innerHTML = `<div class="tl2-tiph"><div class="tl2-tiptop"><span class="tl2-frame tl2-tipc"><span class="tl2-pic" style="background-image:url('${img}')${fo ? `;--ps:${fo[0]}%;--py:${fo[1]}%` : ''}"></span>
+      <img class="tl2-fr" src="assets/tierlist/comp-${c.tier.toLowerCase()}-3.webp" alt="" width="372" height="408"></span>
+    <span><b>${esc(c.name)}</b><small>${esc(c.style.replace('4-Cost ', ''))}</small></span></div>
+    <div class="tl2-tipt">${compTraits(c).map(t=>tBadge(t)).join('')}</div></div><div class="tl2-tipl">Team Comp</div>${boardHTML(c)}`;
+  tl2Tip.style.setProperty('--tg', getComputedStyle(card.closest('.tl2-tier')).getPropertyValue('--g1').trim() || '#2ee6d6');
+  const r = card.querySelector('.tl2-frame').getBoundingClientRect(), w = tl2Tip.offsetWidth, h = tl2Tip.offsetHeight;
+  const topH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--topH')) || 64;
+  let top = r.top - h - 12; if(top < topH + 6) top = r.bottom + 12;
+  tl2Tip.style.left = Math.round(Math.min(innerWidth - w - 8, Math.max(8, r.left + r.width / 2 - w / 2))) + 'px';
+  tl2Tip.style.top = Math.round(top) + 'px';
+  tl2Tip.classList.add('on');
+}
+function tl2ShowTip(card){
+  clearTimeout(tl2TipT);
+  const quick = tl2Tip && (tl2Tip.classList.contains('on') || Date.now() - tl2TipHid < 250);
+  tl2TipT = setTimeout(()=>tl2RenderTip(card), quick ? 0 : 150);
+}
+function tl2HideTip(){
+  clearTimeout(tl2TipT);
+  if(tl2Tip && tl2Tip.classList.contains('on')){ tl2Tip.classList.remove('on'); tl2TipHid = Date.now(); }
+}
+if(matchMedia('(hover:hover)').matches){
+  const rowsEl = $('#tierRows');
+  rowsEl.addEventListener('mouseover', e=>{ const card = e.target.closest('.tl2-card'); if(card && !card.contains(e.relatedTarget)) tl2ShowTip(card); });
+  rowsEl.addEventListener('mouseout', e=>{ const card = e.target.closest('.tl2-card'); if(card && !card.contains(e.relatedTarget)) tl2HideTip(); });
+  rowsEl.addEventListener('click', tl2HideTip);
+  addEventListener('scroll', tl2HideTip, {passive:true});
 }
 function renderTiers(target, list){
   const html = ['S','A','B','C','X'].map(t=>{
     const rows = list.filter(c=>c.tier===t).sort((a,b)=>t==='X' ? 'SABC'.indexOf(a.sub)-'SABC'.indexOf(b.sub) : 0);
     if(!rows.length) return '';
-    return `<div class="tl-tier${t==='X'?' tl-x':''}" style="--tc:${TIER_COL[t]}">
-      <div class="tl-row"><div class="tl-letter"><b>${t}</b><small>${t} TIER</small></div><div class="tl-tiles">${t==='X'?'<span class="tl-label" title="Stark unter bestimmten Bedingungen (Augments, Items, Emblem). Der Buchstabe zeigt die Stärke, wenn die Bedingungen erfüllt sind.">SITUATIONAL</span>':''}${rows.map(tileHTML).join('')}</div></div>
+    return `<div class="tl-tier tl2-tier tl2-${t.toLowerCase()}" style="--tc:${TIER_COL[t]}">
+      <div class="tl2-row"><div class="tl2-head tl2-f${t.toLowerCase()}"><img src="assets/tierlist/tier-${t.toLowerCase()}.webp" alt="" width="173" height="160"><b>${TL2_NAME[t]}</b></div>
+        <div class="tl2-cards">${rows.map(tile2HTML).join('')}${t === 'X' ? `<span class="tl2-sit" title="${L('Stark unter bestimmten Bedingungen (Augments, Items, Emblem)', 'Strong under certain conditions (augments, items, emblem)')}"><i>Situational</i></span>` : ''}</div></div>
       <div class="tl-detail" hidden></div>
     </div>`;
   }).join('');
   $(target).innerHTML = html || viSays('Keine Comp passt zu deinen Filtern. Lockere sie ein bisschen, dann finden wir was!');
+  requestAnimationFrame(tl2Fit);
 }
 
 /* --- Detail-Panel --- */
@@ -369,7 +440,15 @@ function openPanel(tile, slug){
   tile.classList.add('sel');
   det.innerHTML = panelHTML(c); det.hidden = false;
   det.dataset.tile = tile.dataset.slug;
-  if(root.id==='tierRows') buddyReact(c);
+  if(root.id==='tierRows'){ buddyReact(c); if(!slug) tlReveal(tier); }
+}
+// Aufgeklappte Comp ins Bild holen: Reihe samt Inhalt sichtbar machen – passt beides nicht, die Reihe oben unter der Leiste
+function tlReveal(tier){
+  requestAnimationFrame(()=>{
+    const topH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--topH')) || 64, r = tier.getBoundingClientRect();
+    if(r.top >= topH && r.bottom <= innerHeight) return;
+    window.scrollTo({top:r.top + scrollY - topH - 12, behavior:'smooth'});
+  });
 }
 function closePanel(tier){
   const det = tier.querySelector('.tl-detail'); det.hidden = true; det.innerHTML = '';
@@ -382,6 +461,16 @@ function filterComps(){
   const list = mainComps.filter(c=>(compStyle==='all'||c.style.includes(compStyle)) &&
     (!q || c.name.toLowerCase().includes(q) || c.core.some(u=>u.toLowerCase().includes(q)) || compTraits(c).some(t=>t.n.toLowerCase().includes(q))));
   renderTiers('#tierRows', list);
+}
+// Aus dem Dashboard (/tierlist?comp=<slug>): in der Tierlist die Comp aufklappen statt eine eigene Seite zu öffnen
+function tlOpenComp(slug){
+  let tile = $(`#tierRows .ct[data-slug="${slug}"]`);
+  if(!tile && compBySlug[slug]){   // Filter oder Suche verstecken sie: zurücksetzen
+    $('#compSearch').value = ''; setCompStyle('all');
+    filterComps(); tile = $(`#tierRows .ct[data-slug="${slug}"]`);
+  }
+  if(!tile) return;
+  if(!tile.classList.contains('sel')) openPanel(tile); else tlReveal(tile.closest('.tl-tier'));
 }
 function openComp(slug){   // Comp-Links (Suche, Champion-Seiten, Fenster) führen auf die eigene Comp-Seite
   const c = compBySlug[slug]; if(c) go(compHref(c));
@@ -430,7 +519,7 @@ function renderCompPage(key){
     </section>`;
 }
 document.addEventListener('click', e=>{
-  const tile = e.target.closest('.ct'); if(tile){ openPanel(tile); return; }
+  const tile = e.target.closest('.ct'); if(tile && !tile.classList.contains('dsh-ct')){ openPanel(tile); return; }   // Dashboard-Kacheln sind Links in die Tierlist
   const v = e.target.closest('[data-variant]');
   if(v){ const det = v.closest('.tl-detail'); const t = det.closest('.tl-tier').querySelector(`.ct[data-slug="${det.dataset.tile}"]`); openPanel(t, v.dataset.variant); return; }
   const x = e.target.closest('[data-close-panel]'); if(x) closePanel(x.closest('.tl-tier'));
@@ -438,10 +527,13 @@ document.addEventListener('click', e=>{
 document.addEventListener('change', e=>{
   if(e.target.matches('[data-names]')) e.target.closest('.cp').classList.toggle('show-names', e.target.checked);
 });
+function setCompStyle(v){
+  compStyle = v;
+  document.querySelectorAll('#compFilters [data-style]').forEach(b=>b.classList.toggle('active', b.dataset.style === v));
+}
 $('#compFilters').addEventListener('click', e=>{
   const b = e.target.closest('.chip-btn'); if(!b) return;
-  $('#compFilters').querySelectorAll('.chip-btn').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active'); compStyle=b.dataset.style; filterComps();
+  setCompStyle(b.dataset.style); filterComps();
 });
 $('#compSearch').addEventListener('input', filterComps);
 
@@ -457,12 +549,14 @@ const icoTile = (attr, name, img) => `<button class="tl-ico" ${attr} data-name="
 let itlCat = 'craftables';
 function renderItemTL(){
   if(!Object.keys(ITEM_TL).length){ $('#itemTiers').innerHTML = ornnSays(`Für Set ${TFT_DATA.set} gibt es noch keine Item-Tierlist. Erst testen, dann bewerten. Hmph.`); return; }
-  const tl = ITEM_TL[itlCat] || {};
-  $('#itemTiers').innerHTML = ['S','A','B','C'].filter(t=>(tl[t]||[]).length).map(t=>tierRow(t, tl[t].map(id=>{
-    const it = findItem(id);
-    return it ? icoTile(`data-item="${it.id}"`, it.en, it.img) : '';
-  }).join(''))).join('');
+  const tl = ITEM_TL[itlCat] || {}, q = $('#itlSearch').value.toLowerCase().trim();
+  const html = ['S','A','B','C'].map(t=>{
+    const list = (tl[t]||[]).map(findItem).filter(it=>it && (!q || it.en.toLowerCase().includes(q) || (it.de || '').toLowerCase().includes(q)));
+    return list.length ? tierRow(t, list.map(it=>icoTile(`data-item="${it.id}"`, it.en, it.img)).join('')) : '';
+  }).join('');
+  $('#itemTiers').innerHTML = html || viSays('Kein Item gefunden. Versuch es mit einem anderen Wort!');
 }
+$('#itlSearch').addEventListener('input', renderItemTL);
 $('#itemTlFilters').addEventListener('click', e=>{
   const b=e.target.closest('.chip-btn'); if(!b) return;
   $('#itemTlFilters').querySelectorAll('.chip-btn').forEach(x=>x.classList.toggle('active', x===b));
@@ -495,17 +589,53 @@ let holdCost = '1';
 const holdTile = n => `<button class="tl-ico tl-champ" data-champ="${esc(n)}" data-name="${esc(n)}" aria-label="${esc(n)}">${hexHTML(n)}<span></span></button>`;
 function renderHoldTL(){
   const tl = HOLD_TL[holdCost] || {}, pool = champions.filter(c=>c.c===+holdCost).map(c=>c.n);
+  const q = $('#holdSearch').value.toLowerCase().trim(), hit = n => !q || n.toLowerCase().includes(q);
   const rated = new Set(['S','A','B','C'].flatMap(t=>tl[t]||[]));
-  const rows = ['S','A','B','C'].map(t=>{ const list = (tl[t]||[]).filter(n=>champBy[n]); return list.length ? tierRow(t, list.map(holdTile).join('')) : ''; }).join('');
-  const rest = pool.filter(n=>!rated.has(n)).sort((a,b)=>a.localeCompare(b));
-  $('#holdTiers').innerHTML = (rows || viSays(`Die Holds für ${holdCost}-Kosten-Champions werden gerade bewertet. Schau bald wieder rein!`))
+  const rows = ['S','A','B','C'].map(t=>{ const list = (tl[t]||[]).filter(n=>champBy[n] && hit(n)); return list.length ? tierRow(t, list.map(holdTile).join('')) : ''; }).join('');
+  const rest = pool.filter(n=>!rated.has(n) && hit(n)).sort((a,b)=>a.localeCompare(b));
+  if(q && !rows && !rest.length){ $('#holdTiers').innerHTML = viSays('Kein Champion gefunden. Versuch es mit einem anderen Namen!'); return; }
+  $('#holdTiers').innerHTML = (rows || (q ? '' : viSays(`Die Holds für ${holdCost}-Kosten-Champions werden gerade bewertet. Schau bald wieder rein!`)))
     + (rest.length ? tierRow('–', rest.map(holdTile).join(''), rows ? 'NICHT BEWERTET' : 'ALLE UNITS') : '');
 }
+$('#holdSearch').addEventListener('input', renderHoldTL);
 $('#holdFilters').addEventListener('click', e=>{
   const b=e.target.closest('.chip-btn'); if(!b) return;
   $('#holdFilters').querySelectorAll('.chip-btn').forEach(x=>x.classList.toggle('active', x===b));
   holdCost = b.dataset.hc; renderHoldTL();
 });
+
+// V2: eine Leiste direkt über der Tierlist – links die Reiter, rechts für jede Tierlist an derselben Stelle die Suche
+// und links daneben ihre Auswahl (eine Stufe darunter, deshalb kleiner): bei Comps als Klappmenü „Comp-Art“, das die
+// versteckten Chips klickt, bei Items, Augments und Holds die Chips selbst als schmale Schalterleiste
+const TL2_CHEV = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+function tl2Dropdown(label, group){
+  const chips = [...group.querySelectorAll('.chip-btn')], wrap = document.createElement('div');
+  wrap.className = 'tl2-dd';
+  wrap.innerHTML = `<button class="tl2-ddb" type="button" aria-haspopup="listbox" aria-expanded="false"><span>${label}</span><b></b>${TL2_CHEV}</button>
+    <div class="tl2-ddm" role="listbox" hidden>${chips.map((c, i)=>`<button type="button" role="option" data-i="${i}">${c.innerHTML}</button>`).join('')}</div>`;
+  const btn = wrap.querySelector('.tl2-ddb'), menu = wrap.querySelector('.tl2-ddm'), opts = [...menu.children];
+  const sync = () => { const a = Math.max(0, chips.findIndex(c=>c.classList.contains('active'))); btn.querySelector('b').textContent = chips[a].textContent; opts.forEach((o, i)=>o.setAttribute('aria-selected', i === a)); };
+  btn.addEventListener('click', ()=>{ const open = menu.hidden; tl2CloseMenus(); menu.hidden = !open; btn.setAttribute('aria-expanded', open); });
+  menu.addEventListener('click', e=>{ const o = e.target.closest('[data-i]'); if(!o) return; chips[+o.dataset.i].click(); tl2CloseMenus(); });
+  new MutationObserver(sync).observe(group, {subtree:true, attributes:true, attributeFilter:['class'], characterData:true, childList:true});   // auch Übersetzung und Zurücksetzen
+  sync(); return wrap;
+}
+function tl2CloseMenus(){ document.querySelectorAll('.tl2-ddm:not([hidden])').forEach(m=>{ m.hidden = true; m.previousElementSibling.setAttribute('aria-expanded', false); }); }
+{
+  const bar = document.createElement('div'), tabs = $('#tlTabs');
+  bar.className = 'tl2-bar'; tabs.before(bar); bar.append(tabs);
+  [['comps', '#compSearch', ['#compFilters']], ['items', '#itlSearch', ['#itemTlFilters']],
+   ['augments', '#augSearch', ['#augLvFilters', '#augStageFilters']], ['holds', '#holdSearch', ['#holdFilters']]].forEach(([tab, search, groups])=>{
+    const tools = document.createElement('div'); tools.className = 'tl2-tools'; tools.dataset.tab = tab; tools.hidden = tab !== 'comps';
+    const box = $(groups[0]).closest('.toolbar'), field = $(search);   // Suchfeld vorher holen – bei Items/Holds steckt es in der Chip-Gruppe
+    if(tab === 'comps') tools.append(tl2Dropdown('Comp-Art', $(groups[0])));
+    else groups.forEach(sel=>{ const g = $(sel); g.classList.remove('toolbar', 'tag-row'); g.classList.add('tl2-seg'); tools.append(g); });
+    tools.append(field); bar.append(tools);
+    if(tab === 'comps' || !groups.some(sel=>$(sel) === box)) box.hidden = true;   // Chips der Comps bzw. leere Filterzeile (Augments) unter der Leiste
+  });
+  document.addEventListener('click', e=>{ if(!e.target.closest('.tl2-dd')) tl2CloseMenus(); });
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape') tl2CloseMenus(); });
+}
 
 // Encounters: Liste aus data/custom-<Set>.js (Chance = Gewicht / Summe), Einschätzung (passende Comps, egal, Tipp) aus encTL in tierlist-data-<Set>.js
 const ENCS = TFT_CUSTOM_SET.encounters || [];
@@ -564,6 +694,7 @@ function setTab(tab){
   ['comps','items','augments','holds'].forEach(t=>{ $('#tl-'+t).hidden = t!==tab; });
   const h1 = $('#page-tierlist .page-head :is(h1, [data-h1])'); if(h1) h1.innerHTML = `${L(...TL_H1[tab])} <em class="serif">Set <span data-setno>${TFT_DATA.set}</span></em>`;
   $('#tlTabs').querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.tl2-tools').forEach(t=>{ t.hidden = t.dataset.tab !== tab; });   // V2: Auswahl und Suche der jeweiligen Tierlist
   if(tlTab!==tab){ tlTab = tab; buddyNext('tierlist', true); }
 }
 
@@ -1179,7 +1310,7 @@ function renderAdminEdit(){
     <label class="adm-f"><span>Name</span><input class="input" data-f="name" value="${esc(c.name)}"></label>
     <div class="adm-2">
       <label class="adm-f"><span>Tier</span><select class="input" data-f="tier">${['S','A','B','C','X'].map(t=>admOpt(t,c.tier,t==='X'?'X (Situational)':t)).join('')}</select></label>
-      <label class="adm-f"${c.tier==='X'?'':' hidden'}><span>Bewertung (X)</span><select class="input" data-f="sub">${['S','A','B','C'].map(t=>admOpt(t,c.sub,t)).join('')}</select></label>
+      <label class="adm-f"${c.tier==='X'?'':' hidden'}><span>Bewertung (X)</span><select class="input" data-f="sub">${['S','A','B','C'].map(t=>admOpt(t,c.sub,`${t} · ${TL2_NAME[t]}`)).join('')}</select></label>
       <label class="adm-f"><span>Trend</span><select class="input" data-f="sticker">${[[0,'–'],[2,'▲ Steigt'],[3,'▼ Fällt'],[1,'+ Neu']].map(([v,l])=>admOpt(v,c.sticker||0,l)).join('')}</select></label>
       <label class="adm-f"><span>Spielstil</span><select class="input" data-f="style">${Object.entries(STYLE_DE).map(([v,l])=>admOpt(v,c.style,l)).join('')}</select></label>
       <label class="adm-f"><span>Schwierigkeit</span><select class="input" data-f="diff">${Object.entries(DIFF_DE).map(([v,l])=>admOpt(v,c.diff,l)).join('')}</select></label>
@@ -5035,12 +5166,12 @@ function pageMeta(page, sub){
     case 'home': return [L('TFTClimb – TFT Tierlist, Comps & Coaching', 'TFTClimb – TFT Tier List, Comps & Coaching'), L(`TFT Tierlist für ${S} von Challenger-Spielern: die besten Comps mit Items, Augments und Aufstellung – dazu Tools und Coaching.`,
       `TFT tier list for ${S} by Challenger players: the best comps with items, augments and positioning – plus tools and coaching.`)];
     case 'tierlist':
-      if(sub==='items') return [L(`TFT Item-Tierlist ${PS}`, `TFT Item Tier List ${PS}`), L(`TFT Item-Tierlist ${S}: die stärksten kombinierten Items, Lichtversionen, Artefakte und Embleme – bewertet von S bis C.`,
-        `TFT item tier list ${S}: the strongest combined items, radiant items, artifacts and emblems – rated from S to C.`)];
-      if(sub==='augments') return [L(`TFT Augment-Tierlist ${PS}`, `TFT Augment Tier List ${PS}`), L(`TFT Augment-Tierlist ${S}: die besten Augments in Silber, Gold und Prismatisch für 2-1, 3-2 und 4-2 – bewertet von S bis C.`,
-        `TFT augment tier list ${S}: the best silver, gold and prismatic augments for 2-1, 3-2 and 4-2 – rated from S to C.`)];
-      if(sub==='holds') return [L(`TFT Holds-Tierlist ${PS}`, `TFT Holds Tier List ${PS}`), L(`TFT Holds-Tierlist ${S}: welche 1-, 2- und 3-Kosten-Champions du von 1-1 bis 1-3 halten solltest – bewertet von S bis C.`,
-        `TFT holds tier list ${S}: which 1, 2 and 3 cost champions to hold from 1-1 to 1-3 – rated from S to C.`)];
+      if(sub==='items') return [L(`TFT Item-Tierlist ${PS}`, `TFT Item Tier List ${PS}`), L(`TFT Item-Tierlist ${S}: die stärksten kombinierten Items, Lichtversionen, Artefakte und Embleme.`,
+        `TFT item tier list ${S}: the strongest combined items, radiant items, artifacts and emblems.`)];
+      if(sub==='augments') return [L(`TFT Augment-Tierlist ${PS}`, `TFT Augment Tier List ${PS}`), L(`TFT Augment-Tierlist ${S}: die besten Augments in Silber, Gold und Prismatisch für 2-1, 3-2 und 4-2.`,
+        `TFT augment tier list ${S}: the best silver, gold and prismatic augments for 2-1, 3-2 and 4-2.`)];
+      if(sub==='holds') return [L(`TFT Holds-Tierlist ${PS}`, `TFT Holds Tier List ${PS}`), L(`TFT Holds-Tierlist ${S}: welche 1-, 2- und 3-Kosten-Champions du von 1-1 bis 1-3 halten solltest.`,
+        `TFT holds tier list ${S}: which 1, 2 and 3 cost champions to hold from 1-1 to 1-3.`)];
       return [L(`TFT Tierlist ${PS} – die besten Comps`, `TFT Tier List ${PS} – the Best Comps`), L(`TFT Tierlist ${S}${P}: die besten Comps mit Aufstellung, Items, Augments und Spielplan.`,
         `TFT tier list ${S}${P}: the best comps with positioning, items, augments and game plan.`)];
     case 'bibliothek':
@@ -5339,6 +5470,8 @@ function route(){
   if(page==='home') requestAnimationFrame(()=>sbCount(true));   // beim Öffnen der Startseite die LP hochzählen
   if(!isSim) simPause();
   if(page==='tierlist') setTab(['items','augments','holds'].includes(sub)?sub:'comps');
+  const tlComp = page==='tierlist' && !sub && qParam('comp');
+  if(tlComp){ history.replaceState(history.state, '', location.pathname); setTimeout(()=>tlOpenComp(tlComp), 0); }   // nach dem Hochscrollen unten
   if(page==='guides') setGuide(sub);
   if(page==='gameplans'){ if(sub) setUrl('/gameplans');   // Platzhalter bis Set 19: Gamepläne pro Patch
     $('#gpSoon').innerHTML = `<div class="gd-soon"><img class="gd-soon-img" src="assets/icons/side-gameplans.webp" alt="" width="96" height="96"><b>Coming in Set 19</b><p>${L('Hier entstehen Gamepläne für jeden Patch: wie du die besten Comps vom Start bis ins Late Game spielst – mit dem Start von Set 19.', 'Game plans for every patch are coming here: how to play the best comps from the start to the late game – with the launch of Set 19.')}</p></div>`; }
@@ -5585,7 +5718,7 @@ function renderDash(){
   // Tierlist im Kleinformat: dieselben Reihen und Kacheln wie auf /tierlist (S bis C; je Reihe bis zu 7 Comps), Klick → Comp-Seite
   const mtl = ['S', 'A', 'B', 'C'].map(t=>{ const list = mainComps.filter(c=>c.tier === t).slice(0, 7); if(!list.length) return '';
     return `<div class="tl-tier" style="--tc:${TIER_COL[t]}"><div class="tl-row"><div class="tl-letter"><b>${t}</b></div><div class="tl-tiles">${list.map(c=>{ const tr = tileTrait(c);
-      return `<a class="ct" href="${compHref(c)}" title="${esc(c.name)}" aria-label="${esc(c.name)}">${hexHTML(c.carry, 'ct-main')}${tr ? `<span class="ct-tr">${traitHex(tr.n, traitCls(tr), 20)}</span>` : ''}</a>`; }).join('')}</div></div></div>`; }).join('');
+      return `<a class="ct dsh-ct" href="/tierlist?comp=${encodeURIComponent(c.slug)}" title="${esc(c.name)}" aria-label="${esc(c.name)}">${hexHTML(c.carry, 'ct-main')}${tr ? `<span class="ct-tr">${traitHex(tr.n, traitCls(tr), 20)}</span>` : ''}</a>`; }).join('')}</div></div></div>`; }).join('');
   const lpStat = (key, v, tier, label) => `<a class="dsh-lp" href="/ranks/${tier.k}"><img src="${rankImg(tier)}" alt=""><span><b data-dlp="${v || 0}" data-key="${key}">${v ? fmt(v) + ' LP' : '–'}</b><small>${live}${label}</small></span></a>`;
   box.innerHTML = `
     <div class="dsh-title"><h1>${L('TFT Tierlist, Comps', 'TFT Tier List, Comps')} <em>&amp; Coaching</em></h1></div>

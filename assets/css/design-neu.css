@@ -1084,7 +1084,7 @@ html.nd{scrollbar-gutter:stable}
 
 /* ---------- Sichtbarer Meta-Text: Einleitung direkt unter der H1 (gleich der Meta-Beschreibung für Google) ---------- */
 .meta-lead{max-width:680px;margin:8px auto 0;color:#b9c3dd;line-height:1.55}
-.nd #page-tierlist .page-head>p[data-meta]{display:block;max-width:680px;margin:10px auto 16px}
+.nd #page-tierlist .page-head>p[data-meta]{display:block;max-width:900px;margin:10px auto 16px}   /* alle vier Tierlisten einzeilig – die Leiste darunter springt beim Wechseln nicht */
 .nd .cv-head .meta-lead{margin:10px auto 18px}
 .chp-head .meta-lead{max-width:640px;margin:0 0 12px}
 .nd .mt-head .meta-lead{margin-top:10px}
@@ -1149,3 +1149,112 @@ body.nd-mini .nds-link>.nds-ic,body.nd-mini .nds-link>svg{flex:none}
 body.nd-mini .nds-ic{width:31px;height:31px}
 body.nd-mini .nds-cap{display:block;visibility:hidden;overflow:hidden}
 body.nd-mini .nds-gap{height:30px}
+
+/* ---------- Tierlist: Emblem + Name je Reihe, Comp-Karte im Tier-Rahmen ----------
+   Rahmen = border-image aus frame-<tier>.webp (Ecken fest, Kanten gestreckt) + Diamanten als eigene Bilder (gem-<tier>.webp).
+   Kartenbreite --tl2w setzt tl2Fit (app.js), damit die ganze Tierlist auf einen Bildschirm passt; alles andere skaliert mit */
+#tierRows{--tl2w:120px}
+.nd #page-tierlist>.wrap:has(.tl2-tier){max-width:1760px}   /* nutzt die ganze Breite neben der Sidebar – größere Karten */
+.tl2-fs{--tf:url(../tierlist/frame-s.webp)}.tl2-fa{--tf:url(../tierlist/frame-a.webp)}.tl2-fb{--tf:url(../tierlist/frame-b.webp)}.tl2-fc{--tf:url(../tierlist/frame-c.webp)}.tl2-fx{--tf:url(../tierlist/frame-x.webp)}
+.tl2-tier{margin:0 0 14px}
+.tl2-row{display:grid;grid-template-columns:136px minmax(0,1fr);gap:12px;align-items:stretch}
+/* Reihen-Rahmen: eigene dezente Rahmen (1,5 px) mit dem Farbverlauf des Rang-Symbols */
+.tl2-s{--g1:#ffe592;--g2:#d19a35;--g3:#2ee6d6}.tl2-a{--g1:#e879f9;--g2:#7c3aed;--g3:#f0abfc}.tl2-b{--g1:#e2e8f0;--g2:#64748b;--g3:#38bdf8}.tl2-c{--g1:#ffbf7a;--g2:#c2410c;--g3:#38bdf8}.tl2-x{--g1:#22d3ee;--g2:#f472b6;--g3:#a78bfa}
+.tl2-head,.tl2-cards{position:relative;border:1.5px solid transparent;border-radius:14px}
+.tl2-head{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 4px;
+  background:linear-gradient(#071823,#071823) padding-box,linear-gradient(160deg,var(--g1),var(--g2) 55%,var(--g3)) border-box}
+/* Symbol: je höher der Rang, desto größer – Niche ist eine eigene Kategorie (mittel) */
+.tl2-head img{width:calc(var(--tl2w) * var(--ts,.9));max-width:100%;max-height:calc(var(--tl2w) * 1.2 - 12px);object-fit:contain;height:auto}   /* ohne Leuchten darunter */
+/* deutliche Stufen: Overpowered groß, Euuuuw klein; Niche eigene Kategorie (mittel) */
+.tl2-s{--ts:1.15}.tl2-a{--ts:.94}.tl2-b{--ts:.74}.tl2-c{--ts:.52}.tl2-x{--ts:.86}
+.tl2-head{overflow:hidden}   /* Symbol bleibt im Kasten */
+.tl2-head b{font:italic 900 1.1rem/1 var(--ff-head);text-transform:uppercase;letter-spacing:.02em;color:#fff;text-shadow:0 0 14px color-mix(in srgb,var(--g1) 70%,transparent);text-align:center;padding-right:.1em}
+.tl2-x .tl2-head b{background:linear-gradient(90deg,#3fd3f0,#f0abfc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tl2-cards{display:flex;flex-wrap:wrap;gap:14px;padding:14px 14px 8px;align-content:flex-start;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--g1) 9%,transparent),transparent 60%) padding-box,linear-gradient(#071823,#071823) padding-box,
+    linear-gradient(90deg,var(--g1),var(--g2) 40%,color-mix(in srgb,var(--g2) 25%,transparent)) border-box}
+.tl2-gem{height:auto!important}
+.tl2-cards>.tl2-gem{display:none}   /* Reihen ohne Diamant – nur die Karten haben ihn */
+/* Karte: dünner Rahmen, flacher (Höhe = 1,12 × Breite, TL2_RATIO in app.js), Carry füllt die ganze Fläche, Items unten darüber */
+.nd #page-tierlist .ct.tl2-card{position:relative;display:flex;flex-direction:column;align-items:center;width:var(--tl2w);height:auto;flex:none;filter:none}
+.nd #page-tierlist .ct.tl2-card::after{display:none}   /* kein Namensschild – der Name steht im title/aria-label */
+/* Rahmenkörper 360 × 396 im Bild comp-<tier>-3.webp (372 × 408: 6 px Rand rundum), Ecken um ca. 34 px abgeschrägt */
+.tl2-frame{position:relative;display:block;width:var(--tl2w);aspect-ratio:360/396;transition:transform .15s;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
+.tl2-fr{position:absolute;left:-1.667%;top:-1.515%;width:103.33%;height:103.03%;max-width:none;z-index:2;pointer-events:none}   /* max-width:none – sonst schrumpft der Rahmen auf die Kartenbreite und das Bild ragt seitlich heraus */
+/* Bild unter dem Rahmen, entlang der abgeschrägten Ecken zugeschnitten – ragt nirgends heraus */
+/* Spiel-Kachelbilder sind unten eingedunkelt (Platz fürs Namensschild im Client) – etwas größer und oben ausgerichtet, so fällt der dunkle Rand weg */
+.tl2-pic{position:absolute;left:2%;right:2%;top:2%;bottom:2%;z-index:1;background:#06131c 50% var(--py,0%)/auto var(--ps,116%) no-repeat;   /* --ps/--py: Ausschnitt je Champion (TL2_FOCUS) */
+  clip-path:polygon(7% 0,93% 0,100% 7%,100% 93%,93% 100%,7% 100%,0 93%,0 7%)}
+/* Items nebeneinander, unten bündig im Rahmen, rechts ausgerichtet – weit genug rechts, dass das Trait-Symbol nichts verdeckt */
+.tl2-items{position:absolute;left:2%;right:2%;bottom:2%;z-index:2;clip-path:polygon(0 0,100% 0,100% 80%,93% 100%,7% 100%,0 80%);display:flex;justify-content:flex-end;gap:1px;padding:calc(var(--tl2w) * .1) calc(var(--tl2w) * .02) calc(var(--tl2w) * .05);background:linear-gradient(0deg,rgba(2,10,16,.5),rgba(2,10,16,.3) 45%,rgba(2,10,16,0))}   /* sanfter Schatten, nicht ganz schwarz */
+.tl2-items img{width:calc(var(--tl2w) * .28);height:calc(var(--tl2w) * .28);border-radius:4px;border:1px solid rgba(255,255,255,.25);box-shadow:0 2px 5px rgba(0,0,0,.7)}
+/* Trend wie in der Vorlage: dunkles Sechseck, Rand und Leuchten in der Trendfarbe, kräftiger Pfeil */
+.tl2-trend{position:absolute;top:calc(var(--tl2w) * -.06);right:calc(var(--tl2w) * -.01);z-index:3;display:grid;place-items:center;width:calc(var(--tl2w) * .22);height:calc(var(--tl2w) * .24);
+  clip-path:polygon(50% 0,100% 23%,100% 77%,50% 100%,0 77%,0 23%);background:linear-gradient(160deg,color-mix(in srgb,var(--trc) 85%,#fff),var(--trc))}
+.tl2-trend::before{content:"";position:absolute;inset:2px;clip-path:polygon(50% 0,100% 23%,100% 77%,50% 100%,0 77%,0 23%);background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--trc) 35%,#0b1822),#06111a 78%)}
+.tl2-trend svg{position:relative;width:58%;height:58%;color:var(--trc);filter:drop-shadow(0 0 3px var(--trc))}
+.tl2-trend.up{--trc:#3ddc84}.tl2-trend.down{--trc:#ff4655}.tl2-trend.new{--trc:#ffd23f}
+.ct.tl2-card .tl2-trend{filter:drop-shadow(0 0 5px color-mix(in srgb,var(--trc) 70%,transparent)) drop-shadow(0 2px 3px rgba(0,0,0,.6))}
+.tl2-trait{position:absolute;left:calc(var(--tl2w) * -.08);top:calc(var(--tl2w) * .93);z-index:3;display:flex;filter:drop-shadow(0 3px 6px rgba(0,0,0,.6))}
+.tl2-trait .thx{--s:calc(var(--tl2w) * .26)!important}
+.ct.tl2-card .tl2-frame{margin-bottom:calc(var(--tl2w) * .1)}   /* Platz für das überstehende Trait-Symbol */
+.ct.tl2-card:hover .tl2-frame,.ct.tl2-card.sel .tl2-frame{transform:translateY(-4px)}
+.ct.tl2-card.sel .tl2-frame{filter:drop-shadow(0 0 12px color-mix(in srgb,var(--g1) 85%,transparent))}
+@media (max-width:760px){#tierRows{--tl2w:92px}.tl2-row{grid-template-columns:minmax(0,1fr);gap:8px}.tl2-head{flex-direction:row;padding:4px}.tl2-head img{width:44px}.tl2-cards{gap:20px 8px;padding:10px 4px 6px;justify-content:center}}
+/* Niche-Comps: statt des Trends oben rechts das Emblem ihrer Bewertung (im Admin unter „Bewertung (X)“) */
+/* Größe nach Rang gestaffelt wie in den Reihenköpfen, Mittelpunkt bleibt immer auf der Ecke (Emblem-Bild 173 × 160) */
+.tl2-rate{--rw:calc(var(--tl2w) * .36);position:absolute;top:calc(var(--tl2w) * .056 - var(--rw) * .4624);right:calc(var(--tl2w) * .08 - var(--rw) / 2);z-index:3;width:var(--rw);height:auto;max-width:none;pointer-events:auto;filter:drop-shadow(0 3px 5px rgba(0,0,0,.7))}
+.tl2-rate.r-s{--rw:calc(var(--tl2w) * .46)}.tl2-rate.r-a{--rw:calc(var(--tl2w) * .37)}.tl2-rate.r-b{--rw:calc(var(--tl2w) * .29)}.tl2-rate.r-c{--rw:calc(var(--tl2w) * .21)}
+/* Niche: etwas abgesetzt (sieht nicht aus wie der schlechteste Rang) und „Situational“ in 3D-Schrift oben auf dem Rahmen,
+   mittig über der ganzen Reihe (Emblem-Spalte 136 px + Abstand 12 px → 74 px nach links) */
+.tl2-tier.tl2-x{margin-top:34px}
+.tl2-x .tl2-cards{padding-top:22px}
+.tl2-sit{position:absolute;left:calc(50% - 74px);top:0;transform:translate(-50%,-54%);z-index:4;padding:0 16px;white-space:nowrap;pointer-events:auto;
+  --bg:color-mix(in srgb,var(--g1) 3%,#071823);   /* Kastenfarbe an dieser Stelle (Grundton + ausklingender Schimmer) */
+  background:linear-gradient(transparent calc(54% - 1px),var(--bg) calc(54% - 1px),var(--bg) calc(54% + 3px),transparent calc(54% + 3px))}   /* deckt nur die Rahmenlinie ab */
+.tl2-sit i{display:block;font:600 1rem/1.4 var(--ff-body,inherit);font-style:normal;text-transform:uppercase;letter-spacing:.16em;color:#2fdcf2}   /* Türkis des Niche-Symbols, schlicht */
+@media (max-width:760px){.tl2-sit{left:50%}.tl2-sit i{font-size:.85rem}}
+/* Tooltip beim Drüberfahren: Carry-Symbol mit Comp-Name, darunter kleines Spielfeld mit Units und Items (ohne Namen) */
+.tl2-tip{position:fixed;z-index:200;pointer-events:none;padding:16px 20px 12px;border-radius:12px;background:#08111b;isolation:isolate;
+  border:1px solid color-mix(in srgb,var(--tg,#2ee6d6) 55%,transparent);box-shadow:0 14px 30px rgba(0,0,0,.6),0 0 18px color-mix(in srgb,var(--tg,#2ee6d6) 22%,transparent);
+  opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity .14s,transform .14s,visibility 0s linear .14s}
+.tl2-tip.on{opacity:1;visibility:visible;transform:none;transition:opacity .14s,transform .14s}
+.tl2-tiph{margin:0 -20px 12px;padding:0 20px 12px;border-bottom:1px solid var(--line-2)}   /* Kopf deutlich vom Spielfeld getrennt */
+.tl2-tiptop{display:flex;align-items:center;gap:14px}
+.tl2-tipt{display:flex;flex-wrap:wrap;gap:0 10px;margin-top:10px;max-width:270px;height:20px;overflow:hidden}   /* höchstens eine Zeile – was umbricht, bleibt ausgeblendet */
+.tl2-tipt .tbadge{display:inline-flex;align-items:center;gap:3px;padding:0;border:0;background:none;box-shadow:none;font:700 .74rem var(--ff-body,inherit);color:var(--muted)}   /* schlicht: Symbol + Anzahl */
+.tl2-tipl{margin-bottom:8px;font:600 .66rem var(--ff-body,inherit);text-transform:uppercase;letter-spacing:.16em;color:var(--faint,#7b8aa3)}
+.tl2-tip .tl2-tipc{--tl2w:46px;flex:none;filter:drop-shadow(0 3px 5px rgba(0,0,0,.5))}
+.tl2-tiph b{display:block;font:700 1.15rem/1.2 var(--ff-body,inherit);color:#fff}
+.tl2-tiph small{display:block;margin-top:3px;font:600 .78rem var(--ff-body,inherit);color:var(--cy);letter-spacing:.02em}
+.tl2-tip .board{--hx:34px;padding:2px 0 calc(var(--hy) * .25)}
+.tl2-tip .board-row{gap:2px;margin-bottom:calc(var(--hy) * -.25 + 2px)}
+.tl2-tip .board-row.odd{margin-left:calc(var(--hx) / 2 + 1px)}
+.tl2-tip .hex-name{display:none}
+.tl2-tip .hex-items{bottom:1px}
+.tl2-tip .hex-items img{width:10px;height:10px;border-radius:2px;border-width:.5px}
+.tl2-tip .hex-stars{top:-3px;font-size:.5rem}
+/* Leiste direkt über der Tierlist: links Reiter, rechts Comp-Art (Klappmenü) und Suche */
+.tl2-bar{display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;margin:22px 0 16px}
+.nd #page-tierlist .tl2-bar #tlTabs{margin:0}
+/* rechte Seite eine Stufe unter den Reitern: niedriger, kleinere Schrift, ohne Leuchten */
+.tl2-tools{display:flex;align-items:center;gap:8px}
+.tl2-tools[hidden],#page-tierlist .toolbar[hidden]{display:none}
+.tl2-tools .input{width:250px;height:38px;padding:0 12px;font-size:.82rem;background:rgba(10,16,28,.6);border-color:var(--line)}
+.nd #page-tierlist .tl2-seg{display:flex;flex-wrap:nowrap;gap:2px;margin:0;padding:3px;border-radius:10px;background:rgba(10,16,28,.6);border:1px solid var(--line)}
+.nd #page-tierlist .tl2-seg .chip-btn{height:30px;padding:0 11px;border:0;border-radius:7px;background:none;box-shadow:none;color:var(--muted);font-size:.8rem;font-weight:600;white-space:nowrap}
+.nd #page-tierlist .tl2-seg .chip-btn:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.nd #page-tierlist .tl2-seg .chip-btn.active{background:rgba(46,230,214,.1);color:var(--cy);box-shadow:none}
+.tl2-dd{position:relative}
+.tl2-ddb{display:flex;align-items:center;gap:8px;height:38px;padding:0 10px 0 12px;border-radius:10px;border:1px solid var(--line);background:rgba(10,16,28,.6);color:var(--muted);font:600 .8rem var(--ff-body,inherit);cursor:pointer;transition:border-color .15s}
+.tl2-ddb b{color:var(--cy);font-weight:700}
+.tl2-ddb svg{transition:transform .15s;color:var(--cy)}
+.tl2-ddb:hover,.tl2-ddb[aria-expanded="true"]{border-color:var(--cy)}
+.tl2-ddb[aria-expanded="true"] svg{transform:rotate(180deg)}
+.tl2-ddm{position:absolute;top:calc(100% + 6px);right:0;z-index:70;min-width:210px;padding:6px;border-radius:12px;background:var(--panel);border:1px solid var(--line-2);box-shadow:0 18px 40px rgba(0,0,0,.55)}
+.tl2-ddm[hidden]{display:none}
+.tl2-ddm button{display:block;width:100%;padding:8px 12px;border:0;border-radius:8px;background:none;color:var(--text);font:600 .84rem var(--ff-body,inherit);text-align:left;cursor:pointer;white-space:nowrap}
+.tl2-ddm button:hover{background:var(--panel-2)}
+.tl2-ddm button[aria-selected="true"]{background:rgba(46,230,214,.1);color:var(--cy)}
+@media (max-width:760px){.tl2-tools{width:100%;flex-wrap:wrap}.tl2-tools .input{flex:1 1 160px;width:auto;min-width:0}.tl2-ddm{left:0;right:auto}
+  .nd #page-tierlist .tl2-seg{max-width:100%;overflow-x:auto}}
