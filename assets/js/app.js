@@ -519,7 +519,7 @@ function panel2HTML(c){
       <div class="cp2-main">
         <div class="cp2-arena"><div class="cp2-trs${trs.length > 7 ? ' many' : ''}" style="--n:${Math.max(6, trs.length)}">${traitsHTML}</div><div class="cp2-field">${boardHTML(c)}</div>
           <div class="cp2-stages">${plan.map(([ttl, pts, us], i)=>`<div class="cp2-stage s${i + 2}"><div class="cp2-sth"><b>${i + 2}</b><i>Stage ${i + 2}</i><em>${esc(ttl)}</em></div>
-            <ul>${pts.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>${us.length ? `<div class="cp2-sq">${us.map(b=>`<span class="c${(champBy[b.u] || {c:1}).c}"${champBy[b.u] ? ` data-champ="${esc(b.u)}"` : ''} title="${esc(b.u)}" style="background-image:${champBg(b.u)}"></span>`).join('')}</div>` : ''}</div>`).join('')}</div></div>
+            <ul>${pts.map(p=>`<li title="${esc(p)}">${esc(p)}</li>`).join('')}</ul>${us.length ? `<div class="cp2-sq">${us.map(b=>`<span class="c${(champBy[b.u] || {c:1}).c}"${champBy[b.u] ? ` data-champ="${esc(b.u)}"` : ''} title="${esc(b.u)}" style="background-image:${champBg(b.u)}"></span>`).join('')}</div>` : ''}</div>`).join('')}</div></div>
       </div>
       <aside class="cp2-side">
         <!-- eine schmale Spalte, drei Kästen: Items (Priorität + alternative Builds), Augments (Priorität + Empfehlungen), Team (Core-Wabe + Flex-Packs) -->
