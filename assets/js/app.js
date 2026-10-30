@@ -340,6 +340,7 @@ function tl2Fit(){
   const open = [...box.querySelectorAll('.tl-detail:not([hidden])')].reduce((s, d)=>{ const m = getComputedStyle(d); return s + d.offsetHeight + parseFloat(m.marginTop) + parseFloat(m.marginBottom); }, 0);   // aufgeklappte Comp zählt nicht mit
   const fixed = (box.offsetHeight - open - rows.length * perRow * w0) * nRows / rows.length, byH = (innerHeight - topH - 16 - fixed) / (nRows * perRow);
   box.style.setProperty('--tl2w', Math.floor(Math.max(56, Math.min(150, byW, byH))) + 'px');
+  box.querySelectorAll('.tl-detail:not([hidden])').forEach(cp2Notch);   // Kartengröße geändert: Spitze des Comp-Details nachziehen
 }
 addEventListener('resize', tl2Fit);
 // Auch wenn die Tierlist erst später sichtbar wird (Start auf Dashboard oder Items/Augments/Holds, dann zu Comps) oder ihre Breite
@@ -440,6 +441,115 @@ function panelHTML(c, page){   // page: auf der eigenen Comp-Seite (Varianten al
     </div>
   </div>`;
 }
+/* --- Detail-Panel V2 (Prototyp): passend zur neuen Tierlist – Kopf mit Carry im Tier-Rahmen und Rang-Emblem, Aufstellung auf der Arena,
+   Core und Flex-Packs, Item-Priorität, Carry-Items, Augment-Priorität, Spielplan nach Stage 2/3/4, Tipps, weitere Comps mit demselben Carry --- */
+// Spielplan je Comp-Art, aufgeteilt nach Stage 2/3/4: [Motto DE, Motto EN, Stichpunkte DE, Stichpunkte EN] – einfache Standardtexte,
+// bis die Redaktion eigene Texte pro Stage pflegt (c.plan2/3/4, eine Zeile je Stichpunkt)
+const STAGE_PLAN = {
+  '1-Cost Reroll':[['Stabil bleiben', 'Stay stable', ['Stärkste Paare spielen', 'Kopien der 1-Koster sammeln'], ['Play your strongest pairs', 'Collect copies of the 1-costs']],
+    ['Rerollen', 'Reroll', ['Auf 3-1/3-2 auf Level 5–6 rollen', 'Rollen, bis die Carrys 3★ sind'], ['Roll on level 5–6 at 3-1/3-2', 'Roll until your carries are 3★']],
+    ['Board ausbauen', 'Build up', ['Stabil auf Level 7–8 gehen', 'Starke 4-Koster ergänzen'], ['Level steadily to 7–8', 'Add strong 4-costs']]],
+  '2-Cost Reroll':[['Paare halten', 'Hold pairs', ['Paare der 2-Koster halten', 'Econ aufbauen, Leben schützen'], ['Hold pairs of your 2-costs', 'Build econ, protect your health']],
+    ['Slow Roll', 'Slow roll', ['Level 6, über 50 Gold rollen', 'Bis Carry und Tank 3★ sind'], ['Level 6, roll above 50 gold', 'Until carry and tank are 3★']],
+    ['Board ausbauen', 'Build up', ['Auf Level 7–8 gehen', 'Upgrades und 4-Koster holen'], ['Go to level 7–8', 'Get upgrades and 4-costs']]],
+  '3-Cost Reroll':[['Econ & Kopien', 'Econ & copies', ['Stärkstes Board spielen', 'Kopien der 3-Koster halten'], ['Play your strongest board', 'Hold copies of the 3-costs']],
+    ['Level 7', 'Level 7', ['Stabil auf Level 7 gehen', 'Zinsen halten, Leben schützen'], ['Go to level 7 steadily', 'Keep interest, protect your health']],
+    ['Slow Roll', 'Slow roll', ['Ab 4-1 über 50 Gold rollen', 'Carry 3★, danach Level 8'], ['From 4-1, roll above 50 gold', 'Carry 3★, then level 8']]],
+  '4-Cost Fast 8':[['Leben halten', 'Keep health', ['Stärkstes frühes Board spielen', 'Items auf Tank und Zwischen-Carry'], ['Play your strongest early board', 'Items on tank and a temporary carry']],
+    ['Economy', 'Economy', ['Auf 50 Gold sparen', 'Leveln, wenn das Leben sinkt'], ['Save up to 50 gold', 'Level up when your health drops']],
+    ['Level 8 & Rolldown', 'Level 8 & roll', ['Auf 4-1/4-2 Level 8', 'Für die 4-Kosten-Carrys rollen'], ['Level 8 at 4-1/4-2', 'Roll for the 4-cost carries']]],
+  'Fast 9':[['Stabil bleiben', 'Stay stable', ['Starke Early-Units spielen', 'Unnötige Verluste vermeiden'], ['Play strong early units', 'Avoid needless losses']],
+    ['Economy', 'Economy', ['Gold sparen, Leben schützen', 'Starke Frontline aufbauen'], ['Save gold, protect your health', 'Build a strong frontline']],
+    ['Level 8 → 9', 'Level 8 → 9', ['Auf 4-1/4-2 Level 8', 'Auf 5-1/5-2 Level 9 und 5-Koster holen'], ['Level 8 at 4-1/4-2', 'Level 9 at 5-1/5-2 and add the 5-costs']]],
+  'Lose Streak':[['Bewusst verlieren', 'Lose on purpose', ['Lose Streak starten', 'Gold und Komponenten sammeln'], ['Start a lose streak', 'Collect gold and components']],
+    ['Streak halten', 'Keep the streak', ['Bis etwa 4-1 weiter verlieren', 'Items vorbereiten'], ['Keep losing until about 4-1', 'Prepare your items']],
+    ['Großer Rolldown', 'Big rolldown', ['Auf 4-1 alles rollen', 'Board stabilisieren'], ['Roll everything at 4-1', 'Stabilise the board']]]};
+// Units je Stage: Stage 2 die Early-Units; bei Reroll Stage 3 die Reroll-Ziele, Stage 4 der Rest des Boards;
+// sonst Stage 4 die vier teuersten Units, Stage 3 die nächsten vier
+function cp2StageUnits(c){
+  const units = [...new Map(c.board.filter(b=>!PLANTS[b.u]).map(b=>[b.u, b])).values()], rr = /^(\d)-Cost Reroll/.exec(c.style);
+  const desc = units.sort((a, b)=>costOf(b.u) - costOf(a.u) || (b.u === c.carry) - (a.u === c.carry));
+  if(!rr) return [c.early, desc.slice(4, 8), desc.slice(0, 4)];
+  const mid = desc.filter(b=>costOf(b.u) === +rr[1]);
+  return [c.early, mid, desc.filter(b=>!mid.includes(b))].map(l=>l.slice(0, 4));
+}
+// Core und Flex-Packs aus den Comp-Daten: Flex-Units (c.cap) mit „ersetzt X“ bilden je ersetzter Unit ein Pack, „ab Level N“ eine Erweiterung;
+// Core = Units der Aufstellung, die nie ersetzt werden
+function cp2Packs(c){
+  const swap = {}, lvl = {};
+  c.cap.forEach(b=>{ const l = String((b.lv || [])[0] || ''); if(!l) return; (/^\d+$/.test(l) ? lvl : swap)[l] = [...((/^\d+$/.test(l) ? lvl : swap)[l] || []), b]; });
+  const out = Object.keys(swap), units = c.board.filter(b=>!PLANTS[b.u]);
+  const core = units.filter(b=>!out.includes(b.u)).sort((a, b)=>(b.u === c.carry) - (a.u === c.carry) || costOf(b.u) - costOf(a.u));
+  return {core, swaps:Object.entries(swap).map(([o, ins])=>[units.find(b=>b.u === o) || {u:o}, ins]), lvls:Object.entries(lvl).sort((a, b)=>a[0] - b[0])};
+}
+const cp2Unit = (b, cls='') => `<span class="cp2-u ${cls}"${champBy[b.u] ? ` data-champ="${esc(b.u)}"` : ''} title="${esc(b.u)}">${hexHTML(b.u)}<small>${esc(b.u)}</small></span>`;
+function panel2HTML(c){
+  const t = c.tier.toLowerCase(), fo = TL2_FOCUS[c.carry], img = champImg(c.carry) || champFallback(c.carry), st = STICKER[c.sticker];
+  const variants = comps.filter(x=>x.carry===c.carry).sort((a,b)=>b.main-a.main || 'SABCX'.indexOf(a.tier)-'SABCX'.indexOf(b.tier));
+  const rank = c.tier === 'X' && c.sub ? c.sub.toLowerCase() : t;
+  const {core, swaps, lvls} = cp2Packs(c);
+  const prioItems = c.carousel.map(findItem).filter(Boolean), augs = c.augs.map(id=>augById[id]).filter(Boolean);
+  const stUnits = cp2StageUnits(c);
+  const plan = (STAGE_PLAN[c.style] || STAGE_PLAN['4-Cost Fast 8']).map((p, i)=>{ const own = c['plan' + (i + 2)];
+    return [L(p[0], p[1]), own ? own.split('\n').filter(Boolean) : L(p[2], p[3]), stUnits[i]]; });
+  const alts = variants.filter(v=>v !== c), trs = compTraits(c);
+  // Core als Wabe wie auf dem Board: zwei versetzte Reihen (ab 5 Units), Carry leuchtet
+  const combRows = core.length > 4 ? [core.slice(0, Math.ceil(core.length / 2)), core.slice(Math.ceil(core.length / 2))] : [core];
+  // Comp-Tipp unter dem Namen: Text der Redaktion, sonst der erste Satz der Standard-Zusammenfassung zur Comp-Art
+  const tip = c.tips || c.plan || (L(PLAN[c.style] || '', PLAN_EN[c.style] || '').match(/^.*?[.!?](?=\s+[A-ZÄÖÜ]|$)/) || [''])[0];
+  const itemImg = (it, n) => `<button class="cp2-it" data-item="${it.id}" title="${esc(L(it.de || it.en, it.en))}"><img src="${it.img}" alt="${esc(L(it.de || it.en, it.en))}" loading="lazy">${n ? `<b>${n}</b>` : ''}<span></span></button>`;
+  const box = (title, body, cls='') => body ? `<section class="cp2-box ${cls}"><h4>${title}</h4>${body}</section>` : '';
+  // Traits wie im Spiel links im Feld: Symbol, Anzahl, Name und die Stufen (erreichte hell)
+  const traitsHTML = trs.map(tr=>{ const bp = (traitBy[tr.n] || {bp:[]}).bp.map(Number);
+    return `<div class="cp2-tr ${traitCls(tr)}">${traitHex(tr.n, traitCls(tr), 34)}<b>${tr.k}</b><span><i>${esc(tr.n)}</i>${bp.length > 1 ? `<small>${bp.map(x=>`<em${x <= tr.k ? ' class="on"' : ''}>${x}</em>`).join('›')}</small>` : ''}</span></div>`; }).join('');
+  return `<div class="cp2" style="--tc:${TIER_COL[c.tier]}">
+    <header class="cp2-hd">
+      <span class="tl2-frame cp2-carry"><span class="tl2-pic" style="background-image:url('${img}')${fo ? `;--ps:${fo[0]}%;--py:${fo[1]}%` : ''}"></span>
+        <img class="tl2-fr" src="assets/tierlist/comp-${t}-3.webp" alt="" width="372" height="408"></span>
+      <div class="cp2-ttl">
+        <div class="cp2-l1"><img class="cp2-rk" src="assets/tierlist/tier-${rank}.webp" alt="" width="173" height="160"><span class="cp2-rkn">${c.tier === 'X' ? `${TL2_NAME.X}${c.sub ? ' · ' + TL2_NAME[c.sub] : ''}` : TL2_NAME[c.tier]}</span>${st ? `<em class="cp2-trend ${st[0]}">${TL2_TREND[st[0]]}${esc(st[2])}</em>` : ''}</div>
+        <div class="cp2-l2"><h3>${esc(c.name)}</h3><span class="cp2-tag">${esc(c.style.replace('4-Cost ', ''))}</span><span class="cp2-tag dim">${esc(compDiffName(c))}</span></div>
+        ${tip ? `<p class="cp2-tip">${esc(tip).replace(/\n/g, ' ')}</p>` : ''}
+      </div>
+      <div class="cp2-acts">${alts.length ? `<nav class="cp2-alts" aria-label="${L('Alternativen mit demselben Carry', 'Alternatives with the same carry')}"><small>${L('Alternativen', 'Alternatives')}</small>${alts.map(v=>{ const vr = (v.tier === 'X' && v.sub ? v.sub : v.tier).toLowerCase();
+          return `<button class="cp2-alt" data-variant="${v.slug}" title="${esc(v.name)} · ${TL2_NAME[v.tier === 'X' && v.sub ? v.sub : v.tier]}"><img src="assets/tierlist/tier-${vr}.webp" alt="" width="173" height="160">${esc(v.name)}<span></span></button>`; }).join('')}</nav>` : ''}<button class="cp2-btn" type="button" data-planner="${c.slug}" title="${L('Code für den Team-Planer im Spiel kopieren', 'Copy a code for the in-game team planner')}">${csSvg('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>', 2)}${L('Planer-Code', 'Planner code')}<span></span></button>
+        <button class="cp2-x" data-close-panel aria-label="${L('Schließen', 'Close')}">✕<span></span></button></div>
+    </header>
+    <div class="cp2-grid">
+      <div class="cp2-main">
+        <div class="cp2-arena"><div class="cp2-trs${trs.length > 7 ? ' many' : ''}" style="--n:${Math.max(6, trs.length)}">${traitsHTML}</div><div class="cp2-field">${boardHTML(c)}</div>
+          <div class="cp2-stages">${plan.map(([ttl, pts, us], i)=>`<div class="cp2-stage s${i + 2}"><div class="cp2-sth"><b>${i + 2}</b><i>Stage ${i + 2}</i><em>${esc(ttl)}</em></div>
+            <ul>${pts.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>${us.length ? `<div class="cp2-sq">${us.map(b=>`<span class="c${(champBy[b.u] || {c:1}).c}"${champBy[b.u] ? ` data-champ="${esc(b.u)}"` : ''} title="${esc(b.u)}" style="background-image:${champBg(b.u)}"></span>`).join('')}</div>` : ''}</div>`).join('')}</div></div>
+      </div>
+      <aside class="cp2-side">
+        <!-- eine schmale Spalte, drei Kästen: Items (Priorität + alternative Builds), Augments (Priorität + Empfehlungen), Team (Core-Wabe + Flex-Packs) -->
+        ${box(L('Item-Priorität', 'Item priority'), (prioItems.length ? `<div class="cp2-items prio">${prioItems.map((it, i)=>itemImg(it, i + 1)).join('<i class="cp2-arr">›</i>')}</div>` : '')
+          + (c.alt.length ? `<h5>${L('Alternative Builds', 'Alternative builds')}</h5><div class="cp2-builds">${c.alt.map(b=>`<div class="cp2-carryit"${champBy[b.u] ? ` data-champ="${esc(b.u)}"` : ''} title="${esc(b.u)}">${hexHTML(b.u, 'hx-sm')}<div class="cp2-items">${(b.i || []).map(findItem).filter(Boolean).map(it=>itemImg(it)).join('')}</div></div>`).join('')}</div>` : ''))}
+        ${box(L('Augment-Priorität', 'Augment priority'), (c.augTypes.length ? `<ol class="cp2-prio">${c.augTypes.map((a, i)=>`<li class="p${i + 1}"><b>${i + 1}</b><span>${esc(augTypeName(a))}</span></li>`).join('')}</ol>` : '')
+          + (augs.length ? `<div class="cp2-augs">${augs.map(a=>`<button class="cp-aug" data-aug="${a.id}" title="${esc(L(a.de || a.en, a.en))}"><img src="${augImg(a)}" alt="${esc(a.en)}" loading="lazy"><span></span></button>`).join('')}</div>` : ''))}
+        ${box('Core', `<div class="cp2-comb" style="--k:${combRows[0].length}">${combRows.map((r, i)=>`<div class="cp2-crow${i ? ' odd' : ''}">${r.map(b=>`<span class="cp2-ch${b.u === c.carry ? ' carry' : ''}"${champBy[b.u] ? ` data-champ="${esc(b.u)}"` : ''} title="${esc(b.u)}">${hexHTML(b.u)}</span>`).join('')}</div>`).join('')}</div>`
+          + (swaps.length || lvls.length ? `<h5>${L('Flexible Units', 'Flex units')}</h5><div class="cp2-packs">${swaps.map(([o, ins])=>`<div class="cp2-pack">${ins.map(b=>cp2Unit(b)).join('')}<i>⇄</i>${cp2Unit(o, 'out')}</div>`).join('')
+            + lvls.map(([l, ins])=>`<div class="cp2-pack"><span class="cp2-lv">Lv ${l}</span><i>+</i>${ins.map(b=>cp2Unit(b)).join('')}</div>`).join('')}</div>` : ''))}
+      </aside>
+    </div>
+  </div>`;
+}
+// Code für den Team-Planer im Spiel: „02“, je Champion 3 Hex-Ziffern seiner Planer-Nummer (data/planner-<Set>.json, tools/planer-codes.js),
+// 10 Plätze (leer = 000), dahinter das Set (z. B. TFTSet18). Datei wird erst beim ersten Klick geladen
+const PLANNER = {};
+const plannerData = () => PLANNER[TFT_DATA.set] || (PLANNER[TFT_DATA.set] = fetch(`data/planner-${TFT_DATA.set}.json`).then(r=>r.ok ? r.json() : null).catch(()=>null));
+async function plannerCode(c){
+  const d = await plannerData(); if(!d) return '';
+  const units = [...new Set(c.board.filter(b=>!PLANTS[b.u]).map(b=>b.u))].filter(u=>d.codes[u] != null).slice(0, 10);
+  return '02' + units.map(u=>d.codes[u].toString(16).padStart(3, '0')).concat(Array(10 - units.length).fill('000')).join('') + d.key;
+}
+document.addEventListener('click', async e=>{
+  const b = e.target.closest && e.target.closest('[data-planner]'); if(!b) return;
+  const code = await plannerCode(compBySlug[b.dataset.planner]), lbl = b.childNodes[1];
+  let ok = false; if(code){ try { await navigator.clipboard.writeText(code); ok = true; } catch(err){ ok = false; } }
+  if(!ok && code) prompt(L('Code für den Team-Planer im Spiel:', 'Code for the in-game team planner:'), code);
+  if(lbl){ const old = lbl.textContent; lbl.textContent = ok ? L('Kopiert ✓', 'Copied ✓') : code ? old : L('Nicht verfügbar', 'Not available'); setTimeout(()=>{ lbl.textContent = old; }, 2200); }
+});
 function openPanel(tile, slug){
   const tier = tile.closest('.tl-tier'), root = tile.closest('#tierRows,#homeTier') || document;
   const det = tier.querySelector('.tl-detail');
@@ -448,10 +558,19 @@ function openPanel(tile, slug){
   root.querySelectorAll('.ct.sel').forEach(x=>x.classList.remove('sel'));
   root.querySelectorAll('.tl-detail').forEach(d=>{ if(d!==det){ d.hidden=true; d.innerHTML=''; } });
   tile.classList.add('sel');
-  det.innerHTML = panelHTML(c); det.hidden = false;
+  det.innerHTML = panel2HTML(c); det.hidden = false;
   det.dataset.tile = tile.dataset.slug;
+  cp2Notch(det);
   if(root.id==='tierRows'){ buddyReact(c); if(!slug) tlReveal(tier); }
 }
+// Spitze oben am Comp-Detail zeigt auf die angeklickte Karte (--ax = Kartenmitte relativ zum Rahmen, am Rand begrenzt)
+function cp2Notch(det){
+  const p = det.querySelector('.cp2'), card = det.closest('.tl-tier') && det.closest('.tl-tier').querySelector('.ct.sel .tl2-frame');
+  if(!p || !card) return;
+  const r = card.getBoundingClientRect(), pr = p.getBoundingClientRect();
+  p.style.setProperty('--ax', Math.round(Math.min(pr.width - 30, Math.max(30, r.left + r.width / 2 - pr.left))) + 'px');
+}
+addEventListener('resize', ()=>document.querySelectorAll('.tl-detail:not([hidden])').forEach(cp2Notch));
 // Aufgeklappte Comp ins Bild holen: Reihe samt Inhalt sichtbar machen – passt beides nicht, die Reihe oben unter der Leiste
 function tlReveal(tier){
   requestAnimationFrame(()=>{
@@ -535,7 +654,7 @@ document.addEventListener('click', e=>{
   const x = e.target.closest('[data-close-panel]'); if(x) closePanel(x.closest('.tl-tier'));
 });
 document.addEventListener('change', e=>{
-  if(e.target.matches('[data-names]')) e.target.closest('.cp').classList.toggle('show-names', e.target.checked);
+  if(e.target.matches('[data-names]')) e.target.closest('.cp, .cp2').classList.toggle('show-names', e.target.checked);
 });
 function setCompStyle(v){
   compStyle = v;

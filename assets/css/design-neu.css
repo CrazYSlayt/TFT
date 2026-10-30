@@ -1290,3 +1290,158 @@ body.nd-mini .nds-gap{height:30px}
 .ns-tr b{flex:1;min-width:0;font-size:.92rem;color:#fff}
 .ns-tr small{font-size:.75rem;color:var(--muted);white-space:nowrap}
 @media (max-width:640px){.ns-dates{grid-template-columns:minmax(0,1fr)}.ns-chs{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}}
+
+/* ================= Comp-Detail V2 (app.js: panel2HTML) – passend zur neuen Tierlist, kompakt: alles auf einen Blick ================= */
+/* Rahmen nur so breit wie Arena (max. 980 px) + schmale rechte Spalte (270 px), mittig */
+.cp2{position:relative;max-width:1294px;margin-inline:auto;padding:12px 14px 14px;border-radius:18px;border:2px solid transparent;
+  background:linear-gradient(160deg,color-mix(in srgb,var(--g1) 7%,#071823),#061520 45%) padding-box,linear-gradient(160deg,var(--g1),var(--g2) 55%,var(--g3)) border-box;
+  box-shadow:0 0 30px color-mix(in srgb,var(--g1) 14%,transparent)}
+/* Spitze oben: zeigt auf die angeklickte Karte (--ax aus app.js: cp2Notch), Rand in Rangfarbe, Fläche wie der Rahmen */
+.cp2::before{content:'';position:absolute;top:-11px;left:var(--ax,50%);width:20px;height:20px;margin-left:-10px;transform:rotate(45deg);z-index:1;
+  background:color-mix(in srgb,var(--g1) 7%,#071823);border:2px solid var(--g1);border-right:0;border-bottom:0;border-radius:3px 0 0 0;
+  box-shadow:-3px -3px 8px color-mix(in srgb,var(--g1) 18%,transparent)}
+/* Kopf: Carry, Rang, Name + Comp-Art, Tipp, Varianten – rechts Planer-Code und Schließen */
+.cp2-hd{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:start}
+.cp2-carry{--w:68px;position:relative;width:var(--w);display:block;filter:drop-shadow(0 0 10px color-mix(in srgb,var(--g1) 50%,transparent))}
+.cp2-carry .tl2-fr{position:relative;display:block;width:100%;max-width:none;height:auto;z-index:2}
+.cp2-carry .tl2-pic{position:absolute;inset:1.5% 1.6%;z-index:1;clip-path:polygon(9% 0,91% 0,100% 8%,100% 92%,91% 100%,9% 100%,0 92%,0 8%);background:#0a1a24 center var(--py,0%)/cover no-repeat}
+.cp2-ttl{min-width:0;display:flex;flex-direction:column;gap:4px}
+.cp2-l1{display:flex;align-items:center;gap:6px}
+.cp2-rk{width:24px;height:auto;filter:drop-shadow(0 0 6px color-mix(in srgb,var(--g1) 60%,transparent))}
+.cp2-rkn{font:900 italic .82rem/1 var(--ff-head);text-transform:uppercase;letter-spacing:.05em;color:var(--g1);padding-right:.1em}
+.cp2-trend{display:inline-flex;align-items:center;gap:3px;margin-left:4px;padding:1px 8px 1px 4px;border-radius:99px;font:700 .68rem var(--ff-body);font-style:normal;background:rgba(255,255,255,.06);color:var(--muted)}
+.cp2-trend svg{width:12px;height:12px}.cp2-trend.up{color:#4ade80}.cp2-trend.down{color:#f87171}.cp2-trend.new{color:#2ee6d6}
+.cp2-l2{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.cp2-l2 h3{margin:0 4px 0 0;font:900 italic clamp(1.25rem,2vw,1.6rem)/1.05 var(--ff-head);text-transform:uppercase;color:#fff;padding-right:.12em}
+.cp2-tag{padding:2px 10px;border-radius:99px;border:1px solid color-mix(in srgb,var(--g1) 55%,transparent);background:color-mix(in srgb,var(--g1) 12%,transparent);font:800 italic .74rem var(--ff-head);text-transform:uppercase;letter-spacing:.04em;color:#fff}
+.cp2-tag.dim{border-color:var(--line-2);background:rgba(255,255,255,.04);color:var(--muted)}
+.cp2-tip{margin:0;font-size:.84rem;line-height:1.4;color:#cfe3ee}
+.cp2-acts{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px}
+/* Alternativen mit demselben Carry oben rechts: Rang-Emblem + Name als Pille, vor Planer-Code und Schließen */
+.cp2-alts{display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:6px;margin-right:4px}
+.cp2-alts small{font:800 .66rem var(--ff-body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.cp2-alt{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px 0 6px;border-radius:9px;border:1px solid var(--line-2);background:rgba(255,255,255,.04);color:#dfe9f0;font:700 .8rem var(--ff-body);cursor:pointer;white-space:nowrap}
+.cp2-alt img{width:22px;height:auto}
+.cp2-alt:hover{color:#fff;border-color:var(--g1);box-shadow:0 0 12px color-mix(in srgb,var(--g1) 30%,transparent)}
+.cp2-x{width:32px;height:32px;border-radius:9px;border:1px solid var(--line-2);background:rgba(255,255,255,.04);color:var(--muted);font-size:.95rem;cursor:pointer}
+.cp2-x:hover{color:#fff;border-color:var(--g1)}
+.cp2-btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:9px;border:1px solid color-mix(in srgb,var(--g1) 55%,transparent);background:color-mix(in srgb,var(--g1) 12%,transparent);color:#fff;font:700 .8rem var(--ff-body);cursor:pointer;white-space:nowrap}
+.cp2-btn svg{width:15px;height:15px}
+.cp2-btn:hover{border-color:var(--g1);box-shadow:0 0 12px color-mix(in srgb,var(--g1) 35%,transparent)}
+/* Raster: links Feld + Spielplan (etwas kleiner, spart Höhe), rechts die breitere Spalte mit Prioritäten, Core, Flex und Alternativen */
+/* Arena höchstens 980 px breit (≈ 550 px hoch), damit das Dropdown auf großen Bildschirmen nicht zu hoch wird – rechte Spalte fest 270 px */
+.cp2-grid{display:grid;grid-template-columns:minmax(0,980px) 270px;gap:12px;margin-top:10px}
+.cp2-main{display:flex;flex-direction:column;gap:10px;min-width:0}
+/* Rechte Spalte: eine schmale Spalte mit drei kompakten Kästen (Items + alternative Builds, Augments, Core + Flex), nicht höher als die Arena */
+.cp2-side{display:flex;flex-direction:column;gap:7px;min-width:0}
+.cp2-items.prio{gap:3px}.cp2-items.prio .cp2-arr{margin:0 -1px}
+.cp2-builds{display:flex;flex-wrap:wrap;gap:5px 12px}
+.cp2-box h5{margin:8px 0 5px;font:800 .62rem var(--ff-body);text-transform:uppercase;letter-spacing:.08em;color:#6f8594}
+.cp2-builds .cp2-carryit+.cp2-carryit{margin-top:0}
+.cp2-box{padding:8px 10px 9px;border-radius:12px;border:1px solid var(--line-2);background:rgba(3,17,27,.55)}
+.cp2-box h4{margin:0 0 6px;font:900 italic .74rem var(--ff-head);text-transform:uppercase;letter-spacing:.06em;color:#9fb6c4}
+/* Feld auf der Arena wie in der Vorlage: Bild gezoomt und verschoben, sodass der Boden oben in der Mitte liegt (aus der Vorlage ausgemessen:
+   Bildbreite 124,6 % der Arena, links −11,4 %, oben −13,8 % der Breite – als Prozent-Position, cqw gilt am Element selbst nicht). Die Arena endet
+   mit dem Bild (kein dunkler Streifen unten). Alle Maße in cqw/%, damit Board, Traits und Stages bei jeder Breite gleich auf dem Bild sitzen */
+.cp2-arena{position:relative;aspect-ratio:972/547;container-type:inline-size;border-radius:12px;overflow:hidden;
+  background:#0d0a1c url(../img/arena-board.webp) 46.4% 100%/124.6% auto no-repeat}
+.cp2-field{position:absolute;inset:0}
+.cp2-arena .board{--hx:6.9cqw;position:absolute;left:52%;top:33.5%;padding:0;transform:translate(-50%,-50%)}
+.cp2-arena .hex:not(.filled) .hex-bg{background:rgba(185,175,255,.2)}
+.cp2-arena .hex.filled{filter:drop-shadow(0 .5cqw .7cqw rgba(0,0,0,.6))}
+/* Etwas mehr Abstand zwischen den Feldern, damit Champions mit Items sich nicht überschneiden; vordere Reihen liegen über den hinteren */
+.cp2-arena .board-row{position:relative;gap:.7cqw;margin-bottom:calc(var(--hy) * -.25 + 1cqw)}
+.cp2-arena .board-row.odd{margin-left:calc(var(--hx) / 2 + .35cqw)}
+.cp2-arena .board-row:last-child{margin-bottom:0}
+.cp2-arena .board-row:nth-child(1){z-index:4}.cp2-arena .board-row:nth-child(2){z-index:3}.cp2-arena .board-row:nth-child(3){z-index:2}.cp2-arena .board-row:nth-child(4){z-index:1}
+/* Items unter dem Champion statt darüber: größer, mit dunklem Rand und hellem Saum gut erkennbar */
+.cp2-arena .hex-items{top:calc(100% - 1.1cqw);bottom:auto;gap:.25cqw;z-index:3}
+.cp2-arena .hex-items img{width:clamp(14px,2.5cqw,30px);height:clamp(14px,2.5cqw,30px);border-radius:4px;border:1px solid #05070d;box-shadow:0 0 0 1px rgba(255,255,255,.22),0 2px 5px rgba(0,0,0,.7)}
+.cp2-arena .hex-stars{font-size:clamp(8px,1.2cqw,13px)}
+.cp2-arena .hex-name{display:none}
+/* Traits links im Feld, bis knapp über die Stage-Kästen */
+/* Zeilenhöhe --rh: so groß wie möglich (höchstens 44 px), aber alle Traits (--n, mindestens 6) passen in die Spalte */
+.cp2-trs{--rh:min(5.4cqw,44px,calc(34.2cqw / var(--n)));position:absolute;left:.6cqw;top:.6cqw;bottom:37.9%;width:clamp(132px,16cqw,200px);display:flex;flex-direction:column;overflow:hidden;z-index:2}
+.cp2-tr{display:flex;align-items:center;gap:calc(var(--rh) * .16);height:calc(var(--rh) - 3px);margin-bottom:3px;padding:0 8px 0 3px;border-radius:9px;background:rgba(5,8,20,.74);backdrop-filter:blur(2px)}
+.cp2-tr .thx{--s:calc(var(--rh) * .7)!important}
+.cp2-tr>b{min-width:calc(var(--rh) * .3);font:900 max(.85rem,calc(var(--rh) * .44))/1 var(--ff-head);color:#fff;text-align:center}
+.cp2-tr>span{display:flex;flex-direction:column;min-width:0;line-height:1.1}
+.cp2-tr i{font-style:normal;font-weight:700;font-size:max(.7rem,calc(var(--rh) * .32));color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp2-tr small{font-size:max(.6rem,calc(var(--rh) * .24));color:#6f8594}
+.cp2-trs.many .cp2-tr small{display:none}
+.cp2-tr small em{font-style:normal}.cp2-tr small em.on{color:#fff;font-weight:800}
+.cp2-tr.bronze>b{color:#e3a372}.cp2-tr.silver>b{color:#d7e0ea}.cp2-tr.gold>b{color:#f5c84b}.cp2-tr.prism>b{color:#f0abfc}.cp2-tr.unique>b{color:#ffad5c}
+/* Spielplan unten im Feld wie in der Vorlage: drei Kästen Stage 2 → 3 → 4 mit Pfeil dazwischen; Nummer in Gold, Türkis, Pink */
+.cp2-stages{position:absolute;left:6.6%;right:4.4%;top:67.6%;bottom:1.4%;z-index:3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.1cqw}
+.cp2-stage{--p:#f2c14e;position:relative;min-height:0;display:flex;flex-direction:column;gap:clamp(4px,.8cqw,8px);padding:clamp(8px,1.3cqw,14px) clamp(9px,1.4cqw,15px);
+  border-radius:12px;border:1px solid rgba(255,255,255,.1);overflow:visible;
+  background:radial-gradient(90% 120% at 100% 30%,color-mix(in srgb,var(--p) 22%,transparent),transparent 65%),linear-gradient(90deg,rgba(6,9,20,.94) 35%,rgba(10,12,28,.8));
+  box-shadow:0 8px 22px rgba(0,0,0,.45)}
+.cp2-stage.s3{--p:#2ee6d6}.cp2-stage.s4{--p:#ff5c8a}
+.cp2-stage+.cp2-stage::before{content:'';position:absolute;left:calc(-.55cqw - 7px);top:50%;width:clamp(8px,1cqw,12px);height:clamp(8px,1cqw,12px);margin-top:-6px;z-index:1;
+  border:solid #2ee6d6;border-width:3px 3px 0 0;transform:rotate(45deg);filter:drop-shadow(0 0 5px rgba(46,230,214,.7))}
+.cp2-sth{display:flex;align-items:center;gap:clamp(6px,1cqw,10px);min-width:0}
+.cp2-sth>b{flex:none;width:clamp(22px,2.9cqw,30px);height:clamp(22px,2.9cqw,30px);border-radius:8px;display:grid;place-items:center;
+  background:linear-gradient(160deg,color-mix(in srgb,var(--p) 85%,#fff),var(--p));color:#0b1018;font:900 clamp(.8rem,1.5cqw,1rem)/1 var(--ff-head);box-shadow:0 0 10px color-mix(in srgb,var(--p) 40%,transparent)}
+.cp2-sth i{flex:none;font:900 italic clamp(.8rem,1.5cqw,1rem)/1.1 var(--ff-head);text-transform:uppercase;letter-spacing:.04em;color:#fff;padding-right:.1em}
+.cp2-sth em{min-width:0;font:700 clamp(.66rem,1.15cqw,.8rem)/1.1 var(--ff-body);font-style:normal;color:var(--p);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Wie man die Stage spielt: kurze Stichpunkte */
+.cp2-stage ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px}
+.cp2-stage li{position:relative;padding-left:12px;font-size:clamp(.68rem,1.25cqw,.84rem);line-height:1.3;color:#d0dae2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp2-stage li::before{content:'';position:absolute;left:1px;top:.5em;width:5px;height:5px;border-radius:50%;background:var(--p)}
+/* Units je Stage als eckige Porträts wie in der Vorlage, Rand in Kostenfarbe */
+.cp2-sq{display:flex;gap:clamp(4px,.8cqw,8px);margin-top:auto}
+.cp2-sq span{width:clamp(24px,3.7cqw,38px);aspect-ratio:1;border-radius:6px;border:1.5px solid var(--c1);background:#0b1018 center 20%/cover no-repeat;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.cp2-sq .c2{border-color:var(--c2)}.cp2-sq .c3{border-color:var(--c3)}.cp2-sq .c4{border-color:var(--c4)}.cp2-sq .c5{border-color:var(--c5)}
+/* Units, Items, Prioritäten – Rand der Champion-Waben dünn wie auf dem Board */
+.cp2-side .hx-in{inset:2px}
+/* Core als Wabe: versetzte Reihen wie auf dem Board */
+/* Wabengröße passt sich der Kastenbreite an: --k = Units in der längsten Reihe (aus app.js), höchstens 50 px je Wabe */
+.cp2-comb{container-type:inline-size;display:flex;flex-direction:column;align-items:flex-start;padding-bottom:2px}
+.cp2-crow{--cw:min(42px,calc((100cqw - 3px * var(--k)) / (var(--k) + .5)));--ch:calc(var(--cw) * 1.1547);display:flex;gap:3px;margin-bottom:calc(var(--ch) * -.25 + 3px)}
+.cp2-crow:last-child{margin-bottom:0}
+.cp2-crow.odd{margin-left:calc(var(--cw) / 2 + 1.5px)}
+.cp2-ch{width:var(--cw);height:var(--ch);cursor:pointer;filter:drop-shadow(0 3px 5px rgba(0,0,0,.5))}
+.cp2-ch.carry{filter:drop-shadow(0 0 7px var(--g1))}
+.cp2-ch:hover{transform:translateY(-2px)}
+.cp2-units{display:flex;flex-wrap:wrap;gap:5px}
+.cp2-u{display:flex;flex-direction:column;align-items:center;gap:1px;width:40px;cursor:pointer}
+.cp2-u .hx{width:36px;height:41.6px}
+.cp2-u small{max-width:100%;font-size:.58rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp2-u.carry .hx{filter:drop-shadow(0 0 7px var(--g1))}.cp2-u.carry small{color:var(--g1);font-weight:800}
+.cp2-u.out{opacity:.55}
+.cp2-units.sm .cp2-u{width:32px}.cp2-units.sm .cp2-u .hx{width:28px;height:28px}.cp2-units.sm small{display:none}
+.cp2-packs{display:flex;flex-wrap:wrap;gap:6px 14px}
+.cp2-pack{display:flex;align-items:center;flex-wrap:wrap;gap:3px}
+.cp2-packs .cp2-u{width:30px}.cp2-packs .cp2-u .hx{width:30px;height:34.6px}.cp2-packs .cp2-u small{display:none}
+.cp2-pack>i{font-style:normal;font-weight:900;color:var(--g1)}
+.cp2-lv{padding:2px 7px;border-radius:99px;background:color-mix(in srgb,var(--g1) 18%,transparent);font:800 .7rem var(--ff-body);color:#fff}
+.cp2-items{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.cp2-it{position:relative;width:32px;height:32px;padding:0;border-radius:7px;border:1px solid rgba(0,0,0,.6);background:none;cursor:pointer}
+.cp2-it img{width:100%;height:100%;border-radius:6px;display:block}
+.cp2-it b{position:absolute;top:-6px;left:-6px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;background:var(--g1);color:#071823;font:900 .62rem/1 var(--ff-body);box-shadow:0 0 0 2px #071823}
+.cp2-arr{font-style:normal;font-weight:900;color:var(--muted)}
+.cp2-carryit{display:flex;align-items:center;gap:8px}
+.cp2-carryit{gap:4px;cursor:pointer}
+.cp2-carryit .hx{width:28px;height:32.3px;flex:none}
+.cp2-carryit .cp2-items{gap:3px}.cp2-carryit .cp2-it{width:26px;height:26px}
+/* Augment-Priorität wie im Spiel: nummerierte Leisten (Gold, Türkis, Pink) */
+.cp2-prio{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.cp2-prio li{--p:#f2c14e;display:flex;align-items:center;min-width:0;height:26px;border-radius:99px;border:2px solid var(--p);background:linear-gradient(90deg,color-mix(in srgb,var(--p) 22%,#08141c),#08141c 70%);box-shadow:0 0 10px color-mix(in srgb,var(--p) 22%,transparent)}
+.cp2-prio li.p2{--p:#2ee6d6}.cp2-prio li.p3{--p:#ff5c8a}
+.cp2-prio b{flex:none;width:20px;height:20px;margin-left:1px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--p) 30%,#08141c);border:2px solid var(--p);font:900 .78rem/1 var(--ff-head);color:#fff}
+.cp2-prio span{flex:1;min-width:0;text-align:center;padding:0 4px 0 2px;overflow:hidden;text-overflow:ellipsis;font:900 italic .72rem var(--ff-head);text-transform:uppercase;letter-spacing:.03em;color:#fff}
+.cp2-augs{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
+.cp2-augs .cp-aug img{width:26px;height:26px}
+/* Schmale Tierlist (kleiner Bildschirm, Sidebar offen): rechte Spalte unter das Feld, damit die Arena groß bleibt */
+.cp2{container-type:inline-size}
+/* In der Tierlist links bündig mit dem Kartenrahmen der Reihe (Kopf 136 px + Abstand 12 px, siehe .tl2-row) */
+.tl2-tier>.tl-detail>.cp2{margin-left:148px;margin-right:auto}
+@media (max-width:760px){.tl2-tier>.tl-detail>.cp2{margin-left:0}}
+@container (max-width:900px){.cp2-grid{grid-template-columns:minmax(0,1fr)}.cp2-side{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}}
+@media (max-width:760px){.cp2{padding:10px}.cp2-side{grid-template-columns:minmax(0,1fr)}.cp2-hd{grid-template-columns:auto minmax(0,1fr)}.cp2-acts{grid-column:1 / -1;justify-content:flex-end}
+  .cp2-arena{aspect-ratio:auto;display:flex;flex-direction:column;align-items:center;padding:10px 0;background-size:auto 100%}
+  .cp2-trs{position:static;width:auto;flex-direction:row;flex-wrap:wrap;gap:4px;margin:0 8px 10px}.cp2-tr small{display:none}
+  .cp2-field{position:static}.cp2-arena .board{--hx:min(46px,calc((100vw - 80px) / 7.8));position:static;transform:none;padding-bottom:16px}
+  .cp2-stage p{display:block}.cp2-arena .hex.filled{transform:none}
+  .cp2-stages{position:static;grid-template-columns:minmax(0,1fr);gap:8px;width:100%;padding:10px 8px 0}.cp2-stage+.cp2-stage::before{display:none}}
