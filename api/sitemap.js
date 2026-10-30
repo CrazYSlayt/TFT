@@ -66,6 +66,15 @@ function champions(){
   } catch (e) { return []; }
 }
 
+// Seite zum nächsten Set (/tft-set-<Live-Set + 1>, app.js: renderNextSet) – steht schon vor dem PBE in der Sitemap, damit Google sie früh findet
+function nextSet(){
+  try {
+    const sets = fs.readFileSync(path.join(process.cwd(), 'data', 'sets.js'), 'utf8');
+    const list = JSON.parse(sets.slice(sets.indexOf('['), sets.lastIndexOf(']') + 1)), live = list.find(s => s.status === 'live') || list[0];
+    return live ? ['/tft-set-' + (live.set + 1)] : [];
+  } catch (e) { return []; }
+}
+
 // Comp-Seiten aus der veröffentlichten Tierlist des Live-Sets (tierlist-data-<Set>.js), Adresse wie in app.js (compHref)
 function compPages(){
   try {
@@ -108,7 +117,7 @@ module.exports = (req, res) => {
   let host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
   if (host === 'tftclimb.com') host = 'www.tftclimb.com';   // immer die kanonische Domain
   const base = (req.headers['x-forwarded-proto'] || 'https') + '://' + host;
-  const paths = [...PAGES, ...compPages(), ...champions(), ...patches()];
+  const paths = [...PAGES, ...nextSet(), ...compPages(), ...champions(), ...patches()];
   const alt = p => ['de', p, 'en', enPath(p), 'x-default', p].reduce((s, v, i, a) => i % 2 ? s : s + `\n    <xhtml:link rel="alternate" hreflang="${v}" href="${esc(base + a[i + 1])}"/>`, '');
   const lm = lastmods(), img = ogImages();
   const entry = (loc, p) => { const d = modOf(p, lm), im = img[loc];

@@ -80,6 +80,8 @@ function findBrowser() {
       const l = /^\/en(\/|$)/.test(p) ? 'en' : 'de';
       if (l !== lang) { await send('Page.navigate', {url: origin + p}); await sleep(3000); lang = l; }   // erste Seite je Sprache normal laden
       else { await ev(`go(${JSON.stringify(p.replace(/^\/en(?=\/|$)/, '') || '/')})`); await sleep(300); }   // danach innerhalb der Seite wechseln (schnell)
+      // Seiten, die Daten nachladen (z. B. /tft-set-19 mit den PBE-Daten), markieren sich mit aria-busy – bis zu 5 s warten
+      for (let i = 0; i < 25 && await ev(`!!document.querySelector('.page.active [aria-busy="true"]')`); i++) await sleep(200);
       const v = await ev(read);
       if (v && v.d) pages[p] = v;
       else console.warn('  ohne Beschreibung:', p);

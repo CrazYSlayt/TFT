@@ -104,6 +104,21 @@ const CS_SHOT = `(async () => {
   } finally { wrap.remove(); }
 })()`;
 
+// ---------- Nächstes Set (/tft-set-<N>): „TFT SET 19“ und die Termine aus dem Patch-Plan (PBE, Live) – ohne Sätze, gilt für beide Sprachen ----------
+function nextSetPage(){
+  try {
+    const rd = f => { const w = {}; new Function('window', fs.readFileSync(path.join(ROOT, f), 'utf8'))(w); return w; };
+    const sets = rd('data/sets.js').TFT_SETS || [], live = sets.find(s => s.status === 'live') || sets[0]; if (!live) return [];
+    const n = live.set + 1, rows = ((rd(`data/custom-${live.set}.js`).TFT_CUSTOM || {}).cheats || {}).patchSchedule;
+    const P = rows ? rows.rows : [], pbe = P.find(r => new RegExp(`Set ${n} PBE`).test(r[2].join(' '))), go = P.find(r => r[0] === n + '.1');
+    const d = r => r ? r[1].split('-').reverse().join('.') : '';
+    return [{file: `tft-set-${n}`, jpg: true, html: page(`
+    <img class="logo ns-logo" src="/assets/brand/logo-tftclimb.webp" alt="">
+    <div class="ns-og"><h1>TFT <em>Set ${n}</em></h1>
+      <div class="ns-og-d">${pbe ? `<span><small>PBE</small><b>${d(pbe)}</b></span>` : ''}${go ? `<span class="go"><small>Live</small><b>${d(go)}</b></span>` : ''}</div></div>`)}];
+  } catch (e) { return []; }
+}
+
 // Grundgerüst: Farben, Schrift und Hintergrund wie auf tftclimb.com
 const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
   @font-face{font-family:'Barlow Condensed';font-weight:900;font-style:italic;src:url(/assets/fonts/BarlowCondensed-900i-latin.woff2) format('woff2')}
@@ -135,6 +150,15 @@ const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
   .chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px;max-width:640px}
   .chips span{padding:10px 18px;border-radius:99px;border:2px solid rgba(46,230,214,.5);background:rgba(46,230,214,.1);font:700 22px Barlow;color:#7ff7ec}
   .mascot.rd{height:520px;bottom:40px;right:20px}
+  .ns-logo{position:absolute;left:50%;top:62px;transform:translateX(-50%);height:54px;z-index:2}
+  .ns-og{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;z-index:2;padding-top:40px}
+  .ns-og h1{margin:0;font-size:190px;line-height:.9}
+  .ns-og-d{display:flex;gap:26px}
+  .ns-og-d span{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 34px;border-radius:20px;border:2px solid rgba(46,230,214,.5);background:rgba(46,230,214,.1)}
+  .ns-og-d span.go{border-color:rgba(240,171,252,.55);background:rgba(240,171,252,.1)}
+  .ns-og-d small{font:700 22px Barlow;letter-spacing:.3em;text-transform:uppercase;color:#7ff7ec}
+  .ns-og-d .go small{color:#f5c2fd}
+  .ns-og-d b{font:900 italic 54px/1 'Barlow Condensed';color:#fff}
   /* Cheatsheets: nur die Tabelle, mittig auf der Fläche innerhalb der Umrandung (die liegt 14 px vom Rand) */
   .cs-shot{position:absolute;inset:40px;display:flex;align-items:center;justify-content:center;z-index:1}
   .cs-shot img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 14px 30px rgba(0,0,0,.5))}
@@ -195,7 +219,7 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
 (async () => {
   fs.mkdirSync(OUT, {recursive: true});
   fs.mkdirSync(path.join(OUT, 'cs'), {recursive: true});
-  const jobs = [...augmentPages(), ...rolldownPages(), ...toolPages(), ...cheatPages()].filter(j => !process.argv[2] || j.file.includes(process.argv[2]));   // optional: nur Dateien mit diesem Namensteil
+  const jobs = [...augmentPages(), ...rolldownPages(), ...toolPages(), ...nextSetPage(), ...cheatPages()].filter(j => !process.argv[2] || j.file.includes(process.argv[2]));   // optional: nur Dateien mit diesem Namensteil
   const srv = await serve(), origin = 'http://127.0.0.1:' + srv.address().port;
   const port = 9300 + Math.floor(Math.random() * 500), prof = path.join(require('os').tmpdir(), 'tftclimb-og-' + port);
   const br = spawn(findBrowser(), ['--headless=new', '--hide-scrollbars', `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`, '--window-size=1200,630', 'about:blank'], {stdio: 'ignore'});

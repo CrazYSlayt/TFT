@@ -4494,7 +4494,7 @@ function renderCountdown(){
       ${all.length ? `<section class="cd-box cd-list"><h2>${L(`Alle Patch-Termine von Set ${S}`, `Every patch date of Set ${S}`)}</h2><ol>${all.map(row).join('')}</ol>
         <p class="cd-src">${L(`Termine: ${esc((TFT_CUSTOM_SET.cheats || {}).patchSchedule ? TFT_CUSTOM_SET.cheats.patchSchedule.src : 'Riot Games')}. Die Uhrzeit ist geschätzt und gilt für die europäischen Server.`, `Dates: ${esc((TFT_CUSTOM_SET.cheats || {}).patchSchedule ? TFT_CUSTOM_SET.cheats.patchSchedule.src : 'Riot Games')}. The time is an estimate for the European servers.`)}</p></section>` : ''}
       <div class="cd-side">
-        ${ns ? `<section class="cd-box cd-set"><small>${L('Neues Set', 'New set')}</small><h2>${L(`Countdown bis Set ${nsN}`, `Countdown to Set ${nsN}`)}</h2><b class="cd-setn">${esc(cdDays(ns.d))}</b><p>${L(`Set ${nsN} startet laut Patch-Plan mit Patch ${esc(ns.id)} am ${esc(nsLong)}.`, `According to the patch schedule, Set ${nsN} launches with patch ${esc(ns.id)} on ${esc(nsLong)}.`)}</p></section>` : ''}
+        ${ns ? `<section class="cd-box cd-set"><small>${L('Neues Set', 'New set')}</small><h2>${L(`Countdown bis Set ${nsN}`, `Countdown to Set ${nsN}`)}</h2><b class="cd-setn">${esc(cdDays(ns.d))}</b><p>${L(`Set ${nsN} startet laut Patch-Plan mit Patch ${esc(ns.id)} am ${esc(nsLong)}.`, `According to the patch schedule, Set ${nsN} launches with patch ${esc(ns.id)} on ${esc(nsLong)}.`)}</p><p><a class="art-a" href="/tft-set-${nsN}">${L(`Alles zu Set ${nsN}`, `Everything about Set ${nsN}`)} →</a></p></section>` : ''}
         <nav class="cd-box cd-links" aria-label="${L('Rund um den Patch', 'All about the patch')}"><h2>${L('Rund um den Patch', 'All about the patch')}</h2>${links.map(([h, t, d])=>`<a href="${h}"><b>${t}</b><small>${d}</small></a>`).join('')}</nav>
       </div>
     </div>
@@ -5171,7 +5171,7 @@ const CS_ART = {
     i:L(`Riot bringt TFT-Patches etwa alle zwei Wochen. Der Patch-Plan zeigt alle Termine von Set ${S} mit den Events dazu, vom Battle Pass bis zu den Turnieren. Den aktuellen und den nächsten Patch markiert die Tabelle automatisch.${next ? ` Als Nächstes kommt <b>Patch ${next[0]}</b> am ${fmt(next[1])}.` : ''}`, `Riot ships TFT patches about every two weeks. The patch schedule lists every date of Set ${S} with its events, from the battle pass to tournaments. The table marks the current and the next patch automatically.${next ? ` Next up is <b>patch ${next[0]}</b> on ${fmt(next[1])}.` : ''}`),
     s:[['rhythmus', L('Wie oft TFT gepatcht wird', 'How often TFT gets patched'), csPs(L(`In Set ${S} liegen im Schnitt ${gap} Tage zwischen zwei Patches. Dazwischen gibt es manchmal B-Patches${bP ? ` wie ${esc(bP[0])}` : ''} – kleine Nachbesserungen, wenn etwas zu stark ist oder nicht funktioniert. Jeder Patch kann die Stärke von Champions, Items und Augments verändern.`, `In Set ${S} there are ${gap} days between two patches on average. In between there are sometimes B-patches${bP ? ` like ${esc(bP[0])}` : ''} – small fixes when something is too strong or broken. Every patch can change the strength of champions, items and augments.`))],
       ...(up.length ? [['termine', L('Die nächsten Termine', 'Upcoming dates'), csUl(up.map(r=>`<b>${L('Patch', 'Patch')} ${esc(r[0])}</b> – ${fmt(r[1])}${(EN ? r[3] : r[2]).length ? ': ' + esc((EN ? r[3] : r[2]).join(', ')) : ''}`))]] : []),
-      ...(nxtSet ? [['set', L(`Wann Set ${nxtSet[0].split('.')[0]} startet`, `When Set ${nxtSet[0].split('.')[0]} launches`), csPs(L(`Set ${nxtSet[0].split('.')[0]} startet mit Patch ${nxtSet[0]} am ${fmt(nxtSet[1])}.${pbe ? ` Schon ab Patch ${pbe[0]} (${fmt(pbe[1])}) kannst du es auf dem PBE ausprobieren.` : ''} Bis dahin bleibt Set ${S} aktiv.`, `Set ${nxtSet[0].split('.')[0]} launches with patch ${nxtSet[0]} on ${fmt(nxtSet[1])}.${pbe ? ` From patch ${pbe[0]} (${fmt(pbe[1])}) you can already try it on the PBE.` : ''} Until then Set ${S} stays live.`))]] : []),
+      ...(nxtSet ? [['set', L(`Wann Set ${nxtSet[0].split('.')[0]} startet`, `When Set ${nxtSet[0].split('.')[0]} launches`), csPs(L(`Set ${nxtSet[0].split('.')[0]} startet mit Patch ${nxtSet[0]} am ${fmt(nxtSet[1])}.${pbe ? ` Schon ab Patch ${pbe[0]} (${fmt(pbe[1])}) kannst du es auf dem PBE ausprobieren.` : ''} Bis dahin bleibt Set ${S} aktiv. Termine, PBE und alle neuen Champions: ${artA(nsHref(), `TFT Set ${nxtSet[0].split('.')[0]}`)}.`, `Set ${nxtSet[0].split('.')[0]} launches with patch ${nxtSet[0]} on ${fmt(nxtSet[1])}.${pbe ? ` From patch ${pbe[0]} (${fmt(pbe[1])}) you can already try it on the PBE.` : ''} Until then Set ${S} stays live. Dates, PBE and every new champion: ${artA(nsHref(), `TFT Set ${nxtSet[0].split('.')[0]}`)}.`))]] : []),
       ['events', L('Events in diesem Set', 'Events this set'), csPs(csJoin(ev.map(esc)) + '.')]],
     tip:[L('Nach jedem Patch neu bewerten', 'Re-evaluate after every patch'), csPs(L('Nach einem Patch können Comps, die vorher stark waren, deutlich schwächer sein – und umgekehrt. Lies die Patch Notes und schau in die Tierlist, bevor du deine Lieblings-Comp einfach weiterspielst.', 'After a patch, comps that were strong before can be much weaker – and the other way round. Read the patch notes and check the tier list before you keep playing your favourite comp.'))],
     q:[...(next ? [[L('Wann kommt der nächste TFT-Patch?', 'When is the next TFT patch?'), L(`Patch ${next[0]} ist für den ${fmt(next[1])} geplant.`, `Patch ${next[0]} is planned for ${fmt(next[1])}.`)]] : []),
@@ -5475,6 +5475,7 @@ const SEO_ART = {
         `${n} ${artA('/cheatsheet', 'cheatsheets')} for a quick look next to the game: shop odds and XP, augment tiers, encounters, loot orbs, player damage, emblems plus tables for single augments and traits. You can cut out every table as an image and share it.`))],
       ['bibliothek', L('Bibliothek und Patch Notes', 'Library and patch notes'), csPs(L(`In der ${artA('/bibliothek', 'Bibliothek')} findest du alle ${champions.length} Champions, ${traits.length} Traits sowie alle Items und Augments von Set ${S} mit den offiziellen Werten. Die ${artA('/patches', 'Patch Notes')} bereiten wir nach jedem Patch übersichtlich auf – sortiert nach Champions, Traits, Items und Augments.`,
         `The ${artA('/bibliothek', 'library')} holds all ${champions.length} champions, ${traits.length} traits and every item and augment of Set ${S} with the official values. We prepare the ${artA('/patches', 'patch notes')} after every patch – sorted by champions, traits, items and augments.`))],
+      ['nextset', L(`Das nächste Set: Set ${nsNext()}`, `The next set: Set ${nsNext()}`), csPs(L(`Wann der PBE startet, wann Set ${nsNext()} live geht und ab dem PBE alle neuen Champions, Traits und Augments: ${artA(nsHref(), `TFT Set ${nsNext()}`)}.`, `When the PBE starts, when Set ${nsNext()} goes live and, from the PBE on, every new champion, trait and augment: ${artA(nsHref(), `TFT Set ${nsNext()}`)}.`))],
       ['coaching', L('Coaching von TFTClimb', 'Coaching by TFTClimb'), csPs(L(`Du willst gezielt besser werden? Im ${artA('/coaching', 'Coaching')} schauen wir uns deine Partien an und arbeiten an den Entscheidungen, die dich LP kosten – von der Econ über den Rolldown bis zur Positionierung.`,
         `Want to improve with purpose? In ${artA('/coaching', 'coaching')} we look at your games and work on the decisions that cost you LP – from econ and rolldowns to positioning.`))]],
     q:[[L('Ist TFTClimb kostenlos?', 'Is TFTClimb free?'), L('Ja. Tierlist, Tools, Cheatsheets, Bibliothek und Patch Notes sind kostenlos und ohne Anmeldung nutzbar. Coaching ist ein eigenes Angebot.', 'Yes. Tier list, tools, cheatsheets, library and patch notes are free and need no sign-up. Coaching is a separate offer.')],
@@ -5538,6 +5539,7 @@ const SEO_ART = {
         L('Eine Suche über alle Änderungen eines Patches, zum Beispiel nach deinem Lieblings-Champion.', 'A search across all changes of a patch, for example for your favourite champion.'),
         ns ? L(`Bei ${ns} Patches gibt es dazu eine Einschätzung von TFTClimb, was die Änderungen für die Tierlist bedeuten.`, `For ${ns} patches there is also an assessment by TFTClimb of what the changes mean for the tier list.`) : '',
         L('Erscheint Riots deutsche Fassung später, siehst du bis dahin die englische – sie wird automatisch ersetzt.', 'If Riot publishes the German version later, you see the English one until then – it gets replaced automatically.')])],
+      ['nextset', L(`Set ${nsNext()}: PBE und Release`, `Set ${nsNext()}: PBE and release`), csPs(L(`Alle Termine bis zum Start von Set ${nsNext()} und ab dem PBE alle neuen Champions, Traits und Augments findest du unter ${artA(nsHref(), `TFT Set ${nsNext()}`)}.`, `Every date until Set ${nsNext()} launches and, from the PBE on, every new champion, trait and augment is on ${artA(nsHref(), `TFT Set ${nsNext()}`)}.`))],
       ['archiv', L('Alle Patches im Archiv', 'Every patch in the archive'), csPs(L(`Im Archiv stehen ${PATCHES.length} Patches aus ${sets.length === 1 ? `Set ${sets[0]}` : `den Sets ${csJoin(sets.map(String))}`}. So kannst du nachlesen, wann ein Champion oder Item stärker oder schwächer wurde – praktisch, wenn sich eine Comp in der ${artA('/tierlist', 'Tierlist')} plötzlich verschiebt.`,
         `The archive holds ${PATCHES.length} patches from ${sets.length === 1 ? `Set ${sets[0]}` : `Sets ${csJoin(sets.map(String))}`}. So you can look up when a champion or item got stronger or weaker – handy when a comp suddenly moves in the ${artA('/tierlist', 'tier list')}.`))]],
     q:[...(n && n.id ? [[L('Wann kommt der nächste TFT-Patch?', 'When is the next TFT patch?'), L(`Als Nächstes kommt Patch ${n.id}. Den genauen Zeitpunkt zeigt der Patch-Countdown.`, `Next up is patch ${n.id}. The patch countdown shows the exact time.`)]] : []),
@@ -5552,6 +5554,85 @@ function seoMount(key, arg){
   if(!a){ el.innerHTML = ''; return; }
   el.innerHTML = seoArtHTML(a, key + 'a', 'ts-' + key); artToc(el);
 }
+/* ================= NÄCHSTES SET (/tft-set-<N>) ================= */
+// Eigene Seite für „TFT Set 19“: Termine (PBE-Start, Release) aus dem Patch-Plan, ab dem PBE alle Champions, Traits und Augments des neuen Sets
+// (Daten vom Update-Skript: data/tft-data-<N>.js mit Status „pbe“ – werden hier nachgeladen, ohne das gewählte Set der Seite zu wechseln),
+// dazu ein Artikel mit FAQ. Nach dem Release bleibt sie als Übersicht des Sets stehen (dann mit den Live-Daten)
+const NS_DATA = {};
+const nsNext = () => { const l = (window.TFT_SETS || []).find(s=>s.status === 'live'); return (l ? l.set : TFT_DATA.set) + 1; }, nsHref = () => '/tft-set-' + nsNext();   // Seite zum Set nach dem Live-Set
+function nsData(n){
+  if(TFT_DATA.set === n) return Promise.resolve(TFT_DATA);
+  const s = (window.TFT_SETS || []).find(x=>x.set === n); if(!s) return Promise.resolve(null);
+  // Datei setzt window.TFT_DATA – hier mit eigenem „window“ ausgeführt, damit die Daten des gewählten Sets bleiben
+  return NS_DATA[n] || (NS_DATA[n] = fetch('data/' + s.file).then(r=>r.ok ? r.text() : '').then(t=>{ if(!t) return null; const w = {}; new Function('window', t)(w); return w.TFT_DATA || null; }).catch(()=>null));
+}
+// Termine aus dem Patch-Plan: PBE-Start (Eintrag mit „Set N PBE“) und Release (Patch N.1)
+function nsDates(n){
+  const all = stPatchDates(), ev = x => (x.ev && x.ev[0] || []).join(' ');
+  return {pbe:all.find(x=>new RegExp(`Set ${n} PBE`).test(ev(x))), live:all.find(x=>x.id === n + '.1')};
+}
+const NS_COST = ['#9aa4b2', '#2bb673', '#2f8cf0', '#b066f3', '#f2a516'];
+function nsHTML(n, D){
+  const now = new Date(), {pbe, live} = nsDates(n), day = d => cdDay(d, {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  const phase = live && live.d <= now ? 'live' : pbe && pbe.d <= now ? 'pbe' : 'soon';
+  const isNew = D && D.set !== TFT_DATA.set, old = new Set(isNew ? champions.map(c=>c.n) : []);
+  const ch = D ? (D.champions || []).filter(c=>c.c >= 1 && c.c <= 5) : [], tr = D ? (D.traits || []).filter(t=>t.bp && t.bp.length) : [], au = D ? (D.augments || []).length : 0;
+  const img = p => p ? (/^https?:/.test(p) ? p : (D.cdn || '') + p) : '';
+  const back = ch.filter(c=>old.has(c.n)).length;
+  const card = (k, t, d, sub) => `<div class="ns-date${k === phase || (k === 'pbe' && phase === 'soon') ? ' on' : ''}"><small>${t}</small><b>${d ? esc(day(d.d)) : L('Termin folgt', 'Date to follow')}</b>${d ? `<span>${d.d <= now ? sub[1] : cdDays(d.d)}</span>` : ''}</div>`;
+  const art = SEO_ART.ns(n, D, {pbe, live, phase, ch:ch.length, back});
+  return `<div class="page-head"><div class="crumb"><a href="/">Home</a> / Set ${n}</div>
+      <h1>TFT <em class="serif">Set ${n}</em></h1>
+      <p>${phase === 'live' ? L(`Set ${n} ist live – alle Champions, Traits und Augments auf einen Blick.`, `Set ${n} is live – every champion, trait and augment at a glance.`)
+        : phase === 'pbe' ? L(`Set ${n} ist auf dem PBE: alle neuen Champions, Traits und Augments, laufend aktualisiert – Release ${live ? 'am ' + esc(cdDay(live.d, {day:'numeric', month:'long'})) : 'folgt'}.`, `Set ${n} is on the PBE: every new champion, trait and augment, updated continuously – release ${live ? 'on ' + esc(cdDay(live.d, {day:'numeric', month:'long'})) : 'to follow'}.`)
+        : L(`Alles zu TFT Set ${n}: wann der PBE startet, wann das Set live geht und ab dem PBE alle neuen Champions, Traits und Augments.`, `Everything about TFT Set ${n}: when the PBE starts, when the set goes live and, from the PBE on, every new champion, trait and augment.`)}</p></div>
+    <div class="ns-dates">${card('pbe', L('PBE-Start', 'PBE start'), pbe, ['', L('läuft auf dem PBE', 'live on the PBE')])}${card('live', L('Release', 'Release'), live, ['', L('ist live', 'is live')])}</div>
+    ${D && ch.length ? `<section class="ns-box"><div class="ns-hd"><h2>${L(`Alle ${ch.length} Champions von Set ${n}`, `All ${ch.length} champions of Set ${n}`)}</h2>
+        ${isNew ? `<button type="button" class="btn btn-ghost" data-set-pick="${n}">${L(`Seite auf Set ${n} umschalten`, `Switch the site to Set ${n}`)}</button>` : ''}</div>
+        ${phase !== 'live' ? `<p class="ns-note">${L('PBE-Daten: Champions, Werte und Traits können sich bis zum Release noch ändern.', 'PBE data: champions, stats and traits can still change until release.')}</p>` : ''}
+        ${[1, 2, 3, 4, 5].map(k=>{ const l = ch.filter(c=>c.c === k).sort((a, b)=>a.n.localeCompare(b.n)); return l.length ? `<div class="ns-cost" style="--c:${NS_COST[k - 1]}"><h3>${k} Gold <small>${l.length} Champions</small></h3><div class="ns-chs">${l.map(c=>`<div class="ns-ch">
+          <img src="${esc(img(c.tile || c.sq))}" alt="${esc(c.n)}" width="64" height="64" loading="lazy"><b>${esc(c.n)}</b>${isNew ? `<em class="${old.has(c.n) ? 'back' : 'new'}">${old.has(c.n) ? L('zurück', 'returning') : L('neu', 'new')}</em>` : ''}<small>${(c.t || []).map(esc).join(' · ')}</small></div>`).join('')}</div></div>` : ''; }).join('')}</section>
+      ${tr.length ? `<section class="ns-box"><h2>${L(`Alle ${tr.length} Traits von Set ${n}`, `All ${tr.length} traits of Set ${n}`)}</h2><div class="ns-trs">${[...tr].sort((a, b)=>L(a.de || a.n, a.n).localeCompare(L(b.de || b.n, b.n))).map(t=>`<div class="ns-tr">${t.icon ? `<img src="${esc(img(t.icon))}" alt="" width="32" height="32" loading="lazy">` : ''}<b>${esc(L(t.de || t.n, t.n))}</b><small>${t.bp.join(' / ')}</small></div>`).join('')}</div>
+        ${au ? `<p class="ns-note">${L(`Dazu ${au} Augments in den Spieldaten von Set ${n}.`, `Plus ${au} augments in the Set ${n} game data.`)}</p>` : ''}</section>` : ''}`
+    : `<section class="ns-box ns-wait">${viSays(phase === 'soon' ? L(`Sobald Set ${n} auf dem PBE ist${pbe ? ` (${esc(cdDay(pbe.d, {day:'numeric', month:'long'}))})` : ''}, findest du hier alle neuen Champions, Traits und Augments – direkt aus den Spieldaten.`, `As soon as Set ${n} hits the PBE${pbe ? ` (${esc(cdDay(pbe.d, {day:'numeric', month:'long'}))})` : ''}, you'll find every new champion, trait and augment here – straight from the game data.`)
+      : L(`Die Daten von Set ${n} werden gerade aufbereitet – schau in ein paar Stunden wieder vorbei.`, `The Set ${n} data is being prepared – check back in a few hours.`))}</section>`}
+    <section class="tool-seo ag-art" aria-labelledby="ts-ns">${seoArtHTML(art, 'nsa', 'ts-ns')}</section>`;
+}
+SEO_ART.ns = (n, D, o)=>{ const S = TFT_DATA.set, {pbe, live, phase} = o, dd = d => cdDay(d.d, {day:'numeric', month:'long', year:'numeric'}), prev = n - 1;
+  const evs = pbe && pbe.ev ? L(pbe.ev[0], pbe.ev[1]).filter(x=>!/PBE/.test(x)) : [];
+  return {h:L(`TFT Set ${n}: Release, PBE und was sich ändert`, `TFT Set ${n}: release, PBE and what changes`),
+  i:L(`Mit jedem neuen Set tauscht Riot in Teamfight Tactics fast alles aus: Champions, Traits, Augments und oft auch Items. ${pbe ? `Set ${n} kommt am ${esc(dd(pbe))} auf den PBE` : `Set ${n} kommt zuerst auf den PBE`}${live ? ` und geht am ${esc(dd(live))} auf den Live-Servern an den Start` : ''}. Hier findest du alle Termine und ab dem PBE alle Inhalte des neuen Sets.`,
+    `With every new set Riot swaps out almost everything in Teamfight Tactics: champions, traits, augments and often items too. ${pbe ? `Set ${n} hits the PBE on ${esc(dd(pbe))}` : `Set ${n} hits the PBE first`}${live ? ` and launches on the live servers on ${esc(dd(live))}` : ''}. Here you find every date and, from the PBE on, every piece of content of the new set.`),
+  ...(D && o.ch ? {st:[[o.ch, L('Champions', 'champions')], [(D.traits || []).filter(t=>t.bp && t.bp.length).length, L('Traits', 'traits')], ...(o.back ? [[o.back, L(`Champions aus Set ${prev} kehren zurück`, `champions return from Set ${prev}`), 'g']] : [])]} : {}),
+  s:[['termine', L(`Wann kommt Set ${n}?`, `When does Set ${n} launch?`), csUl([
+      pbe ? L(`<b>PBE-Start:</b> ${esc(dd(pbe))} – mit Patch ${esc(pbe.id)}${evs.length ? ` (${esc(evs.join(', '))})` : ''}.`, `<b>PBE start:</b> ${esc(dd(pbe))} – with patch ${esc(pbe.id)}${evs.length ? ` (${esc(evs.join(', '))})` : ''}.`) : '',
+      live ? L(`<b>Release:</b> ${esc(dd(live))} mit Patch ${esc(live.id)}.`, `<b>Release:</b> ${esc(dd(live))} with patch ${esc(live.id)}.`) : '',
+      L(`<b>Bis dahin:</b> Set ${S} bleibt das Live-Set – die ${artA('/tierlist', 'Tierlist')} und alle Tools zeigen weiter Set ${S}.`, `<b>Until then:</b> Set ${S} stays the live set – the ${artA('/tierlist', 'tier list')} and every tool keep showing Set ${S}.`)])
+      + csPs(L(`Alle Termine bis zum Release stehen im ${artA(csHref('patch-schedule'), 'Patch-Plan')}, den genauen Countdown zum nächsten Patch zeigt der ${artA(COUNTDOWN_PATH, 'Patch-Countdown')}.`, `Every date until release is in the ${artA(csHref('patch-schedule'), 'patch schedule')}, the exact countdown to the next patch is in the ${artA(COUNTDOWN_PATH, 'patch countdown')}.`))],
+    ['pbe', L('Was ist der PBE?', 'What is the PBE?'), csPs(L(`Der PBE (Public Beta Environment) ist Riots Testserver. Neue Sets laufen dort einige Wochen vor dem Release, damit Riot Werte und Fehler noch anpassen kann. Gespielt wird er mit einem eigenen PBE-Konto. Was du auf dem PBE siehst, ist deshalb eine Vorschau: Champions, Werte und Traits können sich bis zum Release noch ändern.`,
+      `The PBE (Public Beta Environment) is Riot's test server. New sets run there a few weeks before release so Riot can still adjust values and fix bugs. You play it with a separate PBE account. What you see on the PBE is a preview: champions, stats and traits can still change until release.`))],
+    ['wechsel', L('Was sich beim Set-Wechsel ändert', 'What changes with the new set'), csUl([
+      L('<b>Champions und Traits:</b> fast alle neu – einzelne Champions kehren mit neuen Traits und Fähigkeiten zurück.', '<b>Champions and traits:</b> almost all new – some champions return with new traits and abilities.'),
+      L('<b>Augments und Items:</b> viele neue Augments, dazu oft neue oder geänderte Items und Embleme.', '<b>Augments and items:</b> many new augments, often plus new or changed items and emblems.'),
+      L(`<b>Spielsystem:</b> Shop Odds, XP, Loot und Spielerschaden können sich ändern – die ${artA('/cheatsheet', 'Cheatsheets')} aktualisieren wir zum Release.`, `<b>Game system:</b> shop odds, XP, loot and player damage can change – we update the ${artA('/cheatsheet', 'cheatsheets')} for release.`),
+      L('<b>Ranked:</b> Mit dem neuen Set beginnt eine neue Ranked-Saison.', '<b>Ranked:</b> a new ranked season starts with the new set.')])],
+    ['tftclimb', L(`Set ${n} bei TFTClimb`, `Set ${n} on TFTClimb`), csPs(L(`Ab dem PBE findest du alle Champions, Traits und Augments von Set ${n} auf dieser Seite. Über die Set-Auswahl oben rechts schaltest du die ganze Seite auf Set ${n} um – Bibliothek, Team Builder und Tools nutzen dann die PBE-Daten. Zum Release folgen Tierlist, Cheatsheets und Comp-Guides für Set ${n}.`,
+      `From the PBE on you find every champion, trait and augment of Set ${n} on this page. With the set selector at the top right you switch the whole site to Set ${n} – library, team builder and tools then use the PBE data. Tier list, cheatsheets and comp guides for Set ${n} follow at release.`))]],
+  q:[[L(`Wann kommt TFT Set ${n}?`, `When does TFT Set ${n} come out?`), live ? L(`Set ${n} startet am ${dd(live)} mit Patch ${live.id}${pbe ? `, auf dem PBE schon ab dem ${dd(pbe)}` : ''}.`, `Set ${n} launches on ${dd(live)} with patch ${live.id}${pbe ? `, on the PBE from ${dd(pbe)}` : ''}.`) : L(`Den genauen Termin nennt Riot im Patch-Plan – sobald er feststeht, steht er hier.`, `Riot announces the exact date in the patch schedule – as soon as it is set, it is listed here.`)],
+    [L(`Kann ich Set ${n} schon spielen?`, `Can I play Set ${n} already?`), L(`${phase === 'soon' ? `Ab dem PBE-Start${pbe ? ` am ${dd(pbe)}` : ''}` : 'Ja'}: auf dem PBE, Riots Testserver, mit einem eigenen PBE-Konto. Auf den normalen Servern erst ab dem Release.`, `${phase === 'soon' ? `From the PBE start${pbe ? ` on ${dd(pbe)}` : ''}` : 'Yes'}: on the PBE, Riot's test server, with a separate PBE account. On the regular servers only from release.`)],
+    [L('Wird mein Rang zurückgesetzt?', 'Will my rank be reset?'), L('Mit jedem neuen Set beginnt eine neue Ranked-Saison – du startest dann neu in die Platzierung.', 'Every new set starts a new ranked season – you begin your climb anew.')]],
+  ln:['countdown', 'patch-schedule', 'tierlist', 'patches']};
+};
+let NS_REQ = 0;
+function renderNextSet(sub){
+  const app = $('#nsApp'); if(!app) return;
+  const n = +sub, req = ++NS_REQ, draw = D => { if(req !== NS_REQ) return; let html = ''; try { html = nsHTML(n, D); } catch(e){ html = ''; } app.innerHTML = html; const a = app.querySelector('.tool-seo'); if(a) artToc(a); };
+  draw(TFT_DATA.set === n ? TFT_DATA : null);
+  if(TFT_DATA.set === n || !(window.TFT_SETS || []).some(x=>x.set === n)) return;
+  app.setAttribute('aria-busy', 'true');   // tools/seo-meta.js wartet darauf, dass die nachgeladenen Daten eingesetzt sind
+  nsData(n).then(D=>{ draw(D); app.removeAttribute('aria-busy'); });
+}
+
 const csSvg = (ic, w=1.8) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${ic || ''}</svg>`;
 const csIco = id => { const m = CS_META[id] || {}; return m.trait ? csTrIc(m.trait, 0, 'cs-aic') : m.img ? `<img class="cs-aic${m.rio ? ' cs-ric' : ''}" src="${m.img}" alt="" width="24" height="24" loading="lazy">` : csSvg(m.ic); };   // Augment-Tabellen mit Augment-Icon
 const csName = id => { const m = CS_META[id]; return m ? L(m.s[0], m.s[1]) : id; };
@@ -5861,6 +5942,8 @@ function pageMeta(page, sub){
         fit(`${c.name} TFT comp guide (${S}): positioning, items for ${c.carry}, augments and game plan – ${tEn} in our tier list.`,
         `${c.name} TFT comp guide (${S}): positioning, items for ${c.carry}, augments and game plan – ${tEn}.`, `${c.name} TFT comp guide: positioning, items, augments and game plan – ${tEn}.`))];
     }
+    case 'nextset': return [L(`TFT Set ${sub}: Release, PBE & alle Champions`, `TFT Set ${sub}: Release Date, PBE & All Champions`), L(`TFT Set ${sub}: wann PBE und Release kommen, dazu alle neuen Champions, Traits und Augments – laufend aktualisiert.`,
+      `TFT Set ${sub}: when the PBE and release arrive, plus every new champion, trait and augment – updated continuously.`)];
     case 'builder': return [L(`TFT Team Builder ${S} – Board planen & teilen`, `TFT Team Builder ${S} – Plan & Share Boards`), L(`Kostenloser TFT Team Builder für ${S}: Units platzieren, Items verteilen, aktive Traits sehen und dein Board als Link teilen.`,
       `Free TFT Team Builder for ${S}: place units, add items, see active traits and share your board as a link.`)];
     case 'coaching': return [L('TFT Coaching von Challenger-Spielern', 'TFT Coaching from Challenger Players'), L('TFT Coaching von Challengern auf Deutsch und Englisch: Fundamentals und VOD-Review – das Kennenlernen ist kostenlos.',
@@ -5970,7 +6053,7 @@ function setMeta(page, sub){
   if(noindex){ const c = document.head.querySelector('link[rel="canonical"]'); if(c) c.remove(); return; }
   // kanonische Adresse: eine Adresse pro Inhalt (z. B. /bibliothek statt /bibliothek/champions, Builder ohne Team-Code)
   const keep = {cheatsheet:csList().map(s=>s[0]), guides:['encounters'], tierlist:['items','augments','holds'], bibliothek:['items','traits','augments'], tools:['rolldown','tierlist','simulator','drops','dps','augments'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
-  const path = page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : page==='comp' ? compHref(compByKey[sub]) : seoPath('/' + page + (keep.includes(sub) ? '/' + sub : ''));
+  const path = page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : page==='comp' ? compHref(compByKey[sub]) : page==='nextset' ? '/tft-set-' + sub : seoPath('/' + page + (keep.includes(sub) ? '/' + sub : ''));
   headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + withLang(path);
   // beide Sprachfassungen für Suchmaschinen verknüpfen
   [['de', path], ['en', enPath(path)], ['x-default', path]].forEach(([l, p])=>{ headTag(`link[rel="alternate"][hreflang="${l}"]`, ()=>Object.assign(document.createElement('link'), {rel:'alternate', hreflang:l})).href = location.origin + p; });
@@ -5986,7 +6069,8 @@ function setMeta(page, sub){
     dps:['tft-dps-rechner', 'tft-dps-calculator'], drops:['tft-item-drop-chance', 'tft-item-drop-odds'], tierlist:['tft-tierlist-maker', 'tft-tier-list-maker'], simulator:['tft-kampf-simulator', 'tft-battle-simulator']}).map(([k, [d, e]])=>[k, `assets/og/${L(d, e)}.png`]));
   // Cheatsheets: eigenes Bild je Seite und Sprache (tools/og-bilder.js → assets/og/cs/<adresse>.jpg, englisch en-<adresse>.jpg)
   const csOg = page==='cheatsheet' && (!sub || csList().some(s=>s[0]===sub)) ? csOgImg(sub) : '';
-  const wide = !chImg && (OG_TOOL[tool] || csOg);
+  const nsOg = page==='nextset' ? `assets/og/tft-set-${sub}.jpg` : '';   // tools/og-bilder.js
+  const wide = !chImg && (OG_TOOL[tool] || csOg || nsOg);
   const img = chImg || location.origin + '/' + (wide || {tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
   const og = (k, v) => { headTag(`meta[property="${k}"]`, ()=>{ const m = document.createElement('meta'); m.setAttribute('property', k); return m; }).content = v; };
   og('og:title', document.title); og('og:description', desc || ''); og('og:url', url); og('og:type', 'website'); og('og:site_name', 'TFTClimb'); og('og:locale', EN ? 'en_GB' : 'de_DE'); og('og:image', img);
@@ -6020,8 +6104,8 @@ function setLd(page, sub, tool, title, desc, url, path, ogImg){
     const qa = box ? [...box.querySelectorAll('details')].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}})) : [];
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
   }
-  if(page==='champion' || page==='comp' || page==='cheatsheet' || page==='countdown' || (page==='guides' && sub && GUIDES_LIVE)){   // Fragen aus dem Textblock der Champion-/Comp-Seite, des Cheatsheets, des Countdowns bzw. des Guides
-    const qa = [...document.querySelectorAll(page==='champion' ? '#chPage .tool-seo details' : page==='comp' ? '#compPage .tool-seo details' : page==='cheatsheet' ? '#csPage .tool-seo details' : page==='countdown' ? '#cdApp .tool-seo details' : `#page-guides .gd-view[data-guide="${sub}"] .tool-seo details`)].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}}));
+  if(page==='champion' || page==='comp' || page==='cheatsheet' || page==='countdown' || page==='nextset' || (page==='guides' && sub && GUIDES_LIVE)){   // Fragen aus dem Textblock der Champion-/Comp-Seite, des Cheatsheets, des Countdowns bzw. des Guides
+    const qa = [...document.querySelectorAll(page==='champion' ? '#chPage .tool-seo details' : page==='comp' ? '#compPage .tool-seo details' : page==='cheatsheet' ? '#csPage .tool-seo details' : page==='countdown' ? '#cdApp .tool-seo details' : page==='nextset' ? '#nsApp .tool-seo details' : `#page-guides .gd-view[data-guide="${sub}"] .tool-seo details`)].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}}));
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
   }
   // Cheatsheet-Unterseite: Artikel mit Hauptbild, Datenstand und Autor (wie bei den Tools)
@@ -6103,7 +6187,8 @@ function route(){
   // alte Adressen weiter unterstützen
   if(['champions','items','traits'].includes(page)){ sub = page; page = 'bibliothek'; }
   if(page==='augments'){ sub = 'augments'; page = 'tierlist'; }
-  const valid = ['home','tierlist','bibliothek','champion','comp','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','gameplans','about','apply','impressum','datenschutz','patches','countdown'];
+  { const m = page.match(/^tft-set-(\d+)$/); if(m){ page = 'nextset'; sub = m[1]; } }   // /tft-set-19: Seite zum nächsten Set
+  const valid = ['nextset','home','tierlist','bibliothek','champion','comp','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','gameplans','about','apply','impressum','datenschutz','patches','countdown'];
   if(!valid.includes(page)) page='notfound';
   const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche
   const isCv = page==='bibliothek' && !['items','traits','augments'].includes(sub);   // Champions: Wabenansicht (auch alte Adresse /bibliothek/v2)
@@ -6141,6 +6226,7 @@ function route(){
   if(isSim) builderRoute(parts[2], parts[3], 'sim');
   else if(page==='tools') renderTools(sub, parts[2], parts[3]);
   if(page==='patches') renderPatches(sub);
+  if(page==='nextset') renderNextSet(sub);
   if(page==='countdown') renderCountdown();
   if(page==='champion') renderChampPage(sub);
   if(page==='comp') renderCompPage(sub);
