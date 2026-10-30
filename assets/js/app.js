@@ -706,6 +706,7 @@ function setTab(tab){
   $('#tlTabs').querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   document.querySelectorAll('.tl2-tools').forEach(t=>{ t.hidden = t.dataset.tab !== tab; });   // V2: Auswahl und Suche der jeweiligen Tierlist
   if(tlTab!==tab){ tlTab = tab; buddyNext('tierlist', true); }
+  seoMount('tl', tab);   // Text unter der Tierlist passend zum Reiter
 }
 
 /* ================= RANKS: Spielerverteilung ================= */
@@ -1884,7 +1885,7 @@ function renderChampV2(){
         <div class="cv-crumb">Home / ${L('Bibliothek', 'Library')} / Champions</div>
         <h1 class="cv-h1"><span>TFT</span> Champions</h1>
         <p class="cv-sub">${L('Alle Champions', 'All champions')} · Set ${TFT_DATA.set}</p>
-        <nav class="cv-tabs" aria-label="${L('Bibliothek', 'Library')}"><a class="on" href="/bibliothek/champions">Champions</a><a href="/bibliothek/traits">Traits</a><a href="/bibliothek/items">Items</a><a href="/bibliothek/augments">Augments</a></nav>
+        <nav class="cv-tabs" aria-label="${L('Bibliothek', 'Library')}"><a class="on" href="/bibliothek">Champions</a><a href="/bibliothek/traits">Traits</a><a href="/bibliothek/items">Items</a><a href="/bibliothek/augments">Augments</a></nav>
       </div>
       <div class="cv-filters">
         <button type="button" class="cv-chip on" data-cvcost="all">${L('Alle', 'All')}<span></span></button>
@@ -2127,7 +2128,7 @@ function renderChampPage(slug){
     return `<div class="chp-trait"><div class="trait-top">${traitHex(t.n, t.bp.length===1 ? 'unique' : 'base', 30)}<h3>${esc(t.n)}</h3><div class="bp">${bpHTML(t)}</div></div>
       <p>${esc(t.d)}</p>${traitMore(t.n)}${mates.length ? `<div class="chp-mates">${mates.map(x=>chLink(x, 34)).join('')}</div>` : ''}</div>`; }).join('');
   box.innerHTML = `
-    <div class="crumb"><a href="/">Home</a> / <a href="/bibliothek">Bibliothek</a> / <a href="/bibliothek/champions">Champions</a> / ${esc(n)}</div>
+    <div class="crumb"><a href="/">Home</a> / <a href="/bibliothek">Bibliothek</a> / ${esc(n)}</div>
     <section class="chp-hero c${c.c}"${splash ? ` style="--splash:url('${splash}')"` : ''}>
       <div class="chp-hero-in">
         <div class="chp-portrait">${avatar(n, 112)}</div>
@@ -2135,7 +2136,7 @@ function renderChampPage(slug){
           <h1 class="chp-h1"><span class="th-key">${esc(n)}</span> TFT Build: Items, Comps &amp; Fähigkeit</h1>
           <div class="chp-tags"><span class="chp-cost"><span class="coin"></span>${c.c} Gold</span>${rangeLabel(n) ? `<span class="ch-rng ${isMelee(n) ? 'melee' : 'ranged'}">${rangeLabel(n)}</span>` : ''}${c.t.map(t=>`<span class="chp-tr">${traitHex(t, 'base', 20)}${esc(t)}</span>`).join('')}</div>
           <p class="chp-lead">${esc(n)} ist ein ${c.c}-Kosten-Champion aus TFT Set ${S}.</p>
-          <div class="chp-acts">${dpsOk(n) ? `<a class="btn btn-primary" href="/tools/tft-dps-rechner?c=${champSlug(n)}">Builds im DPS-Rechner testen</a>` : ''}<a class="btn btn-ghost" href="/bibliothek/champions">Alle Champions</a></div>
+          <div class="chp-acts">${dpsOk(n) ? `<a class="btn btn-primary" href="/tools/tft-dps-rechner?c=${champSlug(n)}">Builds im DPS-Rechner testen</a>` : ''}<a class="btn btn-ghost" href="/bibliothek">Alle Champions</a></div>
         </div>
       </div>
     </section>
@@ -4319,7 +4320,8 @@ function patchHero(p){
   </section>`;
 }
 function renderPatches(sub){
-  const app = $('#patchesApp');
+  const app = $('#patchesApp'), art = document.querySelector('[data-pre="pt"]');
+  if(art) art.style.display = (sub && patchBySlug[sub]) || !PATCHES.length ? 'none' : '';   // Text nur auf der Übersicht (hidden wirkt gegen display:grid nicht)
   if(!PATCHES.length){ app.innerHTML = `<div class="page-head"><div class="crumb">Home / Patches</div><h1>TFT <em class="serif">Patches</em></h1></div>` + ornnSays('Hmph. Die Patchliste ist noch nicht geschmiedet – das Update-Skript holt sie beim nächsten Lauf.'); return; }
   const p = sub && patchBySlug[sub];
   if(!p){
@@ -4335,6 +4337,7 @@ function renderPatches(sub){
           <div class="pt-meta">${cnt ? `<span>${cnt} Änderungen</span>` : ''}${note ? '<span class="hl">mit Einschätzung</span>' : ''}${x.lang==='en' && !EN ? '<span>vorerst auf Englisch</span>' : ''}</div></div></a>`;
       }).join('')}</div></div>`).join('')
       + `<p class="note">${L('Quelle: offizielle Patchnotes von Riot Games, für euch übersichtlich aufbereitet.', 'Source: official patch notes by Riot Games, neatly prepared for you.')}</p>`;
+    seoMount('pt');
     return;
   }
   const i = PATCHES.indexOf(p), newer = PATCHES[i-1], older = PATCHES[i+1];
@@ -5435,6 +5438,120 @@ function csArtHTML(id){
       <ol>${sec.map(([k, t])=>`<li><a href="#csa-${k}" data-toc="csa-${k}">${t}</a></li>`).join('')}</ol></nav>` : ''}
   </aside>`;
 }
+// ---------- SEO-Artikel für Startseite (unter dem Dashboard), Tierlist (je Reiter) und Patch-Übersicht ----------
+// Gleicher Aufbau wie die Cheatsheet-Artikel (csArtHTML): H2, Einleitung, Abschnitte mit Inhaltsverzeichnis, FAQ, Autor, Links. Zahlen aus den Live-Daten.
+// Eingesetzt per seoMount(key) in die <section data-pre="key">, tools/seo-meta.js schreibt den fertigen Text in data/seo-meta.json (api/page.js liefert ihn mit aus)
+function seoArtHTML(a, pre, hid){
+  const sec = (a.s || []).map(([k, t])=>[k, t]).concat(a.q.length ? [['faq', L('Häufige Fragen', 'FAQ')]] : []);
+  return `<div class="ts-main">
+    <h2 id="${hid}">${a.h}</h2>
+    <p>${a.i}</p>
+    ${a.st && a.st.length ? `<div class="art-stats">${a.st.map(([v, t, c])=>`<div class="${c || 'p'}"><b>${v}</b><span>${t}</span></div>`).join('')}</div>` : ''}
+    ${(a.s || []).map(([k, t, html])=>`<h3 id="${pre}-${k}">${t}</h3>${html}`).join('')}
+    ${a.q.length ? `<h3 id="${pre}-faq">${L('Häufige Fragen', 'FAQ')}</h3>${artFaq(a.q)}` : ''}
+    ${artAuthor()}
+    <h3>${L('Weiterlesen', 'Read more')}</h3>
+    ${csLinks(a.ln)}
+  </div>
+  <aside class="ts-side art-side">
+    ${sec.length > 1 ? `<nav class="art-toc" aria-label="${L('Inhalt', 'Contents')}"><b>${L('Inhalt', 'Contents')}</b>
+      <ol>${sec.map(([k, t])=>`<li><a href="#${pre}-${k}" data-toc="${pre}-${k}">${t}</a></li>`).join('')}</ol></nav>` : ''}
+  </aside>`;
+}
+const seoPT = () => TL_PATCH || (CURRENT_PATCH ? CURRENT_PATCH.id : '');
+const seoComps = t => mainComps.filter(c=>c.tier === t);
+const SEO_ART = {
+  home: ()=>{ const S = TFT_DATA.set, PT = seoPT(), sc = seoComps('S').map(c=>esc(c.name)), T = ART_TOOLS(), n = csList().length;
+    const tools = ['rolldown', 'augments', 'dps', 'drops', 'builder', 'simulator', 'tierlist'].map(k=>T[k]).filter(Boolean);
+    return {h:L(`TFTClimb: TFT Tierlist, Tools und Cheatsheets für Set ${S}`, `TFTClimb: TFT tier list, tools and cheatsheets for Set ${S}`),
+    i:L(`TFTClimb ist die TFT-Seite von Challenger-Spieler Claudio „CrazYSlayt“. Hier findest du alles für deinen Climb in Teamfight Tactics: eine Tierlist mit den stärksten Comps von Patch ${PT}, kostenlose Rechner, Cheatsheets mit allen Zahlen des Sets, eine Bibliothek mit allen Champions, Items und Traits – und Coaching, wenn du schneller aufsteigen willst.`,
+      `TFTClimb is the TFT site of Challenger player Claudio “CrazYSlayt”. Here you find everything for your climb in Teamfight Tactics: a tier list with the strongest comps of patch ${PT}, free calculators, cheatsheets with every number of the set, a library with every champion, item and trait – and coaching if you want to climb faster.`),
+    st:[[mainComps.length, L(`Comps in der Tierlist für Patch ${PT}`, `comps in the tier list for patch ${PT}`)], [tools.length, L('kostenlose TFT-Tools', 'free TFT tools')], [n, L('Cheatsheets mit allen Zahlen des Sets', 'cheatsheets with every number of the set'), 'g']],
+    s:[['tierlist', L(`Die TFT Tierlist für Patch ${PT}`, `The TFT tier list for patch ${PT}`), csPs(L(`Die ${artA('/tierlist', 'Tierlist')} bewertet ${mainComps.length} Comps von S bis C, dazu situative Comps für besondere Lagen. Jede Comp zeigt Aufstellung, Items, Augments und den Spielplan.${sc.length ? ` Aktuell im S-Tier: ${csJoin(sc)}.` : ''} Eigene Tierlists gibt es außerdem für Items, Augments und die Champions, die du in Stage 1 halten solltest.`,
+        `The ${artA('/tierlist', 'tier list')} rates ${mainComps.length} comps from S to C, plus situational comps for special spots. Every comp shows its board, items, augments and game plan.${sc.length ? ` Currently in S tier: ${csJoin(sc)}.` : ''} There are also tier lists for items, augments and the champions worth holding in stage 1.`))],
+      ['tools', L('Kostenlose TFT-Tools', 'Free TFT tools'), csPs(L('Alle Tools laufen im Browser, ohne Anmeldung und mit den Daten des aktuellen Patches:', 'Every tool runs in your browser, without sign-up and with the data of the current patch:'))
+        + csUl(tools.map(t=>`${artA(t[0], t[2])} – ${t[3]}`))],
+      ['cheatsheets', L('Cheatsheets: alle Zahlen des Sets', 'Cheatsheets: every number of the set'), csPs(L(`${n} ${artA('/cheatsheet', 'Cheatsheets')} zum schnellen Nachschlagen neben dem Spiel: Shop Odds und XP, Augment-Stufen, Encounter, Loot-Orbs, Spielerschaden, Embleme sowie Tabellen zu einzelnen Augments und Traits. Jede Tabelle kannst du als Bild ausschneiden und teilen.`,
+        `${n} ${artA('/cheatsheet', 'cheatsheets')} for a quick look next to the game: shop odds and XP, augment tiers, encounters, loot orbs, player damage, emblems plus tables for single augments and traits. You can cut out every table as an image and share it.`))],
+      ['bibliothek', L('Bibliothek und Patch Notes', 'Library and patch notes'), csPs(L(`In der ${artA('/bibliothek', 'Bibliothek')} findest du alle ${champions.length} Champions, ${traits.length} Traits sowie alle Items und Augments von Set ${S} mit den offiziellen Werten. Die ${artA('/patches', 'Patch Notes')} bereiten wir nach jedem Patch übersichtlich auf – sortiert nach Champions, Traits, Items und Augments.`,
+        `The ${artA('/bibliothek', 'library')} holds all ${champions.length} champions, ${traits.length} traits and every item and augment of Set ${S} with the official values. We prepare the ${artA('/patches', 'patch notes')} after every patch – sorted by champions, traits, items and augments.`))],
+      ['coaching', L('Coaching von TFTClimb', 'Coaching by TFTClimb'), csPs(L(`Du willst gezielt besser werden? Im ${artA('/coaching', 'Coaching')} schauen wir uns deine Partien an und arbeiten an den Entscheidungen, die dich LP kosten – von der Econ über den Rolldown bis zur Positionierung.`,
+        `Want to improve with purpose? In ${artA('/coaching', 'coaching')} we look at your games and work on the decisions that cost you LP – from econ and rolldowns to positioning.`))]],
+    q:[[L('Ist TFTClimb kostenlos?', 'Is TFTClimb free?'), L('Ja. Tierlist, Tools, Cheatsheets, Bibliothek und Patch Notes sind kostenlos und ohne Anmeldung nutzbar. Coaching ist ein eigenes Angebot.', 'Yes. Tier list, tools, cheatsheets, library and patch notes are free and need no sign-up. Coaching is a separate offer.')],
+      [L('Wie oft wird die Tierlist aktualisiert?', 'How often is the tier list updated?'), L('Mit jedem Patch, also etwa alle zwei Wochen. Neue, steigende und fallende Comps sind in der Tierlist markiert.', 'With every patch, so about every two weeks. New, rising and falling comps are marked in the tier list.')],
+      [L('Gibt es TFTClimb auch auf Englisch?', 'Is TFTClimb available in German?'), L('Ja, alle Seiten gibt es auch auf Englisch. Die Sprache stellst du in den Einstellungen oben rechts um.', 'Yes, every page is also available in German. You can switch the language in the settings at the top right.')]],
+    ln:['tierlist', 'rolldown', 'all', 'patches']}; },
+  tl: tab=>{ const S = TFT_DATA.set, PT = seoPT(), cnt = t => seoComps(t).length, cpl = (t, en) => cnt(t) + (en ? (cnt(t) === 1 ? ' comp' : ' comps') : cnt(t) === 1 ? ' Comp' : ' Comps'), sc = seoComps('S').map(c=>esc(c.name));
+    const lnk = (u, de, en) => artA(u, L(de, en));
+    if(tab === 'items') { const n = k => ITEMS.filter(i=>i.cat === k).length;
+      return {h:L(`TFT Item-Tierlist für Patch ${PT}`, `TFT item tier list for patch ${PT}`),
+      i:L(`Die Item-Tierlist zeigt, welche Items in Set ${S} gerade am stärksten sind – von den normalen kombinierten Items über Lichtversionen und Artefakte bis zu den Emblemen. Klick auf ein Item für Werte und Rezept.`, `The item tier list shows which items are strongest in Set ${S} right now – from regular combined items to radiant versions, artifacts and emblems. Click an item for its stats and recipe.`),
+      s:[['kategorien', L('Die vier Item-Arten', 'The four item types'), csUl([L('<b>Kombiniert:</b> Items aus zwei Komponenten – die baust du in fast jeder Partie.', '<b>Combined:</b> items from two components – you build these almost every game.'),
+          L('<b>Lichtversionen:</b> verstärkte Fassungen der normalen Items, zum Beispiel aus Augments oder Encountern.', '<b>Radiant:</b> upgraded versions of regular items, for example from augments or encounters.'),
+          L('<b>Artefakte:</b> besondere Items aus Artefakt-Ambossen mit eigenen Effekten.', '<b>Artifacts:</b> special items from artifact anvils with unique effects.'),
+          L(`<b>Embleme:</b> ${n('emblem')} Embleme, die einem Champion ein weiteres Attribut geben.`, `<b>Emblems:</b> ${n('emblem')} emblems that give a champion another trait.`)])],
+        ['nutzen', L('So nutzt du die Item-Tierlist', 'How to use the item tier list'), csPs(L(`Die Bewertung zeigt die allgemeine Stärke eines Items. Welches Item am besten auf deinen Carry passt, hängt von seiner Fähigkeit ab – das vergleichst du direkt im ${lnk(ART_TOOLS().dps[0], 'DPS-Rechner', 'DPS calculator')}. Welche Komponenten du gerade zu erwarten hast, zeigt die ${lnk(ART_TOOLS().drops[0], 'Item-Drop-Chance', 'item drop odds')}.`, `The rating shows an item's overall strength. Which item fits your carry best depends on its ability – compare that directly in the ${lnk(ART_TOOLS().dps[0], 'DPS-Rechner', 'DPS calculator')}. Which components you can expect right now is shown by the ${lnk(ART_TOOLS().drops[0], 'Item-Drop-Chance', 'item drop odds')}.`))]],
+      q:[[L('Welche Items sind in TFT am stärksten?', 'Which items are the strongest in TFT?'), L('Die Items ganz oben in der Tierlist. Für deinen Carry zählt aber vor allem, ob das Item zu seiner Fähigkeit passt.', 'The items at the top of the tier list. For your carry, what matters most is whether the item fits its ability.')],
+        [L('Wie baue ich ein Emblem?', 'How do I build an emblem?'), L('Aus einem Pfannenwender oder einer Bratpfanne und einer Komponente. Alle Rezepte stehen im Cheatsheet Emblem-Rezepte.', 'From a spatula or a frying pan plus a component. Every recipe is in the emblem recipes cheatsheet.')]],
+      ln:['items', 'dps', 'emblems', 'drops']}; }
+    if(tab === 'augments') return {h:L(`TFT Augment-Tierlist für Patch ${PT}`, `TFT augment tier list for patch ${PT}`),
+      i:L(`Die Augment-Tierlist bewertet alle Augments von Set ${S} – getrennt nach Silber, Gold und Prismatisch und nach der Phase, in der du das Augment wählst. So siehst du auf 2-1, 3-2 und 4-2 auf einen Blick, welche Wahl am stärksten ist.`, `The augment tier list rates every augment of Set ${S} – split into silver, gold and prismatic and by the stage you pick it on. So on 2-1, 3-2 and 4-2 you see at a glance which pick is strongest.`),
+      s:[['phase', L('Warum die Phase zählt', 'Why the stage matters'), csPs(L('Viele Augments sind früh stärker als spät – oder umgekehrt. Ein Wirtschafts-Augment bringt auf 2-1 viel mehr als auf 4-2, ein Kampf-Augment wird mit einem fertigen Board stärker. Deshalb kannst du die Tierlist nach 2-1, 3-2 und 4-2 filtern.', 'Many augments are stronger early than late – or the other way round. An economy augment gives much more on 2-1 than on 4-2, a combat augment gets stronger with a finished board. That is why you can filter the tier list by 2-1, 3-2 and 4-2.'))],
+        ['stufen', L('Silber, Gold oder Prismatisch?', 'Silver, gold or prismatic?'), csPs(L(`Welche Stufe in deiner Partie kommt, legt das Spiel zu Beginn fest. Wie wahrscheinlich jede Abfolge ist, zeigen die ${lnk(ART_TOOLS().augments[0], 'Augment-Chancen', 'augment odds')} und das Cheatsheet ${lnk(csHref('augments'), csName('augments'), csName('augments'))}.`, `Which tier comes in your game is set at the start. How likely each sequence is, is shown by the ${lnk(ART_TOOLS().augments[0], 'Augment-Chancen', 'augment odds')} and the ${lnk(csHref('augments'), csName('augments'), csName('augments'))} cheatsheet.`))]],
+      q:[[L('Welches Augment soll ich nehmen?', 'Which augment should I take?'), L('Das am höchsten bewertete Augment, das zu deinem Board und deiner Phase passt. Im Zweifel ist ein starkes Augment für die Wirtschaft früh die sicherere Wahl.', 'The highest rated augment that fits your board and stage. When in doubt, a strong economy augment early is the safer pick.')],
+        [L('Wie oft kommt ein prismatisches Augment?', 'How often is there a prismatic augment?'), L('Das zeigen die Augment-Chancen: Mindestens ein prismatisches Augment gibt es in knapp der Hälfte der Partien.', 'The augment odds show it: almost half of all games have at least one prismatic augment.')]],
+      ln:['augodds', 'augments', 'call-to-chaos', 'all']};
+    if(tab === 'holds') return {h:L('TFT Holds: welche Champions du in Stage 1 behältst', 'TFT holds: which champions to keep in stage 1'),
+      i:L('In Stage 1 entscheidest du, welche Champions du hältst – Paare für frühe 2-Sterne-Units oder Champions, die in die stärksten Comps passen. Die Holds-Tierlist bewertet die 1-, 2- und 3-Koster danach, wie gut sie sich von 1-1 bis 1-3 lohnen.', 'In stage 1 you decide which champions to hold – pairs for early 2-star units or champions that fit the strongest comps. The holds tier list rates 1-, 2- and 3-costs by how worthwhile they are from 1-1 to 1-3.'),
+      s:[['warum', L('Warum gute Holds zählen', 'Why good holds matter'), csPs(L(`Wer früh die richtigen Champions hält, hat in Stage 2 ein stärkeres Board und verliert weniger Leben. Manche 1-Koster schaffen die PvE-Runden sogar allein – welche das sind, steht im Cheatsheet ${lnk(csHref('solo'), csName('solo'), csName('solo'))}.`, `Holding the right champions early gives you a stronger board in stage 2 and costs less health. Some 1-costs even win the PvE rounds on their own – which ones is in the ${lnk(csHref('solo'), csName('solo'), csName('solo'))} cheatsheet.`))]],
+      q:[[L('Was bedeutet „Hold“ in TFT?', 'What does “hold” mean in TFT?'), L('Einen Champion auf der Bank behalten, statt ihn zu verkaufen – meist für ein Paar oder weil er in deine geplante Comp passt.', 'Keeping a champion on your bench instead of selling it – usually for a pair or because it fits your planned comp.')]],
+      ln:['solo', 'power', 'tierlist', 'all']};
+    return {h:L(`TFT Tierlist Patch ${PT}: die besten Comps in Set ${S}`, `TFT tier list patch ${PT}: the best comps in Set ${S}`),
+    i:L(`Unsere Tierlist bewertet ${mainComps.length} Comps nach ihrer Stärke in Patch ${PT}, von S bis C, dazu situative Comps, die nur in bestimmten Lagen funktionieren. Jede Karte zeigt Carry, Traits und Items; ein Klick öffnet Aufstellung, Augments und Spielplan.${sc.length ? ` Aktuell am stärksten: ${csJoin(sc)}.` : ''}`,
+      `Our tier list rates ${mainComps.length} comps by their strength in patch ${PT}, from S to C, plus situational comps that only work in certain spots. Every card shows carry, traits and items; a click opens board, augments and game plan.${sc.length ? ` Strongest right now: ${csJoin(sc)}.` : ''}`),
+    st:[[cnt('S'), cnt('S') === 1 ? L('Comp im S-Tier', 'comp in S tier') : L('Comps im S-Tier', 'comps in S tier')], [mainComps.length, L(`Comps in Patch ${PT}`, `comps in patch ${PT}`)], [cnt('X'), L('situative Comps', 'situational comps'), 'g']],
+    s:[['raenge', L('So liest du die Tierlist', 'How to read the tier list'), csUl([
+        L(`<b>S (${TL2_NAME.S}):</b> die stärksten Comps des Patches – ${cpl('S')}.`, `<b>S (${TL2_NAME.S}):</b> the strongest comps of the patch – ${cpl('S', 1)}.`),
+        L(`<b>A (${TL2_NAME.A}):</b> sehr stark und oft genauso gut, wenn du die Units findest – ${cpl('A')}.`, `<b>A (${TL2_NAME.A}):</b> very strong and often just as good if you find the units – ${cpl('A', 1)}.`),
+        L(`<b>B (${TL2_NAME.B}):</b> spielbar, aber mit klaren Schwächen – ${cpl('B')}.`, `<b>B (${TL2_NAME.B}):</b> playable, but with clear weaknesses – ${cpl('B', 1)}.`),
+        L(`<b>C (${TL2_NAME.C}):</b> nur, wenn alles passt – ${cpl('C')}.`, `<b>C (${TL2_NAME.C}):</b> only when everything lines up – ${cpl('C', 1)}.`),
+        L(`<b>Situativ (${TL2_NAME.X}):</b> stark mit dem richtigen Augment, Encounter oder Item – ${cpl('X')}.`, `<b>Situational (${TL2_NAME.X}):</b> strong with the right augment, encounter or item – ${cpl('X', 1)}.`)])],
+      ['arten', L('Die Comp-Arten', 'The comp types'), csPs(L('Über „Comp-Art“ filterst du die Tierlist nach Spielweise:', 'Use “comp type” to filter the tier list by play style:')) + csUl([
+        L('<b>Reroll (1, 2 oder 3 Kosten):</b> Du rollst auf niedrigem Level, bis deine günstigen Carrys 3 Sterne haben.', '<b>Reroll (1, 2 or 3 cost):</b> you roll on a low level until your cheap carries are 3 stars.'),
+        L('<b>Fast 8:</b> Du sparst Leben und Gold und suchst auf Level 8 deine 4-Kosten-Carrys.', '<b>Fast 8:</b> you save health and gold and look for your 4-cost carries on level 8.'),
+        L('<b>Fast 9:</b> maximale Econ für die 5-Koster auf Level 9.', '<b>Fast 9:</b> maximum econ for the 5-costs on level 9.'),
+        L('<b>Lose Streak:</b> früh bewusst verlieren, Gold und Komponenten sammeln, später stabilisieren.', '<b>Lose streak:</b> lose on purpose early, collect gold and components, stabilise later.')])
+        + csPs(L(`Wie viel Gold ein Rolldown für deine Comp braucht, rechnet der ${lnk(ART_TOOLS().rolldown[0], 'Rolldown-Rechner', 'rolldown calculator')} aus.`, `How much gold a rolldown for your comp needs is worked out by the ${lnk(ART_TOOLS().rolldown[0], 'Rolldown-Rechner', 'rolldown calculator')}.`))],
+      ['patch', L('Wann sich die Tierlist ändert', 'When the tier list changes'), csPs(L(`Nach jedem Patch prüfen wir die Bewertungen neu. Neue Comps und Comps, die steigen oder fallen, sind markiert. Was sich im Patch geändert hat, steht in den ${lnk('/patches', 'Patch Notes', 'patch notes')}.`, `After every patch we re-check the ratings. New comps and comps that rise or fall are marked. What changed in the patch is in the ${lnk('/patches', 'Patch Notes', 'patch notes')}.`))]],
+    q:[[L('Welche Comp ist aktuell die beste?', 'Which comp is the best right now?'), sc.length ? L(`Im S-Tier stehen gerade ${csJoin(seoComps('S').map(c=>c.name))}.`, `S tier currently holds ${csJoin(seoComps('S').map(c=>c.name))}.`) : L('Die Comps ganz oben in der Tierlist.', 'The comps at the top of the tier list.')],
+      [L('Was bedeutet „situativ“ in der Tierlist?', 'What does “situational” mean in the tier list?'), L('Diese Comps sind nur mit dem passenden Augment, Encounter oder Item stark. Spiel sie, wenn deine Partie sie dir anbietet.', 'These comps are only strong with the right augment, encounter or item. Play them when your game offers them.')],
+      [L('Wie oft wird die Tierlist aktualisiert?', 'How often is the tier list updated?'), L('Mit jedem Patch, also etwa alle zwei Wochen.', 'With every patch, so about every two weeks.')]],
+    ln:['rolldown', 'builder', 'shop', 'patches']}; },
+  pt: ()=>{ const S = TFT_DATA.set, n = stNextPatch(), sets = [...new Set(PATCHES.map(x=>x.set))], ns = PATCHES.filter(x=>PATCH_NOTES[x.id]).length, cur = CURRENT_PATCH;
+    return {h:L(`TFT Patch Notes: alle Änderungen von Set ${S}`, `TFT patch notes: every change of Set ${S}`),
+    i:L(`Hier findest du alle TFT Patch Notes übersichtlich aufbereitet: jede Änderung an Champions, Traits, Items und Augments, sortiert und durchsuchbar.${cur ? ` Aktuell ist Patch ${esc(cur.id)}` : ''}${n && n.id ? `, als Nächstes kommt Patch ${esc(n.id)}` : ''}${cur ? '.' : ''}`,
+      `Here you find every TFT patch note neatly prepared: each change to champions, traits, items and augments, sorted and searchable.${cur ? ` The current patch is ${esc(cur.id)}` : ''}${n && n.id ? `, next up is patch ${esc(n.id)}` : ''}${cur ? '.' : ''}`),
+    s:[['rhythmus', L('Wann neue Patches kommen', 'When new patches arrive'), csPs(L(`Riot bringt etwa alle zwei Wochen einen neuen TFT-Patch. Dazwischen gibt es manchmal kleine B-Patches, die einzelne Werte nachbessern. Wann genau der nächste Patch erscheint, zeigt der ${artA(COUNTDOWN_PATH, 'Patch-Countdown')}, alle Termine des Sets stehen im Cheatsheet ${artA(csHref('patch-schedule'), esc(csName('patch-schedule')))}.`,
+        `Riot ships a new TFT patch about every two weeks. In between there are sometimes small B-patches that adjust single values. When exactly the next patch drops is shown by the ${artA(COUNTDOWN_PATH, 'patch countdown')}, every date of the set is in the ${artA(csHref('patch-schedule'), esc(csName('patch-schedule')))} cheatsheet.`))],
+      ['aufbereitet', L('So bereiten wir die Patch Notes auf', 'How we prepare the patch notes'), csUl([
+        L('Alle Änderungen nach Champions, Traits, Items und Augments sortiert – mit Symbolen statt langer Textblöcke.', 'Every change sorted by champions, traits, items and augments – with icons instead of long text blocks.'),
+        L('Eine Suche über alle Änderungen eines Patches, zum Beispiel nach deinem Lieblings-Champion.', 'A search across all changes of a patch, for example for your favourite champion.'),
+        ns ? L(`Bei ${ns} Patches gibt es dazu eine Einschätzung von TFTClimb, was die Änderungen für die Tierlist bedeuten.`, `For ${ns} patches there is also an assessment by TFTClimb of what the changes mean for the tier list.`) : '',
+        L('Erscheint Riots deutsche Fassung später, siehst du bis dahin die englische – sie wird automatisch ersetzt.', 'If Riot publishes the German version later, you see the English one until then – it gets replaced automatically.')])],
+      ['archiv', L('Alle Patches im Archiv', 'Every patch in the archive'), csPs(L(`Im Archiv stehen ${PATCHES.length} Patches aus ${sets.length === 1 ? `Set ${sets[0]}` : `den Sets ${csJoin(sets.map(String))}`}. So kannst du nachlesen, wann ein Champion oder Item stärker oder schwächer wurde – praktisch, wenn sich eine Comp in der ${artA('/tierlist', 'Tierlist')} plötzlich verschiebt.`,
+        `The archive holds ${PATCHES.length} patches from ${sets.length === 1 ? `Set ${sets[0]}` : `Sets ${csJoin(sets.map(String))}`}. So you can look up when a champion or item got stronger or weaker – handy when a comp suddenly moves in the ${artA('/tierlist', 'tier list')}.`))]],
+    q:[...(n && n.id ? [[L('Wann kommt der nächste TFT-Patch?', 'When is the next TFT patch?'), L(`Als Nächstes kommt Patch ${n.id}. Den genauen Zeitpunkt zeigt der Patch-Countdown.`, `Next up is patch ${n.id}. The patch countdown shows the exact time.`)]] : []),
+      [L('Was ist ein B-Patch?', 'What is a B-patch?'), L('Ein kleiner Zwischen-Patch nach einem großen Patch, mit dem Riot schnell Fehler behebt oder zu starke Dinge abschwächt.', 'A small follow-up patch after a main patch that Riot uses to quickly fix bugs or tone down things that are too strong.')],
+      [L('Woher kommen die Patch Notes?', 'Where do the patch notes come from?'), L('Aus den offiziellen Patch Notes von Riot Games. Wir sortieren sie und bereiten sie übersichtlich auf – im Zweifel gilt das Original bei Riot.', 'From the official patch notes by Riot Games. We sort and prepare them – if in doubt, the original at Riot applies.')]],
+    ln:['countdown', 'patch-schedule', 'tierlist', 'all']}; }
+};
+// Artikel in seine <section data-pre> setzen (Tierlist: je Reiter ein eigener Text)
+function seoMount(key, arg){
+  const el = document.querySelector(`[data-pre="${key}"]`); if(!el || !SEO_ART[key]) return;
+  let a = null; try { a = SEO_ART[key](arg); } catch(e){ a = null; }
+  if(!a){ el.innerHTML = ''; return; }
+  el.innerHTML = seoArtHTML(a, key + 'a', 'ts-' + key); artToc(el);
+}
 const csSvg = (ic, w=1.8) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${ic || ''}</svg>`;
 const csIco = id => { const m = CS_META[id] || {}; return m.trait ? csTrIc(m.trait, 0, 'cs-aic') : m.img ? `<img class="cs-aic${m.rio ? ' cs-ric' : ''}" src="${m.img}" alt="" width="24" height="24" loading="lazy">` : csSvg(m.ic); };   // Augment-Tabellen mit Augment-Icon
 const csName = id => { const m = CS_META[id]; return m ? L(m.s[0], m.s[1]) : id; };
@@ -5883,7 +6000,7 @@ function setLd(page, sub, tool, title, desc, url, path, ogImg){
   const graph = [{'@type':'WebSite', name:'TFTClimb', url:location.origin + withLang('/'), inLanguage:EN ? 'en' : 'de', publisher:org}];
   if(page!=='home'){
     const items = [['Home', '/']], sec = LD_SECTION[page];
-    if(page==='champion') items.push([tr('Bibliothek'), '/bibliothek'], ['Champions', '/bibliothek/champions'], [champBySlug[sub].n, path]);
+    if(page==='champion') items.push([tr('Bibliothek'), '/bibliothek'], [champBySlug[sub].n, path]);
     else if(page==='comp') items.push(['Tierlist', '/tierlist'], [compByKey[sub].name, path]);
     else if(page==='countdown') items.push(['Patches', '/patches'], [title.split(' – ')[0], path]);
     else {
@@ -6225,7 +6342,7 @@ function ndRoute(page, navKey){
   const key = page==='champion' ? 'bibliothek' : page==='apply' ? 'coaching' : navKey;
   document.querySelectorAll('#ndSide [data-nd]').forEach(a=>a.classList.toggle('on', a.dataset.nd===key));
   document.body.classList.remove('nd-drawer');
-  if(page==='home'){ renderDash(); requestAnimationFrame(()=>dshCount(true)); }
+  if(page==='home'){ renderDash(); seoMount('home'); requestAnimationFrame(()=>dshCount(true)); }
   setTimeout(ndColon, 0);   // erst nach der Übersetzung (läuft vorher als Microtask)
 }
 // Tool-Überschriften „TFT Rolldown-Rechner: Odds …“: der Doppelpunkt am Ende des großen Titels wird nur ausgeblendet (für Google bleibt er)

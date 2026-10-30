@@ -4,10 +4,20 @@
       "includeFiles": "{data/*.js,data/seo-meta.json,tierlist-data-*.js}"
     },
     "api/page.js": {
-      "includeFiles": "{app.html,data/seo-meta.json,data/sets.js}"
+      "includeFiles": "{app.html,data/seo-meta.json,data/sets.js,assets/js/*.js,assets/css/*.css}"
     }
   },
   "headers": [
+    {
+      "source": "/assets/(js|css)/(.*)",
+      "has": [{ "type": "query", "key": "v" }],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
     {
       "source": "/assets/fonts/(.*)",
       "headers": [
@@ -175,6 +185,8 @@
     { "source": "/en/guides/encounters", "destination": "/en/guides/tft-encounters", "permanent": true },
     { "source": "/en/tierlist", "destination": "/en/tier-list", "permanent": true },
     { "source": "/en/tierlist/:rest*", "destination": "/en/tier-list/:rest*", "permanent": true },
+    { "source": "/bibliothek/champions", "destination": "/bibliothek", "permanent": true },
+    { "source": "/en/library/champions", "destination": "/en/library", "permanent": true },
     { "source": "/en/bibliothek", "destination": "/en/library", "permanent": true },
     { "source": "/en/bibliothek/:rest*", "destination": "/en/library/:rest*", "permanent": true },
     { "source": "/en/impressum", "destination": "/en/legal-notice", "permanent": true },

@@ -42,9 +42,7 @@ function ndShellHTML(en){
       ${ndLink('bibliothek', T('Bibliothek', 'Library'), '/bibliothek')}${ndLink('ranks', 'Ranks', '/ranks')}${ndLink('patches', 'Patches', '/patches')}
       <div class="nds-gap"></div><div class="nds-gap"></div>
       ${ndLink('coaching', 'Coaching', '/coaching').replace('class="nds-link"', 'class="nds-link nds-hot"')}${ndLink('about', 'Meet the Team', '/about')}
-      <button class="nds-link nds-col" type="button" onclick="document.body.classList.toggle('nd-mini');try{localStorage.setItem('tftfreaks_side',document.body.classList.contains('nd-mini')?'mini':'')}catch(e){}">${ndSvg('col', 2)}<span>${T('Einklappen', 'Collapse')}</span></button>
-      <img class="nds-vi2" data-later="assets/img/mascot-vi-huh.webp" alt="" width="520" height="505">
-    </aside>
+      <button class="nds-link nds-col" type="button" onclick="document.body.classList.toggle('nd-mini');try{localStorage.setItem('tftfreaks_side',document.body.classList.contains('nd-mini')?'mini':'')}catch(e){}">${ndSvg('col', 2)}<span>${T('Einklappen', 'Collapse')}</span></button>    </aside>
     <div class="nd-scrim" onclick="document.body.classList.remove('nd-drawer')"></div>`;
 }
 
@@ -67,6 +65,4 @@ function ndShellHTML(en){
     b.style.transition = 'transform .3s ease-out, opacity .35s ease .3s'; b.style.transform = 'scaleX(1)'; b.style.opacity = '0';
     setTimeout(function(){ b.remove(); }, 900);
   });
-  // Deko-Bilder (z. B. Vi in der Seitenleiste) erst nach dem Laden der Seite – sie sollen Skripten und Inhalt nicht die Leitung wegnehmen
-  window.addEventListener('load', function(){ document.querySelectorAll('img[data-later]').forEach(function(i){ i.src = i.dataset.later; i.removeAttribute('data-later'); }); });
 })();

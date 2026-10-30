@@ -23,6 +23,14 @@ function liveSet() {
   if (SETS === null) { try { const t = fs.readFileSync(path.join(process.cwd(), 'data', 'sets.js'), 'utf8'); SETS = JSON.parse(t.slice(t.indexOf('['), t.lastIndexOf(']') + 1)); } catch (e) { SETS = []; } }
   return SETS.find(s => s.status === 'live') || SETS[0] || null;
 }
+// Versionsnummer für Skripte und Stile: kurzer Hash des Dateiinhalts (z. B. assets/js/app.js?v=3f9a1c2b). Solche Adressen darf der Browser
+// ein Jahr lang behalten (vercel.json) – ändert sich die Datei, ändert sich der Hash und damit die Adresse. Ohne Datei bleibt die Adresse, wie sie ist
+const VER = {};
+function ver(f) {
+  if (!(f in VER)) { try { VER[f] = require('crypto').createHash('md5').update(fs.readFileSync(path.join(process.cwd(), f))).digest('hex').slice(0, 10); } catch (e) { VER[f] = ''; } }
+  return VER[f];
+}
+const versioned = h => h.replace(/(assets\/(?:js|css)\/[\w.-]+\.(?:js|css))(?=["'\\])/g, (all, f) => ver(f) ? `${f}?v=${ver(f)}` : f);
 const att = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const txt = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -113,7 +121,7 @@ function heading(h, m) {
 }
 
 function render(p, base) {
-  let h = HTML;
+  let h = versioned(HTML);
   const q = '/' + String(p || '').replace(/^\/+/, ''), m = lookup(q);
   if (/^\/en(\/|$)/.test(q)) h = h.replace('<html lang="de">', '<html lang="en">');
   if (m) {
@@ -123,8 +131,20 @@ function render(p, base) {
     if (m.pg) h = onlyPage(h, m.pg, m.tv);
     return heading(h, m);
   }
-  // unbekannte Adresse (z. B. 404): Titel und Beschreibung der Startseite bleiben, aber ohne Adress-Angaben der Startseite
-  return h.replace(BLOCK, b => b.split('\n').filter(l => !/rel="(canonical|alternate)"|og:url|og:locale|application\/ld\+json/.test(l)).join('\n'));
+  // Adresse ohne Eintrag: Titel und Beschreibung der Startseite bleiben, aber ohne Adress-Angaben der Startseite und nie im Index
+  // (sonst sähe Google lauter Kopien der Startseite – „Soft 404“). Ob es eine echte Seite der App ist, entscheidet known() (Status 200 statt 404)
+  return h.replace(BLOCK, b => b.split('\n').filter(l => !/rel="(canonical|alternate)"|og:url|og:locale|application\/ld\+json|name="robots"/.test(l)).join('\n')
+    .replace('<!-- seo:end -->', '<meta name="robots" content="noindex, follow">\n<!-- seo:end -->'));
+}
+// Seiten, die die App kennt, aber nicht in seo-meta.json stehen (Platzhalter wie Guides/Gameplans, Redaktion, Unterseiten mit Zustand):
+// erster Teil der Adresse wie in route() in app.js, englische Adressen mitgezählt. Alles andere ist ein echtes 404
+const APP_PAGES = new Set(['tierlist', 'tier-list', 'bibliothek', 'library', 'champions', 'comps', 'items', 'traits', 'augments', 'cheatsheet', 'bedingungen', 'terms', 'ranks',
+  'tft-team-builder', 'admin', 'news', 'tools', 'coaching', 'guides', 'gameplans', 'about', 'apply', 'impressum', 'legal-notice', 'datenschutz', 'privacy-policy', 'patches',
+  'tft-patch-countdown', 'tft-next-patch-countdown']);
+function known(p) {
+  if (lookup(p)) return true;
+  const seg = String(p || '').replace(/^\/+/, '').replace(/^en(\/|$)/, '').split('/')[0];
+  return !seg || APP_PAGES.has(seg);
 }
 
 module.exports = (req, res) => {
@@ -132,14 +152,14 @@ module.exports = (req, res) => {
   let host = req.headers['x-forwarded-host'] || req.headers.host || 'www.tftclimb.com';
   if (host === 'tftclimb.com') host = 'www.tftclimb.com';   // immer die kanonische Domain
   const base = /localhost|127\.0\.0\.1/.test(host) ? 'http://' + host : 'https://' + host;
-  let html;
-  try { load(); html = render(url.searchParams.get('__p') || '', base); }
+  let html, status = 200;
+  try { load(); const p = url.searchParams.get('__p') || ''; html = render(p, base); if (!known(p)) status = 404; }
   catch (e) { try { html = HTML || fs.readFileSync(path.join(process.cwd(), 'app.html'), 'utf8'); } catch (e2) { res.status(500).send('Fehler'); return; } }
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   // Browser fragen jedes Mal nach (neue Version sofort sichtbar), das Vercel-CDN hält die fertige Seite bis zum nächsten Deploy vor
   res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
   res.setHeader('CDN-Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=604800');
-  res.status(200).send(html);
+  res.status(status).send(html);   // 404 mit der normalen Seite – im Browser zeigt die App ihre „Nicht gefunden“-Ansicht
 };
 module.exports.render = (p, base) => { load(); return render(p, base); };   // für Tests
 module.exports.headBlock = headBlock;
