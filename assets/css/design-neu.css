@@ -1297,9 +1297,12 @@ body.nd-mini .nds-gap{height:30px}
   background:linear-gradient(160deg,color-mix(in srgb,var(--g1) 7%,#071823),#061520 45%) padding-box,linear-gradient(160deg,var(--g1),var(--g2) 55%,var(--g3)) border-box;
   box-shadow:0 0 30px color-mix(in srgb,var(--g1) 14%,transparent)}
 /* Spitze oben: zeigt auf die angeklickte Karte (--ax aus app.js: cp2Notch), Rand in Rangfarbe, Fläche wie der Rahmen */
+/* Spitze: gedrehtes Quadrat, nur die obere Hälfte bleibt sichtbar (clip-path) – sitzt bündig auf der Rahmenlinie und verdeckt sie darunter, oben leicht abgerundet */
 .cp2::before{content:'';position:absolute;top:-11px;left:var(--ax,50%);width:20px;height:20px;margin-left:-10px;transform:rotate(45deg);z-index:1;
-  background:color-mix(in srgb,var(--g1) 7%,#071823);border:2px solid var(--g1);border-right:0;border-bottom:0;border-radius:3px 0 0 0;
-  box-shadow:-3px -3px 8px color-mix(in srgb,var(--g1) 18%,transparent)}
+  background:color-mix(in srgb,var(--g1) 7%,#071823);border:2px solid var(--g1);border-right:0;border-bottom:0;border-radius:6px 0 0 0;
+  clip-path:polygon(0 0,calc(100% + 1.5px) 0,0 calc(100% + 1.5px))}
+/* Alte Tierlist-Regel färbt Rahmen der Dropdowns türkis ein – beim neuen Comp-Detail bleibt der Verlaufsrahmen rein */
+.nd #page-tierlist .tl-detail>.cp2{border-color:transparent}
 /* Kopf: Carry, Rang, Name + Comp-Art, Tipp, Varianten – rechts Planer-Code und Schließen */
 .cp2-hd{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:start}
 .cp2-carry{--w:68px;position:relative;width:var(--w);display:block;filter:drop-shadow(0 0 10px color-mix(in srgb,var(--g1) 50%,transparent))}
