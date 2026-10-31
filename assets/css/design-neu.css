@@ -1437,6 +1437,38 @@ body.nd-mini .nds-gap{height:30px}
 .cp2-prio span{flex:1;min-width:0;text-align:center;padding:0 4px 0 2px;overflow:hidden;text-overflow:ellipsis;font:900 italic .72rem var(--ff-head);text-transform:uppercase;letter-spacing:.03em;color:#fff}
 .cp2-augs{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
 .cp2-augs .cp-aug img{width:26px;height:26px}
+/* Hover-Tooltip für Champions, Items, Augments und Traits (gtShow in app.js): dunkle Karte wie im Spiel, oben links das Symbol */
+.gtip{position:fixed;z-index:1000;left:0;top:0;width:300px;max-width:calc(100vw - 16px);padding:10px 12px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(180deg,#141a28,#0a0e17);box-shadow:0 14px 34px rgba(0,0,0,.65);color:#c9d4dd;font-size:.79rem;line-height:1.42;
+  pointer-events:none;opacity:0;visibility:hidden;transform:translateY(3px);transition:opacity .12s,transform .12s,visibility 0s .12s}
+.gtip.on{opacity:1;visibility:visible;transform:none;transition-delay:0s}
+.gtip p{margin:0}
+.gt-hd{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.gt-hd>div{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.gt-hd b{font:800 1rem/1.15 var(--ff-body);color:#fff}
+.gt-hd small{display:flex;align-items:center;gap:4px;font-size:.7rem;color:#8ea3b2}
+.gt-ic{flex:none;width:40px;height:40px;border-radius:7px;border:2px solid var(--c1);background:#0b1018 center 20%/cover no-repeat;object-fit:cover}
+.gt-ic.c2{border-color:var(--c2)}.gt-ic.c3{border-color:var(--c3)}.gt-ic.c4{border-color:var(--c4)}.gt-ic.c5{border-color:var(--c5)}
+img.gt-ic{border:1px solid rgba(255,255,255,.18)}
+.gt-badge{flex:none;align-self:flex-start;padding:2px 8px;border-radius:7px;background:rgba(255,255,255,.1);font:700 .68rem/1.4 var(--ff-body);color:#dfe7ee}
+.gt-badge.lv1{color:#dfe6ef}.gt-badge.lv2{color:#f5c84b}.gt-badge.lv3{color:#f0abfc}
+.gt-recipe{display:inline-flex;align-items:center;gap:3px}.gt-recipe img{width:17px;height:17px;border-radius:3px}
+.gt-ch{display:flex;justify-content:space-between;gap:10px;margin-bottom:9px}
+.gt-ch ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.gt-ch li{display:flex;align-items:center;gap:6px;font-weight:700;color:#eef3f7}
+.gt-num li{justify-content:flex-end}.gt-num svg{width:14px;height:14px;color:#9fb6c4}.gt-num .coin{width:11px;height:11px}
+.gt-ab{padding-top:8px;border-top:1px solid rgba(255,255,255,.08)}
+.gt-abh{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.gt-abh>span{display:flex;flex-direction:column;gap:1px;min-width:0}
+.gt-abh b{color:#fff;font-weight:800}
+.gt-abi{flex:none;width:34px;height:34px;border-radius:6px;border:1px solid rgba(255,255,255,.18);box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.gt-mana{display:inline-flex;align-items:center;gap:3px;color:#6cb6ff;font-weight:700;font-size:.74rem;white-space:nowrap}.gt-mana svg{width:11px;height:11px}
+.gt-rec{margin-top:10px;padding:7px 8px 8px;border-radius:9px;border:1px solid rgba(242,193,78,.55);background:rgba(242,193,78,.05)}
+.gt-rec h6{margin:0 0 6px;font:800 .72rem var(--ff-body);color:#f2c14e}
+.gt-rec div{display:flex;flex-wrap:wrap;gap:4px}.gt-rec img{width:30px;height:30px;border-radius:5px;border:1px solid rgba(0,0,0,.6)}
+.gtip .it-stats{margin:0 0 6px}
+.gtip .tt-intro{margin:0 0 6px;font-size:.78rem}.gtip .tt-rows li{font-size:.77rem}
+.gtip .tt-rows li.on{color:#fff}.gtip .tt-rows li.off{opacity:.5}
 /* Schmale Tierlist (kleiner Bildschirm, Sidebar offen): rechte Spalte unter das Feld, damit die Arena groß bleibt */
 .cp2{container-type:inline-size}
 /* In der Tierlist links bündig mit dem Kartenrahmen der Reihe (Kopf 136 px + Abstand 12 px, siehe .tl2-row) */

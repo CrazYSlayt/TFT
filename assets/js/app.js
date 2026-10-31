@@ -263,12 +263,12 @@ const HEX_LVL = ['base','bronze','silver','gold','prism'];
 const TRAIT_STYLE = {1:1, 3:2, 4:3, 5:3, 6:4};
 // Stufen-Zahlen eines Traits in ihrer Spiel-Farbe (Bibliothek, Champion-Seiten)
 const bpHTML = t => t.bp.map((b, i)=>{ const s = t.bs && t.bs[i]; return `<span${s ? ` class="bp-${s === 4 ? 'unique' : HEX_LVL[TRAIT_STYLE[s]] || 'base'}"` : ''}>${b}</span>`; }).join('');
-function traitHex(n, cls='base', size=28){ return `<span class="thx thx-${cls}" style="--s:${size}px" title="${esc(n)}"><img src="${traitImg(n)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"></span>`; }
+function traitHex(n, cls='base', size=28){ return `<span class="thx thx-${cls}" style="--s:${size}px" title="${esc(n)}"${traitBy[n] ? ` data-ttt="${esc(n)}"` : ''}><img src="${traitImg(n)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"></span>`; }
 const traitCls = t => t.uniq ? 'unique' : HEX_LVL[t.cls];
-const tBadge = (t,withName) => `<span class="tbadge" title="${esc(t.n)} (${t.k})">${traitHex(t.n, traitCls(t), 18)}<span>${t.k}${withName?' '+esc(t.n):''}</span></span>`;
+const tBadge = (t,withName) => `<span class="tbadge" title="${esc(t.n)} (${t.k})" data-tk="${t.k}">${traitHex(t.n, traitCls(t), 18)}<span>${t.k}${withName?' '+esc(t.n):''}</span></span>`;
 // Kachel-Symbol: wichtigstes Trait ohne Unique-/Kleinst-Traits (höchster Breakpoint > 2)
 const tileTrait = c => compTraits(c).filter(t=>Math.max(...(traitBy[t.n]||{bp:['1']}).bp.map(Number)) > 2).sort((a,b)=>b.k-a.k || b.cls-a.cls)[0];
-const itemMini = id => { const it=findItem(id); return it?`<img src="${it.img}" alt="${esc(it.en)}" title="${esc(it.en)}" loading="lazy">`:''; };
+const itemMini = id => { const it=findItem(id); return it?`<img src="${it.img}" alt="${esc(it.en)}" title="${esc(it.en)}" data-tti="${it.id}" loading="lazy">`:''; };
 const champBg = name => PLANTS[name] ? `url('${PLANT_IMG[name]||traitImg('Elderwood')}')` : [champImg(name), champFallback(name)].filter(Boolean).map(u=>`url('${u}')`).join(',');
 const hexHTML = (name, cls='') => { const ch = champBy[name]; return `<div class="hx c${ch?ch.c:1}${PLANTS[name]?' plant':''} ${cls}"><div class="hx-in" style="background-image:${champBg(name)}"></div></div>`; };
 function unitHex(b, o={}){
@@ -501,7 +501,7 @@ function panel2HTML(c){
   const box = (title, body, cls='') => body ? `<section class="cp2-box ${cls}"><h4>${title}</h4>${body}</section>` : '';
   // Traits wie im Spiel links im Feld: Symbol, Anzahl, Name und die Stufen (erreichte hell)
   const traitsHTML = trs.map(tr=>{ const bp = (traitBy[tr.n] || {bp:[]}).bp.map(Number);
-    return `<div class="cp2-tr ${traitCls(tr)}">${traitHex(tr.n, traitCls(tr), 34)}<b>${tr.k}</b><span><i>${esc(tr.n)}</i>${bp.length > 1 ? `<small>${bp.map(x=>`<em${x <= tr.k ? ' class="on"' : ''}>${x}</em>`).join('›')}</small>` : ''}</span></div>`; }).join('');
+    return `<div class="cp2-tr ${traitCls(tr)}" data-tk="${tr.k}" data-ttt="${esc(tr.n)}">${traitHex(tr.n, traitCls(tr), 34)}<b>${tr.k}</b><span><i>${esc(tr.n)}</i>${bp.length > 1 ? `<small>${bp.map(x=>`<em${x <= tr.k ? ' class="on"' : ''}>${x}</em>`).join('›')}</small>` : ''}</span></div>`; }).join('');
   return `<div class="cp2" style="--tc:${TIER_COL[c.tier]}">
     <header class="cp2-hd">
       <span class="tl2-frame cp2-carry"><span class="tl2-pic" style="background-image:url('${img}')${fo ? `;--ps:${fo[0]}%;--py:${fo[1]}%` : ''}"></span>
@@ -2208,6 +2208,82 @@ function closeModal(){ $('#modal').classList.remove('open'); }
 $('#modalClose').onclick = closeModal;
 $('#modal').addEventListener('click', e=>{ if(e.target.id==='modal' || e.target.closest('[data-close]')) closeModal(); });
 document.addEventListener('click', e=>{ const b=e.target.closest('[data-champ]'); if(b) openChamp(b.dataset.champ); });
+
+/* Hover-Tooltips (nur mit Maus): Champions, Items, Augments und Traits zeigen beim Drüberfahren ihre Details wie im Spiel – oben links das Symbol.
+   Greift überall, wo data-champ / data-item / data-aug steht, dazu data-tti (Items auf dem Board, itemMini) und data-ttt (Trait-Symbole, traitHex) */
+const GT_SEL = '[data-champ],[data-item],[data-aug],[data-tti],[data-ttt]';
+const GT_ROLE = {tank:'Tank', fighter:'Fighter', assassin:'Assassin', marksman:'Marksman', caster:'Caster', specialist:'Specialist'};
+const GT_RANGE = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 13 13 3M9 3h4v4M3 9.5 6.5 13M2 12l2 2"/></svg>';
+const GT_MANA = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.5C6 4.4 3.8 7 3.8 9.7a4.2 4.2 0 0 0 8.4 0C12.2 7 10 4.4 8 1.5z"/></svg>';
+// Rolle wie im Spiel („Magic Caster“, „Attack Marksman“, „Tank“) aus combatRoles und roles in data/custom-<Set>.js
+function gtRole(n){
+  const cr = (TFT_CUSTOM_SET.combatRoles || {})[n], dmg = (TFT_CUSTOM_SET.roles || {})[n];
+  return !cr ? '' : cr === 'tank' ? 'Tank' : (dmg === 'ap' ? 'Magic ' : dmg === 'ad' ? 'Attack ' : '') + GT_ROLE[cr];
+}
+// Empfohlene Items: die häufigsten Items dieses Champions in den Comps der Tierlist (keine → Kasten fehlt)
+function gtBestItems(n){
+  const freq = {};
+  comps.forEach(x=>[...x.board, ...x.alt].forEach(b=>{ if(b.u === n) (b.i || []).forEach(id=>{ const it = findItem(id); if(it) freq[it.id] = (freq[it.id] || 0) + 1; }); }));
+  return Object.entries(freq).sort((a, b)=>b[1] - a[1]).slice(0, 6).map(([id])=>itemById[id]).filter(Boolean);
+}
+const gtName = x => L(x.de || x.en, x.en);
+const gtHead = (icon, name, sub, badge, bcls='') => `<div class="gt-hd">${icon}<div><b>${esc(name)}</b>${sub ? `<small>${sub}</small>` : ''}</div>${badge ? `<span class="gt-badge ${bcls}">${esc(badge)}</span>` : ''}</div>`;
+function gtChamp(n){
+  const c = champBy[n], d = CH_DATA[n] || {}, st = d.st, ab = d.ab, abH = abilityHTML(n), best = gtBestItems(n);
+  return gtHead(`<span class="gt-ic c${c.c}" style="background-image:${champBg(n)}"></span>`, n, '', gtRole(n))
+    + `<div class="gt-ch"><ul>${c.t.map(t=>`<li>${traitHex(t, 'base', 20)}${esc(t)}</li>`).join('')}</ul>
+      <ul class="gt-num">${st && st.range ? `<li>${GT_RANGE}${st.range}</li>` : ''}<li><span class="coin"></span>${c.c}</li></ul></div>`
+    // Fähigkeitssymbol aus dem Spielclient (assets/img/abilities/<api>.png, tools/unreal) – fehlt es, bleibt nur der Text
+    + (abH ? `<div class="gt-ab"><div class="gt-abh">${d.api ? `<img class="gt-abi" src="assets/img/abilities/${d.api}.png" alt="" width="34" height="34" onerror="this.remove()">` : ''}<span><b>${esc(ab.n)}</b>${st && st.mana ? `<span class="gt-mana">${GT_MANA}${st.mana0} / ${st.mana}</span>` : ''}</span></div><p>${abH}</p></div>` : '')
+    + (best.length ? `<div class="gt-rec"><h6>${L('Empfohlene Items', 'Recommended items')}</h6><div>${best.map(it=>`<img src="${it.img}" alt="">`).join('')}</div></div>` : '');
+}
+function gtItem(it){
+  const st = itemStats(it), desc = it.cat === 'component' && st ? '' : itemDescHTML(it);
+  const rec = it.comp.length === 2 ? it.comp.map(id=>itemById[id]).filter(Boolean) : [];
+  const sub = rec.length ? `<span class="gt-recipe">${rec.map(x=>`<img src="${x.img}" alt="">`).join('+')}</span>` : esc((ITEM_CATS.find(([k])=>k === it.cat) || ['', ''])[1]);
+  return gtHead(`<img class="gt-ic" src="${it.img}" alt="">`, gtName(it), sub) + (st ? `<div class="it-stats">${st}</div>` : '') + (desc ? `<p>${desc}</p>` : '');
+}
+const gtAug = a => gtHead(`<img class="gt-ic" src="${augImg(a)}" alt="">`, gtName(a), '', L(AUG_LV[a.lv] || '', ({1:'Silver', 2:'Gold', 3:'Prismatic'})[a.lv] || ''), 'lv' + a.lv)
+  + `<p>${fmtDesc(a.desc, a.fx)}</p>`;
+function gtTrait(n){
+  const t = traitBy[n]; if(!t) return '';
+  return gtHead(traitHex(n, 'base', 34), n, t.cat === 'class' ? L('Klasse', 'Class') : L('Ursprung', 'Origin')) + (traitTiersHTML(n) || `<p>${esc(t.d)}</p>`);
+}
+let gtEl, gtT = 0, gtCur = null;
+function gtShow(el){
+  const it = el.dataset.item || el.dataset.tti, a = el.dataset.aug && augById[el.dataset.aug];
+  const h = el.dataset.ttt ? gtTrait(el.dataset.ttt) : a ? gtAug(a) : it ? (findItem(it) ? gtItem(findItem(it)) : '') : champBy[el.dataset.champ] ? gtChamp(el.dataset.champ) : '';
+  if(!h){ gtHide(); return; }
+  if(!gtEl){ gtEl = document.createElement('div'); gtEl.className = 'gtip'; gtEl.setAttribute('role', 'tooltip'); document.body.append(gtEl); }
+  gtEl.innerHTML = h;
+  // Trait mit bekannter Anzahl (data-tk): erreichte Stufe hell, die anderen gedämpft
+  const k = +((el.closest('[data-tk]') || {dataset:{}}).dataset.tk || 0);
+  if(el.dataset.ttt && k){ const li = [...gtEl.querySelectorAll('.tt-rows li')], on = li.filter(x=>+x.querySelector('.tt-bp').textContent <= k).pop();
+    li.forEach(x=>x.classList.add(x === on ? 'on' : 'off')); }
+  // Browser-Tooltips (title) am Element und darüber abschalten, sonst erscheinen zwei
+  for(let n = el; n && n !== document.body; n = n.parentElement) if(n.title){ n.dataset.ttl = n.title; n.removeAttribute('title'); }
+  const r = el.getBoundingClientRect(), w = gtEl.offsetWidth, h2 = gtEl.offsetHeight;
+  const topH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--topH')) || 64;
+  let left = r.right + 10; if(left + w > innerWidth - 8) left = r.left - w - 10;
+  if(left < 8) left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2));
+  gtEl.style.left = Math.round(left) + 'px';
+  gtEl.style.top = Math.round(Math.max(topH + 6, Math.min(innerHeight - h2 - 8, r.top + r.height / 2 - 40))) + 'px';
+  gtEl.classList.add('on');
+}
+function gtHide(){ clearTimeout(gtT); gtCur = null; if(gtEl) gtEl.classList.remove('on'); }
+if(matchMedia('(hover:hover)').matches){
+  document.addEventListener('mouseover', e=>{
+    if(e.buttons) return;
+    let el = e.target.closest && e.target.closest(GT_SEL);
+    if(el && el.closest('.tl2-card, .tl2-tip, .gtip')) el = null;   // Tierlist-Karten haben ihren eigenen Comp-Tooltip
+    if(el === gtCur) return;
+    clearTimeout(gtT); gtCur = el;
+    if(!el){ gtT = setTimeout(gtHide, 60); return; }
+    gtT = setTimeout(()=>gtShow(el), gtEl && gtEl.classList.contains('on') ? 0 : 140);   // erst nach kurzer Pause, dann von Element zu Element sofort
+  });
+  document.documentElement.addEventListener('mouseleave', gtHide);
+  ['pointerdown', 'scroll', 'keydown'].forEach(ev=>addEventListener(ev, gtHide, true));
+}
 
 /* ================= CHAMPION-SEITEN (/champions/<name>) ================= */
 // Eine eigene Seite pro Champion, damit Google sie findet („TFT Ahri Build“). In der Bibliothek verlinkt, sonst bleibt das Popup mit Link hierher.

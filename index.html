@@ -73,7 +73,7 @@
 <link rel="preconnect" href="https://ddragon.leagueoflegends.com">
 <!-- app.js und sim.js stehen am Ende von <body>: hier schon anmelden, damit sie am Handy vor den Bildern geladen werden -->
 <link rel="preload" href="assets/js/sim.js?v=416a7d3541" as="script">
-<link rel="preload" href="assets/js/app.js?v=4f2e6ca187" as="script">
+<link rel="preload" href="assets/js/app.js?v=e8b8953e72" as="script">
 <link rel="stylesheet" href="assets/css/fonts.css?v=56685235ed">
 <link rel="stylesheet" href="assets/css/site.css?v=7f72077765">
 <script>
@@ -88,7 +88,7 @@
     alt = localStorage.getItem('tftfreaks_design') === 'alt';
   } catch(e){}
   if(!alt){
-    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=5383551c82">');
+    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=bea3b83628">');
     // Topleiste und Seitenleiste stehen sofort (assets/js/shell.js), den Inhalt baut app.js: bis alle Skripte gelaufen sind, bleibt er verborgen und oben läuft ein Ladebalken
     document.addEventListener('DOMContentLoaded', function(){ document.documentElement.classList.add('nd-ready'); });
   }
@@ -1320,6 +1320,6 @@
 })();
 </script>
 <script src="assets/js/sim.js?v=416a7d3541"></script>
-<script src="assets/js/app.js?v=4f2e6ca187"></script>
+<script src="assets/js/app.js?v=e8b8953e72"></script>
 </body>
 </html>
