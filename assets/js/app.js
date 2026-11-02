@@ -874,63 +874,9 @@ function renderRankTable(){
   $('#rkWhen').textContent = RANK_SRC.when;
 }
 
-// Achsen-Maximum auf „schöne“ Schritte runden
-function niceMax(m){ const steps=[0.05,0.1,0.2,0.5,1,2,5,10,20,50]; const s = steps.find(x=>m/x<=4) || 50; return Math.ceil(m/s)*s; }
-function barChart(items, onKey){
-  const max = niceMax(Math.max(...items.map(i=>i.v)));
-  const grid = [1, .5, 0].map(f=>`<div class="rk-gl" style="bottom:${f*100}%"><span>${fmtPct(max*f).replace(' %','%')}</span></div>`).join('');
-  const bars = items.map(i=>`<button class="rk-bar${i.k===onKey?' on':''}" ${i.href?`data-href="${i.href}"`:''} data-tip="${esc(i.label)}: ${fmtPct(i.v)}" aria-label="${esc(i.label)}: ${fmtPct(i.v)}"><em>${fmtPct(i.v)}</em><i style="height:${Math.max(0.6, i.v/max*100)}%"></i><span></span></button>`).join('');
-  const xl = items.map(i=>`<span class="${i.k===onKey?'on':''}">${i.img?`<img src="${i.img}" alt="" loading="lazy">`:''}${esc(i.short||i.label)}</span>`).join('');
-  return `<div class="rk-chart">${grid}<div class="rk-bars">${bars}</div></div><div class="rk-xl">${xl}</div>`;
-}
-let rkView = 'all';
-function renderRankDetail(key){
-  const t = rankBy[key]; if(!t){ go('/ranks'); return; }
-  const idx = RANK_TIERS.indexOf(t), prev = RANK_TIERS[idx-1], next = RANK_TIERS[idx+1];
-  // Meister, Großmeister und Challenger als gemeinsame Gruppe (wie Divisionen) behandeln
-  const apex = !t.div;
-  const es = apex ? RANK_ENTRIES.filter(e=>!e.d) : RANK_ENTRIES.filter(e=>e.t===t);
-  const view = rkView;
-  const groupLabel = apex ? 'Meister – Challenger' : ` IV–I`;
-  const items = view==='all'
-    ? RANK_TIERS.map(x=>({k:x.k, v:x.total, label:x.n, img:rankImg(x), href:'/ranks/'+x.k}))
-    : es.map(e=>{ const l = e.t.n + (e.d ? ' ' + e.d : ''); return {k: apex ? e.t.k : e.d, v:e.p, label:l, short:l, img:rankImg(e.t), href: apex ? '/ranks/'+e.t.k : null}; });
-  const where = (prev ? `Über ${prev.n}. ` : 'Der Einstieg ins Ranked. ') + (next ? `Nächster Rang: ${next.n}.` : 'Höher geht es nicht.');
-  const exact = RANK_ENTRIES.slice().reverse().map(e=>`<tr${e.t===t?' class="on"':''}><td>${esc(e.t.n+(e.d?' '+e.d:''))}</td><td>${fmtPct(e.p)}</td><td>Top ${fmtPct(e.top)}</td></tr>`).join('');
-  $('#rk2App').innerHTML = `
-    <div class="rk-back"><a href="/ranks">← Alle TFT-Ränge</a> / <span>${esc(t.n)}</span></div>
-    <div class="rk-card">
-      <div class="rk-head">
-        <img src="${rankImg(t, 1)}" alt="TFT Rang ${esc(t.n)}">
-        <div><h1>TFT Rang ${esc(t.n)}</h1><p>${esc(t.d)}</p></div>
-        <div class="rk-big"><b>${fmtPct(t.total)}</b><small>der erfassten Spieler</small></div>
-      </div>
-      <div class="rk-sec"><h3>${apex?'Apex-Ränge':`${esc(t.n)}-Divisionen`}</h3><small class="updated">Geschätzte Anteile</small></div>
-      <div class="rk-divs${apex?' three':''}">${es.map(e=>rankCell(e, apex && e.t===t ? ' on' : '')).join('')}</div>
-      <div class="rk-sec">
-        <div><h3>Wie selten ist ${esc(t.n)}?</h3><small class="updated">${view==='all'?'Anteil der Spieler pro Rang':(apex?'Anteil der Spieler pro Apex-Rang':'Anteil der Spieler pro Division')}</small></div>
-        <div class="rk-toggle" role="group" aria-label="Ansicht"><button class="${view==='all'?'on':''}" data-rkview="all">Alle Ränge<span></span></button><button class="${view==='div'?'on':''}" data-rkview="div">${esc(groupLabel)}<span></span></button></div>
-      </div>
-      <div class="rk-chartwrap">
-        <div>${barChart(items, view==='all' || apex ? t.k : null)}
-          <details class="rk-exact"><summary>Genaue Zahlen anzeigen</summary><table><thead><tr><th>Rang</th><th>Anteil</th><th>Kumuliert</th></tr></thead><tbody>${exact}</tbody></table></details>
-        </div>
-        <aside class="rk-side">
-          <small class="updated">Wo ${esc(t.n)} steht</small>
-          <b class="rk-sidebig">${fmtPct(t.below)}</b>
-          <p>der Spieler sind unter ${esc(t.n)}.</p>
-          <hr>
-          <p><b>Top ${fmtPct(t.topTier)}</b> der Spieler sind ${esc(t.n)} oder höher.</p>
-          <p class="rk-where">${esc(where)}</p>
-        </aside>
-      </div>
-      <p class="note">Quelle: <a href="${RANK_SRC.url}" target="_blank" rel="noopener" style="text-decoration:underline">${RANK_SRC.name}</a> · ${RANK_SRC.when}. Region und Erhebungsweise sind dort nicht angegeben – die Werte sind Schätzungen einer Stichprobe, nicht alle aktiven Spieler. Rundungsbedingt ergibt die Summe nicht genau 100 %.</p>
-    </div>`;
-}
 /* --- Rang-Seite V2 (live seit 2026-11-02): links alle Ränge als Raster (Welle beim Hovern, Glanz über das Emblem, gewählter Rang und seine Reihe
    hervorgehoben), Mitte groß das Emblem auf der Arena mit Division, Anteil und LP bis zur nächsten Stufe, rechts Verteilung als Balken.
    Adresse /ranks/<rang>#<rang>-<division 1–4> (z. B. /ranks/diamond#diamond-2); Wechsel ohne Neuaufbau, Zahlen und Balken zählen vom alten Wert --- */
-const RK_V2 = true;   // false = alte Detailseite (renderRankDetail)
 const RK_ROM = {1:'I', 2:'II', 3:'III', 4:'IV'}, RK_NUM = {I:1, II:2, III:3, IV:4};
 let rk2Cur = null;
 const rk2Entry = (t, d) => RANK_ENTRIES.find(e=>e.t === t && (t.div ? e.d === d : true));
@@ -1035,15 +981,10 @@ function rk2Wave(grid){
 function setRank(sub){
   const detail = !!(sub && rankBy[sub]);
   $('#rk-list').hidden = detail; $('#rk-detail').hidden = !detail;
-  if(detail){ if(RK_V2) renderRankV2(sub); else { renderRankDetail(sub); seoMount('rank', sub); } }
+  if(detail) renderRankV2(sub);
   else { rk2Cur = null; seoMount('ranks'); }
 }
-addEventListener('hashchange', ()=>{ const p = curPath().split('/'); if(RK_V2 && p[1] === 'ranks' && rankBy[p[2]]) renderRankV2(p[2]); });
-document.addEventListener('click', e=>{
-  const v = e.target.closest('[data-rkview]');
-  if(v){ rkView = v.dataset.rkview; renderRankDetail(curPath().split('/')[2]); return; }
-  const b = e.target.closest('.rk-bar[data-href]'); if(b) go(b.dataset.href);
-});
+addEventListener('hashchange', ()=>{ const p = curPath().split('/'); if(p[1] === 'ranks' && rankBy[p[2]]) renderRankV2(p[2]); });
 renderRankTable();
 
 // Neues Design: Ränge als Waben (5 + 5 versetzt), darunter die Divisionen des gewählten Rangs; „Verteilung“ zeigt die bisherige Tabelle

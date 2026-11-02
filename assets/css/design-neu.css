@@ -455,7 +455,7 @@ body.nd-mini .nds-vi{display:none}
 @media (max-width:640px){.dsh-bar[class]{padding:10px 12px;min-height:0}.dsh-hi{position:relative;overflow:hidden;min-height:104px;padding-left:96px;flex:1 1 100%;margin:-10px 0 0 -12px}.dsh-hi .dsh-vihi{left:4px;top:-34px;bottom:auto;height:196px}.dsh-bar .dsh-stats{margin-left:0;width:100%}}
 
 /* ---------- Einheitliche Überschriften im Stil der Bibliothek (mittig, großer Verlaufs-Titel), ohne Pfad ---------- */
-.nd .crumb,.nd .cv-crumb,.nd .rk-back,.nd #csCrumb{display:none}
+.nd .crumb,.nd .cv-crumb,.nd #csCrumb{display:none}
 .nd .page-head{text-align:center;padding:30px 0 22px}
 .nd .page-head:not(:has(h1, [data-h1])){display:none}   /* [data-h1] = Überschrift einer gerade ausgeblendeten Ansicht (h1Sync) */
 .nd .page-head.has-buddy{padding-right:0;min-height:0}
@@ -625,8 +625,8 @@ body.nd-mini .nds-ic{width:38px;height:38px}
 @media (prefers-reduced-motion:reduce){.nds-ic{transition:filter .2s}.nds-link:hover .nds-ic{transform:none}}
 
 /* ---------- Wabenmuster der Bibliothek in allen Boxen (eigene Ebene hinter dem Inhalt, zu den Rändern ausgeblendet) ---------- */
-.nd .card,.nd .dsh-card:not(.dsh-lib),.nd .rk-card,.nd .pt-card,.nd .co-card,.nd .tool-seo,.nd .pkg,.nd .guide,.nd .tc,.nd .cs-side,.nd .dsh-pcard,.nd .mt-pcard,.nd .pd-sec{position:relative;isolation:isolate}
-.nd .card::after,.nd .dsh-card:not(.dsh-lib)::after,.nd .rk-card::after,.nd .pt-card::after,.nd .co-card::after,.nd .tool-seo::after,.nd .pkg::after,.nd .guide::after,.nd .tc::after,.nd .cs-side::after,.nd .dsh-pcard::after,.nd .pd-sec::after{
+.nd .card,.nd .dsh-card:not(.dsh-lib),.nd .pt-card,.nd .co-card,.nd .tool-seo,.nd .pkg,.nd .guide,.nd .tc,.nd .cs-side,.nd .dsh-pcard,.nd .mt-pcard,.nd .pd-sec{position:relative;isolation:isolate}
+.nd .card::after,.nd .dsh-card:not(.dsh-lib)::after,.nd .pt-card::after,.nd .co-card::after,.nd .tool-seo::after,.nd .pkg::after,.nd .guide::after,.nd .tc::after,.nd .cs-side::after,.nd .dsh-pcard::after,.nd .pd-sec::after{
   content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;opacity:.16;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cpath d='M28 0l28 16v32L28 64 0 48V16zM28 64l28 16v32M28 64L0 80v32' fill='none' stroke='%2378a6ff' stroke-width='.6'/%3E%3C/svg%3E");
   -webkit-mask-image:radial-gradient(ellipse at 50% 30%,#000 20%,transparent 78%);mask-image:radial-gradient(ellipse at 50% 30%,#000 20%,transparent 78%)}
