@@ -7008,16 +7008,27 @@ function ndStats(){
   const el = $('#ndStats'); if(!el) return;
   const cut = stCut('euw'), cur = (window.TFT_PATCHES || [])[0] || {}, p = ST_PATCH ? String(ST_PATCH) + (String(cur.id) === String(ST_PATCH) ? patchVariant(cur) : '') : '';
   // grüner Punkt (pulsiert) = Live-Daten von /api/cutoffs, grau = gespeicherter Stand
-  const lp = (v, t) => v ? `<a class="nd-lp" href="/ranks/${t.k}" title="${esc(t.n)} · EUW · ${ST_CUT_LIVE ? 'Live' : L('Gespeicherter Stand', 'Saved data')}"><img src="${rankImg(t)}" alt="" width="56" height="56"><i class="tl-dot${ST_CUT_LIVE ? '' : ' off'}"></i><b data-noi18n>${Number(v).toLocaleString(LOC)} LP</b></a>` : '';
+  const lp = (v, t) => v ? `<a class="nd-lp" href="/ranks/${t.k}" title="${esc(t.n)} · EUW · ${ST_CUT_LIVE ? 'Live' : L('Gespeicherter Stand', 'Saved data')}"><img src="${rankImg(t)}" alt="" width="56" height="56"><i class="tl-dot${ST_CUT_LIVE ? '' : ' off'}"></i><b data-noi18n data-key="${t.k}" data-to="${v}">${Number(ndLpShown[t.k] ?? v).toLocaleString(LOC)} LP</b></a>` : '';
   el.innerHTML = (cut ? lp(cut.ch, rankBy.challenger) + lp(cut.gm, rankBy.grandmaster) : '')
     + (p ? `<a class="nd-patch" href="${COUNTDOWN_PATH}" title="${L('Nächster Patch', 'Next patch')}: ${esc(stNextLabel())}"><i class="tl-dot"></i><b>Patch ${esc(p)}</b><span>${L('Nächster in', 'Next in')} <em data-countdown>${stCountdown()}</em></span></a>` : '');
+  // neue Live-Werte: vom zuletzt gezeigten Wert zum neuen hochzählen
+  el.querySelectorAll('b[data-to]').forEach(b=>{ const k = b.dataset.key, to = +b.dataset.to, from = ndLpShown[k]; if(from != null && from !== to) numUp(b, from, to, ' LP'); ndLpShown[k] = to; });
+}
+// Zahl weich hochzählen (Format wie auf der Seite: 1.002 LP); bei „Bewegung reduzieren“ sofort der Endwert
+const ndLpShown = {};
+function numUp(el, from, to, suf = '', delay = 0, dur = 1300){
+  const set = v => { el.textContent = Math.round(v).toLocaleString(LOC) + suf; };
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){ set(to); return; }
+  cancelAnimationFrame(el._nu); set(from); const t0 = performance.now() + delay;
+  const step = now => { const p = Math.min(1, Math.max(0, (now - t0) / dur)); set(from + (to - from) * (1 - Math.pow(1 - p, 3))); if(p < 1) el._nu = requestAnimationFrame(step); };
+  el._nu = requestAnimationFrame(step);
 }
 document.addEventListener('keydown', e=>{ if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && !$('#page-builder').classList.contains('active')){ e.preventDefault(); openSearch(); } });   // Strg+K: Suche (im Team Builder hat Strg eigene Kürzel)
 function ndRoute(page, navKey){
   const key = page==='champion' ? 'bibliothek' : page==='apply' ? 'coaching' : navKey;
   document.querySelectorAll('#ndSide [data-nd]').forEach(a=>a.classList.toggle('on', a.dataset.nd===key));
   document.body.classList.remove('nd-drawer');
-  if(page==='home'){ renderDash(); seoMount('home'); requestAnimationFrame(()=>dshCount(true)); }
+  if(page==='home'){ renderDash(); seoMount('home'); dshIntro(); requestAnimationFrame(()=>dshCount(true)); }
   setTimeout(ndColon, 0);   // erst nach der Übersetzung (läuft vorher als Microtask)
 }
 // Tool-Überschriften „TFT Rolldown-Rechner: Odds …“: der Doppelpunkt am Ende des großen Titels wird nur ausgeblendet (für Google bleibt er)
@@ -7045,7 +7056,7 @@ function renderDash(){
   const total = P ? (P.notes || []).reduce((n, s)=>n + (s.ch || []).length, 0) : 0;
   const coach = (href, img, name, peak) => `<a class="dsh-coach-pf" href="${href}"><span class="dsh-av"><img src="${img}" alt="${esc(name)}"></span><span class="dsh-c3"><b>${esc(name)}<i>#EUW</i></b><span>Coach</span><small><em>Challenger</em><i class="dsh-sep"> · </i>Peak ${peak}</small></span></a>`;
   // Player Card: Bild mit Challenger-Emblem, Name, Rolle, darunter Rang / Peak / Aus
-  const pcard = (href, img, name, role, peak, from) => `<a class="dsh-pcard" href="${href}"><span class="dsh-pav"><img src="${img}" alt="${esc(name)}"><img class="dsh-pemb" src="${rankImg(rankBy.challenger)}" alt="Challenger"></span><b>${esc(name)}<i>#EUW</i></b><span class="dsh-prole">${esc(role)}</span><span class="dsh-pfacts"><span><small>${L('Rang', 'Rank')}</small><em>Challenger</em></span><span><small>Peak</small><em>${peak}</em></span><span><small>${L('Aus', 'From')}</small><em>${esc(from)}</em></span></span></a>`;
+  const pcard = (href, img, name, role, peak, from) => `<a class="dsh-pcard" href="${href}"><span class="dsh-pav"><img src="${img}" alt="${esc(name)}"><img class="dsh-pemb" src="${rankImg(rankBy.challenger)}" alt="Challenger"></span><b>${esc(name)}<i>#EUW</i></b><span class="dsh-prole">${esc(role)}</span><span class="dsh-pfacts"><span><small>${L('Rang', 'Rank')}</small><em>Challenger</em></span><span><small>Peak</small><em data-dnum="${peak}" data-dsuf=" LP">${peak.toLocaleString(LOC)} LP</em></span><span><small>${L('Aus', 'From')}</small><em>${esc(from)}</em></span></span></a>`;
   const live = `<i class="sb-dot${ST_CUT_LIVE ? ' live' : ''}" title="${ST_CUT_LIVE ? L('Live-Daten', 'Live data') : L('Gespeicherter Stand', 'Saved data')}"></i>`;
   // Tierlist im Kleinformat: dieselben Reihen (Emblem + Name) und Comp-Karten wie auf /tierlist, kleiner (alle fünf Reihen inkl. Niche;
   // je Reihe bis zu 7 Comps, Niche nach Bewertung), Klick → Comp in der Tierlist aufklappen
@@ -7061,7 +7072,7 @@ function renderDash(){
       </section>
       <section class="dsh-card dsh-coach">
         <p>${L('Fundamentals und VOD-Review mit uns – auf Deutsch oder Englisch.', 'Fundamentals and VOD reviews with us – in German or English.')}</p>
-        <div class="dsh-pcards">${pcard('/about/crazyslayt', 'assets/img/team-claudio.jpg', 'CrazYSlayt', 'Founder & Coach', '1.002 LP', 'Frankfurt')}${pcard('/about/humbadobo', 'assets/img/team-romano.jpg', 'humbadobo', 'Coach', '1.447 LP', L('Irland', 'Ireland'))}</div>
+        <div class="dsh-pcards">${pcard('/about/crazyslayt', 'assets/img/team-claudio.jpg', 'CrazYSlayt', 'Founder & Coach', 1002, 'Frankfurt')}${pcard('/about/humbadobo', 'assets/img/team-romano.jpg', 'humbadobo', 'Coach', 1447, L('Irland', 'Ireland'))}</div>
         ${(()=>{ const tl = testimonials.map(dshTst).filter(Boolean); return tl.length ? `<div class="dsh-tst" aria-live="polite" title="${L('Erfolge nach dem Coaching', 'Results after coaching')}"><span class="dsh-tlab">${ndSvg('coaching')}${L('Unsere Students', 'Our students')}</span>${tl.join('')}</div>` : ''; })()}
         <a class="dsh-btn" href="/coaching">${L('Coaching buchen', 'Book coaching')} →</a>
       </section>
@@ -7070,7 +7081,7 @@ function renderDash(){
       <a class="dsh-card dsh-lib" href="/bibliothek"><div class="dsh-h"><h2>${L('Bibliothek', 'Library')}</h2><span class="dsh-more">${L('Entdecken', 'Explore')} →</span></div>
         <div class="dsh-comb">${(()=>{ const pick = champions.slice().sort((a,b)=>b.c - a.c || a.n.localeCompare(b.n)).slice(0, 16), rows = [5, 6, 5]; let i = 0;
           return rows.map(m=>`<div>${pick.slice(i, i += m).map(c=>`<span class="dsh-cb c${c.c}" title="${esc(c.n)}"><i style="background-image:url('${champImg(c.n) || champFallback(c.n)}')"></i></span>`).join('')}</div>`).join(''); })()}</div>
-        <div class="dsh-libstats"><span><b>${champions.length}</b> Champions</span><span><b>${ITEMS.length}</b> Items</span><span><b>${traits.length}</b> Traits</span></div></a>
+        <div class="dsh-libstats"><span><b data-dnum="${champions.length}">${champions.length}</b> Champions</span><span><b data-dnum="${ITEMS.length}">${ITEMS.length}</b> Items</span><span><b data-dnum="${traits.length}">${traits.length}</b> Traits</span></div></a>
       <section class="dsh-card dsh-tools">
         <div class="dsh-h"><h2>Tools</h2><a href="/tools">${L('Alle', 'All')} →</a></div>
         <div class="dsh-tlist">${[
@@ -7101,6 +7112,24 @@ function dshTst(x){
 // nacheinander einblenden
 setInterval(()=>{ const box = document.querySelector('#page-dash.active .dsh-tst'); if(!box || document.hidden) return;
   const s = [...box.querySelectorAll('.dsh-ts')], i =s.findIndex(e=>e.classList.contains('on')); s.forEach(e=>e.classList.remove('on')); s[(i + 1) % s.length].classList.add('on'); }, 3600);
+/* Startseite beim ersten Aufruf aufbauen wie die Champion-Seite: Titel und Boxen gleiten nacheinander herein, die Tierlist-Karten folgen
+   Reihe für Reihe, Zahlen zählen hoch (LP-Grenzen oben, Peak der Coaches, Bibliothek). Nur einmal je Seitenaufruf –
+   beim Zurückkehren zur Startseite steht alles sofort da. Danach wird .intro entfernt, sonst würden die Animationen beim Wieder-Einblenden neu starten */
+let dshIntroDone = false;
+function dshIntro(){
+  const box = $('#dshApp'); if(!box || dshIntroDone) return; dshIntroDone = true;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // Reihenfolge: Titel, dann die Boxen von links oben nach rechts unten; je Tierlist-Reihe die Karten leicht versetzt
+  [box.querySelector('.dsh-title'), ...box.querySelectorAll('.dsh-card')].filter(Boolean).forEach((el, i)=>el.style.setProperty('--di', i));
+  box.querySelectorAll('.dsh-mtl .tl2-tier').forEach((row, r)=>row.querySelectorAll('.tl2-head, .tl2-card').forEach((el, i)=>el.style.setProperty('--di', r * .6 + i * .25)));
+  box.classList.add('intro');
+  const nums = [...box.querySelectorAll('[data-dnum]')], t0 = performance.now() + 450, dur = 900;
+  const step = now => { const p = Math.min(1, Math.max(0, (now - t0) / dur)), e = 1 - Math.pow(1 - p, 3);
+    nums.forEach(el=>{ el.textContent = Math.round(+el.dataset.dnum * e).toLocaleString(LOC) + (el.dataset.dsuf || ''); }); if(p < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+  document.querySelectorAll('#ndStats b[data-to]').forEach(b=>numUp(b, 0, +b.dataset.to, ' LP', 150, 1400));   // LP-Grenzen oben von 0 hochzählen
+  setTimeout(()=>{ box.classList.remove('intro'); box.querySelectorAll('[style*="--di"]').forEach(el=>el.style.removeProperty('--di')); }, 2600);
+}
 // LP-Grenzen im Dashboard hochzählen (wie die Leiste auf der alten Startseite)
 const dshShown = {};
 function dshCount(fromZero){
