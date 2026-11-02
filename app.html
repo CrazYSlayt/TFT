@@ -863,6 +863,16 @@
       <div class="guides" id="allGuides"></div>
     </div>
 
+    <!-- Guide: Anfänger (set-unabhängig; Inhalt aus gdBeginnerHTML in app.js, bis zum Start der Guides nur lokal sichtbar) -->
+    <div class="gd-view" data-guide="anfaenger" hidden>
+      <div class="page-head">
+        <div class="crumb"><a href="/guides">Guides</a> / Anfänger</div>
+        <h1 class="tool-h1"><span class="th-key">TFT Anfänger Guide:</span> So funktioniert Teamfight Tactics</h1>
+        <p>Neu in TFT? Hier lernst du alle Grundlagen für deine ersten Partien: wie Gold und Zinsen funktionieren, wann du levelst oder rollst, wie Traits und Items wirken und wo deine Champions hingehören – einfach erklärt, mit Tipps von einem Challenger-Spieler.</p>
+      </div>
+      <section class="tool-seo ag-art gd-art" id="gdBeginner" aria-labelledby="gda-start"></section>
+    </div>
+
     <!-- Guide: Encounters -->
     <div class="gd-view" data-guide="encounters" hidden>
       <div class="page-head">
@@ -1298,6 +1308,8 @@
   if (pick) {
     document.write('<script src="data/' + pick.file + '"><\/script>');
     document.write('<script src="data/custom-' + pick.set + '.js"><\/script>');  // optional: eigene Trait-Texte, Icons, Pflanzen
+document.write('<script src="data/champions3d-' + pick.set + '.js"><\/script>');  // optional: Posen der Champion-Seite (tools/modelle/posen.js)
+document.write('<script src="data/rollen-' + pick.set + '.js"><\/script>');  // optional: Rollen, Riots empfohlene Items, Symbole (tools/unreal/empfehlungen.ps1)
     document.write('<script src="tierlist-data-' + pick.set + '.js"><\/script>'); // optional: Tierlist (aus der Redaktion exportiert)
     if (window.TFT_LANG === 'en') document.write('<script src="data/' + pick.file.replace(/\.js$/, '-en.js') + '"><\/script>');  // englische Beschreibungen
   }

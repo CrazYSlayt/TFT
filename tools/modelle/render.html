@@ -17,8 +17,14 @@ const [man, data] = await Promise.all([fetch(d + '/manifest.json').then(r => r.j
 const texCache = {};
 const tex = async t => { if (!t) return null; if (texCache[t.file]) return texCache[t.file];
   const px = new Uint8Array(await (await fetch(d + '/' + t.file)).arrayBuffer());
+  // Alphakanal: meist Leucht-Maske (ignorieren). Sind die fast durchsichtigen Stellen aber reines Weiß, ist es echte Durchsichtigkeit (z. B. Alunes Rocksaum) → ausschneiden.
+  // ?alpha=dunkel: Leucht-Maske wie im Spiel nachbilden – nicht leuchtende Stellen dunkler (z. B. Amumus Gesicht in der Flamme)
+  let low = 0, white = 0; for (let i = 3; i < px.length; i += 16) if (px[i] < 64) { low++; if (px[i - 3] > 230 && px[i - 2] > 230 && px[i - 1] > 230) white++; }
+  const cut = q.get('alpha') === 'schnitt' || (low > px.length / 16 * .01 && white / low > .8);   // ?alpha=schnitt: Alphakanal immer als Durchsichtigkeit (z. B. Amumus Flamme, durch die die Maske schaut)
+  if (q.get('alpha') === 'dunkel') for (let i = 0; i < px.length; i += 4) { const k = .3 + .7 * px[i + 3] / 255; px[i] *= k; px[i + 1] *= k; px[i + 2] *= k; }
   const x = new THREE.DataTexture(px, t.w, t.h, THREE.RGBAFormat); x.colorSpace = THREE.SRGBColorSpace; x.flipY = false; x.generateMipmaps = true;
-  x.minFilter = THREE.LinearMipmapLinearFilter; x.magFilter = THREE.LinearFilter; x.anisotropy = 8; x.needsUpdate = true; return texCache[t.file] = x; };
+  x.wrapS = x.wrapT = THREE.RepeatWrapping;   // Texturkoordinaten außerhalb 0–1 wiederholen wie im Spiel (z. B. Gromp)
+  x.minFilter = THREE.LinearMipmapLinearFilter; x.magFilter = THREE.LinearFilter; x.anisotropy = 8; x.needsUpdate = true; x.userData.cut = cut ? (q.get('alpha') === 'schnitt' ? .5 : .95) : 0; return texCache[t.file] = x; };   // weißer Saum (Alune): fast alles ausblenden, was nicht ganz deckend ist
 const hide = new Set(man.hide.map(s => s.toLowerCase()));
 const group = new THREE.Group();
 for (const s of data.subs) {
@@ -27,14 +33,38 @@ for (const s of data.subs) {
   g.setAttribute('position', new THREE.Float32BufferAttribute(s.pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(s.uv, 2)); g.setIndex(s.idx);
   g.computeBoundingBox(); if (g.boundingBox.max.y < -5) continue;   // von der Animation unter den Boden geparkte Teile
   const map = await tex(man.tex[s.name] || man.defaultTex);
-  group.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({map, side: THREE.DoubleSide})));   // handgemalte Texturen ohne Licht, wie im Spiel; Alphakanal = Leucht-Maske, nicht Durchsichtigkeit
+  group.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({map, side: THREE.DoubleSide, alphaTest: map && map.userData.cut || 0})));   // handgemalte Texturen ohne Licht, wie im Spiel
 }
 group.rotation.y = yaw * Math.PI / 180; const scene = new THREE.Scene(); scene.add(group);
-const box = new THREE.Box3().setFromObject(group), ctr = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3());
+const box = new THREE.Box3().setFromObject(group);   // Bildausschnitt: Modell, dazu unten die Requisiten (damit das Leuchten nicht am Bildrand abreißt)
+// Requisiten (requisiten.js): Effekt-Teile am Knochen der Pose – Deckkraft aus der Helligkeit der Textur (wirkt wie Leuchten)
+const req = man.requisiten, at = req && data.bones && data.bones[req.knochen];
+if (at) {
+  const glowMat = (t, farbe, a) => { const m = new THREE.MeshBasicMaterial({map: t, color: new THREE.Color(...farbe), transparent: true, opacity: a, depthWrite: false, side: THREE.FrontSide}); return m; };   // normales Überblenden: Addieren würde auf transparentem Hintergrund zu Weiß aufschaukeln
+  const holder = new THREE.Group(); holder.position.set(...at); group.add(holder);
+  for (const p of req.teile) {
+    const t = p.tex ? await tex(p.tex) : null; if (t) { t.colorSpace = THREE.NoColorSpace; }
+    if (p.art === 'mesh') { const g = await fetch(d + '/' + p.datei).then(r => r.json()), geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(g.pos, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(g.uv, 2));
+      const m = new THREE.Mesh(geo, glowMat(t, p.farbe, p.deckkraft ?? 1)); m.scale.setScalar(p.groesse); m.renderOrder = 2; holder.add(m); }
+    else { const s = new THREE.Mesh(new THREE.PlaneGeometry(p.groesse, p.groesse), glowMat(t, p.farbe, p.deckkraft)); s.renderOrder = 3; s.userData.billboard = 1; holder.add(s); }
+  }
+  holder.userData.req = 1;
+  group.updateMatrixWorld(true); const c = holder.getWorldPosition(new THREE.Vector3()), rr = Math.max(...req.teile.map(p => p.art === 'glow' ? p.groesse * .4 : p.groesse));
+  box.expandByPoint(c.clone().addScalar(rr)); box.expandByPoint(c.clone().addScalar(-rr));
+}
+const ctr = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3());
 const r = Math.max(sz.x, sz.y, sz.z) * .58, cam = new THREE.OrthographicCamera(-r, r, r, -r, -5000, 5000), pr = pitch * Math.PI / 180;
 cam.position.set(ctr.x, ctr.y + Math.sin(pr) * 1000, ctr.z + Math.cos(pr) * 1000); cam.lookAt(ctr);
+group.updateMatrixWorld(true); scene.traverse(o => { if (o.userData.billboard) { o.quaternion.copy(o.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(cam.quaternion)); } });   // Leuchten zur Kamera drehen
 renderer.render(scene, cam);
-window.__info = 'Teile ' + group.children.length + ' · Größe ' + sz.toArray().map(Math.round).join('×');
+// Standpunkt: der Ursprung des Modells ist der Punkt am Boden, an dem der Champion im Spiel steht – auch wenn ein Fuß in der Luft ist.
+// Als Anteil von Bildbreite/-höhe (fx/fb für CH_RENDER), r = Bildmaßstab (halbe Bildbreite in Spieleinheiten) für die Größenangleichung der Posen
+const o = new THREE.Vector3(0, 0, 0).project(cam);
+// Unterkante: tiefster Punkt des Modells im Bild (für schwebende Posen, die über dem Podest stehen statt darauf)
+group.updateMatrixWorld(); let low = 1, high = -1; const v = new THREE.Vector3();
+for (const m of group.children) { if (m.userData.req) continue; const p = m.geometry.attributes.position; for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i).applyMatrix4(m.matrixWorld).project(cam); if (v.y < low) low = v.y; if (v.y > high) high = v.y; } }
+window.__info = 'Teile ' + group.children.length + ' · Größe ' + sz.toArray().map(Math.round).join('×') + ` · Standpunkt fx ${((o.x + 1) / 2).toFixed(3)} fb ${((1 - o.y) / 2).toFixed(3)} · r ${r.toFixed(1)} · Unterkante ${((1 - low) / 2).toFixed(3)} · Oberkante ${((1 - high) / 2).toFixed(3)}`;
 window.__png = renderer.domElement.toDataURL(q.get('fmt') === 'webp' ? 'image/webp' : 'image/png', .9);
 window.__done = true;
 </script>

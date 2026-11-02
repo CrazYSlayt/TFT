@@ -10,6 +10,8 @@ function parse(b) {
     if (t === 17 || t === 0x84) return u32();
     if (t === 10) { const v = b.readFloatLE(o); o += 4; return v; }
     if (t === 12) { const v = [b.readFloatLE(o), b.readFloatLE(o + 4), b.readFloatLE(o + 8)]; o += 12; return v; }
+    if (t === 11 || t === 13) { const n = t === 11 ? 2 : 4, v = []; for (let i = 0; i < n; i++) v.push(b.readFloatLE(o + i * 4)); o += n * 4; return v; }   // vec2 / vec4 (z. B. Farben der Effekte)
+    if (t === 15) { const v = [b[o], b[o + 1], b[o + 2], b[o + 3]]; o += 4; return v; }   // Farbe RGBA (Bytes)
     if (t === 18) { const s = o; o += 8; return {file: b.subarray(s, o).toString('hex')}; }   // Datei-Verweis als xxHash64 des Pfads (Bytes wie gespeichert)
     if (fixed[t]) { const s = o; o += fixed[t]; return t <= 3 || t === 0x87 ? b[s] : t === 5 ? b.readUInt16LE(s) : t === 7 ? b.readUInt32LE(s) : null; }
     if (t === 0x80 || t === 0x81) { const et = u8(); u32(); const n = u32(), a = []; for (let i = 0; i < n; i++) a.push(val(et)); return a; }

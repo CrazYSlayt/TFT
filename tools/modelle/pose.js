@@ -74,6 +74,28 @@ function readAnm(b) {
       return {t: lerp(a.t, c.t, k), r: slerp(a.r, c.r, k), s: lerp(a.s, c.s, k)}; };
     return {hashes, sample, info: `v5 · ${frames} Frames (${(frames * fd).toFixed(2)} s)`};
   }
+  // ältere Formate (manche Champions, z. B. Diana, Vi, Zyra): v4 – Vektoren/Quaternionen als Floats, Frames mit Gelenk-Hash je Spur; v3 – je Spur Name + Frames
+  if (magic === 'r3d2anmd' && b.readUInt32LE(8) === 4) {
+    const tracks = b.readInt32LE(28), frames = b.readInt32LE(32), fd = b.readFloatLE(36);
+    const vOff = b.readInt32LE(52) + 12, qOff = b.readInt32LE(56) + 12, fOff = b.readInt32LE(60) + 12;
+    const f3 = o => [b.readFloatLE(o), b.readFloatLE(o + 4), b.readFloatLE(o + 8)];
+    const rec = (f, j) => fOff + (f * tracks + j) * 12;
+    const hashes = []; for (let j = 0; j < tracks; j++) hashes.push(b.readUInt32LE(rec(0, j)));
+    const key = (f, j) => { const o = rec(f, j), q = qOff + b.readUInt16LE(o + 8) * 16;
+      return {t: f3(vOff + b.readUInt16LE(o + 4) * 12), s: f3(vOff + b.readUInt16LE(o + 6) * 12), r: [b.readFloatLE(q), b.readFloatLE(q + 4), b.readFloatLE(q + 8), b.readFloatLE(q + 12)]}; };
+    const sample = (j, frac) => { const ft = Math.min(frames - 1, Math.max(0, frac * (frames - 1))), f0 = Math.floor(ft), f1 = Math.min(frames - 1, f0 + 1), k = ft - f0, a = key(f0, j), c = key(f1, j);
+      return {t: lerp(a.t, c.t, k), r: slerp(a.r, c.r, k), s: lerp(a.s, c.s, k)}; };
+    return {hashes, sample, info: `v4 · ${frames} Frames (${(frames * fd).toFixed(2)} s)`};
+  }
+  if (magic === 'r3d2anmd' && b.readUInt32LE(8) === 3) {
+    const tracks = b.readInt32LE(16), frames = b.readInt32LE(20), fps = b.readInt32LE(24) || 30, tl = 32 + 4 + frames * 28;
+    const hashes = [], base = [];
+    for (let j = 0; j < tracks; j++) { const o = 28 + j * tl; hashes.push(elf(b.toString('latin1', o, b.indexOf(0, o) < o + 32 && b.indexOf(0, o) >= 0 ? b.indexOf(0, o) : o + 32))); base.push(o + 36); }
+    const key = (f, j) => { const o = base[j] + f * 28; return {r: [b.readFloatLE(o), b.readFloatLE(o + 4), b.readFloatLE(o + 8), b.readFloatLE(o + 12)], t: [b.readFloatLE(o + 16), b.readFloatLE(o + 20), b.readFloatLE(o + 24)], s: null}; };
+    const sample = (j, frac) => { const ft = Math.min(frames - 1, Math.max(0, frac * (frames - 1))), f0 = Math.floor(ft), f1 = Math.min(frames - 1, f0 + 1), k = ft - f0, a = key(f0, j), c = key(f1, j);
+      return {t: lerp(a.t, c.t, k), r: slerp(a.r, c.r, k), s: null}; };
+    return {hashes, sample, info: `v3 · ${frames} Frames (${(frames / fps).toFixed(2)} s)`};
+  }
   if (magic === 'r3d2canm') {
     const joints = b.readInt32LE(24), frames = b.readInt32LE(28), dur = b.readFloatLE(36);
     const f3 = o => [b.readFloatLE(o), b.readFloatLE(o + 4), b.readFloatLE(o + 8)];
@@ -112,6 +134,8 @@ function posieren(dir, anim, frac = 0) {
   const r3 = x => Math.round(x * 1000) / 1000;
   const subs = skn.subs.map(s => ({name: s.name, pos: posed.slice(s.v0, s.v0 + s.vn).flat().map(r3), uv: skn.verts.slice(s.v0, s.v0 + s.vn).flatMap(v => v.uv).map(x => Math.round(x * 1e5) / 1e5),
     idx: skn.idx.slice(s.i0, s.i0 + s.in).map(i => i - s.v0)}));
-  return {anim, t: frac, subs, info: `Gelenke ${skl.joints.length}, mit Animation ${matched}/${anm.hashes.length} · ${anm.info}`};
+  // Lage aller Knochen in dieser Pose (für Requisiten, die im Spiel an einem Knochen hängen, z. B. Ahris Kugel an Orb_Root)
+  const bones = Object.fromEntries(skl.joints.map(j => [j.name, tp(global.get(j.id), [0, 0, 0]).map(r3)]));
+  return {anim, t: frac, subs, bones, info: `Gelenke ${skl.joints.length}, mit Animation ${matched}/${anm.hashes.length} · ${anm.info}`};
 }
 module.exports = {posieren};

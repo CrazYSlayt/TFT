@@ -2081,6 +2081,47 @@ a.tc:hover .tc-ph{transform:rotate(0) scale(1.05)}
 .ag-art .ts-main h3::before{content:"";position:absolute;left:0;top:.12em;bottom:.12em;width:4px;border-radius:3px;background:linear-gradient(180deg,#2ee6d6,#a78bfa)}
 .ag-art .art-bh{font-size:1.2rem}
 .ag-art .art-col h4{font-size:1.05rem}
+/* Anfänger-Guide (gdBeginnerHTML): Kennzahlen in vier Spalten, Ablauf einer Stage, Zinsstufen mit Münzen, Kostenstufen, Sterne, zwei Spielweisen */
+.gd-art .art-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+.gd-art .ts-main h4{margin:20px 0 10px;font-size:1.05rem;color:#fff}
+.gd-stage{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:14px 0 16px}
+.gd-r{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:12px;border:1px solid var(--line-2);background:rgba(3,17,27,.45);text-align:center}
+.gd-r img{width:28px;height:28px}
+.gd-r b{font:900 .95rem/1 var(--ff-head);color:#fff}
+.gd-r span{font-size:.72rem;color:var(--muted)}
+.gd-r.sp{border-color:rgba(46,230,214,.45);background:linear-gradient(160deg,rgba(46,230,214,.14),rgba(3,17,27,.5))}
+.gd-r.sp span{color:#7ff7ec;font-weight:700}
+.gd-zins{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:6px 0 14px;align-items:end}
+.gd-zins>div{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px 9px;border-radius:12px;border:1px solid var(--line-2);background:rgba(3,17,27,.45)}
+.gd-zins>div.max{border-color:rgba(245,184,46,.5);background:linear-gradient(160deg,rgba(245,184,46,.16),rgba(3,17,27,.5))}
+.gd-c{display:flex;flex-direction:column-reverse;align-items:center;min-height:86px;justify-content:flex-start}
+.gd-c img{width:18px;height:18px;margin-top:-4px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+.gd-c span{color:var(--faint);margin-top:auto}
+.gd-zins b{font:900 1.15rem/1 var(--ff-head);color:#f5b82e}
+.gd-zins small{font-size:.72rem;color:var(--muted);white-space:nowrap}
+.gd-cost{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 14px}
+.gd-cost span{display:flex;align-items:center;gap:6px;padding:5px 10px 5px 6px;border-radius:99px;border:1.5px solid var(--c1);background:rgba(3,17,27,.5);font-size:.82rem}
+.gd-cost img{width:22px;height:22px}
+.gd-cost .c2{border-color:var(--c2)}.gd-cost .c3{border-color:var(--c3)}.gd-cost .c4{border-color:var(--c4)}.gd-cost .c5{border-color:var(--c5)}
+.gd-stars{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:6px 0 14px}
+.gd-stars span{padding:8px 14px;border-radius:12px;border:1px solid var(--line-2);background:rgba(3,17,27,.5);font:900 1.1rem/1 var(--ff-head);color:#f5d97a}
+.gd-stars span.max{border-color:rgba(245,184,46,.55);background:linear-gradient(160deg,rgba(245,184,46,.2),rgba(3,17,27,.5))}
+.gd-stars i{font:700 .8rem var(--ff-body);color:var(--muted);margin-left:4px}
+.gd-stars em{font-style:normal;font-weight:900;color:#2ee6d6}
+.gd-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:8px 0 14px}
+.gd-two>div{padding:14px 16px;border-radius:14px;border:1px solid var(--line-2);background:rgba(3,17,27,.45)}
+.gd-two img{width:26px;height:26px;flex:none}
+.gd-two b{display:flex;align-items:center;gap:8px;color:#fff;margin-bottom:6px}
+.gd-art .ts-main .art-list{margin-bottom:14px}
+.tool-seo .gd-two p{margin:0;font-size:.9rem}
+.gd-tier{display:inline-block;padding:1px 8px;border-radius:6px;font-size:.78rem;font-weight:800;color:#0b1018}
+.gd-tier.bronze{background:linear-gradient(160deg,#e0a27a,#a8673f)}.gd-tier.silver{background:linear-gradient(160deg,#f1f4f8,#a3acb9)}
+.gd-tier.gold{background:linear-gradient(160deg,#ffe592,#d19a35)}.gd-tier.prism{background:linear-gradient(135deg,#f9a8ff,#8ee6ff 50%,#ffe18a)}
+.gd-err li::marker{color:#ff5c8a;font-weight:900}
+/* Platzhalter für Profi-Tipps, die noch aus der Sprachaufnahme kommen */
+.gd-todo{border-style:dashed}
+.tool-seo .gd-todo-t{margin:0;font-size:.85rem;font-style:italic;color:var(--faint)}
+@media (max-width:760px){.gd-art .art-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.gd-stage{grid-template-columns:repeat(4,minmax(0,1fr))}.gd-zins{grid-template-columns:repeat(3,minmax(0,1fr))}.gd-two{grid-template-columns:minmax(0,1fr)}}
 /* Autor-Kasten am Ende jedes Tool-Artikels */
 .art-author{display:flex;align-items:center;gap:16px;margin:26px 0 6px;padding:16px 18px;border-radius:16px;border:1px solid var(--line-2);background:linear-gradient(135deg,rgba(255,59,107,.08),rgba(3,17,27,.5) 55%)}
 .aa-img{position:relative;flex:none;line-height:0}

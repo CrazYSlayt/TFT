@@ -1,7 +1,7 @@
 // Einen TFT-Champion fürs Rendern vorbereiten – alles aus den lokal installierten Spieldateien:
 // Skin-Datei lesen (Modell, Skelett, Textur je Teil, ausgeblendete Teile), Modell/Skelett/Animationen entpacken,
 // Texturen (.tex) entschlüsseln (RGBA), manifest.json schreiben. Dateinamen der Animationen aus der CommunityDragon-Namensliste.
-const fs = require('fs'), path = require('path'), {open, xxh64} = require('./wad.js'), {fnv, parse, strings, rawStrings} = require('./bin.js'), {decode} = require('./tex.js');
+const fs = require('fs'), path = require('path'), {open, xxh64} = require('./wad.js'), {fnv, parse, strings, rawStrings} = require('./bin.js'), {decode} = require('./tex.js'), {requisiten} = require('./requisiten.js');
 const GAME = (process.env.LOL_GAME || 'C:/Riot Games/League of Legends') + '/Game/DATA/FINAL/';
 const CACHE = path.join(__dirname, 'cache');
 const H = fnv;
@@ -26,12 +26,13 @@ async function vorbereiten(champ, set) {
   const w = open(GAME + `TFTSet${set}.wad.client`), extra = [];
   try {
     // Skin-Datei: nicht jeder Dateiname ist bekannt – deshalb im Archiv die Property-Datei suchen, die das Modell dieses Champions beschreibt
-    const needle = Buffer.from(id + '_skin'), skinOf = es => es.find(e => { const m = e.f && e.f[H('skinMeshProperties')]; return m && String(m[H('simpleSkin')] || '').toLowerCase().includes('/' + id + '/'); });
-    let entries = null;
+    // Suchtext: Ordner des Champions (nicht „…_skin“ – beim Elder Dragon heißt das Modell nur tft18_elderdragon.skn)
+    const needle = Buffer.from('/' + id + '/'), skinOf = es => es.find(e => { const m = e.f && e.f[H('skinMeshProperties')]; return m && String(m[H('simpleSkin')] || '').toLowerCase().includes('/' + id + '/'); });
+    let entries = null, skinBin = null;
     for (const [h, e] of w.entries) {
       if (e.size > 5e6) continue; let b; try { b = w.read(h); } catch (err) { continue; }
       if (b.toString('latin1', 0, 4) !== 'PROP' || Buffer.from(b.toString('latin1').toLowerCase(), 'latin1').indexOf(needle) < 0) continue;
-      const es = parse(b); if (skinOf(es)) { entries = es; break; }
+      const es = parse(b); if (skinOf(es)) { entries = es; skinBin = b; break; }
     }
     if (!entries) throw new Error(`Skin-Datei für ${id} nicht gefunden`);
     const mp = skinOf(entries).f[H('skinMeshProperties')];
@@ -58,9 +59,56 @@ async function vorbereiten(champ, set) {
       texFiles.set(h, r); return r; };
     const manifest = {champ, set, hide, defaultTex: texFile(texRef(mp)), tex: {}, anims: []};
     for (const o of mp[H('materialOverride')] || []) { const t = texFile(texRef(o)); if (t) manifest.tex[o[H('submesh')]] = t; }
+    // Plausibilität: Verweist die Skin-Datei auf eine falsche Textur (Rückruf-Umgebung, Maske, winzige Hilfstextur) oder auf keine,
+    // die Farbtextur des Champions (<…>_tx_cm.tex im eigenen Ordner) nehmen – für einen Teil die mit seinem Namen (z. B. „_body_tx_cm“)
+    const cm = names.filter(n => /_tx_cm\.(tex|dds)$/.test(n) && !/recall|enviro|_nm|mask|vfx|particle/i.test(n));
+    const pathOf = new Map(names.map(n => [xxh64(n.toLowerCase()), n])), refPath = r => typeof r === 'string' ? r.toLowerCase() : pathOf.get(hashOf(r)) || '';
+    const bad = (ref, t) => { const p = refPath(ref); return !t || t.w < 256 || /recall|enviro|_nm\b/i.test(p) || (/mask/i.test(p) && !/_tx_cm/i.test(p)); };   // „…mask…_tx_cm“ ist eine echte Farbtextur (z. B. Amumus Gesichtsmaske)
+    const best = part => cm.find(n => part && n.includes('_' + part.toLowerCase() + '_tx_cm')) || cm.find(n => /skin0_tx_cm|skin0_body_tx_cm/.test(n)) || cm.find(n => /_tx_cm/.test(n) && !/weapon/.test(n)) || cm[0];
+    if (bad(texRef(mp), manifest.defaultTex) && best()) manifest.defaultTex = texFile(best()) || manifest.defaultTex;
+    // Seit Set 18 (Unreal-Client) liegen manche Texturen im League-Client nur als 4×4-Platzhalter vor (z. B. Zyra, Mama Beak).
+    // Dann die Farbtextur der LoL-Vorlage nehmen: die Skin-Datei nennt sie in den Audio-Tags („ZyraSkin0“, „SRU_RazorbeakSkin0“) –
+    // Champion-Archiv bzw. Dschungel-Archiv (Map11), dort data/characters/<name>/skins/skin<n>.bin → texture
+    if (!manifest.defaultTex || manifest.defaultTex.w < 64) {
+      const tag = (skinBin.toString('latin1').match(/\b([A-Za-z_]+)Skin(\d+)\b/) || []);
+      if (tag[1]) {
+        const lname = tag[1].toLowerCase(), wads = [];
+        const cf = fs.readdirSync(GAME + 'Champions').find(f => f.toLowerCase() === lname + '.wad.client'); if (cf) wads.push(GAME + 'Champions/' + cf);
+        if (fs.existsSync(GAME + 'Maps/Shipping/Map11.wad.client')) wads.push(GAME + 'Maps/Shipping/Map11.wad.client');
+        for (const wf of wads) {
+          const lw = open(wf);
+          try {
+            const sb = lw.read(`data/characters/${lname}/skins/skin${+tag[2]}.bin`); if (!sb) continue;
+            const lmp = parse(sb).map(e => e.f && e.f[H('skinMeshProperties')]).find(Boolean), ref = lmp && lmp[H('texture')], h = hashOf(ref);
+            const tb = h !== null && lw.read(h); if (!tb) continue;
+            const t = decode(tb); if (t.w < 64) continue;
+            const r = {file: 'tex' + (n++) + '.rgba', w: t.w, h: t.h}; fs.writeFileSync(path.join(dir, r.file), t.rgba);
+            manifest.defaultTex = r; manifest.lolTex = `${tag[1]}Skin${tag[2]}`;
+            for (const k of Object.keys(manifest.tex)) if (manifest.tex[k].w < 64) delete manifest.tex[k];
+            break;
+          } catch (e) {} finally { lw.close(); }
+        }
+      }
+    }
+    for (const o of mp[H('materialOverride')] || []) { const part = o[H('submesh')], t = manifest.tex[part];
+      if (t && bad(texRef(o), t)) { const b = best(part); if (b) manifest.tex[part] = texFile(b) || t; } }
     // Modell, Skelett, Animationen
     fs.writeFileSync(path.join(dir, 'skin.skl'), w.read(skl.toLowerCase())); fs.writeFileSync(path.join(dir, 'skin.skn'), w.read(skn.toLowerCase()));
     for (const a of names.filter(x => x.endsWith('.anm') && x.includes('/animations/'))) { const b = w.read(a); if (b) { fs.writeFileSync(path.join(dir, path.basename(a)), b); manifest.anims.push(path.basename(a)); } }
+    // Dazu die Clips aus dem Animations-Graphen der Skin-Datei: dort stehen die Dateien nur als Hash, deshalb fehlen manche in der Namensliste
+    // (z. B. der Elder Dragon nutzt den Graphen „DA_18_ElderDragon“). Clip-Name (FNV-Hash, gegen bekannte Namen geprüft) → Datei hinter „mAnimationFilePath“
+    const gp = (skinBin.toString('latin1').match(/data\/characters\/[\x21-\x7e]+?\/animations\/[\x21-\x7e]+?\.bin/i) || [])[0], graph = gp && w.read(gp.toLowerCase());
+    if (graph) {
+      const clips = ['Idle1', 'Idle2', 'Idle_Base', 'Run', 'Run_Base', 'Attack1', 'Attack2', 'Attack3', 'Crit', 'Spell1', 'Spell2', 'Spell3', 'Spell4', 'Death', 'Celebration', 'Dance', 'Dance_In', 'Flying', 'Spawn', 'Taunt', 'Joke', 'Laugh', 'Channel', 'Recall'];
+      const byHash = new Map(clips.map(c => [H(c), c])), AFP = Buffer.alloc(5); AFP.writeUInt32LE(H('mAnimationFilePath')); AFP[4] = 18;
+      for (let p = graph.indexOf(AFP), last = 0; p >= 0; last = p + 13, p = graph.indexOf(AFP, p + 1)) {
+        let name = null; for (let i = p - 4; i >= last && !name; i--) name = byHash.get(graph.readUInt32LE(i)) || null;
+        const file = `${id}_${(name || 'clip' + p).toLowerCase()}.anm`; if (manifest.anims.includes(file)) continue;
+        const b = w.read(graph.readBigUInt64LE(p + 5)); if (!b) continue;
+        fs.writeFileSync(path.join(dir, file), b); manifest.anims.push(file);
+      }
+    }
+    const req = requisiten(champ, dir); if (req) manifest.requisiten = req;   // Effekt-Teile an Knochen (z. B. Ahris Kugel), siehe requisiten.js
     fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify(manifest, null, 1));
     return {dir, manifest};
   } finally { w.close(); extra.forEach(x => x.close()); }

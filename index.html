@@ -73,9 +73,9 @@
 <link rel="preconnect" href="https://ddragon.leagueoflegends.com">
 <!-- app.js und sim.js stehen am Ende von <body>: hier schon anmelden, damit sie am Handy vor den Bildern geladen werden -->
 <link rel="preload" href="assets/js/sim.js?v=416a7d3541" as="script">
-<link rel="preload" href="assets/js/app.js?v=e8b8953e72" as="script">
+<link rel="preload" href="assets/js/app.js?v=cb1eb64d54" as="script">
 <link rel="stylesheet" href="assets/css/fonts.css?v=56685235ed">
-<link rel="stylesheet" href="assets/css/site.css?v=7f72077765">
+<link rel="stylesheet" href="assets/css/site.css?v=5e71f53f10">
 <script>
 // Design: das neue TFTClimb-Design gilt für alle. Nur zum Vergleich lässt sich mit ?design=alt das alte Design ansehen
 // (der Browser merkt sich die Wahl), ?design=neu schaltet zurück.
@@ -88,7 +88,7 @@
     alt = localStorage.getItem('tftfreaks_design') === 'alt';
   } catch(e){}
   if(!alt){
-    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=bea3b83628">');
+    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=3bba3a667f">');
     // Topleiste und Seitenleiste stehen sofort (assets/js/shell.js), den Inhalt baut app.js: bis alle Skripte gelaufen sind, bleibt er verborgen und oben läuft ein Ladebalken
     document.addEventListener('DOMContentLoaded', function(){ document.documentElement.classList.add('nd-ready'); });
   }
@@ -879,6 +879,16 @@
       <div class="guides" id="allGuides"></div>
     </div>
 
+    <!-- Guide: Anfänger (set-unabhängig; Inhalt aus gdBeginnerHTML in app.js, bis zum Start der Guides nur lokal sichtbar) -->
+    <div class="gd-view" data-guide="anfaenger" hidden>
+      <div class="page-head">
+        <div class="crumb"><a href="/guides">Guides</a> / Anfänger</div>
+        <h1 class="tool-h1"><span class="th-key">TFT Anfänger Guide:</span> So funktioniert Teamfight Tactics</h1>
+        <p>Neu in TFT? Hier lernst du alle Grundlagen für deine ersten Partien: wie Gold und Zinsen funktionieren, wann du levelst oder rollst, wie Traits und Items wirken und wo deine Champions hingehören – einfach erklärt, mit Tipps von einem Challenger-Spieler.</p>
+      </div>
+      <section class="tool-seo ag-art gd-art" id="gdBeginner" aria-labelledby="gda-start"></section>
+    </div>
+
     <!-- Guide: Encounters -->
     <div class="gd-view" data-guide="encounters" hidden>
       <div class="page-head">
@@ -1314,12 +1324,14 @@
   if (pick) {
     document.write('<script src="data/' + pick.file + '"><\/script>');
     document.write('<script src="data/custom-' + pick.set + '.js"><\/script>');  // optional: eigene Trait-Texte, Icons, Pflanzen
+document.write('<script src="data/champions3d-' + pick.set + '.js"><\/script>');  // optional: Posen der Champion-Seite (tools/modelle/posen.js)
+document.write('<script src="data/rollen-' + pick.set + '.js"><\/script>');  // optional: Rollen, Riots empfohlene Items, Symbole (tools/unreal/empfehlungen.ps1)
     document.write('<script src="tierlist-data-' + pick.set + '.js"><\/script>'); // optional: Tierlist (aus der Redaktion exportiert)
     if (window.TFT_LANG === 'en') document.write('<script src="data/' + pick.file.replace(/\.js$/, '-en.js') + '"><\/script>');  // englische Beschreibungen
   }
 })();
 </script>
 <script src="assets/js/sim.js?v=416a7d3541"></script>
-<script src="assets/js/app.js?v=e8b8953e72"></script>
+<script src="assets/js/app.js?v=cb1eb64d54"></script>
 </body>
 </html>

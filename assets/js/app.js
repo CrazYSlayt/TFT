@@ -13,7 +13,7 @@ const curPath = () => { const p = rawPath(); return fromEn(EN ? (p.replace(/^\/e
 // Alte Adressen leiten weiter – online per 301 (vercel.json), in der Seite über seoPath(). Gleiche Listen in api/sitemap.js
 const TOOL_SLUG = {rolldown:'tft-rolldown-rechner', drops:'tft-item-drop-chance', tierlist:'tft-tierlist-maker', simulator:'tft-kampf-simulator', dps:'tft-dps-rechner', augments:'tft-augment-chancen'};
 const CS_SLUG = {shop:'tft-shop-odds', power:'tft-hierarchy-of-power', augments:'tft-augment-stufen', orbs:'tft-loot-orbs', loot:'tft-loot-verteilung', damage:'tft-spielerschaden', emblems:'tft-embleme', solo:'tft-stage-1-solo', 'patch-schedule':'tft-patch-plan', carousel:'tft-karussell'};   // sonst „tft-“ + Schlüssel
-const GUIDE_SLUG = {encounters:'tft-encounters'};
+const GUIDE_SLUG = {encounters:'tft-encounters', anfaenger:'tft-anfaenger-guide'};
 // Englische Seite: eigene englische Adressen mit englischem Keyword (/en/tools/tft-rolldown-calculator, /en/library …).
 // toEn() macht aus einem internen (deutschen) Pfad den englischen, fromEn() umgekehrt
 const TOOL_SLUG_EN = {rolldown:'tft-rolldown-calculator', drops:'tft-item-drop-odds', tierlist:'tft-tier-list-maker', simulator:'tft-battle-simulator', dps:'tft-dps-calculator', augments:'tft-augment-odds'};
@@ -2285,6 +2285,8 @@ if(matchMedia('(hover:hover)').matches){
   ['pointerdown', 'scroll', 'keydown'].forEach(ev=>addEventListener(ev, gtHide, true));
 }
 
+if(!matchMedia('(hover:hover)').matches) document.addEventListener('click', e=>{   // Touch: Trait der Champion-Seite antippen → Tooltip, daneben → zu
+  const tf = e.target.closest && e.target.closest('#chPage .chp2-tf'); if(tf && !e.target.closest('a')){ gtShow(tf); return; } if(gtEl && gtEl.classList.contains('on')) gtHide(); });
 /* ================= CHAMPION-SEITEN (/champions/<name>) ================= */
 // Eine eigene Seite pro Champion, damit Google sie findet („TFT Ahri Build“). In der Bibliothek verlinkt, sonst bleibt das Popup mit Link hierher.
 const champSlug = n => String(n).toLowerCase().replace(/['’.]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -2306,8 +2308,253 @@ function champBuilds(n){
 }
 const champCompsOf = n => comps.filter(x=>!x.hidden && (x.board||[]).some(b=>b.u===n))
   .sort((a,b)=>(b.main - a.main) || TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier) || (b.carry===n) - (a.carry===n));
+/* --- Champion-Seite V2 (für alle Champions mit Posen in data/champions3d-<Set>.js): Inhalte in Boxen auf der Arena (assets/img/arena-bg.webp).
+   Links Porträt, H1 („Ashe TFT Set 18 Build“ – Name + TFT + Set, damit Google uns nicht mit League of Legends verwechselt), Kosten, Traits, Rolle;
+   darunter Fähigkeit (Kurzfassung aus TFT_CUSTOM.abilityShort, sonst die ersten Zeilen) und Werte (Leben/Schaden als 1★ / 2★ / 3★).
+   Mitte das Ingame-Modell auf dem Podest in der Kostenfarbe (assets/img/podest-<Kosten>.webp, Vorlagen von CrazYSlayt), Pose-Schalter darüber.
+   Rechts Build, Traits (einklappbar) und Comps; darunter die Champion-Leiste. Unter der Bühne Partner, Augments, Item-Alternativen und Änderungen.
+   CH_RENDER (aus tools/modelle/posen.js): je Pose k (idle/attack/spell), f = Dateiendung (<slug><f>.webp), Standpunkt fx/fb im Bild – er steht genau
+   auf der Mitte der Scheibe, auch wenn ein Fuß in der Luft ist –, s = Maßstab, damit alle Champions gleich groß wirken. --- */
+const CHP_V2 = true;   // neue Champion-Seite für alle Champions mit Posen (data/champions3d-<Set>.js); ohne Posen bleibt die alte Seite
+const CH_RENDER = window.CH_RENDER_DATA || {};
+const CHP_COST_SCALE = [0, .8, .86, .92, .98, 1.05];
+const CHP_POSE = {idle:['Idle', 'Idle'], attack:['Angriff', 'Attack'], spell:['Fähigkeit', 'Ability'], spider:['Spinne', 'Spider']};
+// Größe begrenzen: die Figur darf über dem Podest höchstens CHP_MAX_H px hoch sein (Bühne 780, Podestfläche bei ~172 von unten, darüber der Posen-Schalter) –
+// bei Figurbreite 760 px; o = Oberkante im Bild (tools/modelle/posen.js). So ragt kein großer Champion (5-Koster) oben in den Schalter
+const CHP_MAX_H = 515, CHP_FIG_W = 760;   // 515: oben bleibt Luft bis zum Posen-Schalter
+const chp2Scale = (c, p) => { const s = (CHP_COST_SCALE[c.c] || 1) * (p.s || 1); return p.o != null && p.fb > p.o ? Math.min(s, CHP_MAX_H / (CHP_FIG_W * (p.fb - p.o))) : s; };
+// Buff/Nerf aus den Patch Notes des Sets: jüngster der letzten beiden Patches, in dem der Champion vorkommt. Je Zeile alte und neue Zahlen vergleichen –
+// meist ist mehr besser; bei Mana zählt Start-Mana hoch und Max-Mana runter als Buff, Abklingzeiten runter als Buff
+function champPatchTrend(name){
+  const keys = [name, (CH_DATA[name] || {}).de].filter(Boolean).map(x=>x.toLowerCase()), num = s => (String(s || '').match(/-?\d+(?:[.,]\d+)?/g) || []).map(x=>+x.replace(',', '.'));
+  const recent = PATCHES.filter(p=>p.set === TFT_DATA.set).slice(0, 2);
+  for(const p of recent){
+    const rows = (p.notes || []).flatMap(s=>s.ch || []).filter(r=>keys.includes(String(r[0]).toLowerCase())); if(!rows.length) continue;
+    let score = 0;
+    rows.forEach(r=>{ const a = num(r[2]), b = num(r[3]), lbl = String(r[1] || ''); if(!a.length || !b.length) return;
+      let d;
+      if(/mana/i.test(lbl) && a.length === 2 && b.length === 2) d = (b[0] - a[0]) - (b[1] - a[1]);
+      else { d = b.reduce((x, y)=>x + y, 0) - a.reduce((x, y)=>x + y, 0); if(/mana|abklingzeit|cooldown|kosten|cost/i.test(lbl)) d = -d; }
+      score += Math.sign(d); });
+    return {id:p.id, dir: score > 0 ? 'buff' : score < 0 ? 'nerf' : 'mix'};
+  }
+  return null;
+}
+function chp2HTML(c, x){
+  const n = c.n, d = CH_DATA[n] || {}, st = d.st, ab = d.ab, r = CH_RENDER[n], role = gtRole(n), S = TFT_DATA.set;
+  const stat = (ic, l, v) => `<div class="chp2-st">${ic}<small>${l}</small><b>${v}</b></div>`, si = k => `<img src="assets/icons/tft/stat-${k}.png" alt="" width="20" height="20">`;
+  const stars = (v, m) => [v, v * m, v * m * m].map(y=>fmtNum(Math.round(y))).join(' / ');
+  const stats = st ? [stat(si('hp'), L('Leben', 'Health'), stars(st.hp, 1.8)), stat(si('ad'), L('Angriffsschaden', 'Attack damage'), stars(st.ad, 1.5)), stat(si('as'), L('Angriffstempo', 'Attack speed'), fmtNum(st.as)),
+    stat(si('mana'), 'Mana', `${st.mana0} / ${st.mana}`), stat(si('armor'), L('Rüstung', 'Armor'), st.ar), stat(si('mr'), L('Magieresistenz', 'Magic resist'), st.mr),
+    stat(si('crit'), L('Krit-Chance', 'Crit chance'), Math.round((st.crit || 0) * 100) + ' %'),
+    stat(`<span class="chp2-rng">${GT_RANGE}</span>`, L('Reichweite', 'Range'), `${st.range} ${st.range === 1 ? L('Feld', 'hex') : L('Felder', 'hexes')}`)].join('') : '';
+  const iname = it => esc(L(it.de || it.en, it.en));
+  // Build immer: zuerst der häufigste Build aus unserer Tierlist, sonst Riots Empfehlung für die Rolle des Champions (wie im Spiel, data/rollen-<Set>.js)
+  const TR = window.TFT_ROLES || {roles:{}, champions:{}}, rk = TR.champions[n], rr = TR.roles[rk] || {};
+  const riot = (rr.items || []).map(id=>itemById[id]).filter(Boolean);
+  const tl = (x.best.length ? x.best : x.top.slice(0, 3).map(t=>t.it)).slice(0, 3), build = tl.length ? tl : riot.slice(0, 3);
+  // Alternativen: weitere Items aus unseren Builds, sonst Riots restliche Empfehlungen
+  const alts = tl.length ? x.top.filter(t=>!build.some(b=>b.id === t.it.id)) : [];   // weitere Items aus unseren Builds; Riots Liste steht eigene darunter
+  // Traits frei ohne Box, wie im Spiel am Brettrand: großes Hexagon, Name, Stufen und die anderen Champions des Traits.
+  // Details (Beschreibung, Werte je Stufe) im Tooltip (data-ttt) – seitlich neben der Zeile; über einem Champion-Icon dessen Tooltip
+  const traitsHTML = c.t.map(tn=>{ const t = traitBy[tn]; if(!t) return ''; const mates = champions.filter(m=>m.n !== n && m.t.includes(tn)).sort((a, b)=>a.c - b.c || a.n.localeCompare(b.n));
+    return `<div class="chp2-tf" data-ttt="${esc(tn)}" tabindex="0">${traitHex(tn, t.bp.length === 1 ? 'unique' : 'base', 54)}<span class="chp2-tfn">
+      <span class="chp2-tft"><b>${esc(tn)}</b><small>${t.cat === 'class' ? L('Klasse', 'Class') : L('Ursprung', 'Origin')}</small></span><span class="bp">${bpHTML(t)}</span>
+      ${mates.length ? `<span class="chp2-trm">${mates.map(m=>`<a href="${champHref(m.n)}" class="c${m.c}" data-champ="${esc(m.n)}" aria-label="${esc(m.n)}" style="background-image:url('assets/img/champions-square/${champSlug(m.n)}.webp'),${champBg(m.n)}"></a>`).join('')}</span>` : ''}</span></div>`; }).join('');
+  // Frontline/Backline wie in der Rollen-Anzeige im Spiel: Nahkämpfer vorne, Fernkämpfer und Assassinen hinten
+  const line = st ? (st.range <= 2 && (TFT_CUSTOM_SET.combatRoles || {})[n] !== 'assassin' ? 'Frontline' : 'Backline') : '';
+  // Rolle wie im Spiel („Magic Tank“, „Attack Caster“) mit Riots Symbol; Varianten wie _Manaless zählen als Grundrolle
+  const rname = rk ? rk.replace(/_.*$/, '').replace(/([a-z])([A-Z])/g, '$1 $2') : role;
+  // Comp: Name über die ganze Breite, darunter Spielweise und die teuersten Units
+  const comp = k => `<button class="chp2-comp" data-comp="${k.slug}" style="--tc:${TIER_COL[k.tier]}"><b class="chp2-tier">${k.tier}</b><span><b>${esc(k.name)}</b>
+    <span class="chp2-cl"><small>${esc(L(STYLE_DE[k.style] || k.style || '', k.style || ''))}${k.carry === n ? ' · Carry' : ''}</small><span class="chp2-units">${k.board.filter(b=>!PLANTS[b.u]).sort((a, b)=>costOf(b.u) - costOf(a.u)).slice(0, 5).map(b=>`<i class="c${costOf(b.u)}" style="background-image:${champBg(b.u)}"></i>`).join('')}</span></span></span></button>`;
+  // Gute Partner: wer in unseren Comps mit diesem Champion am häufigsten auf dem Board steht; Beste Augments: die häufigsten Augments dieser Comps
+  const cnt = (list, key) => { const m = {}; list.forEach(v=>{ m[key(v)] = (m[key(v)] || 0) + 1; }); return Object.entries(m).sort((a, b)=>b[1] - a[1]); };
+  const partners = cnt(x.cs.flatMap(k=>[...new Set(k.board.map(b=>b.u))].filter(u=>u !== n && !PLANTS[u] && champBy[u])), u=>u).slice(0, 8);
+  const augs = cnt(x.cs.flatMap(k=>k.augs || []).filter(id=>augById[id]), id=>id).slice(0, 6);
+  const trend = champPatchTrend(n), TREND = {buff:['Buff', 'Buff'], nerf:['Nerf', 'Nerf'], mix:['Angepasst', 'Adjusted']};
+  const short = ((TFT_CUSTOM_SET.abilityShort || {})[n] || {})[EN ? 'en' : 'de'];
+  const box = (cls, title, body) => `<section class="chp2-box chp2-b-${cls}">${title ? `<h2>${title}</h2>` : ''}${body}</section>`;
+  const fo = TL2_FOCUS[n], sq = `assets/img/champions-square/${champSlug(n)}.webp`;
+  return `
+    <div class="crumb"><a href="/">Home</a> / <a href="/bibliothek">${L('Bibliothek', 'Library')}</a> / ${esc(n)}</div>
+    <section class="chp2-hero c${c.c}">
+      <div class="chp2-left">
+        <section class="chp2-box chp2-id"><span class="chp2-pic c${c.c}" style="background-image:url('${champImg(n) || champFallback(n)}')${fo ? `;background-position:${fo[0]}% ${fo[1]}%` : ''}"></span>
+          <div><h1 class="chp2-h1"><span class="chp2-hn${n.length > 9 ? ' long' : ''}">${esc(n)}</span> <span class="chp2-sub">TFT Set ${S} Build</span></h1>
+            <div class="chp2-meta"><span class="chp2-cost"><span class="coin"></span>${c.c} Gold</span>${trend ? `<a class="chp2-trend ${trend.dir}" href="/patches/${patchSlug(trend.id)}" title="${L('Zu den Patch Notes', 'Open the patch notes')}">${L(...TREND[trend.dir])} · ${esc(trend.id)}</a>` : ''}</div>
+            <div class="chp2-tags">${c.t.map(t=>`<span class="chp2-tag" data-ttt="${esc(t)}">${traitHex(t, 'base', 18)}${esc(t)}</span>`).join('')}</div>
+            ${line || rname ? `<small class="chp2-role">${rr.icon ? `<img src="${rr.icon}" alt="" width="16" height="16">` : ''}${[rname, line].filter(Boolean).map(esc).join(' · ')}</small>` : ''}</div></section>
+        ${ab || stats ? `<section class="chp2-box chp2-b-ab">
+          ${ab ? `<div class="chp2-abh">${d.api ? `<img src="assets/img/abilities/${d.api}.png" alt="" width="44" height="44" onerror="this.remove()">` : ''}<span><small>${L('Fähigkeit', 'Ability')}</small><b>${esc(ab.n)}</b></span>${st ? `<span class="chp2-mana">${GT_MANA}${st.mana0} / ${st.mana}</span>` : ''}</div>
+          ${short ? `<p class="chp2-abs">${esc(short)}</p>` : `<p class="chp2-abs clamp">${x.abHTML}</p>`}
+          <div class="chp2-abt"><p>${x.abHTML}</p>${/ab-q/.test(x.abHTML) ? `<small class="ch-note">${L('? = Wert, den Riot für dieses Set nicht in den offiziellen Daten mitliefert.', '? = value Riot does not include in the official data for this set.')}</small>` : ''}</div>
+          <button type="button" class="chp2-abx" aria-expanded="false"><span>${L('Ganze Fähigkeit', 'Full ability')}</span><i class="chp2-chev" aria-hidden="true"></i></button>` : ''}
+          ${stats ? `<h2>${L('Werte', 'Stats')} <small>1★ / 2★ / 3★</small></h2><div class="chp2-stats">${stats}</div>` : ''}</section>` : ''}
+      </div>
+      <div class="chp2-stage intro">
+        ${r.length > 1 ? `<div class="chp2-pose" role="group" aria-label="${L('Pose', 'Pose')}">${r.map((p, i)=>`<button type="button" data-pose="${i}" aria-pressed="${!i}">${L(...(CHP_POSE[p.k] || [p.k, p.k]))}</button>`).join('')}</div>` : ''}
+        <div class="chp2-unit">
+          <img class="chp2-pod" src="assets/img/podest-${c.c}.webp" alt="" width="1000" height="260">
+          <span class="chp2-shadow" aria-hidden="true"></span>
+          ${r.map((p, i)=>`<div class="chp2-fig${i ? '' : ' on'}" style="--fx:${p.fx};--fb:${p.fb};--s:${chp2Scale(c, p).toFixed(3)}"><img src="assets/img/champions3d/${champSlug(n)}${p.f || ''}.webp" alt="${i ? '' : `${esc(n)} – ${L(`TFT Set ${S} Modell`, `TFT Set ${S} model`)}`}" width="900" height="900"${i ? ' loading="lazy"' : ''}></div>`).join('')}
+        </div>
+      </div>
+      <div class="chp2-right">
+        ${build.length ? box('build', `${L('Empfohlener Build', 'Recommended build')} <small>${tl.length ? L('Tierlist', 'Tier list') : L('Riot-Empfehlung', 'Riot recommendation')}</small>`, `<div class="chp2-build">${build.map(it=>`<button data-item="${it.id}"><img src="${it.img}" alt="" loading="lazy"><span>${iname(it)}</span></button>`).join('')}</div>`) : ''}
+        <section class="chp2-traits" aria-label="Traits">${traitsHTML}</section>
+        ${box('comps', 'Comps', x.cs.length ? x.cs.slice(0, 2).map(comp).join('') : `<p class="note">${L(`${esc(n)} ist gerade in keiner Comp unserer Tierlist.`, `${esc(n)} is not in any comp of our tier list right now.`)}</p>`)}
+      </div>
+      <div class="chp2-strip-w">${(()=>{ const list = champions.slice().sort((a, b)=>a.c - b.c || a.n.localeCompare(b.n));
+        // dreimal hintereinander für endloses Scrollen (chp2Strip springt unbemerkt in die mittlere Runde zurück); nur die mittlere ist für Screenreader/Tab sichtbar.
+        // Vor jeder Kosten-Gruppe ein Trenner mit Münze und Zahl, damit man in der endlosen Leiste weiß, wo man ist. Bild: kleines Icon aus den Spieldateien (tools/modelle/icons.js), sonst Splash
+        return `<nav class="chp2-strip" aria-label="${L('Alle Champions', 'All champions')}"><div class="chp2-strip-in">${[0, 1, 2].map(k=>list.map((m, i)=>{
+          return `${!i || list[i - 1].c !== m.c ? `<span class="chp2-sep c${m.c}" aria-hidden="true"><span class="coin"></span>${m.c}</span>` : ''}<a href="${champHref(m.n)}" class="c${m.c}${m.n === n ? ' on' : ''}" draggable="false" data-n="${esc(m.n)}" data-c="${m.c}" data-t="${esc(m.t.join(' · '))}" aria-label="${esc(m.n)}"${k === 1 ? (m.n === n ? ' aria-current="page"' : '') : ' aria-hidden="true" tabindex="-1"'} style="background-image:url('assets/img/champions-square/${champSlug(m.n)}.webp'),${champBg(m.n)}"></a>`; }).join('')).join('')}</div></nav>`; })()}
+        <button type="button" class="chp2-arr l" aria-label="${L('Champions nach links scrollen', 'Scroll champions left')}"></button><button type="button" class="chp2-arr r" aria-label="${L('Champions nach rechts scrollen', 'Scroll champions right')}"></button>
+        <div class="chp2-stt" aria-hidden="true"></div></div>
+    </section>
+    <section class="chp2-more">
+      ${(()=>{ const m = pageMeta('champion', champSlug(n)); return m && m[1] ? `<p class="chp2-lead" data-meta>${esc(tr(m[1]))}</p>` : ''; })()}
+      <div class="chp2-more-g">
+        ${partners.length ? box('partners', L('Gute Partner', 'Best partners'), `<div class="chp2-pt">${partners.map(([u, k])=>{ const m = champBy[u];
+          return `<a href="${champHref(u)}" class="c${m.c}" data-champ="${esc(u)}"><i style="background-image:url('assets/img/champions-square/${champSlug(u)}.webp'),${champBg(u)}"></i><span>${esc(u)}</span><small>${L(`in ${k} ${k === 1 ? 'Comp' : 'Comps'}`, `in ${k} ${k === 1 ? 'comp' : 'comps'}`)}</small></a>`; }).join('')}</div>`) : ''}
+        ${augs.length ? box('augs', L('Beste Augments', 'Best augments'), `<div class="chp2-ag">${augs.map(([id, k])=>{ const a = augById[id];
+          return `<button class="chp2-agi" data-aug="${a.id}"><img src="${augImg(a)}" alt="" loading="lazy"><span><b>${esc(L(a.de || a.en, a.en))}</b><small>${L(`in ${k} ${k === 1 ? 'Comp' : 'Comps'}`, `in ${k} ${k === 1 ? 'comp' : 'comps'}`)}</small></span></button>`; }).join('')}</div>`) : ''}
+        ${riot.length ? box('riot', `${L('Riot-Empfehlung', 'Riot recommendation')} <small>${rr.icon ? `<img src="${rr.icon}" alt="" width="14" height="14">` : ''}${esc(rname || '')}</small>`,
+          `<p class="chp2-note">${L('Die Items, die Riot im Spiel für diese Rolle vorschlägt – in Riots Reihenfolge.', 'The items Riot suggests in game for this role – in Riot’s order.')}</p>
+          <div class="chp2-items">${riot.map((it, i)=>`<button data-item="${it.id}"><img src="${it.img}" alt="" loading="lazy"><span><b>${iname(it)}</b><small>${i + 1}. ${L('Vorschlag', 'suggestion')}</small></span></button>`).join('')}</div>`) : ''}
+        ${alts.length ? box('items', L('Item-Alternativen', 'Item alternatives'), `<div class="chp2-items">${alts.map(({it, k})=>`<button data-item="${it.id}"><img src="${it.img}" alt="" loading="lazy"><span><b>${iname(it)}</b><small>${L(k === 1 ? 'in 1 Build' : `in ${k} Builds`, k === 1 ? 'in 1 build' : `in ${k} builds`)}</small></span></button>`).join('')}</div>`) : ''}
+        ${x.patch ? box('patch', L('Letzte Änderungen', 'Recent changes'), `<div class="cp-list">${x.patch}</div>`) : ''}
+      </div>
+    </section>
+    <nav class="chp-nav" aria-label="${L('Champions blättern', 'Browse champions')}"><a href="${champHref(x.prev.n)}">← ${esc(x.prev.n)}</a><a href="${champHref(x.next.n)}">${esc(x.next.n)} →</a></nav>`;
+}
+/* Champion-Leiste unter dem Podest: alle Champions nach Kosten (mit Trennern), endlos, der aktuelle steht in der Mitte (Dock-Strich darunter).
+   Bedienung: Mausrad, Pfeil-Knöpfe, Ziehen mit der Maus, Pfeiltasten. Beim ersten Besuch je Sitzung ein kleiner Schubs als Hinweis.
+   Klick auf einen Champion: die neue Seite übernimmt die Leiste an derselben Stelle und gleitet ihn sanft in die Mitte (chpStripFrom).
+   Hover wie ein Dock: das Feld unter der Maus wird groß und hebt sich, die Nachbarn wachsen abgestuft mit (Kosinus-Welle über CHS_RANGE px)
+   und rücken so zur Seite, dass der Punkt unter der Maus stehen bleibt – nur per transform, die Leiste selbst springt nicht.
+   „Bewegung reduzieren“ im System: keine Welle, kein Gleiten, kein Schubs */
+const CHS_MAX = .5, CHS_RANGE = 210, CHS_CALM = matchMedia('(prefers-reduced-motion: reduce)');
+let chpStripFrom = null;
+function chp2Strip(nav){
+  if(!nav) return;
+  const row = nav.firstElementChild, kids = [...row.children], per = kids.length / 3, items = kids.filter(k=>k.tagName === 'A');
+  const cur = row.querySelectorAll('a.on')[1], calm = CHS_CALM.matches, box = nav.parentElement, tip = box.querySelector('.chp2-stt');
+  const zf = () => parseFloat(getComputedStyle(nav.closest('.chp2-hero') || nav).zoom) || 1;   // Seite eingepasst (chp2Fit): Bildschirm-Pixel ÷ Zoom = Pixel der Leiste
+  // Lage aller Felder einmal messen (transform ändert sie nicht), neu bei Größenänderung
+  let base = [], lapW = 0;
+  const measure = () => { base = kids.map(k=>({l:k.offsetLeft, w:k.offsetWidth})); lapW = kids[per].offsetLeft - kids[0].offsetLeft; };
+  // endlos: die Liste steht dreimal da; verlässt man die mittlere Runde, springt die Leiste um genau eine Runde zurück – sieht gleich aus
+  const wrap = () => { if(!lapW) return; if(nav.scrollLeft < lapW * .5) nav.scrollLeft += lapW; else if(nav.scrollLeft > lapW * 1.5) nav.scrollLeft -= lapW; };
+  // weich um eine Strecke scrollen – schrittweise relativ, damit der Endlos-Sprung zwischendurch nicht stört
+  let anim = 0;
+  const glide = (dist, ms = 420) => { cancelAnimationFrame(anim); if(calm || Math.abs(dist) < 1){ nav.scrollLeft += dist; return; }
+    const t0 = performance.now(); let done = 0;
+    const step = now => { const p = Math.min(1, (now - t0) / ms), d = dist * (1 - Math.pow(1 - p, 3)) - done; done += d; nav.scrollLeft += d; if(p < 1) anim = requestAnimationFrame(step); };
+    anim = requestAnimationFrame(step); };
+  const toCenter = a => { let d = row.offsetLeft + a.offsetLeft + a.offsetWidth / 2 - nav.clientWidth / 2 - nav.scrollLeft; if(lapW) d -= Math.round(d / lapW) * lapW; return d; };
+  requestAnimationFrame(()=>{ measure(); if(!cur) return;
+    const from = chpStripFrom; chpStripFrom = null;
+    if(from && from.n === cur.dataset.n && !calm){   // dort weitermachen, wo geklickt wurde, dann sanft zur Mitte
+      nav.scrollLeft = row.offsetLeft + cur.offsetLeft + cur.offsetWidth / 2 - (from.x - nav.getBoundingClientRect().left) / zf(); wrap(); glide(toCenter(cur), 700);
+    } else { nav.scrollLeft = row.offsetLeft + cur.offsetLeft + cur.offsetWidth / 2 - nav.clientWidth / 2; wrap();
+      let seen = true; try { seen = !!sessionStorage.getItem('tftfreaks_strip_hint'); sessionStorage.setItem('tftfreaks_strip_hint', '1'); } catch(e){}
+      if(!seen && !calm) setTimeout(()=>{ glide(70, 420); setTimeout(()=>glide(-70, 620), 480); }, 900);
+    } });
+  new ResizeObserver(()=>{ measure(); }).observe(nav);
+  nav.addEventListener('scroll', wrap);
+  nav.addEventListener('wheel', e=>{ const d = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX; if(!d) return;
+    e.preventDefault(); cancelAnimationFrame(anim); nav.scrollLeft += d; }, {passive:false});
+  box.querySelectorAll('.chp2-arr').forEach(b=>b.addEventListener('click', ()=>glide((b.classList.contains('l') ? -1 : 1) * Math.round(nav.clientWidth * .6), 520)));
+  // Ziehen mit der Maus; wer zieht, klickt nicht. Beim Klick Champion und Bildschirmstelle merken (für den Übergang)
+  let drag = null, moved = false;
+  nav.addEventListener('pointerdown', e=>{ if(e.pointerType !== 'mouse' || e.button) return; e.preventDefault(); cancelAnimationFrame(anim); drag = e.clientX; moved = false;
+    const mv = ev=>{ const d = ev.clientX - drag; if(!moved && Math.abs(d) < 5) return; moved = true; nav.classList.add('drag'); nav.scrollLeft -= d / zf(); drag = ev.clientX; };
+    const up = ()=>{ removeEventListener('pointermove', mv); removeEventListener('pointerup', up); nav.classList.remove('drag'); drag = null; setTimeout(()=>{ moved = false; }); };   // der Klick direkt nach dem Loslassen wird noch geschluckt
+    addEventListener('pointermove', mv); addEventListener('pointerup', up); });
+  nav.addEventListener('click', e=>{ const a = e.target.closest('a'); if(!a) return;
+    if(moved){ e.preventDefault(); e.stopPropagation(); moved = false; return; }
+    const r = a.getBoundingClientRect(); chpStripFrom = {n:a.dataset.n, x:r.left + r.width / 2}; }, true);
+  if(calm || !matchMedia('(hover:hover)').matches) return;
+  let mx = null, raf = 0;
+  const wave = () => { raf = 0; if(mx === null || !base.length) return;
+    const z = zf(), x = (mx - row.getBoundingClientRect().left) / z;   // Mausposition in der Leiste (mit Scroll)
+    const sc = kids.map((k, i)=>{ if(k.tagName !== 'A') return 1; const d = Math.abs(base[i].l + base[i].w / 2 - x); return d < CHS_RANGE ? 1 + CHS_MAX * (Math.cos(d / CHS_RANGE * Math.PI) + 1) / 2 : 1; });
+    // neue Anordnung mit den vergrößerten Breiten (Trenner bleiben gleich groß), dann so verschieben, dass der Punkt unter der Maus bleibt
+    const nl = [base[0].l]; for(let i = 1; i < kids.length; i++) nl[i] = nl[i - 1] + base[i - 1].w * sc[i - 1] + (base[i].l - base[i - 1].l - base[i - 1].w);
+    let j = 0; while(j < kids.length - 1 && base[j + 1].l <= x) j++;
+    const shift = x - (nl[j] + Math.min(1, Math.max(0, (x - base[j].l) / base[j].w)) * base[j].w * sc[j]);
+    let ti = 0;
+    kids.forEach((el, i)=>{ const s = sc[i], dx = nl[i] + shift + base[i].w * (s - 1) / 2 - base[i].l, t = s > 1.001 || Math.abs(dx) > .5 ? `translateX(${dx.toFixed(1)}px) scale(${s.toFixed(3)})` : '';
+      if(el.style.transform !== t) el.style.transform = t; if(s > sc[ti]) ti = i; });
+    // Tooltip über dem größten Feld: Name, Kosten, Traits – steht außerhalb der Leiste, damit er nicht abgeschnitten wird
+    const top = kids[ti]; if(top.tagName !== 'A' || sc[ti] <= 1){ tip.classList.remove('show'); return; }
+    const cx = base[ti].l + base[ti].w / 2 + (nl[ti] + shift + base[ti].w * (sc[ti] - 1) / 2 - base[ti].l) + (row.getBoundingClientRect().left - box.getBoundingClientRect().left) / z;
+    if(tip.dataset.n !== top.dataset.n){ tip.dataset.n = top.dataset.n; tip.className = 'chp2-stt c' + top.dataset.c;
+      tip.innerHTML = `<b>${esc(top.dataset.n)}</b><small><span class="coin"></span>${top.dataset.c}${top.dataset.t ? ' · ' + esc(top.dataset.t) : ''}</small>`; }
+    tip.style.left = Math.max(tip.offsetWidth / 2, Math.min(box.clientWidth - tip.offsetWidth / 2, cx)) + 'px'; tip.classList.add('show');
+  };
+  const go = () => { if(!raf) raf = requestAnimationFrame(wave); };
+  nav.addEventListener('mousemove', e=>{ mx = e.clientX; nav.classList.add('wave'); go(); });
+  nav.addEventListener('scroll', go);
+  nav.addEventListener('mouseleave', ()=>{ mx = null; nav.classList.remove('wave'); tip.classList.remove('show'); kids.forEach(a=>{ a.style.transform = ''; }); });
+}
+// Aufklapp-Felder der Champion-Seite (Fähigkeit, Traits) schließen – außer keep; zu per Klick daneben oder Esc
+const chp2AbSet = (abx, abt, o) => { abx.setAttribute('aria-expanded', o); abt.classList.toggle('open', o); abx.firstChild.textContent = o ? L('Weniger anzeigen', 'Show less') : L('Ganze Fähigkeit', 'Full ability'); };
+function chp2Close(keep){
+  const pg = document.getElementById('chPage'); if(!pg) return;
+  pg.querySelectorAll('.chp2-tr[open]').forEach(d=>{ if(d !== keep) d.open = false; });
+  const abx = pg.querySelector('.chp2-abx[aria-expanded="true"]'); if(abx && keep !== abx) chp2AbSet(abx, pg.querySelector('.chp2-abt'), false);
+}
+document.addEventListener('click', e=>{ if(!e.target.closest('#chPage .chp2-tr, #chPage .chp2-abt, #chPage .chp2-abx')) chp2Close(); });
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape') chp2Close(); });
+// Pfeiltasten links/rechts: einen Champion weiter (Reihenfolge der Champion-Leiste) – mit Übergang wie beim Klick in die Leiste; nicht beim Tippen
+document.addEventListener('keydown', e=>{
+  if((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.repeat) return;
+  if(e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
+  const pg = document.querySelector('#page-champion.active #chPage.chp2-on'), row = pg && pg.querySelector('.chp2-strip-in'); if(!row) return;
+  const all = [...row.querySelectorAll('a')], cur = row.querySelectorAll('a.on')[1], i = all.indexOf(cur); if(i < 0) return;
+  const nx = all[i + (e.key === 'ArrowRight' ? 1 : -1)]; if(!nx) return;
+  e.preventDefault(); nx.click();
+});
+// Zahlen in den Werten von 0 hochzählen (Format bleibt: „900 / 1620 / 2916“, „0,8“, „25 %“); nur beim ersten Laden der Seite
+function chp2Count(box){
+  if(CHS_CALM.matches) return;
+  const els = [...box.querySelectorAll('.chp2-st b')].map(el=>({el, txt:el.textContent})), t0 = performance.now() + 250, dur = 900;
+  const fmt = (v, src) => { const dec = (src.split(/[.,]/)[1] || '').length, s = v.toFixed(dec); return src.includes(',') ? s.replace('.', ',') : s; };
+  const step = now => { const p = Math.min(1, Math.max(0, (now - t0) / dur)), e = 1 - Math.pow(1 - p, 3);
+    els.forEach(({el, txt})=>{ if(!el.isConnected) return; el.textContent = txt.replace(/\d+(?:[.,]\d+)?/g, m=>fmt(+m.replace(',', '.') * e, m)); });
+    if(p < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+// Austausch wie ein Karussell: das Neue schiebt das Alte hinaus (dir 1 = nach links), beide gleichzeitig um eine ganze Breite.
+// Für Posen (Figuren) und Champion-Wechsel (ganze Einheit aus Podest und Figur); die Einheit des vorigen Champions wird danach entfernt
+function chp2Slide(out, inn, dir, stage){
+  const [o, i] = dir > 0 ? ['out-l', 'in-r'] : ['out-r', 'in-l'];
+  let left = (out ? 1 : 0) + (inn ? 1 : 0); if(stage) stage.classList.add('swap'), stage.classList.remove('intro');   // Einblenden vom ersten Aufbau nie nachholen
+  const done = (el, cls) => el.addEventListener('animationend', function f(e){ if(e.target !== el) return;
+    el.removeEventListener('animationend', f); el.classList.remove(cls); if(el.dataset.ghost) el.remove(); if(--left <= 0 && stage) stage.classList.remove('swap', 'first'); });
+  if(out){ out.classList.remove('on', 'in-l', 'in-r'); out.classList.add(o); done(out, o); }
+  if(inn){ inn.classList.remove('out-l', 'out-r'); inn.classList.add('on', i); done(inn, i); }
+}
+/* Champion-Seite einpassen: Auf Bildschirmen im Querformat (z. B. 16:9) soll alles bis einschließlich der Champion-Leiste ohne Scrollen sichtbar sein.
+   Der Bereich wird als Ganzes gezoomt (Aufteilung und Proportionen bleiben, immer drei Spalten); Hochformat/Handy behalten das gestapelte Layout.
+   CHP_FIT_H/W: Höhe bzw. Mindestbreite des Bereichs ohne Zoom (Abstand oben + Bühne 780 + Abstand + Leiste; zwei Spalten à 370 + Bühne + Abstände) */
+const CHP_FIT_H = 984, CHP_FIT_W = 1264;
+function chp2Fit(){
+  const pg = document.getElementById('chPage'), hero = pg && pg.querySelector('.chp2-hero'); if(!hero) return;
+  const desk = innerWidth >= 900 && innerWidth / innerHeight >= 1.25;
+  pg.classList.toggle('chp2-fit', desk);
+  if(!desk){ pg.style.removeProperty('--chz'); return; }
+  const cs = getComputedStyle(pg), w = pg.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const topH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--topH')) || 64;
+  pg.style.setProperty('--chz', Math.min(1, (innerHeight - topH - 14) / CHP_FIT_H, w / CHP_FIT_W).toFixed(4));
+}
+addEventListener('resize', ()=>{ if(document.querySelector('#chPage.chp2-on')) chp2Fit(); });
 function renderChampPage(slug){
   const box = $('#chPage'), c = champBySlug[slug];
+  const oldUnit = box.querySelector('.chp2-stage > .chp2-unit:not([data-ghost])'), oldN = oldUnit && box.dataset.chp2n;   // für den Übergang zum nächsten Champion
   if(!c){ box.innerHTML = ornnSays('Diesen Champion gibt es im aktuellen Set nicht.'); return; }
   const n = c.n, d = CH_DATA[n] || {}, ab = d.ab, st = d.st, S = TFT_DATA.set;
   const splash = champImg(n) || champFallback(n), abHTML = abilityHTML(n), {top, best} = champBuilds(n), cs = champCompsOf(n);
@@ -2371,6 +2618,40 @@ function renderChampPage(slug){
         <ul class="ts-links">${dpsOk(n) ? `<li><a href="/tools/tft-dps-rechner?c=${champSlug(n)}">DPS-Rechner</a></li>` : ''}<li><a href="/tools/tft-rolldown-rechner">Rolldown-Rechner</a></li><li><a href="/tierlist">TFT Tierlist</a></li><li><a href="/tft-team-builder">Team Builder</a></li></ul>
       </aside>
     </section>`;
+  // Version 2 (Prototyp, nur lokal und mit Render): neuer Kopf und Reiter, der Textblock für Google bleibt derselbe
+  if(CHP_V2 && CH_RENDER[n]){
+    const seo = box.querySelector('section.tool-seo');
+    box.innerHTML = chp2HTML(c, {abHTML, top, best, cs, patch, prev, next});
+    if(seo) box.append(seo);
+    const pose = box.querySelector('.chp2-pose');
+    // Pose wechseln: die alte Figur gleitet zur einen Seite hinaus, die neue von der anderen herein (Richtung nach Reihenfolge der Knöpfe)
+    if(pose) pose.addEventListener('click', e=>{ const b = e.target.closest('[data-pose]'); if(!b || b.getAttribute('aria-pressed') === 'true') return;
+      // wie beim Champion-Wechsel: eine Kopie der Einheit (Podest + bisherige Pose) gleitet hinaus, die echte Einheit mit der neuen Pose herein
+      const st = box.querySelector('.chp2-stage'), unit = st.querySelector('.chp2-unit:not([data-ghost])'), figs = [...unit.querySelectorAll('.chp2-fig')];
+      const cur = figs.findIndex(f=>f.classList.contains('on')), nx = +b.dataset.pose;
+      pose.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed', x === b));
+      st.querySelectorAll('.chp2-unit[data-ghost]').forEach(g=>g.remove());
+      const ghost = unit.cloneNode(true); ghost.dataset.ghost = '1'; ghost.className = 'chp2-unit'; st.append(ghost);
+      figs.forEach((f, i)=>f.classList.toggle('on', i === nx));
+      chp2Slide(ghost, unit, nx > cur ? 1 : -1, st); });
+    // Champion gewechselt: die vorige Figur gleitet hinaus, die neue herein – Richtung nach der Reihenfolge der Champion-Leiste
+    const stage = box.querySelector('.chp2-stage'), nu = stage.querySelector('.chp2-unit');
+    if(oldUnit && oldN && oldN !== n){
+      const ord = champions.slice().sort((a, b)=>a.c - b.c || a.n.localeCompare(b.n)).map(x=>x.n), dir = ord.indexOf(n) >= ord.indexOf(oldN) ? 1 : -1;
+      oldUnit.dataset.ghost = '1'; oldUnit.className = 'chp2-unit'; stage.append(oldUnit); chp2Slide(oldUnit, nu, dir, stage);
+    }
+    if(!(oldUnit && oldN)){ box.querySelector('.chp2-hero').classList.add('intro'); chp2Count(box); }
+    box.dataset.chp2n = n; chp2Fit();
+    chp2Strip(box.querySelector('.chp2-strip'));
+    // Fähigkeit: oben die Kurzfassung (oder die ersten Zeilen), „Ganze Fähigkeit“ legt den ganzen Text als Feld darüber – die Seite verschiebt sich nicht.
+    // Ohne Kurzfassung gibt es den Knopf nur, wenn die Vorschau wirklich abgeschnitten ist
+    const abt = box.querySelector('.chp2-abt'), abx = box.querySelector('.chp2-abx'), abs = box.querySelector('.chp2-abs.clamp');
+    if(abt && abx){ if(abs) requestAnimationFrame(()=>{ abx.hidden = !!abs.clientHeight && abs.scrollHeight <= abs.clientHeight + 2; });
+      abx.addEventListener('click', ()=>{ const o = abx.getAttribute('aria-expanded') !== 'true'; if(o){ chp2Close(); abt.style.top = abx.offsetTop + abx.offsetHeight + 8 + 'px'; } chp2AbSet(abx, abt, o); }); }
+    // Traits: der aufgeklappte Text liegt als Feld über dem Inhalt darunter; immer nur einer offen
+    box.querySelectorAll('.chp2-tr').forEach(dt=>dt.addEventListener('toggle', ()=>{ if(dt.open) chp2Close(dt); }));
+  }
+  box.classList.toggle('chp2-on', !!(CHP_V2 && CH_RENDER[n]));
 }
 
 /* ================= RENDER: TRAITS ================= */
@@ -2536,14 +2817,123 @@ function testimonialHTML(t){
   if(!t.q) return `<div class="card co-quote soon"><span class="co-qm" aria-hidden="true">“</span><p>Feedback folgt</p><figcaption><b>${esc(t.n)}</b>${t.r?`<span>${esc(t.r)}</span>`:''}</figcaption></div>`;
   return `<figure class="card co-quote"><span class="co-qm" aria-hidden="true">“</span><blockquote>${esc(t.q)}</blockquote><figcaption><b>${esc(t.n)}</b>${t.r?`<span>${esc(t.r)}</span>`:''}</figcaption></figure>`;
 }
-// Guides: Übersicht oder ein einzelner Guide (/guides/encounters)
-// Vorerst pausiert: die Seite zeigt „Coming in Set 19“. Mit GUIDES_LIVE = true kommen Übersicht und Encounter-Guide zurück.
-const GUIDES_LIVE = false;
+// Guides: Übersicht oder ein einzelner Guide (/guides/encounters, /guides/tft-anfaenger-guide)
+// Vorerst pausiert: die Seite zeigt „Coming in Set 19“. Mit GUIDES_LIVE = true kommen Übersicht und Guides zurück.
+// Der Anfänger-Guide ist bis dahin nur lokal als Vorschau sichtbar (127.0.0.1 / localhost)
+const GUIDES_LIVE = false, GD_PREVIEW = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 function setGuide(sub){
-  if(!GUIDES_LIVE && sub) setUrl('/guides');   // alte Links auf /guides/encounters landen auf der Übersicht
-  const key = GUIDES_LIVE && sub==='encounters' ? 'encounters' : '';
+  const key = sub==='encounters' && GUIDES_LIVE ? 'encounters' : sub==='anfaenger' && (GUIDES_LIVE || GD_PREVIEW) ? 'anfaenger' : '';
+  if(sub && !key) setUrl('/guides');   // alte Links auf /guides/encounters landen auf der Übersicht
   document.querySelectorAll('#page-guides .gd-view').forEach(v=>{ v.hidden = v.dataset.guide!==key; });
   if(key==='encounters') renderEncTL();
+  if(key==='anfaenger') gdBeginnerMount();
+}
+/* --- Anfänger-Guide: bewusst ohne Set-Bezug. Alles hier gilt seit vielen Sets; Zahlen, die Riot pro Set ändert
+   (Shop-Chancen, Serien-Gold, Spielerschaden, Augment-Stufen, Loot), stehen nicht im Text, sondern kommen über Links auf die Cheatsheets --- */
+function gdBeginnerHTML(){
+  const sec = {ziel:'Worum es geht', ablauf:'Ablauf einer Partie', gold:'Gold und Zinsen', shop:'Shop und Rollen', sterne:'Sterne', level:'Leveln oder rollen', traits:'Traits', items:'Items', aufstellung:'Aufstellung', schaden:'Schaden am Spieler', fehler:'Die 7 häufigsten Fehler', begriffe:'Begriffe', faq:'Häufige Fragen'};
+  const h = k => `<h3 id="gda-${k}">${sec[k]}</h3>`, ic = (k, alt = '') => `<img src="assets/icons/tft/${k}.png" alt="${alt}" width="28" height="28" loading="lazy">`;
+  // Platzhalter für die Profi-Tipps aus der Sprachaufnahme von CrazYSlayt
+  const tip = q => `<div class="art-box tip gd-todo">${artTipHead()}<p><b>${q}</b></p><p class="gd-todo-t">Hier kommt deine Antwort aus der Sprachaufnahme.</p></div>`;
+  const stage = [['combat', 'PvP'], ['combat', 'PvP'], ['combat', 'PvP'], ['stage-carousel', 'Karussell'], ['combat', 'PvP'], ['combat', 'PvP'], ['stage-krugs', 'Monster']];
+  const coins = n => n ? Array.from({length:n}, ()=>`<img src="assets/icons/tft/gold.png" alt="" width="18" height="18" loading="lazy">`).join('') : '<span>–</span>';
+  const words = [['Carry', 'Der Champion, der den meisten Schaden macht und die Items bekommt'], ['Tank', 'Ein Champion mit viel Leben, der vorne steht'], ['Econ', 'Deine Wirtschaft – wie gut du Gold sparst und Zinsen sammelst'],
+    ['Rollen / Reroll', 'Für 2 Gold einen neuen Shop holen'], ['Rolldown', 'Auf einmal viel Gold ausgeben, um die gesuchten Champions zu finden'], ['Fast 8 / Fast 9', 'Schnell auf Level 8 oder 9 gehen, um teure Champions zu finden'],
+    ['Contested', 'Mehrere Spieler sammeln dieselben Champions'], ['Pivot', 'Mitten in der Partie auf eine andere Comp wechseln'], ['Streak', 'Mehrere Siege oder Niederlagen in Folge'], ['Comp', 'Eine Team-Zusammenstellung, z. B. aus der Tierlist'], ['Top 4', 'Platz 1 bis 4 – damit gewinnst du in Ranked LP']];
+  const faq = [['Wie viele Zinsen kann man in TFT maximal bekommen?', '5 Gold pro Runde, ab 50 Gold auf dem Konto. Mehr Gold bringt keine weiteren Zinsen.'], ['Wie viele Kopien braucht man für 3 Sterne?', 'Neun: drei für 2 Sterne, und drei 2-Sterne-Champions für 3 Sterne.'],
+    ['Was kostet ein Level in TFT?', '4 Gold für 4 Erfahrungspunkte. Zusätzlich bekommst du jede Runde 2 XP automatisch.'], ['Lohnt es sich, in TFT zu sparen?', 'Ja, vor allem früh: Wer auf 50 Gold spart, bekommt jede Runde 5 Gold Zinsen. Bei wenig Leben geht Überleben aber vor Sparen.'],
+    ['Was heißt Top 4 in TFT?', 'Platz 1 bis 4 einer Partie. In Ranked gewinnst du damit LP, mit Platz 5 bis 8 verlierst du LP.']];
+  const fehler = ['<b>Jedes Gold sofort ausgeben</b> – und damit auf alle Zinsen verzichten.', '<b>Zu viele kleine Traits</b> statt einem klaren Plan.', '<b>Items horten</b>, statt früh fertige Items zu bauen.', '<b>Den Carry nach vorne stellen.</b>',
+    '<b>Sich auf einen Champion versteifen</b>, den drei andere Spieler auch sammeln.', '<b>Zu spät leveln</b> – und mit zu kleinem Team zu viel Leben verlieren.', '<b>Mit wenig Leben weiter sparen</b>, statt endlich das Gold für ein starkes Team auszugeben.'];
+  return `<div class="ts-main">
+    <h2 id="gda-start">Das Wichtigste in Kürze</h2>
+    <div class="art-stats"><div class="p"><b>Top 4</b><span>bringt dir in Ranked LP</span></div><div class="g"><b>5 Gold</b><span>Zinsen pro Runde ab 50 Gold</span></div><div class="p"><b>4 Gold</b><span>für 4 XP zum Leveln</span></div><div class="g"><b>9 Kopien</b><span>für einen 3-Sterne-Champion</span></div></div>
+    ${h('ziel')}
+    <p>Teamfight Tactics ist ein Strategiespiel für acht Spieler. Jeder baut sein eigenes Team aus Champions auf, und die Teams kämpfen automatisch gegeneinander. Du steuerst also nicht im Kampf, sondern davor: welche Champions du kaufst, wo du sie hinstellst und welche Items sie tragen.</p>
+    <p>Jeder Spieler startet mit 100 Leben. Verlierst du einen Kampf, verlierst du Leben. Wer auf 0 fällt, ist raus. Die Partie endet, wenn nur noch einer übrig ist.</p>
+    <div class="art-box"><p><b>Wichtig für Ranked:</b> Du musst nicht Erster werden. Mit Platz 1 bis 4 gewinnst du LP, mit Platz 5 bis 8 verlierst du LP. Das Ziel heißt deshalb in den meisten Partien: <b>Top 4</b>.</p></div>
+    ${h('ablauf')}
+    <p>Eine Partie ist in <b>Stages</b> eingeteilt, jede Stage in Runden. „3-2“ heißt: Stage 3, Runde 2. Ab Stage 2 sieht jede Stage gleich aus:</p>
+    <div class="gd-stage" role="list">${stage.map(([k, t], i)=>`<div class="gd-r${k === 'combat' ? '' : ' sp'}" role="listitem">${ic(k)}<b>x-${i + 1}</b><span>${t}</span></div>`).join('')}</div>
+    <ul class="art-list">
+      <li><b>Stage 1:</b> Ein Karussell zum Start, danach einige Runden gegen Monster. Hier bekommst du deine ersten Champions und Komponenten.</li>
+      <li><b>PvP:</b> Kämpfe gegen andere Spieler – die meisten Runden der Partie.</li>
+      <li><b>Karussell:</b> Alle laufen gleichzeitig zu einem Kreis aus Champions mit Items. Wer am wenigsten Leben hat, darf zuerst – so bekommen schwächere Spieler eine Chance aufzuholen.</li>
+      <li><b>Monster:</b> Ein Kampf gegen Monster, die Beute fallen lassen – Gold, Champions oder Komponenten.</li>
+      <li><b>Augments:</b> Mehrmals pro Partie wählst du einen von drei Augments – dauerhafte Boni in Silber, Gold oder Prismatisch. Wann welche Stufe kommt, zeigt das ${artA(csHref('augments'), 'Augment-Stufen-Cheatsheet')}.</li>
+    </ul>
+    ${h('gold')}
+    <p>Fast alles in TFT kostet Gold: Champions, Level und neue Shops. Wer mit Gold gut umgeht, gewinnt auf Dauer. Gold bekommst du auf vier Wegen:</p>
+    <ol class="art-list">
+      <li><b>Grundeinkommen:</b> Jede Runde gibt es eine feste Summe.</li>
+      <li><b>Zinsen:</b> Für je 10 Gold auf deinem Konto bekommst du zu Beginn der Runde 1 Gold dazu – höchstens 5 Gold bei 50 Gold.</li>
+      <li><b>Serien:</b> Gewinnst oder verlierst du mehrere Runden in Folge, gibt es Bonus-Gold.</li>
+      <li><b>Siege:</b> Ein gewonnener Kampf gegen einen Spieler bringt 1 Gold extra.</li>
+    </ol>
+    <h4>So funktionieren die Zinsen</h4>
+    <div class="gd-zins">${[['0–9', 0], ['10–19', 1], ['20–29', 2], ['30–39', 3], ['40–49', 4], ['50+', 5]].map(([g, n])=>`<div${n === 5 ? ' class="max"' : ''}><span class="gd-c">${coins(n)}</span><b>+${n}</b><small>${g} Gold</small></div>`).join('')}</div>
+    <p>Wer früh auf 50 Gold spart, bekommt jede Runde 5 Gold geschenkt – über eine Partie sind das schnell 40 bis 60 Gold mehr als bei jemandem, der immer alles ausgibt. Mehr als 50 Gold bringt keine zusätzlichen Zinsen.</p>
+    <div class="art-box"><p><b>Faustregel:</b> Gib Gold möglichst so aus, dass du über einer Zehnerstufe bleibst. Mit 34 Gold kannst du 4 ausgeben und hast immer noch 3 Zinsen – gibst du 5 aus, sind es nur noch 2.</p></div>
+    <h4>Gewinn- und Verlustserien</h4>
+    <p>Serien belohnen beide Richtungen: Mehrere Siege in Folge bringen Bonus-Gold, mehrere Niederlagen aber auch. Eine Verlustserie ist deshalb nicht automatisch schlecht – manche Spieler verlieren am Anfang bewusst, sammeln Gold und schlagen dann mit einem starken Team zurück. Für Anfänger gilt aber: Leben ist auch eine Ressource. Wer zu tief fällt, hat später keinen Spielraum mehr.</p>
+    ${tip('Wann lohnt sich eine Verlustserie – und wann nicht?')}
+    ${h('shop')}
+    <p>Jede Runde zeigt dir der Shop fünf Champions. Sie kosten 1 bis 5 Gold – je teurer, desto stärker und seltener.</p>
+    <div class="gd-cost">${[1, 2, 3, 4, 5].map(c=>`<span class="c${c}">${ic('champ-' + c)}<b>${c} Gold</b></span>`).join('')}</div>
+    <ul class="art-list">
+      <li><b>Rollen:</b> Für 2 Gold bekommst du einen neuen Shop.</li>
+      <li><b>Welche Champions</b> im Shop auftauchen, hängt von deinem Level ab: Auf niedrigem Level siehst du fast nur günstige Champions, auf hohem Level öfter teure. Die genauen Chancen pro Level stehen im ${artA(csHref('shop'), 'Shop-Odds-Cheatsheet')}.</li>
+      <li><b>Der Pool ist geteilt:</b> Von jedem Champion gibt es nur eine begrenzte Anzahl Kopien für alle acht Spieler zusammen. Sammeln zwei Spieler denselben Champion, finden beide ihn seltener – er ist <b>contested</b>.</li>
+    </ul>
+    <p>Wie viel Gold du brauchst, um einen bestimmten Champion zu finden, rechnet dir der ${artA(toolHref('rolldown'), 'Rolldown-Rechner')} aus.</p>
+    ${h('sterne')}
+    <div class="gd-stars"><span>1★ <i>×3</i></span><em>→</em><span>2★ <i>×3</i></span><em>→</em><span class="max">3★</span></div>
+    <p>Drei gleiche Champions verschmelzen automatisch zu einem <b>2-Sterne-Champion</b>, drei 2-Sterne zu einem <b>3-Sterne-Champion</b>. Für 3 Sterne brauchst du also 9 Kopien.</p>
+    <p>Jede Sternstufe macht einen Champion deutlich stärker – ein 2-Sterne-Champion schlägt meist einen 1-Sterne-Champion, der eine Kostenstufe teurer ist. Deshalb lohnt es sich früh, Paare auf der Bank zu halten. Deine <b>Bank</b> hat 9 Plätze: Champions dort kämpfen nicht mit, zählen aber zum Verschmelzen.</p>
+    ${h('level')}
+    <p>Dein Level bestimmt, <b>wie viele Champions</b> auf dem Feld kämpfen (Level 5 heißt 5 Champions) und <b>welche Champions</b> im Shop erscheinen. Jede Runde bekommst du automatisch 2 XP, zusätzlich kannst du für 4 Gold 4 XP kaufen. Das Maximum ist Level 10.</p>
+    <p>Die große Frage jeder Partie lautet: <b>Gold in Level stecken oder in Rollen?</b> Dafür gibt es grob zwei Spielweisen:</p>
+    <div class="gd-two"><div><b>${ic('shop-xp')}Leveln (Fast 8 / Fast 9)</b><p>Du sparst, levelst zügig und suchst auf hohem Level nach starken 4- und 5-Kostern.</p></div>
+      <div><b>${ic('shop-reroll')}Rerollen</b><p>Du bleibst auf niedrigerem Level und rollst so lange, bis deine günstigen Carrys 3 Sterne haben.</p></div></div>
+    <p>Welche Comps gerade welche Spielweise nutzen, steht in unserer ${artA('/tierlist', 'Tierlist')}.</p>
+    ${tip('Woran erkennst du, dass du jetzt leveln solltest – und wann rollen?')}
+    ${h('traits')}
+    <p>Jeder Champion hat zwei oder drei <b>Traits</b>. Stellst du genug verschiedene Champions mit demselben Trait aufs Feld, wird ein Bonus aktiv – je mehr, desto stärker.</p>
+    <ul class="art-list">
+      <li>Es zählen nur <b>verschiedene</b> Champions. Zwei gleiche zählen einfach.</li>
+      <li>Die Stufen sind farbig: <span class="gd-tier bronze">Bronze</span> <span class="gd-tier silver">Silber</span> <span class="gd-tier gold">Gold</span> <span class="gd-tier prism">Prismatisch</span></li>
+      <li>Ein Team wird meist um <b>ein oder zwei starke Traits</b> gebaut, nicht um möglichst viele kleine.</li>
+    </ul>
+    <p>Trait-Kombinationen ausprobieren kannst du im ${artA(BUILDER_PATH, 'Team Builder')}.</p>
+    ${h('items')}
+    <p>Komponenten bekommst du aus Monster-Runden, vom Karussell und aus Beutekugeln. Zwei Komponenten ergeben zusammen ein fertiges Item.</p>
+    <ul class="art-list">
+      <li>Ein Champion trägt <b>höchstens 3 Items</b>.</li>
+      <li>Ein gegebenes Item bleibt am Champion. Verkaufst du ihn, kommen die Items zurück auf die Bank.</li>
+      <li>Gib Items an deinen <b>Carry</b> und an deinen <b>Tank</b> – nicht verteilt auf alle.</li>
+      <li>Baust du früh, gewinnst du früh: Ein fertiges Item in Stage 2 ist meist mehr wert als zwei Komponenten auf der Bank.</li>
+    </ul>
+    <p>Welche Komponenten wie oft droppen, zeigen das ${artA(csHref('loot'), 'Loot-Cheatsheet')} und die ${artA(toolHref('drops'), 'Item-Drop-Chance')}.</p>
+    ${h('aufstellung')}
+    <div class="gd-two"><div><b>Vorne: Frontline</b><p>Tanks und Kämpfer mit viel Leben. Sie halten den Schaden ab.</p></div><div><b>Hinten: Backline</b><p>Champions mit großer Reichweite, die Schaden machen – sie sollen möglichst lange überleben.</p></div></div>
+    <p>Ein häufiger Anfängerfehler ist ein Carry in der ersten Reihe. Er stirbt dann als Erstes, und der Kampf ist verloren, bevor er richtig angefangen hat.</p>
+    ${tip('Ein Positionierungstrick, den Anfänger nicht kennen')}
+    ${h('schaden')}
+    <p>Verlierst du einen Kampf, verlierst du Leben – abhängig von der <b>Stage</b> und davon, <b>wie viele gegnerische Champions</b> am Ende noch stehen. Späte Niederlagen tun deshalb viel mehr weh als frühe. Die genauen Werte stehen im ${artA(csHref('damage'), 'Spielerschaden-Cheatsheet')}.</p>
+    ${h('fehler')}
+    <ol class="art-list gd-err">${fehler.map(f=>`<li>${f}</li>`).join('')}</ol>
+    ${tip('Der Fehler, den ich bei meinen Coaching-Schülern am häufigsten sehe')}
+    ${h('begriffe')}
+    <div class="art-tw"><table class="art-table"><thead><tr><th>Begriff</th><th>Bedeutung</th></tr></thead><tbody>${words.map(([w, d])=>`<tr><td><b>${w}</b></td><td>${d}</td></tr>`).join('')}</tbody></table></div>
+    ${h('faq')}${artFaq(faq)}
+    ${artAuthor()}
+  </div>
+  <aside class="ts-side art-side"><nav class="art-toc" aria-label="Inhalt"><b>Inhalt</b>
+    <ol>${Object.entries(sec).map(([k, t])=>`<li><a href="#gda-${k}" data-toc="gda-${k}">${t}</a></li>`).join('')}</ol></nav></aside>`;
+}
+function gdBeginnerMount(){
+  const box = $('#gdBeginner'); if(!box || box.dataset.done) return;
+  box.innerHTML = gdBeginnerHTML(); box.dataset.done = '1'; enHrefs(box); artToc(box);
 }
 function guideHTML(g){
   if(g.href) return `<a class="card guide guide-on" href="${g.href}"><div class="guide-cover" style="background:${g.col}"><div>${esc(g.t)}<small>TFTClimb</small></div></div><div><span class="pill gold">${esc(g.s)}</span><h3 style="margin-top:10px">${esc(g.t)}</h3><p>${esc(g.d)}</p><p style="color:var(--faint);font-size:.82rem">${esc(g.x)}</p><span class="link-arrow">Zum Guide →</span></div></a>`;
@@ -6190,6 +6580,8 @@ function pageMeta(page, sub){
       'Withdrawal & terms for TFT coaching at TFTClimb: withdrawal policy, model form and the rules for every package.')];
     case 'gameplans': return ['TFT Gameplans', L(`TFT Gameplans für jeden Patch: wie du die besten Comps von Start bis Late Game spielst – bald hier auf TFTClimb.`, `TFT game plans for every patch: how to play the best comps from start to late game – coming soon to TFTClimb.`), true];   // Platzhalter, noindex
     case 'guides':
+      if((GUIDES_LIVE || GD_PREVIEW) && sub==='anfaenger') return ['TFT Anfänger Guide: Grundlagen, Gold & Zinsen', L('TFT Anfänger Guide: Gold, Zinsen, Leveln, Items und Traits einfach erklärt – alles für deine ersten Partien in Teamfight Tactics.',
+        'TFT beginner guide: gold, interest, leveling, items and traits explained simply – everything for your first games of Teamfight Tactics.')];
       if(GUIDES_LIVE && sub==='encounters') return [`TFT Encounters Guide ${S}`, L(`TFT Encounters Guide für ${S}: was jeder Encounter macht, wie oft er kommt und welche Comp du darauf spielst.`,
         `TFT encounters guide for ${S}: what each encounter does, how often it shows up and which comp to play on it.`)];
       return ['TFT Guides', L(`TFT Guides von Challenger-Spielern für ${S}: Strategien, Comps und Encounters – bald hier auf TFTClimb.`, `TFT guides from Challenger players for ${S}: strategies, comps and encounters – coming soon to TFTClimb.`), true];
@@ -6265,8 +6657,10 @@ function setMeta(page, sub){
   // Cheatsheets: eigenes Bild je Seite und Sprache (tools/og-bilder.js → assets/og/cs/<adresse>.jpg, englisch en-<adresse>.jpg)
   const csOg = page==='cheatsheet' && (!sub || csList().some(s=>s[0]===sub)) ? csOgImg(sub) : '';
   const nsOg = page==='nextset' ? `assets/og/tft-set-${sub}.jpg` : '';   // tools/og-bilder.js
-  const wide = !chImg && (OG_TOOL[tool] || csOg || nsOg);
-  const img = chImg || location.origin + '/' + (wide || {tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
+  // Champions mit Posen: eigenes großes Bild (Arena, Podest, Modell – tools/og-bilder.js → assets/og/champions/tft-<slug>-build.jpg)
+  const chOg = page==='champion' && CH_RENDER[chN] ? `assets/og/champions/tft-${sub}-build.jpg` : '';
+  const wide = chOg || (!chImg && (OG_TOOL[tool] || csOg || nsOg));
+  const img = chOg ? location.origin + '/' + chOg : chImg || location.origin + '/' + (wide || {tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
   const og = (k, v) => { headTag(`meta[property="${k}"]`, ()=>{ const m = document.createElement('meta'); m.setAttribute('property', k); return m; }).content = v; };
   og('og:title', document.title); og('og:description', desc || ''); og('og:url', url); og('og:type', 'website'); og('og:site_name', 'TFTClimb'); og('og:locale', EN ? 'en_GB' : 'de_DE'); og('og:image', img);
   headTag('meta[name="twitter:card"]', ()=>Object.assign(document.createElement('meta'), {name:'twitter:card'})).content = wide ? 'summary_large_image' : 'summary';

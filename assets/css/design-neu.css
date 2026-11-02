@@ -1481,3 +1481,280 @@ img.gt-ic{border:1px solid rgba(255,255,255,.18)}
   .cp2-field{position:static}.cp2-arena .board{--hx:min(46px,calc((100vw - 80px) / 7.8));position:static;transform:none;padding-bottom:16px}
   .cp2-stage p{display:block}.cp2-arena .hex.filled{transform:none}
   .cp2-stages{position:static;grid-template-columns:minmax(0,1fr);gap:8px;width:100%;padding:10px 8px 0}.cp2-stage+.cp2-stage::before{display:none}}
+
+/* ================= Champion-Seite V2 (Prototyp, chp2HTML in app.js): breit und offen – Abschnitte nur durch feine Linien getrennt,
+   links Porträt, Fähigkeit und Werte, Mitte groß das Modell auf dem Podest in der Kostenfarbe (assets/img/podest-<Kosten>.webp), rechts Build und Traits ================= */
+.nd #chPage.chp2-on{max-width:calc(1720px + 2 * var(--cg))}
+.chp2-on .crumb{margin-bottom:6px}
+.chp2-hero{position:relative;display:grid;grid-template-columns:minmax(0,370px) minmax(0,1fr) minmax(0,370px);gap:32px;padding:22px 0 10px;isolation:isolate}   /* oben 22 px wie die Bibliothek */
+/* Arena als Kulisse über die ganze Breite (assets/img/arena-bg.webp), zu allen Rändern ausgeblendet; die Boxen liegen als Glas davor.
+   Feste Höhe: sonst wandert das Bild beim Aufklappen von Fähigkeit/Traits mit. Der Boden liegt so, dass das Podest darauf steht */
+.chp2-hero::before{content:"";position:absolute;top:5px;left:-2%;right:-2%;height:860px;z-index:-1;background:url('../img/arena-bg.webp') 50% var(--bgy,72%)/cover no-repeat;
+  -webkit-mask:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent),linear-gradient(transparent,#000 8%,#000 80%,transparent);-webkit-mask-composite:source-in;
+  mask:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent),linear-gradient(transparent,#000 8%,#000 80%,transparent);mask-composite:intersect}
+.chp2-left,.chp2-right{position:relative;z-index:2;display:flex;flex-direction:column;gap:28px;min-width:0}
+.chp2-box{position:relative;padding:20px 22px;border-radius:16px;border:1px solid var(--line-2);background:rgba(3,17,27,.62);backdrop-filter:blur(4px)}
+.chp2-box h2{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:0 0 12px;font:900 italic .95rem/1.2 var(--ff-head);text-transform:uppercase;letter-spacing:.04em;color:#fff;padding-right:.1em}
+.chp2-box h2 small{font:700 .74rem var(--ff-body);letter-spacing:.06em;color:#f5c84b}
+.chp2-id{display:flex;align-items:center;gap:14px;padding:20px 18px;height:212px}   /* seitlich etwas schmaler, damit Kosten und Traits in eine Zeile passen */
+.chp2-pic{flex:none;width:88px;height:88px;border-radius:16px;border:2px solid var(--c1);background:#0b1018 center 20%/cover no-repeat;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.chp2-pic.c2{border-color:var(--c2)}.chp2-pic.c3{border-color:var(--c3)}.chp2-pic.c4{border-color:var(--c4)}.chp2-pic.c5{border-color:var(--c5)}
+.chp2-id>div{min-width:0}
+/* H1 „Ashe TFT Set 18 Build“: groß der Name, darunter klein „TFT Set 18 Build“ (eine Überschrift für Google) */
+.chp2-h1{margin:0;font-weight:400}
+.chp2-hn{display:block;white-space:nowrap;font:900 italic 2.3rem/.95 var(--ff-head);   /* einheitlich: passt für den längsten Namen des Sets (Elder Dragon) */text-transform:uppercase;letter-spacing:.01em;padding-right:.14em;
+  background:linear-gradient(100deg,#fff 45%,#7ff7ec);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+.chp2-sub{display:block;margin:6px 0 10px;font:700 .72rem/1.2 var(--ff-body);letter-spacing:.28em;text-transform:uppercase;color:#7d93a2}
+/* Buff/Nerf aus dem letzten Patch, verlinkt auf die Patch Notes */
+.chp2-trend{display:inline-flex;align-items:center;gap:5px;margin:-4px 0 9px;padding:2px 9px;border-radius:99px;font:800 .7rem/1.4 var(--ff-body);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;
+  border:1px solid currentColor;color:#9fb6c4;background:rgba(159,182,196,.08)}
+.chp2-trend::before{content:"";width:0;height:0;border:4px solid transparent}
+.chp2-trend.buff{color:#4ade80;background:rgba(74,222,128,.1)}.chp2-trend.buff::before{border-bottom:6px solid currentColor;border-top:0;margin-top:-2px}
+.chp2-trend.nerf{color:#f87171;background:rgba(248,113,113,.1)}.chp2-trend.nerf::before{border-top:6px solid currentColor;border-bottom:0;margin-top:2px}
+.chp2-trend:hover{filter:brightness(1.2)}
+/* Kosten und Buff/Nerf in einer Zeile, darunter die Traits nebeneinander (eine Reihe), darunter Rolle mit Riots Symbol */
+.chp2-meta{display:flex;align-items:center;gap:6px;margin:-2px 0 8px}
+.chp2-meta .chp2-trend{margin:0}
+.chp2-tags{display:flex;flex-wrap:nowrap;gap:4px;min-width:0}
+.chp2-tags{gap:12px}
+.chp2-tags .chp2-tag{flex:0 1 auto;min-width:0;padding:0;border:0;background:none;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* Traits ohne Rahmen: Symbol + Name */
+.chp2-tag,.chp2-cost{display:inline-flex;align-items:center;gap:5px;padding:3px 7px 3px 4px;border-radius:99px;border:1px solid rgba(255,255,255,.14);font-size:.74rem;font-weight:700;color:#eef3f7}
+.chp2-tag.dim{padding-left:10px;color:#9fb6c4}
+.chp2-cost{padding-left:9px;border-color:rgba(245,184,46,.55);color:#f5c84b}.chp2-cost .coin{width:10px;height:10px}
+.chp2-lead{margin:0;font-size:.9rem;line-height:1.55;color:#9fb6c4}
+.chp2-abh{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.chp2-abh img{flex:none;border-radius:9px;border:1px solid rgba(255,255,255,.2);box-shadow:0 3px 10px rgba(0,0,0,.5)}
+.chp2-abh>span:first-of-type{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.chp2-abh small{font-size:.66rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#6f8594}
+.chp2-abh b{font:900 italic 1.2rem/1.1 var(--ff-head);text-transform:uppercase;color:#fff;padding-right:.1em}
+.chp2-mana{flex:none;display:inline-flex;align-items:center;gap:4px;color:#8cc8ff;font-size:.8rem;font-weight:800;white-space:nowrap}
+.chp2-mana svg{width:12px;height:12px}
+.chp2-b-ab p{margin:0;font-size:.88rem;line-height:1.6;color:#c9d4dd}
+.chp2-b-ab .ch-note{display:block;margin-top:8px}
+/* Werte in zwei Spalten: Symbol links, darüber die Bezeichnung, darunter der Wert (Leben/Schaden als 1★ / 2★ / 3★) */
+.chp2-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px}
+.chp2-st{display:grid;grid-template-columns:20px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;column-gap:10px;row-gap:2px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.chp2-st:nth-last-child(-n+2){border-bottom:0;padding-bottom:0}
+.chp2-st>img,.chp2-st>.chp2-rng{grid-row:1 / 3}
+.chp2-st img{width:20px;height:20px}
+.chp2-rng{display:grid;place-items:center;color:#9fb6c4}.chp2-rng svg{width:17px;height:17px}
+.chp2-st small{font-size:.72rem;color:#7d93a2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chp2-st b{font:800 .98rem/1.1 var(--ff-head);color:#fff;white-space:nowrap}
+/* Bühne: Podest unten in der Mitte, die Figur groß darauf. Der Fußpunkt der Figur (--fx/--fb aus CH_RENDER) steht genau auf der Scheibenmitte (--py),
+   skaliert wird um diesen Punkt – so steht jede Figur, egal wie groß, auf dem Podest. Renders mit pitch 10, so flach wie das Podest fotografiert ist */
+.chp2-stage{container-type:inline-size;--w:min(760px,140cqw);--pw:min(720px,112cqw);--pb:30px;--py:calc(var(--pb) + var(--pw) * .26 * .756);position:relative;align-self:start;height:780px;--cc:var(--c1)}
+.c2 .chp2-stage{--cc:var(--c2)}.c3 .chp2-stage{--cc:var(--c3)}.c4 .chp2-stage{--cc:var(--c4)}.c5 .chp2-stage{--cc:var(--c5)}
+.chp2-stage::before{content:"";position:absolute;left:50%;top:44%;width:85%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--cc) 24%,transparent),transparent);filter:blur(12px)}
+/* Schattierung unter dem Podest: dunkler Boden mit leichtem Türkis-Schein */
+.chp2-stage::after{content:"";position:absolute;left:50%;bottom:-6px;width:calc(var(--pw) * 1.35);height:70px;transform:translateX(-50%);border-radius:50%;
+  background:radial-gradient(closest-side,rgba(0,0,0,.75),rgba(0,0,0,.35) 55%,transparent),radial-gradient(closest-side,rgba(46,230,214,.18),transparent);filter:blur(6px);z-index:0}
+.chp2-pod{position:absolute;left:50%;bottom:var(--pb);width:var(--pw);max-width:none;height:auto;transform:translateX(-50%);z-index:1;pointer-events:none}
+.chp2-shadow{position:absolute;left:50%;bottom:calc(var(--py) - 12px);width:calc(var(--w) * .26);height:26px;transform:translateX(-50%);z-index:2;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.7),transparent);filter:blur(3px)}
+.chp2-fig{position:absolute;z-index:3;width:var(--w);left:calc(50% - var(--w) * var(--fx));bottom:calc(var(--py) - var(--w) * (1 - var(--fb)));
+  transform:scale(var(--s,1));transform-origin:calc(var(--fx) * 100%) calc(var(--fb) * 100%);pointer-events:none}
+.chp2-fig img{display:block;width:100%;max-width:none;height:auto;filter:drop-shadow(0 10px 12px rgba(0,0,0,.45))}
+/* Champion-Leiste unter Podest und Boxen über die ganze Breite (chp2Strip in app.js): waagerecht scrollbar und endlos, Dock-Welle beim Hovern,
+   darüber ein kleiner Tooltip (Name, Kosten, Traits) – oben Platz, damit die Felder wachsen können */
+.chp2-strip-w{grid-column:1 / -1;position:relative;z-index:6;margin-top:-6px}
+.chp2-strip{overflow-x:auto;overflow-y:hidden;padding:42px 0 26px;scrollbar-width:none;
+  -webkit-mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.chp2-strip::-webkit-scrollbar{display:none}
+.chp2-strip-in{position:relative;display:flex;align-items:flex-end;gap:8px;width:max-content}
+.chp2-strip a{flex:none;position:relative;width:72px;height:72px;border-radius:14px;border:2px solid var(--c1);background:#0b1018 center 20%/cover no-repeat;
+  box-shadow:0 4px 10px rgba(0,0,0,.5);transform-origin:50% 100%;transition:transform .18s ease-out,filter .18s;filter:saturate(.75) brightness(.8)}
+.chp2-strip .c2{border-color:var(--c2)}.chp2-strip .c3{border-color:var(--c3)}.chp2-strip .c4{border-color:var(--c4)}.chp2-strip .c5{border-color:var(--c5)}
+/* aktueller Champion: hell, mit leuchtendem Strich darunter wie im Dock */
+/* ausgewählter Champion wie im Spiel: größer, leuchtender Rand in der Kostenfarbe (pulsiert leicht) */
+.chp2-strip a.on{--g:var(--c1);width:88px;height:88px;border-radius:16px;border-width:3px;filter:none;z-index:1;box-shadow:0 0 0 2px rgba(255,255,255,.85),0 0 10px 2px var(--g),0 0 18px 3px color-mix(in srgb,var(--g) 55%,transparent);animation:chp2Sel 2.4s ease-in-out infinite}
+.chp2-strip a.on.c2{--g:var(--c2)}.chp2-strip a.on.c3{--g:var(--c3)}.chp2-strip a.on.c4{--g:var(--c4)}.chp2-strip a.on.c5{--g:var(--c5)}
+@keyframes chp2Sel{50%{box-shadow:0 0 0 2px #fff,0 0 14px 3px var(--g),0 0 22px 5px color-mix(in srgb,var(--g) 60%,transparent)}}   /* Leuchten bleibt innerhalb der Leiste (oben/unten sonst abgeschnitten) */
+@media (prefers-reduced-motion:reduce){.chp2-strip a.on{animation:none}}
+.chp2-strip a:focus-visible{outline:2px solid #7ff7ec;outline-offset:3px;filter:none}
+.chp2-strip{cursor:grab}.chp2-strip.drag{cursor:grabbing}.chp2-strip.drag a{pointer-events:none}
+/* Trenner vor jeder Kosten-Gruppe: Münze und Zahl in der Kostenfarbe */
+.chp2-sep{--tc:var(--c1);flex:none;align-self:flex-end;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:30px;height:72px;
+  border-left:1px solid rgba(255,255,255,.1);font:900 italic 1rem/1 var(--ff-head);color:var(--tc);transform-origin:50% 100%;transition:transform .18s ease-out}
+.chp2-sep.c2{--tc:var(--c2)}.chp2-sep.c3{--tc:var(--c3)}.chp2-sep.c4{--tc:var(--c4)}.chp2-sep.c5{--tc:var(--c5)}
+.chp2-sep .coin{width:10px;height:10px;background:var(--tc);border-color:var(--tc);box-shadow:0 0 6px var(--tc)}   /* Punkt in der Kostenfarbe statt Goldmünze */
+.chp2-strip.wave .chp2-sep{transition:transform .07s linear}
+/* Pfeil-Knöpfe links und rechts über den ausgeblendeten Rändern */
+.chp2-arr{position:absolute;bottom:26px;z-index:3;display:grid;place-items:center;width:42px;height:42px;padding:0;border-radius:50%;border:1px solid var(--line-2);
+  background:rgba(3,17,27,.82);backdrop-filter:blur(4px);color:#cfe3ee;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.5);transition:background .15s,color .15s,transform .15s}
+.chp2-arr::before{content:"";width:9px;height:9px;border:solid currentColor;border-width:0 2.5px 2.5px 0;transform:rotate(135deg);margin-left:4px}
+.chp2-arr.r::before{transform:rotate(-45deg);margin:0 4px 0 0}
+.chp2-arr.l{left:4px}.chp2-arr.r{right:4px}
+.chp2-arr:hover{background:#7ff7ec;color:#0b1018;transform:scale(1.06)}
+.chp2-strip.wave a{transition:transform .07s linear,filter .1s}
+.chp2-strip a:hover{filter:none;z-index:2}
+.chp2-stt{--tc:var(--c1);position:absolute;bottom:126px;left:0;transform:translate(-50%,4px);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 11px 7px;border-radius:9px;
+  border:1px solid var(--line-2);border-top:2px solid var(--tc);background:rgba(3,17,27,.95);box-shadow:0 8px 22px rgba(0,0,0,.55);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s,transform .12s}
+.chp2-stt.show{opacity:1;transform:translate(-50%,0)}
+.chp2-stt.c2{--tc:var(--c2)}.chp2-stt.c3{--tc:var(--c3)}.chp2-stt.c4{--tc:var(--c4)}.chp2-stt.c5{--tc:var(--c5)}
+.chp2-stt b{font:900 italic .9rem/1.1 var(--ff-head);text-transform:uppercase;color:#fff;padding-right:.1em}
+.chp2-stt small{display:flex;align-items:center;gap:4px;font-size:.7rem;font-weight:600;color:#9fb6c4}.chp2-stt .coin{width:8px;height:8px}
+/* Pose-Schalter über der Figur (Idle / Angriff); die Posen liegen übereinander und blenden über */
+.chp2-fig:not(.on){opacity:0}
+/* Podest, Schatten und Figuren als Einheit. Wechsel wie ein Karussell (chp2Slide in app.js): das Neue schiebt das Alte hinaus,
+   beide gleichzeitig um eine ganze Breite – nichts liegt übereinander. Champion-Wechsel schiebt die ganze Einheit, Posen nur die Figur.
+   Während des Schiebens schneidet die Bühne seitlich ab, damit nichts über die Boxen fährt */
+.chp2-unit{position:absolute;inset:0;z-index:3;pointer-events:none}
+@keyframes chp2UOutL{to{transform:translateX(-100%)}}@keyframes chp2UOutR{to{transform:translateX(100%)}}
+@keyframes chp2UInR{from{transform:translateX(100%)}}@keyframes chp2UInL{from{transform:translateX(-100%)}}
+@keyframes chp2FOutL{from{transform:translateX(0) scale(var(--s,1))}to{transform:translateX(-100%) scale(var(--s,1))}}
+@keyframes chp2FOutR{from{transform:translateX(0) scale(var(--s,1))}to{transform:translateX(100%) scale(var(--s,1))}}
+@keyframes chp2FInR{from{transform:translateX(100%) scale(var(--s,1))}}@keyframes chp2FInL{from{transform:translateX(-100%) scale(var(--s,1))}}
+.chp2-unit.out-l{animation:chp2UOutL .6s cubic-bezier(.6,0,.3,1) both}.chp2-unit.out-r{animation:chp2UOutR .6s cubic-bezier(.6,0,.3,1) both}
+.chp2-unit.in-r{animation:chp2UInR .6s cubic-bezier(.6,0,.3,1) both}.chp2-unit.in-l{animation:chp2UInL .6s cubic-bezier(.6,0,.3,1) both}
+.chp2-fig.out-l{opacity:1;animation:chp2FOutL .5s cubic-bezier(.6,0,.3,1) both}.chp2-fig.out-r{opacity:1;animation:chp2FOutR .5s cubic-bezier(.6,0,.3,1) both}
+.chp2-fig.in-r{animation:chp2FInR .5s cubic-bezier(.6,0,.3,1) both}.chp2-fig.in-l{animation:chp2FInL .5s cubic-bezier(.6,0,.3,1) both}
+.chp2-stage.swap{overflow-x:clip}   /* schneidet seitlich ab, ohne die Seite breiter zu machen (keine Bildlaufleiste) */
+@media (prefers-reduced-motion:reduce){.chp2-unit,.chp2-fig{animation:none!important}}
+.chp2-pose{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:4;display:flex;flex-wrap:wrap;justify-content:center;width:max-content;max-width:100%;gap:2px;padding:3px;border-radius:99px;border:1px solid var(--line-2);background:rgba(3,17,27,.72);backdrop-filter:blur(3px)}
+.chp2-pose button{padding:5px 14px;border:0;border-radius:99px;background:none;color:#9fb6c4;font:800 .76rem/1 var(--ff-body);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .15s,color .15s}
+.chp2-pose button:hover{color:#fff}
+.chp2-pose button[aria-pressed=true]{background:var(--cc);color:#0b1018}
+/* Rechts: Build groß, darunter Traits */
+.chp2-b-build{height:174px}   /* feste Höhen: beim Champion-Wechsel verschiebt sich nichts (Item-Namen ein- oder zweizeilig) */
+.chp2-b-comps{height:200px}   /* die besten zwei Comps */
+.chp2-build{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.chp2-build button{display:flex;flex-direction:column;align-items:center;gap:7px;padding:0;border:0;background:none;cursor:pointer;color:#e8eef3;font-size:.78rem;font-weight:700;line-height:1.2;text-align:center}
+.chp2-build img{width:64px;height:64px;border-radius:11px;border:2px solid #d9a441;box-shadow:0 0 16px rgba(217,164,65,.35)}
+.chp2-build button:hover img{transform:translateY(-2px)}
+.chp2-tr+.chp2-tr{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.07)}
+.chp2-trh{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.chp2-trn{display:flex;flex-direction:column;flex:1;min-width:0}
+/* Champions des Traits als kleine Icons unter dem Namen (statt Ursprung/Klasse – steht im Tooltip); mehr als fünf → vier + „+n“ */
+.chp2-trm{display:flex;align-items:center;gap:2px;margin-top:4px}
+.chp2-trm i,.chp2-trm a{flex:none;width:17px;height:17px;border-radius:4px;border:1px solid var(--c1);background:#0b1018 center/cover no-repeat}
+.chp2-trm .c2{border-color:var(--c2)}.chp2-trm .c3{border-color:var(--c3)}.chp2-trm .c4{border-color:var(--c4)}.chp2-trm .c5{border-color:var(--c5)}
+.chp2-trm em{margin-left:3px;font:700 .68rem/1 var(--ff-body);font-style:normal;color:#8ea3b2}
+.chp2-trh b{font:900 italic 1.05rem/1.1 var(--ff-head);text-transform:uppercase;color:#fff;padding-right:.1em}
+.chp2-trh small{font-size:.74rem;color:#7d93a2}
+.chp2-trh .bp{display:flex;gap:3px}
+.chp2-tr .tt-intro{margin:0 0 8px;font-size:.84rem}
+.chp2-tr .tt-rows li{font-size:.8rem}
+.chp2-mates{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+.chp2-mates a{width:28px;height:28px;border-radius:6px;border:1.5px solid var(--c1);background:#0b1018 center 20%/cover no-repeat}
+.chp2-mates .c2{border-color:var(--c2)}.chp2-mates .c3{border-color:var(--c3)}.chp2-mates .c4{border-color:var(--c4)}.chp2-mates .c5{border-color:var(--c5)}
+/* Traits frei ohne Box (wie im Spiel am Brettrand): Hexagon, Name + Art, Stufen, Champions des Traits. Senkrecht mittig zwischen Build und Comps;
+   Details im Tooltip seitlich daneben, über einem Champion-Icon dessen Tooltip. Schatten hinter der Schrift für helle Stellen der Arena */
+.chp2-traits{display:grid;grid-template-columns:max-content;justify-content:center;align-content:center;gap:26px;padding:4px 6px}   /* Block mittig, Hexagone bündig untereinander */
+.chp2-tf{display:flex;align-items:center;gap:16px;cursor:help;outline:none}
+.chp2-tf>:first-child{flex:none;filter:drop-shadow(0 6px 12px rgba(0,0,0,.6));transition:filter .2s,transform .2s}
+.chp2-tf:hover>:first-child,.chp2-tf:focus-visible>:first-child{filter:drop-shadow(0 0 14px rgba(46,230,214,.55));transform:scale(1.05)}
+.chp2-tfn{display:flex;flex-direction:column;gap:7px;min-width:0}
+.chp2-tft{display:flex;align-items:baseline;gap:9px}
+.chp2-tft b{font:900 italic 1.3rem/1 var(--ff-head);text-transform:uppercase;color:#fff;padding-right:.12em;text-shadow:0 2px 12px rgba(0,0,0,.85);transition:color .2s}
+.chp2-tf:hover .chp2-tft b,.chp2-tf:focus-visible .chp2-tft b{color:#7ff7ec}
+.chp2-tft small{font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#8ea3b2;text-shadow:0 1px 6px #000}
+.chp2-tf .bp{display:flex;gap:3px}
+.chp2-tf .chp2-trm{margin-top:0;flex-wrap:wrap}
+.chp2-tf .chp2-trm a{width:21px;height:21px;border-radius:5px;transition:transform .15s}
+.chp2-tf .chp2-trm a:hover{transform:translateY(-2px)}
+/* Rechts unten die Comps; unter der Bühne Einleitung, Items und Änderungen */
+.chp2-more{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin-top:22px}
+.chp2-more-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+/* Gute Partner: Icon, Name, wie oft zusammen in unseren Comps */
+.chp2-pt{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 8px}
+.chp2-pt a{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;text-align:center;text-decoration:none;color:#e8eef3}
+.chp2-pt i{width:54px;height:54px;border-radius:12px;border:2px solid var(--c1);background:#0b1018 center/cover no-repeat;transition:transform .15s}
+.chp2-pt .c2 i{border-color:var(--c2)}.chp2-pt .c3 i{border-color:var(--c3)}.chp2-pt .c4 i{border-color:var(--c4)}.chp2-pt .c5 i{border-color:var(--c5)}
+.chp2-pt a:hover i{transform:translateY(-2px)}
+.chp2-pt span{max-width:100%;font-size:.8rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chp2-pt small{font-size:.68rem;color:#8ea3b2}
+/* Beste Augments: Liste wie die Items */
+.chp2-ag{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px}
+.chp2-agi{display:flex;align-items:center;gap:10px;min-width:0;padding:7px 0;border:0;border-bottom:1px solid rgba(255,255,255,.06);background:none;color:inherit;text-align:left;cursor:pointer}
+.chp2-agi img{flex:none;width:36px;height:36px;border-radius:8px}
+.chp2-agi span{display:flex;flex-direction:column;min-width:0}
+.chp2-agi b{font-size:.86rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chp2-agi small{font-size:.72rem;color:#8ea3b2}
+.chp2-b-patch{grid-column:1 / -1}
+.chp2-comp{--tc:#888;display:flex;align-items:center;gap:12px;width:100%;padding:8px 0;border:0;border-bottom:1px solid rgba(255,255,255,.06);background:none;color:inherit;text-align:left;cursor:pointer}
+.chp2-comp:last-child{border-bottom:0}
+.chp2-comp:hover b{color:#7ff7ec}
+.chp2-tier{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--tc);color:#0b1018;font:900 .95rem/1 var(--ff-head)}
+.chp2-comp>span:nth-of-type(1){display:flex;flex-direction:column;flex:1;min-width:0}
+.chp2-comp>span{gap:4px}
+.chp2-comp>span>b{font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .15s}
+.chp2-cl{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.chp2-comp small{font-size:.74rem;color:#8ea3b2}
+.chp2-units{display:flex;gap:3px;flex:none}
+.chp2-units i{width:24px;height:24px;border-radius:6px;border:1.5px solid var(--c1);background:#0b1018 center 20%/cover no-repeat}
+.chp2-units .c2{border-color:var(--c2)}.chp2-units .c3{border-color:var(--c3)}.chp2-units .c4{border-color:var(--c4)}.chp2-units .c5{border-color:var(--c5)}
+.chp2-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:0 22px}
+.chp2-items button{display:flex;align-items:center;gap:10px;padding:7px 0;border:0;border-bottom:1px solid rgba(255,255,255,.06);background:none;color:inherit;text-align:left;cursor:pointer}
+.chp2-items img{width:36px;height:36px;border-radius:7px;border:1px solid rgba(0,0,0,.6)}
+.chp2-items span{display:flex;flex-direction:column;min-width:0}
+.chp2-items b{font-size:.88rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chp2-items small{font-size:.74rem;color:#8ea3b2}
+.chp2-on .tool-seo{margin-top:30px}
+/* Einklappen: Pfeil dreht sich beim Öffnen (Fähigkeit und Traits) */
+.chp2-chev{flex:none;width:7px;height:7px;margin:0 3px 3px 6px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);transition:transform .2s}
+[aria-expanded=true]>.chp2-chev,details[open]>summary>.chp2-chev{transform:rotate(-135deg);margin-bottom:-3px}
+/* Fähigkeit: die ersten vier Zeilen, der Rest blendet aus – „Ganze Fähigkeit“ klappt auf. Werte in derselben Box darunter */
+/* Ganze Fähigkeit: auf schmalen Bildschirmen klappt sie einfach darunter auf; ab 1441 px gleitet sie in der Box über die Werte (siehe unten).
+   Zu per erneutem Klick, Klick daneben oder Esc */
+.chp2-abt{display:none;font-size:.88rem;line-height:1.6;scrollbar-width:thin}
+.chp2-abt.open{display:block;margin-top:10px;animation:chp2Fade .25s ease-out}
+.chp2-abs.clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.chp2-abx{display:inline-flex;align-items:center;margin-top:6px;padding:0;border:0;background:none;color:#7ff7ec;font:700 .8rem/1 var(--ff-body);cursor:pointer}
+.chp2-abx:hover{color:#fff}
+.chp2-b-ab h2{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}
+.chp2-role{display:flex;align-items:center;gap:6px;margin-top:9px;font-size:.84rem;font-weight:600;color:#8ea3b2}
+.chp2-role img{flex:none;width:16px;height:16px;opacity:.85}
+/* Traits eingeklappt: nur die Kopfzeile, ein Klick zeigt Stufen und Champions */
+.chp2-tr>summary{list-style:none;cursor:pointer;margin-bottom:0;color:#8ea3b2}
+.chp2-tr>summary::-webkit-details-marker{display:none}
+.chp2-tr>summary:hover b{color:#7ff7ec}
+.chp2-trb{padding-top:10px;animation:chp2Fade .25s ease-out}
+/* Bildlaufleisten in Fähigkeit und Traits: schmal, türkis wie die Seite, ohne Pfeile */
+.chp2-abt{scrollbar-width:thin;scrollbar-color:rgba(46,230,214,.45) transparent}
+.chp2-trs::-webkit-scrollbar,.chp2-abt::-webkit-scrollbar{width:6px}
+.chp2-trs::-webkit-scrollbar-track,.chp2-abt::-webkit-scrollbar-track{background:rgba(255,255,255,.04);border-radius:99px}
+.chp2-trs::-webkit-scrollbar-thumb,.chp2-abt::-webkit-scrollbar-thumb{background:linear-gradient(#2ee6d6,#1b8f87);border-radius:99px}
+.chp2-trs::-webkit-scrollbar-button,.chp2-abt::-webkit-scrollbar-button{display:none}
+/* Riot-Empfehlung: Rollen-Symbol im Titel, kurze Erklärung */
+.chp2-b-riot h2 small{display:inline-flex;align-items:center;gap:5px;color:#9fb6c4}
+.chp2-b-riot h2 small img{opacity:.85}
+.chp2-note{margin:-4px 0 8px;font-size:.78rem;color:#8ea3b2}
+.chp2-tr[open]>summary b{color:#7ff7ec}
+.chp2-lead{max-width:900px}
+/* Kurzfassung der Fähigkeit (TFT_CUSTOM.abilityShort); die ganze Fähigkeit klappt darunter auf */
+.chp2-abs{margin:0;font-size:.9rem;line-height:1.6;color:#dbe5ec}
+
+/* Sanfter Aufbau der Seite (jeder Champion-Wechsel baut neu auf): Boxen gleiten nacheinander herein, Podest blendet ein, die Figur steigt auf.
+   Die Leiste bleibt ruhig stehen – sie gleitet selbst zum neuen Champion */
+@keyframes chp2In{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes chp2Fade{from{opacity:0}}   /* ohne „to“: endet auf der eigenen Deckkraft (Splash 0,12) */
+@keyframes chp2Rise{from{opacity:0;transform:translateY(26px) scale(.96)}to{opacity:1;transform:none}}
+/* Beim Champion-Wechsel bleiben Boxen, Arena und Leiste stehen – nur der Inhalt blendet neu ein, als würden die Felder neu befüllt */
+.chp2-box>*,.chp2-more>*{animation:chp2Fade .35s ease-out both}
+/* Nur beim ersten Laden: die Boxen gleiten nacheinander herein (die Werte zählen dazu hoch, chp2Count in app.js) */
+.chp2-hero.intro .chp2-left>*,.chp2-hero.intro .chp2-right>*{animation:chp2In .6s cubic-bezier(.2,.7,.2,1) both}
+.chp2-hero.intro .chp2-left>:nth-child(2){animation-delay:.1s}.chp2-hero.intro .chp2-right>:nth-child(1){animation-delay:.06s}
+.chp2-hero.intro .chp2-right>:nth-child(2){animation-delay:.16s}.chp2-hero.intro .chp2-right>:nth-child(3){animation-delay:.26s}
+.chp2-hero.intro~.chp2-more{animation:chp2In .6s cubic-bezier(.2,.7,.2,1) .3s both}
+.chp2-stage.intro .chp2-pod{animation:chp2Fade .35s ease-out both}   /* nur beim ersten Aufbau (intro), nicht nach einem Wechsel */
+.chp2-stage.intro .chp2-fig img{animation:chp2Rise .8s cubic-bezier(.2,.7,.2,1) .12s both}
+@media (prefers-reduced-motion:reduce){.chp2-hero *,.chp2-hero::before,.chp2-stage::after,.chp2-more{animation:none !important;transition:none !important}}
+/* Desktop im Querformat (chp2Fit in app.js setzt #chPage.chp2-fit): immer drei Spalten, alles bis zur Champion-Leiste passt ins Fenster –
+   der Bereich wird mit --chz gezoomt. Beide Spalten so hoch wie die Bühne.
+   Links: Fähigkeit oben, Werte unten bündig; „Ganze Fähigkeit“ gleitet über die Werte, die so lange ausblenden (langer Text scrollt in der Box).
+   Rechts: Build oben, Comps unten bündig, Traits frei dazwischen */
+#chPage.chp2-fit .chp2-hero{zoom:var(--chz,1)}   /* füllt die Breite von selbst (innen entsprechend breiter) */
+#chPage.chp2-fit .chp2-left,#chPage.chp2-fit .chp2-right{height:780px}
+#chPage.chp2-fit .chp2-b-ab{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+#chPage.chp2-fit .chp2-b-ab>h2{margin-top:auto;padding-top:14px}
+#chPage.chp2-fit .chp2-b-ab>h2,#chPage.chp2-fit .chp2-stats{transition:opacity .25s,visibility .25s}
+#chPage.chp2-fit .chp2-b-ab:has(.chp2-abt.open)>h2,#chPage.chp2-fit .chp2-b-ab:has(.chp2-abt.open) .chp2-stats{opacity:0;visibility:hidden}
+#chPage.chp2-fit .chp2-abt{display:block;position:absolute;left:22px;right:22px;bottom:20px;margin:0;overflow-y:auto;opacity:0;visibility:hidden;transform:translateY(-10px);
+  transition:opacity .3s,transform .3s cubic-bezier(.2,.7,.2,1),visibility .3s}
+#chPage.chp2-fit .chp2-abt.open{margin:0;opacity:1;visibility:visible;transform:none;animation:none}
+#chPage.chp2-fit .chp2-right>*{flex-shrink:0}
+#chPage.chp2-fit .chp2-traits{flex:1 1 0;min-height:0}
+/* Unter 1440 px reicht die Breite nicht für drei Spalten: links Text, rechts die Bühne, Build, Traits und Comps darunter in zwei Spalten */
+@media (max-width:1440px){#chPage:not(.chp2-fit) .chp2-hero{grid-template-columns:minmax(0,1fr) minmax(0,1fr);overflow-x:clip}#chPage:not(.chp2-fit) .chp2-stage{grid-column:2;grid-row:1;--pw:min(560px,100cqw)}#chPage:not(.chp2-fit) .chp2-strip-w{grid-row:2}#chPage:not(.chp2-fit) .chp2-right{grid-row:3}
+  #chPage:not(.chp2-fit) .chp2-right{grid-column:1 / -1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}}
+@media (max-width:760px){.chp2-hero{grid-template-columns:minmax(0,1fr)}.chp2-strip-w{grid-row:3}.chp2-strip{padding-top:12px}.chp2-strip a{width:60px;height:60px;border-radius:12px}.chp2-right{grid-row:4}.chp2-stage{grid-column:1;grid-row:2;height:480px;--w:min(460px,118cqw);--pw:min(460px,100cqw)}.chp2-right{grid-template-columns:minmax(0,1fr)}.chp2-more,.chp2-more-g{grid-template-columns:minmax(0,1fr)}.chp2-pt{grid-template-columns:repeat(4,minmax(0,1fr))}.chp2-ag{grid-template-columns:minmax(0,1fr)}.chp2-pic{width:72px;height:72px}}

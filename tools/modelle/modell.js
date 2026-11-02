@@ -15,6 +15,7 @@
     --groesse 600     Bildgröße in Pixeln (quadratisch)
     --yaw -25         Drehung der Figur in Grad   --pitch 30   Kamera von oben in Grad (TFT-Blickwinkel)
     --bg 06141e       Hintergrundfarbe statt transparent (nur zur Vorschau)
+    --alpha dunkel    Alphakanal als Leucht-Maske: nicht leuchtende Stellen dunkler (z. B. Amumus Gesicht)
     --out datei.webp  Ausgabe (.webp oder .png); Standard: tools/modelle/cache/<champion>-<anim>.webp
   Umgebung: LOL_GAME = Installationsordner von League (Standard C:/Riot Games/League of Legends)
   Zwischendateien liegen in tools/modelle/cache/ (nicht im Repo).
@@ -48,7 +49,7 @@ async function rendern(query, out) {
     ws.onmessage = m => { const d = JSON.parse(m.data); if (d.id && pend[d.id]) { pend[d.id](d); delete pend[d.id]; } if (d.method === 'Runtime.exceptionThrown') errs.push(d.params.exceptionDetails.text); };
     await new Promise(r => ws.onopen = r); await send('Page.enable'); await send('Runtime.enable');
     await send('Page.navigate', {url: `http://127.0.0.1:${srv.address().port}/render.html?` + query});
-    let done = false; for (let i = 0; i < 160 && !done; i++) { await sleep(250); done = (await send('Runtime.evaluate', {expression: 'window.__done === true', returnByValue: true})).result.result.value; }
+    let done = false; for (let i = 0; i < 480 && !done; i++)   /* bis 2 Minuten (unter Last) */ { await sleep(250); done = (await send('Runtime.evaluate', {expression: 'window.__done === true', returnByValue: true})).result.result.value; }
     if (!done) throw new Error('Rendern fehlgeschlagen ' + errs.join(' '));
     const info = (await send('Runtime.evaluate', {expression: 'window.__info', returnByValue: true})).result.result.value;
     const img = (await send('Runtime.evaluate', {expression: 'window.__png', returnByValue: true})).result.result.value;
@@ -68,6 +69,7 @@ async function rendern(query, out) {
   const out = path.resolve(opt('out', path.join(CACHE, `${champ.toLowerCase()}-${anim}.webp`)));
   const q = new URLSearchParams({d: path.relative(CACHE, dir).split(path.sep).join('/'), size: opt('groesse', '600'), yaw: opt('yaw', '-25'), pitch: opt('pitch', '30'), fmt: out.endsWith('.png') ? 'png' : 'webp'});
   if (opt('bg')) q.set('bg', opt('bg'));
+  if (opt('alpha')) q.set('alpha', opt('alpha'));   // --alpha dunkel: Leucht-Maske nachbilden (render.html)
   const info = await rendern(q.toString(), out);
   console.log(`${champ} (Set ${set}, ${anim} @ ${zeit}) · ${pose.info} · ${info}\n  → ${out} (${(fs.statSync(out).size / 1024).toFixed(0)} KB)`);
   process.exit(0);
