@@ -19,7 +19,7 @@
   var wantEn = pref === 'en' || (!pref && !bot && !langs.some(function(l){ return /^de/i.test(l); }));
   if(!en && wantEn && !file){ location.replace('/en' + p + location.search); return; }
   window.TFT_LANG = en ? 'en' : 'de';
-  if(en){ document.documentElement.lang = 'en'; document.write('<script src="assets/js/i18n-en.js?v=00243886de"><\/script>'); }
+  if(en){ document.documentElement.lang = 'en'; document.write('<script src="assets/js/i18n-en.js?v=36e99ecc62"><\/script>'); }
 })();
 </script>
 <!-- Google Analytics (G-BTL7VP5CTK): misst jeden Besuch ab dem Aufruf, nicht erst nach Bestätigung im Hinweis-Banner (bewusste Entscheidung).
@@ -73,9 +73,9 @@
 <link rel="preconnect" href="https://ddragon.leagueoflegends.com">
 <!-- app.js und sim.js stehen am Ende von <body>: hier schon anmelden, damit sie am Handy vor den Bildern geladen werden -->
 <link rel="preload" href="assets/js/sim.js?v=416a7d3541" as="script">
-<link rel="preload" href="assets/js/app.js?v=11d67c588a" as="script">
+<link rel="preload" href="assets/js/app.js?v=26fae18953" as="script">
 <link rel="stylesheet" href="assets/css/fonts.css?v=56685235ed">
-<link rel="stylesheet" href="assets/css/site.css?v=5e71f53f10">
+<link rel="stylesheet" href="assets/css/site.css?v=7e30e41e52">
 <script>
 // Design: das neue TFTClimb-Design gilt für alle. Nur zum Vergleich lässt sich mit ?design=alt das alte Design ansehen
 // (der Browser merkt sich die Wahl), ?design=neu schaltet zurück.
@@ -88,7 +88,7 @@
     alt = localStorage.getItem('tftfreaks_design') === 'alt';
   } catch(e){}
   if(!alt){
-    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=05e4e1c796">');
+    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=c3247e6ae4">');
     // Topleiste und Seitenleiste stehen sofort (assets/js/shell.js), den Inhalt baut app.js: bis alle Skripte gelaufen sind, bleibt er verborgen und oben läuft ein Ladebalken
     document.addEventListener('DOMContentLoaded', function(){ document.documentElement.classList.add('nd-ready'); });
   }
@@ -131,8 +131,8 @@
         </div>
         <div class="hero-visual">
           <div class="ring r1"></div><div class="ring r2"></div>
-          <img class="hero-emblem" src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt="TFT Challenger-Emblem" width="512" height="512"><div class="mascot-glow emb"></div>
-          <div class="chip-float a"><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt="" width="40" height="40" style="width:40px;height:40px;object-fit:contain"><div>Founder CrazYSlayt<b>Challenger seit Set 15</b></div></div>
+          <img class="hero-emblem" src="assets/img/ranks/challenger.webp" alt="TFT Challenger-Emblem" width="512" height="512"><div class="mascot-glow emb"></div>
+          <div class="chip-float a"><img src="assets/img/ranks/challenger-s.webp" alt="" width="40" height="40" style="width:40px;height:40px;object-fit:contain"><div>Founder CrazYSlayt<b>Challenger seit Set 15</b></div></div>
           <div class="chip-float b"><div>S-Tier Comps<b id="sCount">—</b></div></div>
         </div>
       </div>
@@ -205,7 +205,7 @@
     <div class="art-stats"><div class="p"><b>29</b><span>Comps in der Tierlist für Patch 18.5</span></div><div class="p"><b>7</b><span>kostenlose TFT-Tools</span></div><div class="g"><b>38</b><span>Cheatsheets mit allen Zahlen des Sets</span></div></div>
     <h3 id="homea-tierlist">Die TFT Tierlist für Patch 18.5</h3><p>Die <a class="art-a" href="/tierlist">Tierlist</a> bewertet 29 Comps von S bis C, dazu situative Comps für besondere Lagen. Jede Comp zeigt Aufstellung, Items, Augments und den Spielplan. Aktuell im S-Tier: Draven Dragon 9. Eigene Tierlists gibt es außerdem für Items, Augments und die Champions, die du in Stage 1 halten solltest.</p><h3 id="homea-tools">Kostenlose TFT-Tools</h3><p>Alle Tools laufen im Browser, ohne Anmeldung und mit den Daten des aktuellen Patches:</p><ul class="art-list"><li><a class="art-a" href="/tools/tft-rolldown-rechner">Rolldown-Rechner</a> – Triffst du deine Units?</li><li><a class="art-a" href="/tools/tft-augment-chancen">Augment-Chancen</a> – Wie oft kommt Prismatisch?</li><li><a class="art-a" href="/tools/tft-dps-rechner">DPS-Rechner</a> – Welcher Item-Build gewinnt?</li><li><a class="art-a" href="/tools/tft-item-drop-chance">Item-Drop-Chance</a> – Welche Komponente kommt als Nächstes?</li><li><a class="art-a" href="/tft-team-builder">Team Builder</a> – Board planen und teilen</li><li><a class="art-a" href="/tools/tft-kampf-simulator">Kampf-Simulator</a> – Welches Board gewinnt?</li><li><a class="art-a" href="/tools/tft-tierlist-maker">Tierlist-Maker</a> – Deine eigene Tierlist erstellen</li></ul><h3 id="homea-cheatsheets">Cheatsheets: alle Zahlen des Sets</h3><p>38 <a class="art-a" href="/cheatsheet">Cheatsheets</a> zum schnellen Nachschlagen neben dem Spiel: Shop Odds und XP, Augment-Stufen, Encounter, Loot-Orbs, Spielerschaden, Embleme sowie Tabellen zu einzelnen Augments und Traits. Jede Tabelle kannst du als Bild ausschneiden und teilen.</p><h3 id="homea-bibliothek">Bibliothek und Patch Notes</h3><p>In der <a class="art-a" href="/bibliothek">Bibliothek</a> findest du alle 65 Champions, 35 Traits sowie alle Items und Augments von Set 18 mit den offiziellen Werten. Die <a class="art-a" href="/patches">Patch Notes</a> bereiten wir nach jedem Patch übersichtlich auf – sortiert nach Champions, Traits, Items und Augments.</p><h3 id="homea-nextset">Das nächste Set: Set 19</h3><p>Wann der PBE startet, wann Set 19 live geht und ab dem PBE alle neuen Champions, Traits und Augments: <a class="art-a" href="/tft-set-19">TFT Set 19</a>.</p><h3 id="homea-coaching">Coaching von TFTClimb</h3><p>Du willst gezielt besser werden? Im <a class="art-a" href="/coaching">Coaching</a> schauen wir uns deine Partien an und arbeiten an den Entscheidungen, die dich LP kosten – von der Econ über den Rolldown bis zur Positionierung.</p>
     <h3 id="homea-faq">Häufige Fragen</h3><div class="art-faq"><details><summary>Ist TFTClimb kostenlos?</summary><p>Ja. Tierlist, Tools, Cheatsheets, Bibliothek und Patch Notes sind kostenlos und ohne Anmeldung nutzbar. Coaching ist ein eigenes Angebot.</p></details><details><summary>Wie oft wird die Tierlist aktualisiert?</summary><p>Mit jedem Patch, also etwa alle zwei Wochen. Neue, steigende und fallende Comps sind in der Tierlist markiert.</p></details><details><summary>Gibt es TFTClimb auch auf Englisch?</summary><p>Ja, alle Seiten gibt es auch auf Englisch. Die Sprache stellst du in den Einstellungen oben rechts um.</p></details></div>
-    <div class="art-author"><a href="/about/crazyslayt" class="aa-img"><img src="assets/img/team-claudio.jpg" alt="Claudio „CrazYSlayt“" width="64" height="64" loading="lazy"><img class="aa-emb" src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt="" width="24" height="24" loading="lazy"></a>
+    <div class="art-author"><a href="/about/crazyslayt" class="aa-img"><img src="assets/img/team-claudio.jpg" alt="Claudio „CrazYSlayt“" width="64" height="64" loading="lazy"><img class="aa-emb" src="assets/img/ranks/challenger-s.webp" alt="" width="24" height="24" loading="lazy"></a>
   <div><small>Inhalt geprüft von</small><a href="/about/crazyslayt" class="aa-name">Claudio „CrazYSlayt“</a><span class="aa-role">TFT Challenger · TFTClimb Coach</span>
     <p>Claudio spielt TFT auf Challenger-Niveau und coacht bei TFTClimb Spieler auf dem Weg nach oben.</p></div></div>
     <h3>Weiterlesen</h3>
@@ -411,8 +411,9 @@
         <button class="buddy-img m-chibi" type="button" aria-label="Vi – nächster Tipp" title="Klick für den nächsten Tipp"></button>
         <div class="buddy-bubble" role="status" aria-live="polite"><span class="buddy-text"></span><i class="bd1"></i><i class="bd2"></i></div>
       </div>
+      <section class="tool-seo ag-art" aria-labelledby="ts-ranks" data-pre="ranks" data-noi18n></section>
     </div>
-    <div id="rk-detail" hidden></div>
+    <div id="rk-detail" hidden><div id="rk2App"></div><section class="tool-seo ag-art rk2-art" aria-labelledby="ts-rank" data-pre="rank" data-noi18n></section></div>
   </div>
 </template></div>
 
@@ -1000,13 +1001,13 @@
         <h3 class="about-h">Rang-Historie</h3>
         <p class="about-sub">Peak-LP pro Set (Ranked, EUW)</p>
         <div class="lp-hist">
-          <div class="lp-row"><span>Set 18</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>557 LP</em></div>
-          <div class="lp-row"><span>Set 17</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>621 LP</em></div>
-          <div class="lp-row"><span>Set 16</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>511 LP</em></div>
-          <div class="lp-row best"><span>Set 15</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>1.002 LP</em></div>
-          <div class="lp-row"><span>Set 14</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Master.png" alt=""><b>Meister</b><em>390 LP</em></div>
-          <div class="lp-row"><span>Set 13</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Master.png" alt=""><b>Meister</b><em>380 LP</em></div>
-          <div class="lp-row"><span>Set 12</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Diamond.png" alt=""><b>Diamant IV</b><em>Wiedereinstieg</em></div>
+          <div class="lp-row"><span>Set 18</span><img src="assets/img/ranks/challenger-s.webp" alt=""><b>Challenger</b><em>557 LP</em></div>
+          <div class="lp-row"><span>Set 17</span><img src="assets/img/ranks/challenger-s.webp" alt=""><b>Challenger</b><em>621 LP</em></div>
+          <div class="lp-row"><span>Set 16</span><img src="assets/img/ranks/challenger-s.webp" alt=""><b>Challenger</b><em>511 LP</em></div>
+          <div class="lp-row best"><span>Set 15</span><img src="assets/img/ranks/challenger-s.webp" alt=""><b>Challenger</b><em>1.002 LP</em></div>
+          <div class="lp-row"><span>Set 14</span><img src="assets/img/ranks/master-s.webp" alt=""><b>Meister</b><em>390 LP</em></div>
+          <div class="lp-row"><span>Set 13</span><img src="assets/img/ranks/master-s.webp" alt=""><b>Meister</b><em>380 LP</em></div>
+          <div class="lp-row"><span>Set 12</span><img src="assets/img/ranks/diamond-s.webp" alt=""><b>Diamant IV</b><em>Wiedereinstieg</em></div>
         </div>
       </div>
       <div class="about-col">
@@ -1059,16 +1060,16 @@
         <h3 class="about-h">Rang-Historie</h3>
         <p class="about-sub">Peak-LP pro Set (Ranked, EUW)</p>
         <div class="lp-hist">
-          <div class="lp-row"><span>Set 18</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>1.073 LP</em></div>
-          <div class="lp-row"><span>Set 17</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>1.078 LP</em></div>
-          <div class="lp-row"><span>Set 16</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>1.404 LP</em></div>
-          <div class="lp-row best"><span>Set 15</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>1.447 LP</em></div>
-          <div class="lp-row"><span>Set 14</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Master.png" alt=""><b>Meister</b><em>360 LP</em></div>
-          <div class="lp-row"><span>Set 13</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Master.png" alt=""><b>Meister</b><em>345 LP</em></div>
-          <div class="lp-row"><span>Set 12</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Master.png" alt=""><b>Meister</b><em>352 LP</em></div>
-          <div class="lp-row"><span>Set 11</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_GrandMaster.png" alt=""><b>Großmeister</b><em>832 LP</em></div>
-          <div class="lp-row"><span>Set 10</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Challenger.png" alt=""><b>Challenger</b><em>533 LP</em></div>
-          <div class="lp-row"><span>Set 9.5</span><img src="https://ddragon.leagueoflegends.com/cdn/16.20.1/img/tft-regalia/TFT_Regalia_Master.png" alt=""><b>Meister</b><em>531 LP</em></div>
+          <div class="lp-row"><span>Set 18</span><img src="assets/img/ranks/challenger-s.webp" alt=""><b>Challenger</b><em>1.073 LP</em></div>
+          <div class="lp-row"><span>Set 17</span><img src="assets/img/ranks/challenger-s.webp" alt=""><b>Challenger</b><em>1.078 LP</em></div>
+          <div class="lp-row"><span>Set 16</span><img src="assets/img/ranks/challenger-s.webp" alt=""><b>Challenger</b><em>1.404 LP</em></div>
+          <div class="lp-row best"><span>Set 15</span><img src="assets/img/ranks/challenger-s.webp" alt=""><b>Challenger</b><em>1.447 LP</em></div>
+          <div class="lp-row"><span>Set 14</span><img src="assets/img/ranks/master-s.webp" alt=""><b>Meister</b><em>360 LP</em></div>
+          <div class="lp-row"><span>Set 13</span><img src="assets/img/ranks/master-s.webp" alt=""><b>Meister</b><em>345 LP</em></div>
+          <div class="lp-row"><span>Set 12</span><img src="assets/img/ranks/master-s.webp" alt=""><b>Meister</b><em>352 LP</em></div>
+          <div class="lp-row"><span>Set 11</span><img src="assets/img/ranks/grandmaster-s.webp" alt=""><b>Großmeister</b><em>832 LP</em></div>
+          <div class="lp-row"><span>Set 10</span><img src="assets/img/ranks/challenger-s.webp" alt=""><b>Challenger</b><em>533 LP</em></div>
+          <div class="lp-row"><span>Set 9.5</span><img src="assets/img/ranks/master-s.webp" alt=""><b>Meister</b><em>531 LP</em></div>
         </div>
       </div>
       <div class="about-col">
@@ -1332,6 +1333,6 @@ document.write('<script src="data/rollen-' + pick.set + '.js"><\/script>');  // 
 })();
 </script>
 <script src="assets/js/sim.js?v=416a7d3541"></script>
-<script src="assets/js/app.js?v=11d67c588a"></script>
+<script src="assets/js/app.js?v=26fae18953"></script>
 </body>
 </html>

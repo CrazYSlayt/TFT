@@ -835,11 +835,11 @@ const RK = window.TFT_RANKS && window.TFT_RANKS.div && window.TFT_RANKS.apex ? w
 const RANK_SRC = RK ? {name:RK.source, url:RK.url, when:`Set ${RK.set}, Stand ${RK.month}`}
   : {name:'EsportsTales', url:'https://www.esportstales.com/teamfight-tactics/seasonal-rank-system-and-player-distribution', when:'Set 18, Stand September 2026'};
 const RANK_TIERS = [
-  {k:'iron', n:L('Eisen','Iron'), f:'Iron', div:[0.006,0.27,1.1,1.4], d:'Der Einstieg ins Ranked. Hier zählen die Grundlagen: Leben schonen, Econ verstehen, eine Comp sicher spielen.'},
+  {k:'iron', n:L('Eisen','Iron'), f:'Iron', div:[0.006,0.27,1.1,1.4], d:'Der Einstieg ins Ranked: Leben schonen, Econ verstehen und eine Comp sicher spielen.'},
   {k:'bronze', n:L('Bronze','Bronze'), f:'Bronze', div:[2.7,4.3,5.9,6.5], d:'Bronze trennt Neulinge von regelmäßigen Spielern. Wer Zinsen sauber mitnimmt, steigt hier schnell auf.'},
   {k:'silver', n:L('Silber','Silver'), f:'Silver', div:[9.8,9.7,9.5,7.1], d:'Silber ist die größte Gruppe der Spielerbasis. Stabil Top 4 spielen reicht, um hier rauszukommen.'},
   {k:'gold', n:L('Gold','Gold'), f:'Gold', div:[10,7.2,5.4,3.2], d:'Gold liegt zwischen Silber und Platin. Zwei Comps sicher beherrschen bringt dich zum nächsten Rang.'},
-  {k:'platinum', n:L('Platin','Platinum'), f:'Platinum', div:[5.3,3.1,2.1,1.1], d:'Platin ist klar überdurchschnittlich. Positionierung und Item-Entscheidungen machen jetzt den Unterschied.'},
+  {k:'platinum', n:L('Platin','Platinum'), f:'Platinum', div:[5.3,3.1,2.1,1.1], d:'Platin ist klar überdurchschnittlich. Jetzt entscheiden Positionierung und Items.'},
   {k:'emerald', n:L('Smaragd','Emerald'), f:'Emerald', div:[1.7,0.89,0.55,0.25], d:'Smaragd gehört zur oberen Spitze. Flexibel spielen und die Lobby lesen wird hier Pflicht.'},
   {k:'diamond', n:L('Diamant','Diamond'), f:'Diamond', div:[0.42,0.19,0.11,0.03], d:'Diamant ist die Elite der Ranglisten-Spieler. Jeder Fehler kostet hier spürbar LP.'},
   {k:'master', n:L('Meister','Master'), f:'Master', pct:0.21, d:'Ab Meister gibt es keine Divisionen mehr – nur noch LP. Jede Partie zählt direkt.'},
@@ -848,7 +848,8 @@ const RANK_TIERS = [
 ];
 if(RK) RANK_TIERS.forEach(t=>{ if(t.div){ if(Array.isArray(RK.div[t.k]) && RK.div[t.k].length===4) t.div = RK.div[t.k]; } else if(typeof RK.apex[t.k]==='number') t.pct = RK.apex[t.k]; });
 const DIVS = ['IV','III','II','I'];
-const rankImg = t => `${DD}tft-regalia/TFT_Regalia_${t.f}.png`;
+// Embleme lokal (tools/rang-embleme.js): 512 px für große Darstellungen, sonst 128 px
+const rankImg = (t, big) => `assets/img/ranks/${t.f.toLowerCase()}${big ? '' : '-s'}.webp`;
 // Einträge aufsteigend (Eisen IV … Challenger) mit kumulierten Werten
 const RANK_ENTRIES = [];
 RANK_TIERS.forEach(t=>{ t.total = t.div ? t.div.reduce((a,b)=>a+b,0) : t.pct; (t.div ? t.div.map((p,i)=>({t, d:DIVS[i], p})) : [{t, d:'', p:t.pct}]).forEach(e=>RANK_ENTRIES.push(e)); });
@@ -896,11 +897,11 @@ function renderRankDetail(key){
     : es.map(e=>{ const l = e.t.n + (e.d ? ' ' + e.d : ''); return {k: apex ? e.t.k : e.d, v:e.p, label:l, short:l, img:rankImg(e.t), href: apex ? '/ranks/'+e.t.k : null}; });
   const where = (prev ? `Über ${prev.n}. ` : 'Der Einstieg ins Ranked. ') + (next ? `Nächster Rang: ${next.n}.` : 'Höher geht es nicht.');
   const exact = RANK_ENTRIES.slice().reverse().map(e=>`<tr${e.t===t?' class="on"':''}><td>${esc(e.t.n+(e.d?' '+e.d:''))}</td><td>${fmtPct(e.p)}</td><td>Top ${fmtPct(e.top)}</td></tr>`).join('');
-  $('#rk-detail').innerHTML = `
+  $('#rk2App').innerHTML = `
     <div class="rk-back"><a href="/ranks">← Alle TFT-Ränge</a> / <span>${esc(t.n)}</span></div>
     <div class="rk-card">
       <div class="rk-head">
-        <img src="${rankImg(t)}" alt="TFT Rang ${esc(t.n)}">
+        <img src="${rankImg(t, 1)}" alt="TFT Rang ${esc(t.n)}">
         <div><h1>TFT Rang ${esc(t.n)}</h1><p>${esc(t.d)}</p></div>
         <div class="rk-big"><b>${fmtPct(t.total)}</b><small>der erfassten Spieler</small></div>
       </div>
@@ -926,11 +927,118 @@ function renderRankDetail(key){
       <p class="note">Quelle: <a href="${RANK_SRC.url}" target="_blank" rel="noopener" style="text-decoration:underline">${RANK_SRC.name}</a> · ${RANK_SRC.when}. Region und Erhebungsweise sind dort nicht angegeben – die Werte sind Schätzungen einer Stichprobe, nicht alle aktiven Spieler. Rundungsbedingt ergibt die Summe nicht genau 100 %.</p>
     </div>`;
 }
+/* --- Rang-Seite V2 (live seit 2026-11-02): links alle Ränge als Raster (Welle beim Hovern, Glanz über das Emblem, gewählter Rang und seine Reihe
+   hervorgehoben), Mitte groß das Emblem auf der Arena mit Division, Anteil und LP bis zur nächsten Stufe, rechts Verteilung als Balken.
+   Adresse /ranks/<rang>#<rang>-<division 1–4> (z. B. /ranks/diamond#diamond-2); Wechsel ohne Neuaufbau, Zahlen und Balken zählen vom alten Wert --- */
+const RK_V2 = true;   // false = alte Detailseite (renderRankDetail)
+const RK_ROM = {1:'I', 2:'II', 3:'III', 4:'IV'}, RK_NUM = {I:1, II:2, III:3, IV:4};
+let rk2Cur = null;
+const rk2Entry = (t, d) => RANK_ENTRIES.find(e=>e.t === t && (t.div ? e.d === d : true));
+// Prozentzahl weich hochzählen (Format fmtPct); data-v merkt den gezeigten Wert für den nächsten Wechsel
+const RK_BOT = /bot|crawl|spider|slurp|lighthouse|headless/i.test(navigator.userAgent);   // Suchmaschinen sehen sofort die echten Werte statt eines Zwischenstands
+function rk2Pct(el, to, delay = 0){
+  const from = +(el.dataset.v || 0); el.dataset.v = to;
+  if(CHS_CALM.matches || RK_BOT){ el.textContent = fmtPct(to); return; }
+  cancelAnimationFrame(el._nu); const t0 = performance.now() + delay, dur = 1100;
+  const step = now => { const p = Math.min(1, Math.max(0, (now - t0) / dur)); el.textContent = fmtPct(from + (to - from) * (1 - Math.pow(1 - p, 3))); if(p < 1) el._nu = requestAnimationFrame(step); };
+  el._nu = requestAnimationFrame(step);
+}
+function renderRankV2(key){
+  const t = rankBy[key], box = $('#rk2App');
+  const hd = (location.hash.match(new RegExp('^#' + key + '-([1-4])$')) || [])[1], d = t.div ? RK_ROM[hd] || 'IV' : '';
+  if(!box.querySelector('.rk2')){
+    // Raster: je Rang eine Reihe (IV … I), Meister bis Challenger zusammen in der letzten Reihe
+    const cell = (x, dv) => `<a class="rk2-c" href="/ranks/${x.k}${dv ? `#${x.k}-${RK_NUM[dv]}` : ''}" data-k="${x.k}" data-d="${dv}" style="--img:url('${rankImg(x)}');--rc:${RK_COL[x.k]}" aria-label="${esc(x.n)}${dv ? ' ' + dv : ''}">
+      <img src="${rankImg(x)}" alt="" loading="lazy">${dv ? `<b>${dv}</b>` : `<b class="ap">${esc(x.n)}</b>`}</a>`;
+    const rows = RANK_TIERS.filter(x=>x.div).map(x=>`<div class="rk2-r" data-k="${x.k}">${DIVS.map(dv=>cell(x, dv)).join('')}</div>`).join('')
+      + `<div class="rk2-r ap" data-k="apex">${RANK_TIERS.filter(x=>!x.div).map(x=>cell(x, '')).join('')}</div>`;
+    box.innerHTML = `<div class="rk2 intro">
+      <div class="rk2-l">
+        <div class="crumb"><a href="/">Home</a> / <a href="/ranks">Ranks</a> / <span data-rk2="crumb"></span></div>
+        <h1 class="rk2-h1"><span data-rk2="name"></span> ${L('TFT Rang', 'TFT Rank')}<small>${L('LP, Divisionen &amp; Verteilung', 'LP, divisions &amp; distribution')}</small></h1>
+        <p class="rk2-lead" data-rk2="lead" data-meta></p>
+        <div class="rk2-grid">${rows}</div>
+        <a class="rk2-all" href="/ranks">${L('Alle Ränge &amp; Verteilung', 'All ranks &amp; distribution')} ›</a>
+      </div>
+      <div class="rk2-m"><div class="rk2-stage">
+        <div class="rk2-emb"><img data-rk2="emb" src="" alt=""><span class="rk2-div" data-rk2="div"></span></div>
+        <div class="rk2-cap"><b data-rk2="title"></b><span class="rk2-share"><b data-rk2="share">0 %</b> ${L('der Spieler', 'of players')} · ${L('besser als', 'better than')} <b data-rk2="better">0 %</b></span>
+          <span class="rk2-next" data-rk2="next"></span></div></div></div>
+      <div class="rk2-rt">
+        <div class="rk2-kpi"><div><small data-rk2="inLbl"></small><b data-rk2="in">0 %</b><span>${L('der erfassten Spieler', 'of tracked players')}</span></div>
+          <div><small>${L('Darunter', 'Below')}</small><b data-rk2="below">0 %</b><span data-rk2="belowLbl"></span></div></div>
+        <div class="rk2-sec"><h2>${L('Rangverteilung', 'Rank distribution')}</h2>
+          <div class="rk2-bars">${RANK_TIERS.map(x=>`<a class="rk2-b" href="/ranks/${x.k}" data-k="${x.k}" style="--rc:${RK_COL[x.k]}"><em data-v="0">${fmtPct(x.total)}</em><i><s></s></i><img src="${rankImg(x)}" alt="${esc(x.n)}" loading="lazy"></a>`).join('')}</div>
+          <small class="rk2-src">${esc(RANK_SRC.name)} · ${esc(RANK_SRC.when.replace('Stand', L('Stand', 'as of')))}</small></div>
+        <div class="rk2-sec"><h2 data-rk2="divH"></h2><div class="rk2-hb" data-rk2="divs"></div></div>
+      </div></div>`;
+    // Klick im Raster: gleicher Rang → nur Division wechseln, anderer Rang → neue Adresse, Seite füllt sich neu (ohne Neuaufbau)
+    box.querySelector('.rk2-grid').addEventListener('click', e=>{ const a = e.target.closest('.rk2-c'); if(!a || e.ctrlKey || e.metaKey) return; e.preventDefault(); e.stopPropagation();
+      const url = a.getAttribute('href'); if(location.pathname + location.hash === url) return;
+      history.pushState(null, '', url); if(a.dataset.k === curPath().split('/')[2] && rk2Cur && rk2Cur.t.k === a.dataset.k) renderRankV2(a.dataset.k); else route(); }, true);
+    rk2Wave(box.querySelector('.rk2-grid'));
+    setTimeout(()=>{ const r = box.querySelector('.rk2'); if(r) r.classList.remove('intro'); }, 1600);
+  }
+  rk2Fill(t, d);
+  if(!box.querySelector('.rk2-lead').style.minHeight) document.fonts.ready.then(rk2LeadMin);   // erst mit geladener Schrift messen
+}
+// Einleitung = Meta-Beschreibung + Kurztext des Rangs (data-meta: metaLead fügt sie dann nicht noch einmal ein)
+const rk2LeadTxt = t => { const md = (pageMeta('ranks', t.k) || [])[1]; return (md ? tr(md) + ' ' : '') + tr(t.d); };
+// Einleitung so hoch wie die längste aller Ränge, damit Raster und Überschrift beim Wechsel nicht springen (bei Größenänderung neu)
+function rk2LeadMin(){
+  const p = $('#rk2App .rk2-lead'); if(!p || !p.getClientRects().length) return;
+  const cur = p.textContent; p.style.minHeight = '';
+  p.style.minHeight = Math.max(...RANK_TIERS.map(x=>{ p.textContent = rk2LeadTxt(x); return p.offsetHeight; })) + 'px'; p.textContent = cur;
+}
+let rk2Rs = 0; addEventListener('resize', ()=>{ clearTimeout(rk2Rs); rk2Rs = setTimeout(rk2LeadMin, 150); });
+function rk2Fill(t, d){
+  const box = $('#rk2App'), q = k => box.querySelector(`[data-rk2="${k}"]`), e = rk2Entry(t, d), idx = RANK_TIERS.indexOf(t), apex = !t.div;
+  const label = t.n + (d ? ' ' + d : ''), same = rk2Cur && rk2Cur.t === t;
+  // Raster: gewählte Zelle und ihre Reihe
+  box.querySelectorAll('.rk2-c').forEach(c=>c.classList.toggle('on', c.dataset.k === t.k && c.dataset.d === d));
+  box.querySelectorAll('.rk2-r').forEach(r=>r.classList.toggle('on', r.dataset.k === (apex ? 'apex' : t.k)));
+  box.querySelector('.rk2').style.setProperty('--rc', RK_COL[t.k]);
+  q('crumb').textContent = t.n; q('name').textContent = t.n; q('lead').textContent = rk2LeadTxt(t);
+  // Mitte: Emblem wechselt nur beim Rangwechsel (mit kurzem Aufleuchten), Division, Anteil, LP bis zur nächsten Stufe
+  const emb = q('emb'); if(!same){ emb.src = rankImg(t, 1); emb.alt = `TFT ${t.n}`;
+    const st = box.querySelector('.rk2-stage'); st.classList.remove('flip'); void st.offsetWidth; st.classList.add('flip'); }
+  q('div').textContent = d; q('div').hidden = !d; q('title').textContent = label;
+  rk2Pct(q('share'), e.p, 150); rk2Pct(q('better'), Math.min(100, e.below), 150);
+  const nx = d && d !== 'I' ? {t, d:DIVS[DIVS.indexOf(d) + 1]} : RANK_TIERS[idx + 1] ? {t:RANK_TIERS[idx + 1], d:RANK_TIERS[idx + 1].div ? 'IV' : ''} : null;
+  const cut = stCut('euw') || {}, lpCut = t.k === 'grandmaster' ? cut.gm : t.k === 'challenger' ? cut.ch : 0;
+  q('next').innerHTML = apex ? (lpCut ? `${L('Ab', 'From')} <b>${Number(lpCut).toLocaleString(LOC)} LP</b> ${L('auf EUW', 'on EUW')}` : L('Keine Divisionen – nur noch LP', 'No divisions – just LP'))
+    : nx ? `<b>100 LP</b> ${L('bis', 'to')} <a href="/ranks/${nx.t.k}${nx.d ? `#${nx.t.k}-${RK_NUM[nx.d]}` : ''}"><img src="${rankImg(nx.t)}" alt="">${esc(nx.t.n)}${nx.d ? ' ' + nx.d : ''}</a>` : '';
+  // rechts: Kennzahlen und Balken
+  q('inLbl').textContent = L(`Spieler in ${t.n}`, `Players in ${t.n}`); rk2Pct(q('in'), t.total, 250); rk2Pct(q('below'), t.below, 250); q('belowLbl').textContent = L(`unter ${t.n}`, `below ${t.n}`);
+  const max = Math.max(...RANK_TIERS.map(x=>x.total));
+  box.querySelectorAll('.rk2-b').forEach((b, i)=>{ const x = rankBy[b.dataset.k]; b.classList.toggle('on', x === t); b.querySelector('s').style.height = (x.total / max * 100).toFixed(1) + '%'; rk2Pct(b.querySelector('em'), x.total, 300 + i * 40); });
+  q('divH').textContent = apex ? L('Meister bis Challenger', 'Master to Challenger') : L(`${t.n}-Divisionen`, `${t.n} divisions`);
+  const es = (apex ? RANK_ENTRIES.filter(x=>!x.d) : RANK_ENTRIES.filter(x=>x.t === t)).slice().reverse(), dmax = Math.max(...es.map(x=>x.p));   // höchste Stufe oben
+  const hb = q('divs'), rebuild = !same || !hb.children.length;
+  if(rebuild) hb.innerHTML = es.map(x=>`<a class="rk2-h" href="/ranks/${x.t.k}${x.d ? `#${x.t.k}-${RK_NUM[x.d]}` : ''}" data-k="${x.t.k}" data-d="${x.d}"><span>${x.d ? x.d : esc(x.t.n)}</span><i><s></s></i><em>0 %</em></a>`).join('');
+  hb.querySelectorAll('.rk2-h').forEach((a, i)=>{ const x = es[i]; a.classList.toggle('on', x.t === t && x.d === d);
+    requestAnimationFrame(()=>{ a.querySelector('s').style.width = (x.p / dmax * 100).toFixed(1) + '%'; }); rk2Pct(a.querySelector('em'), x.p, 350 + i * 60); });
+  if(rebuild) hb.onclick = e=>{ const a = e.target.closest('.rk2-h'); if(!a) return; e.preventDefault(); e.stopPropagation(); const c = $('#rk-detail').querySelector(`.rk2-c[data-k="${a.dataset.k}"][data-d="${a.dataset.d}"]`); if(c) c.click(); };
+  if(!same) seoMount('rank', t.k);   // Artikel zum Rang (SEO_ART.rank)
+  rk2Cur = {t, d};
+}
+// Welle im Raster: Embleme nahe der Maus werden größer (weicher Abfall über RK2_WAVE px)
+const RK2_WAVE = 120;
+function rk2Wave(grid){
+  if(CHS_CALM.matches || !matchMedia('(hover:hover)').matches) return;
+  const cells = [...grid.querySelectorAll('.rk2-c')]; let raf = 0, mx = 0, my = 0;
+  const run = () => { raf = 0; cells.forEach(c=>{ const r = c.getBoundingClientRect(), dx = r.left + r.width / 2 - mx, dy = r.top + r.height / 2 - my, dd = Math.hypot(dx, dy);
+    const s = dd < RK2_WAVE ? 1 + .22 * (Math.cos(dd / RK2_WAVE * Math.PI) + 1) / 2 : 1; c.style.setProperty('--w', s.toFixed(3)); }); };
+  grid.addEventListener('mousemove', e=>{ mx = e.clientX; my = e.clientY; if(!raf) raf = requestAnimationFrame(run); });
+  grid.addEventListener('mouseleave', ()=>{ cells.forEach(c=>c.style.removeProperty('--w')); });
+}
 function setRank(sub){
   const detail = !!(sub && rankBy[sub]);
   $('#rk-list').hidden = detail; $('#rk-detail').hidden = !detail;
-  if(detail) renderRankDetail(sub);
+  if(detail){ if(RK_V2) renderRankV2(sub); else { renderRankDetail(sub); seoMount('rank', sub); } }
+  else { rk2Cur = null; seoMount('ranks'); }
 }
+addEventListener('hashchange', ()=>{ const p = curPath().split('/'); if(RK_V2 && p[1] === 'ranks' && rankBy[p[2]]) renderRankV2(p[2]); });
 document.addEventListener('click', e=>{
   const v = e.target.closest('[data-rkview]');
   if(v){ rkView = v.dataset.rkview; renderRankDetail(curPath().split('/')[2]); return; }
@@ -972,11 +1080,31 @@ function renderRankHex(){
       <polygon points="${H6(1)}" fill="none" stroke="url(#rkg-${k})" stroke-width="1.7" stroke-linejoin="round"/>
       ${[[50,0],[100,25],[100,75],[50,100],[0,75],[0,25]].map(([x, y])=>`<path d="M${x} ${y - 2.2}L${x + 1.6} ${y}L${x} ${y + 2.2}L${x - 1.6} ${y}z" fill="${l}" fill-opacity=".85"/>`).join('')}</svg>`; };
   const cell = t => `<a class="rkx-cell" href="/ranks/${t.k}" style="--rc:${RK_COL[t.k]}" aria-label="${esc(t.n)}: ${fmtPct(t.total)}">
-      <span class="rkx-g">${frame(t.k)}<span class="rkx-in"><img src="${rankImg(t)}" alt="" loading="lazy"><b>${esc(t.n)}</b><small>${fmtPct(t.total)}</small>
+      <span class="rkx-g">${frame(t.k)}<span class="rkx-in"><img src="${rankImg(t, 1)}" alt="" loading="lazy"><b>${esc(t.n)}</b><small>${fmtPct(t.total)}</small>
       ${t.div ? `<span class="rkx-divs">${DIVS.map(d=>`<i data-rkd="${d}">${d}</i>`).join('')}</span>` : ''}</span></span>${tip(t)}</a>`;
   // Waben 3-4-3
   $('#rkxHex').innerHTML = [RANK_TIERS.slice(0, 3), RANK_TIERS.slice(3, 7), RANK_TIERS.slice(7)].map(r=>`<div class="rkx-row">${r.map(cell).join('')}</div>`).join('');
+  rkDistBar();
 }
+/* Verteilung als ein Balken über alle Ränge: Breite = Anteil der Spieler (winzige Ränge mit Mindestbreite), Diamant bis Challenger
+   als Gruppe mit Klammer „Top x %“, Name und Anteil nur in breiten Abschnitten, sonst beim Drüberfahren. Darunter die Quellenzeile */
+function rkDistBar(){
+  if(!$('#rkd')) $('#rkTable').insertAdjacentHTML('afterend', '<div class="rkd" id="rkd"></div>');
+  const seg = t => `<a class="rkd-s" href="/ranks/${t.k}" style="--rc:${RK_COL[t.k]};flex-grow:${t.total}" aria-label="${esc(t.n)}: ${fmtPct(t.total)}">
+      ${t.total >= 9 ? `<span class="rkd-l"><span>${esc(t.n)}</span> ${fmtPct(t.total)}</span>` : ''}
+      <span class="rkd-tip"><img src="${rankImg(t)}" alt=""><span><b>${esc(t.n)}</b><small>${fmtPct(t.total)} · Top ${fmtPct(t.topTier)}</small></span></span></a>`;
+  const top = RANK_TIERS.filter(t=>t.k === 'diamond' || !t.div), rest = RANK_TIERS.filter(t=>!top.includes(t));
+  $('#rkd').innerHTML = `<h2 class="rkd-h">${L('So verteilen sich die Spieler', 'How players are distributed')}</h2>
+    <div class="rkd-bar">${rest.map(seg).join('')}<span class="rkd-top" style="flex-grow:${top.reduce((a, t)=>a + t.total, 0)}">${top.map(seg).join('')}
+      <span class="rkd-br"><b>${esc(rankBy.diamond.n)} ${L('bis', 'to')} ${esc(rankBy.challenger.n)} = Top ${fmtPct(rankBy.diamond.topTier)}</b></span></span></div>`;
+}
+// Division im Sechseck anklicken: direkt zu dieser Division auf der Rang-Seite (/ranks/gold#gold-3)
+document.addEventListener('click', e=>{
+  const d = e.target.closest && e.target.closest('.rkx-divs [data-rkd]'); if(!d || e.ctrlKey || e.metaKey) return;
+  e.preventDefault(); e.stopPropagation();
+  const k = d.closest('.rkx-cell').getAttribute('href').split('/').pop();
+  history.pushState(null, '', withLang(`/ranks/${k}#${k}-${RK_NUM[d.dataset.rkd]}`)); route();
+}, true);
 document.addEventListener('click', e=>{
   const tab = e.target.closest('[data-rkx]'); if(!tab) return;
   document.querySelectorAll('[data-rkx]').forEach(b=>b.classList.toggle('on', b===tab)); $('#rk-list').classList.toggle('rkx-mode-hex', tab.dataset.rkx==='hex');
@@ -2834,7 +2962,9 @@ function gdBeginnerHTML(){
   const sec = {ziel:'Worum es geht', ablauf:'Ablauf einer Partie', gold:'Gold und Zinsen', shop:'Shop und Rollen', sterne:'Sterne', level:'Leveln oder rollen', traits:'Traits', items:'Items', aufstellung:'Aufstellung', schaden:'Schaden am Spieler', fehler:'Die 7 häufigsten Fehler', begriffe:'Begriffe', faq:'Häufige Fragen'};
   const h = k => `<h3 id="gda-${k}">${sec[k]}</h3>`, ic = (k, alt = '') => `<img src="assets/icons/tft/${k}.png" alt="${alt}" width="28" height="28" loading="lazy">`;
   // Platzhalter für die Profi-Tipps aus der Sprachaufnahme von CrazYSlayt
-  const tip = q => `<div class="art-box tip gd-todo">${artTipHead()}<p><b>${q}</b></p><p class="gd-todo-t">Hier kommt deine Antwort aus der Sprachaufnahme.</p></div>`;
+  // CrazYSlayt als Cartoon (assets/img/coach/<pose>.webp, aus seinen Vorlagen): sitzt rechts in der Box und ragt oben leicht heraus – dosiert, nur an Tipps und Kernaussagen
+  const coach = (pose, alt) => `<img class="gd-coach" src="assets/img/coach/${pose}.webp" alt="${alt}" loading="lazy" decoding="async">`;
+  const tip = (q, pose) => `<div class="art-box tip gd-todo${pose ? ' has-coach' : ''}">${artTipHead()}<p><b>${q}</b></p><p class="gd-todo-t">Hier kommt deine Antwort aus der Sprachaufnahme.</p>${pose ? coach(pose, 'CrazYSlayt als Cartoon') : ''}</div>`;
   const stage = [['combat', 'PvP'], ['combat', 'PvP'], ['combat', 'PvP'], ['stage-carousel', 'Karussell'], ['combat', 'PvP'], ['combat', 'PvP'], ['stage-krugs', 'Monster']];
   const coins = n => n ? Array.from({length:n}, ()=>`<img src="assets/icons/tft/gold.png" alt="" width="18" height="18" loading="lazy">`).join('') : '<span>–</span>';
   const words = [['Carry', 'Der Champion, der den meisten Schaden macht und die Items bekommt'], ['Tank', 'Ein Champion mit viel Leben, der vorne steht'], ['Econ', 'Deine Wirtschaft – wie gut du Gold sparst und Zinsen sammelst'],
@@ -2851,16 +2981,17 @@ function gdBeginnerHTML(){
     ${h('ziel')}
     <p>Teamfight Tactics ist ein Strategiespiel für acht Spieler. Jeder baut sein eigenes Team aus Champions auf, und die Teams kämpfen automatisch gegeneinander. Du steuerst also nicht im Kampf, sondern davor: welche Champions du kaufst, wo du sie hinstellst und welche Items sie tragen.</p>
     <p>Jeder Spieler startet mit 100 Leben. Verlierst du einen Kampf, verlierst du Leben. Wer auf 0 fällt, ist raus. Die Partie endet, wenn nur noch einer übrig ist.</p>
-    <div class="art-box"><p><b>Wichtig für Ranked:</b> Du musst nicht Erster werden. Mit Platz 1 bis 4 gewinnst du LP, mit Platz 5 bis 8 verlierst du LP. Das Ziel heißt deshalb in den meisten Partien: <b>Top 4</b>.</p></div>
+    <div class="art-box has-coach"><p><b>Wichtig für Ranked:</b> Du musst nicht Erster werden. Mit Platz 1 bis 4 gewinnst du LP, mit Platz 5 bis 8 verlierst du LP. Das Ziel heißt deshalb in den meisten Partien: <b>Top 4</b>.</p>${coach('tft-koenig', 'CrazYSlayt als TFT-König')}</div>
     ${h('ablauf')}
     <p>Eine Partie ist in <b>Stages</b> eingeteilt, jede Stage in Runden. „3-2“ heißt: Stage 3, Runde 2. Ab Stage 2 sieht jede Stage gleich aus:</p>
     <div class="gd-stage" role="list">${stage.map(([k, t], i)=>`<div class="gd-r${k === 'combat' ? '' : ' sp'}" role="listitem">${ic(k)}<b>x-${i + 1}</b><span>${t}</span></div>`).join('')}</div>
     <ul class="art-list">
-      <li><b>Stage 1:</b> Ein Karussell zum Start, danach einige Runden gegen Monster. Hier bekommst du deine ersten Champions und Komponenten.</li>
+      <li><b>Start:</b> Alle acht Spieler stehen im Kreis, in der Mitte wird der <b>Encounter</b> der Partie gezeigt – ein Ereignis, das für alle gilt. Was die Encounters bewirken, steht im ${artA(csHref('encounters'), 'Encounter-Cheatsheet')}.</li>
+      <li><b>Stage 1:</b> Du startest meist mit einem 1-Kosten-Champion auf der Bank – manche Encounters geben dir stattdessen stärkere oder mehrere Champions. Danach folgen die Runden <b>1-1 bis 1-3</b> gegen Monster, die deine ersten Komponenten und Champions fallen lassen – was dort droppen kann, zeigt das ${artA(csHref('loot'), 'Loot-Cheatsheet')}.</li>
       <li><b>PvP:</b> Kämpfe gegen andere Spieler – die meisten Runden der Partie.</li>
-      <li><b>Karussell:</b> Alle laufen gleichzeitig zu einem Kreis aus Champions mit Items. Wer am wenigsten Leben hat, darf zuerst – so bekommen schwächere Spieler eine Chance aufzuholen.</li>
+      <li><b>Karussell:</b> In der Mitte dreht sich ein Kreis aus Champions mit Items. Die Spieler laufen paarweise los: zuerst die zwei mit dem wenigsten Leben, dann die nächsten zwei – so bekommen schwächere Spieler eine Chance aufzuholen.</li>
       <li><b>Monster:</b> Ein Kampf gegen Monster, die Beute fallen lassen – Gold, Champions oder Komponenten.</li>
-      <li><b>Augments:</b> Mehrmals pro Partie wählst du einen von drei Augments – dauerhafte Boni in Silber, Gold oder Prismatisch. Wann welche Stufe kommt, zeigt das ${artA(csHref('augments'), 'Augment-Stufen-Cheatsheet')}.</li>
+      <li><b>Augments:</b> In den Runden <b>2-1, 3-2 und 4-2</b> wählst du jeweils einen von drei Augments – dauerhafte Boni in Silber, Gold oder Prismatisch. Wann welche Stufe kommt, zeigt das ${artA(csHref('augments'), 'Augment-Stufen-Cheatsheet')}.</li>
     </ul>
     ${h('gold')}
     <p>Fast alles in TFT kostet Gold: Champions, Level und neue Shops. Wer mit Gold gut umgeht, gewinnt auf Dauer. Gold bekommst du auf vier Wegen:</p>
@@ -2876,7 +3007,7 @@ function gdBeginnerHTML(){
     <div class="art-box"><p><b>Faustregel:</b> Gib Gold möglichst so aus, dass du über einer Zehnerstufe bleibst. Mit 34 Gold kannst du 4 ausgeben und hast immer noch 3 Zinsen – gibst du 5 aus, sind es nur noch 2.</p></div>
     <h4>Gewinn- und Verlustserien</h4>
     <p>Serien belohnen beide Richtungen: Mehrere Siege in Folge bringen Bonus-Gold, mehrere Niederlagen aber auch. Eine Verlustserie ist deshalb nicht automatisch schlecht – manche Spieler verlieren am Anfang bewusst, sammeln Gold und schlagen dann mit einem starken Team zurück. Für Anfänger gilt aber: Leben ist auch eine Ressource. Wer zu tief fällt, hat später keinen Spielraum mehr.</p>
-    ${tip('Wann lohnt sich eine Verlustserie – und wann nicht?')}
+    ${tip('Wann lohnt sich eine Verlustserie – und wann nicht?', 'neutral')}
     ${h('shop')}
     <p>Jede Runde zeigt dir der Shop fünf Champions. Sie kosten 1 bis 5 Gold – je teurer, desto stärker und seltener.</p>
     <div class="gd-cost">${[1, 2, 3, 4, 5].map(c=>`<span class="c${c}">${ic('champ-' + c)}<b>${c} Gold</b></span>`).join('')}</div>
@@ -2896,7 +3027,7 @@ function gdBeginnerHTML(){
     <div class="gd-two"><div><b>${ic('shop-xp')}Leveln (Fast 8 / Fast 9)</b><p>Du sparst, levelst zügig und suchst auf hohem Level nach starken 4- und 5-Kostern.</p></div>
       <div><b>${ic('shop-reroll')}Rerollen</b><p>Du bleibst auf niedrigerem Level und rollst so lange, bis deine günstigen Carrys 3 Sterne haben.</p></div></div>
     <p>Welche Comps gerade welche Spielweise nutzen, steht in unserer ${artA('/tierlist', 'Tierlist')}.</p>
-    ${tip('Woran erkennst du, dass du jetzt leveln solltest – und wann rollen?')}
+    ${tip('Woran erkennst du, dass du jetzt leveln solltest – und wann rollen?', 'selbstbewusst')}
     ${h('traits')}
     <p>Jeder Champion hat zwei oder drei <b>Traits</b>. Stellst du genug verschiedene Champions mit demselben Trait aufs Feld, wird ein Bonus aktiv – je mehr, desto stärker.</p>
     <ul class="art-list">
@@ -2917,12 +3048,12 @@ function gdBeginnerHTML(){
     ${h('aufstellung')}
     <div class="gd-two"><div><b>Vorne: Frontline</b><p>Tanks und Kämpfer mit viel Leben. Sie halten den Schaden ab.</p></div><div><b>Hinten: Backline</b><p>Champions mit großer Reichweite, die Schaden machen – sie sollen möglichst lange überleben.</p></div></div>
     <p>Ein häufiger Anfängerfehler ist ein Carry in der ersten Reihe. Er stirbt dann als Erstes, und der Kampf ist verloren, bevor er richtig angefangen hat.</p>
-    ${tip('Ein Positionierungstrick, den Anfänger nicht kennen')}
+    ${tip('Ein Positionierungstrick, den Anfänger nicht kennen', 'daumen-hoch')}
     ${h('schaden')}
     <p>Verlierst du einen Kampf, verlierst du Leben – abhängig von der <b>Stage</b> und davon, <b>wie viele gegnerische Champions</b> am Ende noch stehen. Späte Niederlagen tun deshalb viel mehr weh als frühe. Die genauen Werte stehen im ${artA(csHref('damage'), 'Spielerschaden-Cheatsheet')}.</p>
     ${h('fehler')}
     <ol class="art-list gd-err">${fehler.map(f=>`<li>${f}</li>`).join('')}</ol>
-    ${tip('Der Fehler, den ich bei meinen Coaching-Schülern am häufigsten sehe')}
+    ${tip('Der Fehler, den ich bei meinen Coaching-Schülern am häufigsten sehe', 'facepalm')}
     ${h('begriffe')}
     <div class="art-tw"><table class="art-table"><thead><tr><th>Begriff</th><th>Bedeutung</th></tr></thead><tbody>${words.map(([w, d])=>`<tr><td><b>${w}</b></td><td>${d}</td></tr>`).join('')}</tbody></table></div>
     ${h('faq')}${artFaq(faq)}
@@ -2940,7 +3071,7 @@ function guideHTML(g){
   return `<div class="card guide"><div class="guide-cover" style="background:${g.col}"><div>${esc(g.t)}<small>TFTClimb</small></div></div><div><span class="pill">${esc(g.s)}</span><h3 style="margin-top:10px">${esc(g.t)}</h3><p>${esc(g.d)}</p><p style="color:var(--faint);font-size:.82rem">${esc(g.x)}</p><span class="link-arrow">Bald verfügbar</span></div></div>`;
 }
 function renderHome(){
-  $('#ranks').innerHTML = ranks.map(([n,c,f])=>`<a href="/ranks/${f.toLowerCase()}" class="rank"><div class="rank-gem"><img src="${DD}tft-regalia/TFT_Regalia_${f}.png" alt="TFT Rang ${n}" loading="lazy" onerror="this.outerHTML='<span style=&quot;font:900 1.4rem var(--ff-head);color:${c}&quot;>${n[0]}</span>'"></div>${n}</a>`).join('');
+  $('#ranks').innerHTML = ranks.map(([n,c,f])=>`<a href="/ranks/${f.toLowerCase()}" class="rank"><div class="rank-gem"><img src="${rankImg({f}, 1)}" alt="TFT Rang ${n}" loading="lazy" onerror="this.outerHTML='<span style=&quot;font:900 1.4rem var(--ff-head);color:${c}&quot;>${n[0]}</span>'"></div>${n}</a>`).join('');
   const sTier = mainComps.filter(c=>c.tier==='S').length;
   $('#sCount').textContent = sTier + ' aktiv';
   $('#sCount').closest('.chip-float').style.display = sTier ? '' : 'none';   // ohne Tierlist keine „0 aktiv“-Karte
@@ -5533,7 +5664,9 @@ const CS_LN = {augtl:['/tierlist/augments', ['Augment-Tierlist', 'Augment tier l
   itemtl:['/tierlist/items', ['Item-Tierlist', 'Item tier list'], ['Die besten Items im Patch', 'The best items this patch']], items:['/bibliothek/items', ['Item-Bibliothek', 'Item library'], ['Alle Rezepte und Werte', 'Every recipe and stat']],
   traits:['/bibliothek/traits', ['Traits in der Bibliothek', 'Traits in the library'], ['Alle Attribute mit ihren Stufen', 'Every trait with its breakpoints']], tierlist:['/tierlist', ['TFT Tierlist', 'TFT tier list'], ['Die stärksten Comps im Patch', 'The strongest comps this patch']],
   patches:['/patches', ['Patch Notes', 'Patch notes'], ['Alle Änderungen im Überblick', 'Every change at a glance']], all:['/cheatsheet', ['Alle Cheatsheets', 'All cheatsheets'], ['Jede Tabelle des Sets', 'Every table of the set']],
-  countdown:[COUNTDOWN_PATH, ['Patch-Countdown', 'Patch countdown'], ['Wann kommt der nächste Patch?', 'When is the next patch?']]};
+  countdown:[COUNTDOWN_PATH, ['Patch-Countdown', 'Patch countdown'], ['Wann kommt der nächste Patch?', 'When is the next patch?']],
+  ranks:['/ranks', ['Alle TFT-Ränge', 'All TFT ranks'], ['LP-System und Verteilung', 'LP system and distribution']], coaching:['/coaching', ['Coaching', 'Coaching'], ['Schneller aufsteigen mit einem Challenger', 'Climb faster with a Challenger']],
+  guide:['/guides/tft-anfaenger-guide', ['Anfänger-Guide', 'Beginner guide'], ['Alle Grundlagen von TFT', 'Every TFT basic']]};
 const CS_LN_TOOL = {rolldown:'rolldown', augodds:'augments', drops:'drops', builder:'builder', dps:'dps', sim:'simulator'};
 function csLinks(keys){
   return `<div class="art-links">${keys.map(k=>{
@@ -6045,7 +6178,86 @@ function seoArtHTML(a, pre, hid){
 }
 const seoPT = () => TL_PATCH || (CURRENT_PATCH ? CURRENT_PATCH.id : '');
 const seoComps = t => mainComps.filter(c=>c.tier === t);
+
+/* Rang-Artikel: LP-Tabelle (Standard ohne Sonderfälle), Tipps je Rang, Comps zum Klettern */
+const RK_LP = [40, 30, 20, 10, -10, -20, -30, -40];
+const RK_TIPS = {
+  iron:[['Ein Plan statt alles kaufen', 'One plan instead of buying everything', 'Such dir eine einfache Comp aus der Tierlist und spiel sie jede Partie. Wer die Grundlagen einer Comp kennt, landet viel öfter in den Top 4.', 'Pick one easy comp from the tier list and play it every game. Knowing one comp well puts you in the top 4 far more often.'],
+    ['Gold sparen', 'Save gold', 'Gib Gold nicht sofort aus. Schon 20 bis 30 Gold auf dem Konto bringen dir jede Runde Zinsen.', 'Don\'t spend gold right away. Even 20 to 30 gold in the bank earns you interest every round.'],
+    ['Carry nach hinten', 'Carry in the back', 'Dein Champion mit den Items gehört in die hinterste Reihe, die Tanks nach vorne.', 'Your item carry belongs in the back row, tanks in the front.']],
+  bronze:[['Zinsen mitnehmen', 'Take the interest', 'Bleib über einer Zehnerstufe, wenn du Gold ausgibst. Bis 50 Gold zahlt sich jedes Sparen aus.', 'Stay above a multiple of ten when you spend. Saving pays off all the way to 50 gold.'],
+    ['Items früh bauen', 'Build items early', 'Ein fertiges Item in Stage 2 gewinnt Kämpfe und schont dein Leben – Komponenten auf der Bank tun das nicht.', 'A completed item in stage 2 wins fights and saves health – components on the bench don\'t.'],
+    ['Zwei, drei Comps kennen', 'Know two or three comps', 'Lern zwei bis drei Comps, damit du ausweichen kannst, wenn deine erste umkämpft ist.', 'Learn two or three comps so you can switch when your first one is contested.']],
+  silver:[['Top 4 statt Platz 1', 'Top 4 over first place', 'Platz 4 bringt +10 LP, Platz 5 kostet −10 LP. Spiel lieber sicher in die Top 4, als für den Sieg alles zu riskieren.', '4th place gives +10 LP, 5th costs −10 LP. Play safely into the top 4 instead of risking everything for the win.'],
+    ['Pünktlich leveln', 'Level on time', 'Wer zu spät levelt, hat ein zu kleines Team und verliert früh viel Leben. Halte dich an die Level-Zeitpunkte deiner Comp.', 'Leveling late leaves your team too small and costs a lot of health early. Stick to your comp\'s level timings.'],
+    ['Leben im Blick', 'Watch your health', 'Unter 40 Leben ist Sparen vorbei: Jetzt wird Gold in ein starkes Team gesteckt.', 'Below 40 health the saving is over: now your gold goes into a strong board.']],
+  gold:[['Flexibel bleiben', 'Stay flexible', 'Entscheide dich nicht zu früh. Spiel die stärksten Einheiten und Items, die du bekommst, und leg dich erst um Stage 3 auf eine Comp fest.', 'Don\'t commit too early. Play the strongest units and items you get and lock into a comp around stage 3.'],
+    ['Die Lobby scouten', 'Scout the lobby', 'Schau vor jedem Rolldown, was die anderen spielen. Sammeln zwei Spieler deine Carrys, weich aus.', 'Check what others play before every rolldown. If two players collect your carries, pivot.'],
+    ['Rolldown mit Plan', 'Roll down with a plan', 'Roll zu festen Zeitpunkten (z. B. 3-2 oder 4-1) statt in kleinen Portionen jede Runde.', 'Roll at set timings (e.g. 3-2 or 4-1) instead of a little every round.']],
+  platinum:[['Positionierung gegen die Lobby', 'Position against the lobby', 'Stell dich gegen die stärksten Gegner auf: Carry weg von ihren Assassinen, Tanks gegen ihre Hauptdamage.', 'Position against the strongest opponents: carry away from their assassins, tanks toward their main damage.'],
+    ['Item-Entscheidungen', 'Item decisions', 'Bau Items für dein Endgame, nicht nur für den nächsten Kampf – und behalte ein, zwei flexible Komponenten.', 'Build items for your endgame, not just the next fight – and keep one or two flexible components.'],
+    ['Tempo erkennen', 'Read the tempo', 'Ist die Lobby stark, musst du früher stabilisieren. Ist sie schwach, kannst du gieriger leveln.', 'If the lobby is strong, stabilize earlier. If it is weak, you can level greedier.']],
+  emerald:[['Augments nach Board', 'Augments for your board', 'Wähl Augments passend zu deinem Board und deinen Items, nicht nur nach Gewohnheit.', 'Pick augments that fit your board and items, not out of habit.'],
+    ['Econ-Kurven', 'Econ curves', 'Kenn die Standard-Level von Fast 8 und Reroll auswendig und weich bewusst davon ab, wenn die Partie es verlangt.', 'Know the standard levels for fast 8 and reroll by heart and leave them on purpose when the game asks for it.'],
+    ['Verluste begrenzen', 'Limit losses', 'Wenn es schlecht läuft, spiel um Platz 4 oder 5 – jede Platzierung höher spart 10 LP.', 'When it goes badly, play for 4th or 5th – every place higher saves 10 LP.']],
+  diamond:[['Konstanz schlägt Höchstwerte', 'Consistency beats peaks', 'Hier entscheiden die Partien, in denen es schlecht läuft. Wer aus einem schwachen Start noch Platz 4 macht, steigt auf.', 'The bad games decide here. Turning a weak start into 4th place is what climbs.'],
+    ['Meta-Comps beherrschen', 'Master the meta comps', 'Kenne die stärksten Comps des Patches mit Positionierung, Items und Spielplan – und ihre Konter.', 'Know the strongest comps of the patch with positioning, items and game plan – and their counters.'],
+    ['Partien analysieren', 'Review your games', 'Schau dir nach Niederlagen an, wann du die Partie verloren hast. Meist war es eine Entscheidung in Stage 3 oder 4.', 'After losses, look at when you lost the game. It is usually a decision in stage 3 or 4.']],
+  master:[['Nur noch LP', 'Only LP now', 'Ab Meister gibt es keine Divisionen mehr. Jede Partie zählt direkt – eine stabile Top-4-Quote ist alles.', 'From Master on there are no divisions. Every game counts directly – a steady top-4 rate is everything.'],
+    ['Lobby lesen', 'Read the lobby', 'Die Gegner spielen sauber. Gewinne Partien durch bessere Pivot- und Rolldown-Zeitpunkte, nicht durch Glück.', 'Opponents play cleanly. Win games through better pivot and rolldown timings, not luck.']],
+  grandmaster:[['Die Grenze im Blick', 'Watch the cutoff', 'Großmeister hat eine LP-Grenze, die vom Server abhängt und sich mit der Spitze bewegt.', 'Grandmaster has an LP cutoff that depends on the server and moves with the top.'],
+    ['Jede Platzierung zählt', 'Every placement counts', 'Wenige LP trennen dich von Challenger oder Meister – spiel jede Partie bis zum letzten Kampf aus.', 'A few LP separate you from Challenger or Master – play every game to the last fight.']],
+  challenger:[['Die Spitze halten', 'Hold the top', 'Challenger hat nur begrenzte Plätze. Wer nicht weiterspielt, wird von anderen überholt.', 'Challenger has limited spots. If you stop playing, others pass you.'],
+    ['Meta vorausdenken', 'Think ahead of the meta', 'Hier gewinnt, wer neue Comps und Patch-Änderungen als Erstes versteht.', 'Here the winners are the ones who understand new comps and patch changes first.']]};
+// Comps zum Klettern: für niedrige Ränge leicht zu spielende Comps, für hohe die stärksten
+const rkComps = t => { const lo = RANK_TIERS.indexOf(t) <= 3, pool = mainComps.filter(c=>c.tier !== 'X');
+  const easy = pool.filter(c=>c.diff === 'EASY' || c.diff === 'MEDIUM'), D = {EASY:0, MEDIUM:1, HARD:2, CONDITIONAL:3};
+  const list = (lo && easy.length >= 2 ? easy : pool).slice().sort((a, b)=>'SABC'.indexOf(a.tier) - 'SABC'.indexOf(b.tier) || (D[a.diff] ?? 2) - (D[b.diff] ?? 2)).slice(0, 3);   // niedrige Ränge: stärkste unter den leichten/mittleren Comps
+  return list.map(c=>`${artA('/tierlist?comp=' + encodeURIComponent(c.slug), esc(c.name))} (${c.tier}-Tier)`); };
+const rkLpTable = () => artTw([L('Platz', 'Place'), 'LP'], RK_LP.map((v, i)=>`<tr${i === 3 ? ' class="on"' : ''}><td><b>${i + 1}.</b></td><td>${v > 0 ? '+' : '−'}${Math.abs(v)} LP</td></tr>`));
+const rkGuideOk = () => GUIDES_LIVE || GD_PREVIEW;
 const SEO_ART = {
+  // Übersicht /ranks: LP-System, Aufstieg und Abstieg, Verteilung, Belohnungen
+  ranks: ()=>{ const S = TFT_DATA.set, big = RANK_TIERS.slice().sort((a, b)=>b.total - a.total)[0], top = t => fmtPct(t.topTier);
+    return {h:L(`TFT Ränge und LP-System in Set ${S}`, `TFT ranks and LP system in Set ${S}`),
+    i:L(`Ranked in Teamfight Tactics hat zehn Ränge von Eisen bis Challenger. Von Eisen bis Diamant ist jeder Rang in vier Divisionen (IV bis I) geteilt, ab Meister zählen nur noch LP. Hier siehst du, wie viele LP jede Platzierung bringt, wie Auf- und Abstieg funktionieren und wie sich die Spieler auf die Ränge verteilen.`,
+      `Ranked in Teamfight Tactics has ten ranks from Iron to Challenger. From Iron to Diamond every rank is split into four divisions (IV to I); from Master on only LP count. Here you see how many LP each placement gives, how promotion and demotion work and how players spread across the ranks.`),
+    st:[['+40', L('LP für Platz 1', 'LP for 1st place')], ['±10', L('LP-Unterschied zwischen Platz 4 und 5', 'LP from 4th to 5th place')], ['100', L('LP pro Division', 'LP per division'), 'g']],
+    s:[['lp', L('Wie viele LP gibt es pro Platzierung?', 'How many LP does each placement give?'), csPs(L('Im Normalfall bekommst du für jede Platzierung diese LP:', 'Normally you get these LP for each placement:')) + rkLpTable()
+        + csPs(L('Der größte Sprung liegt zwischen Platz 4 und Platz 5: Platz 4 bringt noch +10 LP, Platz 5 kostet schon −10 LP. Deshalb ist die Top 4 in Ranked das wichtigste Ziel – mit dauerhaft Top 4 steigst du auch ohne viele Siege auf.', 'The biggest jump is between 4th and 5th: 4th still gives +10 LP, 5th already costs −10 LP. That is why the top 4 is the main goal in ranked – with a steady top 4 you climb even without many wins.'))],
+      ['aufstieg', L('Aufstieg und Abstieg', 'Promotion and demotion'), csUl([L('<b>100 LP pro Division:</b> Mit 100 LP steigst du in die nächste Division auf, zum Beispiel von Gold III auf Gold II.', '<b>100 LP per division:</b> at 100 LP you move up a division, for example from Gold III to Gold II.'),
+        L('<b>Divisionen:</b> Innerhalb eines Rangs kannst du auf- und absteigen.', '<b>Divisions:</b> within a rank you can move up and down.'),
+        L('<b>Rang-Schutz:</b> Hast du einen Rang in einem Set einmal erreicht, fällst du nicht mehr darunter. Wer einmal Diamant war, rutscht im selben Set nicht mehr auf Smaragd.', '<b>Rank protection:</b> once you reach a rank in a set, you can\'t drop below it. Once Diamond, you won\'t fall back to Emerald in the same set.'),
+        L(`<b>Ab Meister:</b> keine Divisionen mehr, nur noch LP. Großmeister und Challenger haben LP-Grenzen, die vom Server abhängen.`, `<b>From Master:</b> no divisions, just LP. Grandmaster and Challenger have LP cutoffs that depend on the server.`)])],
+      ['verteilung', L('Wie verteilen sich die Spieler?', 'How are players distributed?'), csPs(L(`Die meisten Spieler stehen in ${esc(big.n)} (${fmtPct(big.total)}). Platin gehört schon zu den Top ${top(rankBy.platinum)}, Diamant zu den Top ${top(rankBy.diamond)}, Challenger zu den Top ${top(rankBy.challenger)}. Klick oben auf einen Rang, um seine Divisionen und Zahlen zu sehen.`,
+        `Most players are in ${esc(tr(big.n))} (${fmtPct(big.total)}). Platinum is already top ${top(rankBy.platinum)}, Diamond top ${top(rankBy.diamond)}, Challenger top ${top(rankBy.challenger)}. Click a rank above to see its divisions and numbers.`))
+        + csPs(L(`Quelle: ${esc(RANK_SRC.name)}, ${esc(RANK_SRC.when)} – Schätzungen aus einer Stichprobe.`, `Source: ${esc(RANK_SRC.name)}, ${esc(RANK_SRC.when)} – estimates from a sample.`))],
+      ['belohnung', L('Belohnungen am Set-Ende', 'End-of-set rewards'), csPs(L('Am Ende jedes Sets gibt es Belohnungen für deinen höchsten Rang. In bisherigen Sets galt: Wer mindestens Gold erreicht, bekommt die Siegesbelohnung, meist einen besonderen Chibi oder Little Legend. Was es genau gibt, gibt Riot für jedes Set neu bekannt.', 'At the end of every set you get rewards for your highest rank. In past sets the rule was: reach at least Gold to get the victory reward, usually a special chibi or Little Legend. Riot announces the exact rewards for each set.'))]],
+    q:[[L('Wie viele LP gibt Platz 4 in TFT?', 'How many LP does 4th place give in TFT?'), L('Im Normalfall +10 LP. Platz 5 kostet −10 LP – deshalb ist die Top 4 so wichtig.', 'Normally +10 LP. 5th place costs −10 LP – that is why the top 4 matters so much.')],
+      [L('Kann man in TFT einen Rang verlieren?', 'Can you lose a rank in TFT?'), L('Divisionen kannst du verlieren, einen ganzen Rang nicht: Wer im Set einmal Diamant war, fällt nicht mehr auf Smaragd.', 'You can lose divisions but not a whole rank: once you reach Diamond in a set, you won\'t drop to Emerald.')],
+      [L('Wie viele LP braucht man für eine Division?', 'How many LP do you need for a division?'), L('100 LP. Danach steigst du in die nächste Division auf.', '100 LP. Then you move up to the next division.')],
+      [L('Welcher Rang ist in TFT am häufigsten?', 'Which rank is the most common in TFT?'), L(`${esc(big.n)} mit ${fmtPct(big.total)} der erfassten Spieler.`, `${esc(tr(big.n))} with ${fmtPct(big.total)} of tracked players.`)]],
+    ln:['tierlist', 'coaching', ...(rkGuideOk() ? ['guide'] : []), 'damage']}; },
+  // je Rang: Einordnung, Tipps, LP kurz, Comps, FAQ
+  rank: key=>{ const t = rankBy[key]; if(!t) return null; const S = TFT_DATA.set, i = RANK_TIERS.indexOf(t), prev = RANK_TIERS[i - 1], next = RANK_TIERS[i + 1], apex = !t.div, N = esc(t.n);
+    const tips = RK_TIPS[key] || [], comps = rkComps(t), cut = stCut('euw') || {}, lpCut = key === 'grandmaster' ? cut.gm : key === 'challenger' ? cut.ch : 0;
+    return {h:L(`TFT Rang ${N}: Einordnung, Tipps und LP`, `TFT rank ${N}: where it stands, tips and LP`),
+    i:L(`${N} ist der ${i + 1}. von zehn Rängen in TFT Set ${S}. ${fmtPct(t.total)} der erfassten Spieler stehen hier, ${fmtPct(t.below)} darunter – mit ${N} gehörst du zu den Top ${fmtPct(t.topTier)}.${prev ? ` Darunter liegt ${esc(prev.n)}` : ''}${next ? `${prev ? ', darüber' : ' Darüber liegt'} ${esc(next.n)}.` : '.'}`,
+      `${N} is rank ${i + 1} of ten in TFT Set ${S}. ${fmtPct(t.total)} of tracked players are here, ${fmtPct(t.below)} below – with ${N} you are in the top ${fmtPct(t.topTier)}.${prev ? ` Below it is ${esc(tr(prev.n))}` : ''}${next ? `${prev ? ', above it' : ' Above it is'} ${esc(tr(next.n))}.` : '.'}`),
+    st:[[fmtPct(t.total), L(`der Spieler sind ${N}`, `of players are ${N}`)], ['Top ' + fmtPct(t.topTier), L(`mit ${N} oder höher`, `with ${N} or higher`)], [apex ? (lpCut ? Number(lpCut).toLocaleString(LOC) + ' LP' : 'LP') : '4 × 100', apex ? (lpCut ? L('LP-Grenze auf EUW', 'LP cutoff on EUW') : L('keine Divisionen', 'no divisions')) : L('LP bis zum nächsten Rang', 'LP to the next rank'), 'g']],
+    s:[['tipps', next ? L(`So kommst du aus ${N} raus`, `How to climb out of ${N}`) : L(`So hältst du ${N}`, `How to hold ${N}`), tips.map(([dt, et, dd, ed])=>`<h4>${L(dt, et)}</h4><p>${L(dd, ed)}</p>`).join('')
+        + (i <= 2 && rkGuideOk() ? csPs(L(`Alle Grundlagen findest du im ${artA('/guides/tft-anfaenger-guide', 'Anfänger-Guide')}.`, `You find every basic in the ${artA('/guides/tft-anfaenger-guide', 'beginner guide')}.`)) : '')],
+      ['lp', L('LP und Aufstieg', 'LP and promotion'), csPs(apex
+        ? L(`Ab Meister gibt es keine Divisionen mehr – nur noch LP.${lpCut ? ` Für ${N} brauchst du auf EUW aktuell mindestens ${Number(lpCut).toLocaleString(LOC)} LP; die Grenze bewegt sich mit der Spitze.` : ''} Wie viele LP jede Platzierung bringt, steht unter ${artA('/ranks', 'TFT Ränge')}.`,
+          `From Master on there are no divisions – just LP.${lpCut ? ` For ${N} you currently need at least ${Number(lpCut).toLocaleString(LOC)} LP on EUW; the cutoff moves with the top.` : ''} How many LP each placement gives is shown under ${artA('/ranks', 'TFT ranks')}.`)
+        : L(`Jede Division von ${N} IV bis ${N} I braucht 100 LP. Platz 1 bringt +40 LP, Platz 4 noch +10 LP, Platz 5 kostet −10 LP. Innerhalb von ${N} kannst du Divisionen verlieren, aber nicht mehr unter ${N} fallen, sobald du ihn erreicht hast. Mehr dazu unter ${artA('/ranks', 'TFT Ränge')}.`,
+          `Every division from ${N} IV to ${N} I needs 100 LP. 1st place gives +40 LP, 4th still +10 LP, 5th costs −10 LP. Within ${N} you can lose divisions but you can't drop below ${N} once you reach it. More under ${artA('/ranks', 'TFT ranks')}.`))],
+      ...(comps.length ? [['comps', L('Comps zum Klettern', 'Comps to climb with'), csPs(i <= 3 ? L(`Für ${N} reichen Comps, die leicht zu spielen sind und stabil Top 4 holen:`, `For ${N}, comps that are easy to play and reach a steady top 4 are enough:`) : L('Auf diesem Niveau zählen die stärksten Comps des Patches:', 'At this level the strongest comps of the patch count:')) + csUl(comps)]] : [])],
+    q:[[L(`Wie viel Prozent der Spieler sind ${N} in TFT?`, `What percentage of players are ${N} in TFT?`), L(`${fmtPct(t.total)} der erfassten Spieler; mit ${N} gehörst du zu den Top ${fmtPct(t.topTier)}.`, `${fmtPct(t.total)} of tracked players; with ${N} you are in the top ${fmtPct(t.topTier)}.`)],
+      ...(apex ? [] : [[L(`Wie viele LP braucht man von ${N} IV bis ${next ? esc(next.n) : N}?`, `How many LP from ${N} IV to ${next ? esc(tr(next.n)) : N}?`), L('Vier Divisionen mit je 100 LP, also 400 LP.', 'Four divisions of 100 LP each, so 400 LP.')]]),
+      [L(`Kann ich aus ${N} wieder absteigen?`, `Can I drop out of ${N} again?`), apex && key !== 'master' ? L('Ja, wenn du unter die LP-Grenze fällst, rutschst du zurück. Meister selbst verlierst du im Set aber nicht mehr.', 'Yes, if you fall below the LP cutoff you slide back. You can\'t lose Master itself within the set though.') : L(`Nein. Hast du ${N} im Set einmal erreicht, fällst du nicht mehr darunter – nur Divisionen kannst du verlieren.`, `No. Once you reach ${N} in the set you can't drop below it – only divisions can be lost.`)]],
+    ln:['ranks', 'tierlist', 'coaching', ...(i <= 2 && rkGuideOk() ? ['guide'] : [])]}; },
+
   home: ()=>{ const S = TFT_DATA.set, PT = seoPT(), sc = seoComps('S').map(c=>esc(c.name)), T = ART_TOOLS(), n = csList().length;
     const tools = ['rolldown', 'augments', 'dps', 'drops', 'builder', 'simulator', 'tierlist'].map(k=>T[k]).filter(Boolean);
     return {h:L(`TFTClimb: TFT Tierlist, Tools und Cheatsheets für Set ${S}`, `TFTClimb: TFT tier list, tools and cheatsheets for Set ${S}`),
@@ -6503,10 +6715,11 @@ function pageMeta(page, sub){
         `All ${champions.length} TFT champions in ${S}: cost, traits and abilities – with the best items and builds from our tier list.`)];
     case 'ranks': {
       if(rk){ const apex = ['master', 'grandmaster', 'challenger'].includes(sub), en = tr(rk.n);
-        return [L(`TFT Rang ${rk.n} – Spielerverteilung`, `TFT Rank ${en} – Player Distribution`), L(fit(`TFT Rang ${rk.n}: wie viel Prozent aller Spieler in ${rk.n} stehen${apex ? '' : ', aufgeteilt auf die Divisionen IV bis I'} – im Vergleich zu allen Rängen.`,
-          `TFT Rang ${rk.n}: wie viel Prozent aller Spieler in ${rk.n} stehen${apex ? '' : ', aufgeteilt auf die Divisionen IV bis I'} – im Vergleich.`),
-          fit(`TFT rank ${en}: what percentage of all players is in ${en}${apex ? '' : ', split into divisions IV to I'} – compared to every other rank.`,
-          `TFT rank ${en}: what percentage of all players is in ${en}${apex ? '' : ', split into divisions IV to I'} – compared to all ranks.`))]; }
+        return [L(fitT(`TFT Rang ${rk.n}: Verteilung, LP & Tipps`), fitT(`TFT Rank ${en}: Distribution, LP & Tips`)),
+          L(apex ? fit(`TFT Rang ${rk.n}: Spieleranteil, LP-Grenzen, LP pro Platzierung und Tipps, mit denen du dich in der Spitze hältst.`, `TFT Rang ${rk.n}: Spieleranteil, LP-Grenzen, LP pro Platzierung und Tipps für die Spitze.`)
+            : fit(`TFT Rang ${rk.n}: Spieleranteil, Divisionen IV–I, LP pro Platzierung und Tipps, mit denen du schneller in den nächsten Rang kommst.`, `TFT Rang ${rk.n}: Spieleranteil, Divisionen IV–I, LP pro Platzierung und Tipps für den Aufstieg.`),
+          apex ? fit(`TFT rank ${en}: player share, LP cutoffs, LP per placement and tips to stay at the top of the ladder.`, `TFT rank ${en}: player share, LP cutoffs, LP per placement and tips.`)
+            : fit(`TFT rank ${en}: player share, divisions IV–I, LP per placement and tips to climb to the next rank faster.`, `TFT rank ${en}: player share, divisions IV–I, LP per placement and tips.`))]; }
       return [L('TFT Ränge & Spielerverteilung', 'TFT Ranks & Player Distribution'), L('Alle TFT Ränge von Eisen bis Challenger mit Divisionen – und wie viel Prozent der Spieler in jedem Rang stehen.',
         'All TFT ranks from Iron to Challenger with divisions – and what percentage of players is in each rank.')];
     }
@@ -6659,7 +6872,8 @@ function setMeta(page, sub){
   const nsOg = page==='nextset' ? `assets/og/tft-set-${sub}.jpg` : '';   // tools/og-bilder.js
   // Champions mit Posen: eigenes großes Bild (Arena, Podest, Modell – tools/og-bilder.js → assets/og/champions/tft-<slug>-build.jpg)
   const chOg = page==='champion' && CH_RENDER[chN] ? `assets/og/champions/tft-${sub}-build.jpg` : '';
-  const wide = chOg || (!chImg && (OG_TOOL[tool] || csOg || nsOg));
+  const rkOg = page==='ranks' && sub && rankBy[sub] ? `assets/og/ranks/${L('tft-rang-', 'tft-rank-')}${sub}.jpg` : '';   // Rang-Seiten: Emblem auf dem Hintergrund (tools/og-bilder.js)
+  const wide = chOg || (!chImg && (OG_TOOL[tool] || csOg || nsOg || rkOg));
   const img = chOg ? location.origin + '/' + chOg : chImg || location.origin + '/' + (wide || {tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
   const og = (k, v) => { headTag(`meta[property="${k}"]`, ()=>{ const m = document.createElement('meta'); m.setAttribute('property', k); return m; }).content = v; };
   og('og:title', document.title); og('og:description', desc || ''); og('og:url', url); og('og:type', 'website'); og('og:site_name', 'TFTClimb'); og('og:locale', EN ? 'en_GB' : 'de_DE'); og('og:image', img);
@@ -6693,8 +6907,8 @@ function setLd(page, sub, tool, title, desc, url, path, ogImg){
     const qa = box ? [...box.querySelectorAll('details')].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}})) : [];
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
   }
-  if(page==='champion' || page==='comp' || page==='cheatsheet' || page==='countdown' || page==='nextset' || (page==='guides' && sub && GUIDES_LIVE)){   // Fragen aus dem Textblock der Champion-/Comp-Seite, des Cheatsheets, des Countdowns bzw. des Guides
-    const qa = [...document.querySelectorAll(page==='champion' ? '#chPage .tool-seo details' : page==='comp' ? '#compPage .tool-seo details' : page==='cheatsheet' ? '#csPage .tool-seo details' : page==='countdown' ? '#cdApp .tool-seo details' : page==='nextset' ? '#nsApp .tool-seo details' : `#page-guides .gd-view[data-guide="${sub}"] .tool-seo details`)].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}}));
+  if(page==='champion' || page==='comp' || page==='cheatsheet' || page==='countdown' || page==='nextset' || page==='ranks' || (page==='guides' && sub && GUIDES_LIVE)){   // Fragen aus dem Textblock der Champion-/Comp-Seite, des Cheatsheets, des Countdowns, der Ränge bzw. des Guides
+    const qa = [...document.querySelectorAll(page==='champion' ? '#chPage .tool-seo details' : page==='comp' ? '#compPage .tool-seo details' : page==='cheatsheet' ? '#csPage .tool-seo details' : page==='countdown' ? '#cdApp .tool-seo details' : page==='nextset' ? '#nsApp .tool-seo details' : page==='ranks' ? `${sub && rankBy[sub] ? '#rk-detail' : '#rk-list'} .tool-seo details` : `#page-guides .gd-view[data-guide="${sub}"] .tool-seo details`)].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}}));
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
   }
   // Cheatsheet-Unterseite: Artikel mit Hauptbild, Datenstand und Autor (wie bei den Tools)
@@ -7106,7 +7320,7 @@ const DSH_RANK_DE = {eisen:'iron', bronze:'bronze', silber:'silver', gold:'gold'
 function dshTst(x){
   const m = String(x.r || '').match(/^\s*([^\s→]+)\s*([IV]*)\s*→\s*([^\s·]+)\s*([IV]*)\s*(?:·\s*(\d+))?/); if(!m) return '';
   const a = rankBy[DSH_RANK_DE[m[1].toLowerCase()]], b = rankBy[DSH_RANK_DE[m[3].toLowerCase()]]; if(!a || !b) return '';
-  const side = (t, div) => `<span class="dsh-tr" title="${esc(t.n)}${div ? ' ' + div : ''}"><img src="${rankImg(t)}" alt="${esc(t.n)}"><b>${esc(t.n)}${div ? ' ' + div : ''}</b></span>`;
+  const side = (t, div) => `<span class="dsh-tr" title="${esc(t.n)}${div ? ' ' + div : ''}"><img src="${rankImg(t, 1)}" alt="${esc(t.n)}"><b>${esc(t.n)}${div ? ' ' + div : ''}</b></span>`;
   return `<div class="dsh-ts"${m[5] ? ` title="${esc(x.n)} · ${m[5]} Sessions"` : ''}><span class="dsh-tn"><b>${esc(x.n)}</b>${m[5] ? `<small>${m[5]} Sessions</small>` : ''}</span><span class="dsh-tj">${side(a, m[2])}<i class="dsh-tarr" aria-label="${L('nach', 'to')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i>${side(b, m[4])}</span></div>`;
 }
 // nacheinander einblenden

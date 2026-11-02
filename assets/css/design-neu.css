@@ -589,7 +589,8 @@ body.nd-mini .nds-vi{display:none}
 .rkx .rkx-cell:not(:has(.rkx-divs)) .rkx-in{padding-bottom:calc(var(--w) * .26)}
 .rkx .rkx-in>b{font-size:clamp(.9rem,1.2vw,1.15rem)}
 .rkx .rkx-in>small{font-size:.9rem}
-.rkx .rkx-divs i{width:24px;height:20px;border-radius:5px;border-color:rgba(255,255,255,.35);background:rgba(5,8,15,.75);font-size:.66rem}
+.rkx .rkx-divs i{width:24px;height:20px;border-radius:5px;border-color:rgba(255,255,255,.35);background:rgba(5,8,15,.75);font-size:.66rem;cursor:pointer}
+.rkx .rkx-divs i:hover{background:var(--rc);border-color:var(--rc);color:#0b1220}   /* sonst bleibt der Grund dunkel und die dunkle Schrift verschwindet */
 .rkx{--g:calc(var(--w) * .3)}
 .rkx .rkx-in img{top:calc(var(--w) * -.33);width:128%}
 .rkx .rkx-in{padding-bottom:calc(var(--w) * .11)}
@@ -1763,3 +1764,130 @@ img.gt-ic{border:1px solid rgba(255,255,255,.18)}
 @media (max-width:1440px){#chPage:not(.chp2-fit) .chp2-hero{grid-template-columns:minmax(0,1fr) minmax(0,1fr);overflow-x:clip}#chPage:not(.chp2-fit) .chp2-stage{grid-column:2;grid-row:1;--pw:min(560px,100cqw)}#chPage:not(.chp2-fit) .chp2-strip-w{grid-row:2}#chPage:not(.chp2-fit) .chp2-right{grid-row:3}
   #chPage:not(.chp2-fit) .chp2-right{grid-column:1 / -1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}}
 @media (max-width:760px){.chp2-hero{grid-template-columns:minmax(0,1fr)}.chp2-strip-w{grid-row:3}.chp2-strip{padding-top:12px}.chp2-strip a{width:60px;height:60px;border-radius:12px}.chp2-right{grid-row:4}.chp2-stage{grid-column:1;grid-row:2;height:480px;--w:min(460px,118cqw);--pw:min(460px,100cqw)}.chp2-right{grid-template-columns:minmax(0,1fr)}.chp2-more,.chp2-more-g{grid-template-columns:minmax(0,1fr)}.chp2-pt{grid-template-columns:repeat(4,minmax(0,1fr))}.chp2-ag{grid-template-columns:minmax(0,1fr)}.chp2-pic{width:72px;height:72px}}
+
+/* ================= Rang-Seite V2 (Prototyp, renderRankV2 in app.js): Raster links, Emblem in der Mitte, Verteilung rechts ================= */
+.nd #page-ranks:has(.rk2)>.wrap{max-width:calc(1720px + 2 * var(--cg))}
+.rk2{--rc:#5b8cff;--rkr:clamp(420px,28vw,500px);position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr) minmax(0,var(--rkr));gap:30px;padding:18px 0 30px;align-items:start}
+/* Hintergrund über die ganze Breite (assets/img/rank-bg.webp): Lichtsäule und Bodenkreis in der Mitte, zu den Rändern dunkler, damit links/rechts lesbar bleibt */
+.rk2::before{content:"";position:absolute;z-index:-2;top:-24px;bottom:0;left:-3%;right:-3%;background:url('../img/rank-bg.webp') 50% 62%/cover no-repeat;
+  -webkit-mask:linear-gradient(transparent,#000 6%,#000 82%,transparent);mask:linear-gradient(transparent,#000 6%,#000 82%,transparent)}
+.rk2::after{content:"";position:absolute;z-index:-1;top:-24px;bottom:0;left:-3%;right:-3%;pointer-events:none;
+  background:linear-gradient(90deg,rgba(4,14,22,.92) 0,rgba(4,14,22,.7) 22%,rgba(4,14,22,0) 36%,rgba(4,14,22,0) 64%,rgba(4,14,22,.7) 78%,rgba(4,14,22,.92) 100%)}
+.rk2 .crumb{margin-bottom:8px}
+.rk2-h1{margin:0;font:900 italic clamp(2rem,3vw,2.8rem)/1 var(--ff-head);text-transform:uppercase;color:#fff;padding-right:.12em;white-space:nowrap;position:relative;z-index:2}   /* kein Umbruch (Großmeister), darf in die Mitte ragen */
+.rk2-h1>span{color:var(--rc);transition:color .4s}
+.rk2-h1 small{display:block;margin-top:6px;font:800 1.15rem/1.2 var(--ff-head);text-transform:none;font-style:normal;color:#e8eef3}
+.rk2-lead{margin:10px 0 14px;font-size:.92rem;line-height:1.55;color:#9fb6c4}.rk2-lead b{color:#fff}
+/* Raster: Reihe je Rang, gewählte Reihe leicht, gewählte Zelle deutlich hervorgehoben */
+.rk2-grid{display:flex;flex-direction:column;gap:3px}
+.rk2-r{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:2px;border-radius:10px;transition:background .3s}
+.rk2-r.ap{grid-template-columns:repeat(3,minmax(0,1fr))}
+.rk2-r.on{background:color-mix(in srgb,var(--rc) 10%,transparent)}
+.rk2-c{position:relative;display:grid;place-items:center;height:44px;border-radius:8px;border:1px solid rgba(255,255,255,.07);background:rgba(3,17,27,.6);
+  transform:scale(var(--w,1));transition:transform .12s ease-out,border-color .2s,box-shadow .2s;text-decoration:none;z-index:calc(var(--w,1) * 10)}
+.rk2-c img{width:40px;height:40px;object-fit:contain;transform:scale(1.4);filter:drop-shadow(0 3px 6px rgba(0,0,0,.6))}
+.rk2-c b{position:absolute;right:5px;bottom:3px;font:900 italic .66rem/1 var(--ff-head);color:#cfe0ea;text-shadow:0 1px 4px #000}
+.rk2-c b.ap{left:0;right:0;text-align:center;font-size:.6rem;font-style:normal;letter-spacing:.04em;text-transform:uppercase}
+.rk2-c.on{border-color:var(--rc);background:color-mix(in srgb,var(--rc) 18%,rgba(3,17,27,.8));box-shadow:0 0 0 1px var(--rc),0 0 16px color-mix(in srgb,var(--rc) 55%,transparent)}
+/* Glanz: läuft beim Hovern von links nach rechts über die Fläche des Emblems (Maske = Emblem) */
+.rk2-c::after{content:"";position:absolute;inset:5px;-webkit-mask:var(--img) center/56px no-repeat;mask:var(--img) center/56px no-repeat;
+  background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.85) 50%,transparent 62%) 140% 0/260% 100% no-repeat;pointer-events:none}
+.rk2-c:hover::after{animation:rk2Shine .7s ease-out}
+@keyframes rk2Shine{from{background-position:140% 0}to{background-position:-40% 0}}
+.rk2-all{display:inline-flex;margin-top:12px;padding:9px 16px;border-radius:10px;background:var(--rc);color:#0b1018;font:800 .85rem/1 var(--ff-body);text-decoration:none;transition:background .4s,filter .15s}
+.rk2-all:hover{filter:brightness(1.15)}
+/* Mitte: Arena mit Schein in der Rangfarbe, großes Emblem, Beschriftung */
+/* rechte Spalte ist breiter als die linke: Mitte um die halbe Differenz nach rechts, damit Emblem und Text unter der Öffnung des Hintergrunds (Seitenmitte) stehen */
+.rk2-m{align-self:stretch;position:relative;left:calc((var(--rkr) - 400px) / 2)}
+.rk2-stage{position:relative;height:100%;min-height:560px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 0 20px}
+/* Schein hinter dem Emblem in der Rangfarbe (pulsiert ruhig), dazu die Lichtsäule des Hintergrunds */
+.rk2-emb::before{content:"";position:absolute;z-index:-1;left:50%;top:50%;width:150%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--rc) 95%,#fff 5%) 0,color-mix(in srgb,var(--rc) 75%,transparent) 30%,color-mix(in srgb,var(--rc) 35%,transparent) 52%,transparent 78%);filter:blur(14px);animation:rk2Glow 4.5s ease-in-out infinite;transition:background .5s}
+@keyframes rk2Glow{50%{opacity:.7;transform:translate(-50%,-50%) scale(.94)}}
+.rk2-emb{position:relative;z-index:1;width:min(470px,90%);aspect-ratio:1;margin-top:20px;animation:rk2Float 6s ease-in-out infinite}   /* etwas tiefer, Beschriftung direkt darunter */
+.rk2-emb img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 22px 36px rgba(0,0,0,.65)) drop-shadow(0 0 40px color-mix(in srgb,var(--rc) 60%,transparent))}
+@keyframes rk2Float{50%{transform:translateY(-8px)}}
+.rk2-div{display:none;position:absolute;left:50%;bottom:4%;transform:translateX(-50%);min-width:54px;padding:4px 12px;border-radius:99px;border:2px solid var(--rc);background:rgba(4,18,27,.9);text-align:center;font:900 italic 1.3rem/1 var(--ff-head);color:#fff;padding-right:.9em}
+.rk2-stage.flip .rk2-emb img{animation:rk2Flip .55s cubic-bezier(.2,.7,.2,1)}
+@keyframes rk2Flip{from{opacity:.2;transform:scale(.86)}}
+.rk2-cap{position:relative;z-index:1;margin-top:-34px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
+.rk2-cap>b{font:900 italic 2.1rem/1 var(--ff-head);text-transform:uppercase;color:#fff;padding-right:.12em;text-shadow:0 2px 14px #000}
+/* lesbar über dem hellen Bodenkreis: dunkler weicher Fleck hinter der Beschriftung, Schrift mit Schatten */
+.rk2-cap::before{content:"";position:absolute;z-index:-1;left:50%;top:50%;width:150%;height:150%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(4,12,20,.82),rgba(4,12,20,.5) 55%,transparent);pointer-events:none}
+.rk2-cap{text-shadow:0 1px 3px #000,0 2px 10px rgba(0,0,0,.8)}
+.rk2-share{font-size:.92rem;color:#dbe7ef}.rk2-share b{color:#fff}
+.rk2-next{display:flex;align-items:center;justify-content:center;gap:.3em;height:30px;font-size:.9rem;color:#cfe0ea}   /* gleiche Höhe mit und ohne Emblem-Link */.rk2-next b{color:var(--rc)}
+.rk2-next a{display:inline-flex;align-items:center;gap:4px;color:#fff;font-weight:800;text-decoration:none;border-bottom:1px dashed rgba(255,255,255,.4)}
+.rk2-next img{width:22px;height:22px}
+/* rechts: Kennzahlen, Balken nach Rang, Balken nach Division */
+.rk2-kpi{display:grid;grid-template-columns:1fr 1fr;gap:0;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.rk2-kpi>div{display:flex;flex-direction:column;gap:2px}.rk2-kpi>div+div{padding-left:18px;border-left:1px solid rgba(255,255,255,.08)}
+.rk2-kpi small{font-size:.78rem;color:#9fb6c4}
+.rk2-kpi b{font:900 2.4rem/1.1 var(--ff-head);color:#fff}
+.rk2-kpi span{font-size:.78rem;color:#8ea3b2}
+.rk2-sec{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.08)}.rk2-sec:last-child{border-bottom:0}
+.rk2-sec h2{margin:0 0 12px;font:700 .9rem/1.2 var(--ff-body);color:#cfe0ea}
+.rk2-bars{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px;align-items:end}
+.rk2-b{display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none}
+.rk2-b em{font:700 .72rem/1 var(--ff-body);font-style:normal;color:#8ea3b2;white-space:nowrap}
+.rk2-b i{position:relative;width:72%;height:150px;display:block}
+.rk2-b s{position:absolute;left:0;right:0;bottom:0;height:0;border-radius:4px 4px 2px 2px;background:color-mix(in srgb,var(--rc) 45%,#20313b);transition:height 1s cubic-bezier(.2,.7,.2,1),background .3s}
+.rk2-b img{width:30px;height:30px;object-fit:contain;opacity:.75;transition:opacity .2s,transform .2s}
+.rk2-b.on s{background:var(--rc);box-shadow:0 0 14px color-mix(in srgb,var(--rc) 60%,transparent)}
+.rk2-b.on em{color:#fff;font-weight:800}.rk2-b.on img,.rk2-b:hover img{opacity:1;transform:scale(1.15)}
+.rk2-src{display:block;margin-top:8px;font-size:.7rem;color:#6f8594}
+.rk2-hb{display:flex;flex-direction:column;gap:9px}
+.rk2-h{display:grid;grid-template-columns:96px 1fr 70px;align-items:center;gap:12px;text-decoration:none;color:#9fb6c4;font-size:.9rem;font-weight:700}
+.rk2-h i{display:block;height:10px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden}
+.rk2-h s{display:block;height:100%;width:0;border-radius:99px;background:color-mix(in srgb,var(--rc) 55%,#20313b);transition:width 1s cubic-bezier(.2,.7,.2,1) .15s}
+.rk2-h em{font-style:normal;text-align:right;color:#cfe0ea}
+.rk2-h.on{color:#fff}.rk2-h.on s{background:var(--rc);box-shadow:0 0 10px color-mix(in srgb,var(--rc) 60%,transparent)}.rk2-h.on em{color:#fff;font-weight:800}
+/* Aufbau beim ersten Laden wie Startseite und Champion-Seite */
+.rk2.intro .rk2-l>*,.rk2.intro .rk2-m,.rk2.intro .rk2-rt>*{animation:chp2In .6s cubic-bezier(.2,.7,.2,1) both}
+.rk2.intro .rk2-l>:nth-child(2){animation-delay:.05s}.rk2.intro .rk2-l>:nth-child(3){animation-delay:.1s}.rk2.intro .rk2-grid{animation-delay:.15s}
+.rk2.intro .rk2-m{animation-delay:.12s}.rk2.intro .rk2-rt>:nth-child(2){animation-delay:.2s}.rk2.intro .rk2-rt>:nth-child(3){animation-delay:.28s}
+@media (prefers-reduced-motion:reduce){.rk2 *{animation:none!important;transition:none!important}}
+#rk2App{container:rk2 / inline-size}   /* Umbrüche nach verfügbarer Breite (mit/ohne Seitenleiste), nicht nach Fensterbreite */
+/* schmaler: Schein und Hintergrund ragen sonst über den Rand (waagerechtes Scrollen); Kennzahlen, Verteilung und Divisionen unter Raster und Emblem */
+@container rk2 (max-width:1300px){.rk2{grid-template-columns:minmax(0,380px) minmax(0,1fr);overflow-x:clip;overflow-clip-margin:12px}.rk2-m{left:0}
+  /* zwei Spalten: Hintergrund nur über der Emblem-Spalte, damit die Öffnung über dem Emblem bleibt (links weich ausgeblendet) */
+  .rk2::before{left:410px;-webkit-mask:linear-gradient(transparent,#000 6%,#000 82%,transparent),linear-gradient(90deg,transparent,#000 120px);-webkit-mask-composite:source-in;
+    mask:linear-gradient(transparent,#000 6%,#000 82%,transparent),linear-gradient(90deg,transparent,#000 120px);mask-composite:intersect}
+  .rk2-rt{grid-column:1 / -1;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.5fr) minmax(0,1fr);gap:24px}.rk2-rt .rk2-sec{border-bottom:0;padding-top:0}
+  .rk2::after{background:linear-gradient(90deg,rgba(4,14,22,.92) 0,rgba(4,14,22,.78) 34%,rgba(4,14,22,0) 52%)}
+  .rk2-rt{position:relative}.rk2-rt::before{content:"";position:absolute;z-index:-1;inset:-30px -3% 0;background:linear-gradient(rgba(4,14,22,0),rgba(4,14,22,.82) 50px);pointer-events:none}}
+@container rk2 (max-width:1000px){.rk2-rt{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.rk2-rt>.rk2-sec:nth-child(2){grid-column:1 / -1;grid-row:2}}
+@container rk2 (max-width:760px){.rk2{grid-template-columns:minmax(0,1fr);overflow-clip-margin:0}.rk2::before{left:-3%;-webkit-mask:linear-gradient(transparent,#000 6%,#000 82%,transparent);mask:linear-gradient(transparent,#000 6%,#000 82%,transparent)}.rk2-h1{font-size:min(2rem,8vw)}.rk2-m{order:-1}.rk2-stage{min-height:380px}.rk2-rt{grid-template-columns:minmax(0,1fr)}.rk2-rt>.rk2-sec:nth-child(2){grid-row:auto}
+  .rk2::after{background:linear-gradient(rgba(4,14,22,0) 0,rgba(4,14,22,0) 400px,rgba(4,14,22,.78) 500px)}}   /* Emblem oben frei, Text darunter lesbar */
+
+/* ================= Ränge-Übersicht: Verteilungsbalken unter den Waben (rkDistBar in app.js), Quellenzeile direkt darunter ================= */
+.rkd{max-width:1000px;margin:6px auto 16px;overflow-x:clip}   /* versteckte Infokästen am Rand erzeugen sonst seitliches Scrollen */
+.nd #rk-list:not(.rkx-mode-hex) .rkd{display:none}
+.rkd-h{margin:0 0 12px;text-align:center;font:800 .78rem/1.2 var(--ff-body);letter-spacing:.14em;text-transform:uppercase;color:#9fb6c4}
+.rkd-bar{display:flex;gap:3px;height:34px;padding-bottom:30px;box-sizing:content-box;animation:rkdIn 1.1s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rkdIn{from{clip-path:inset(-80px 100% -40px -40px)}to{clip-path:inset(-80px -40px -40px -40px)}}   /* Rand nach außen frei für Infokasten und Klammer */
+.rkd-s,.rkd-top{position:relative;flex-shrink:1;flex-basis:0;min-width:10px}
+.rkd-top{display:flex;gap:3px;min-width:52px;height:34px}
+.rkd-s{display:flex;align-items:center;justify-content:center;height:34px;border-radius:6px;text-decoration:none;color:#0b1018;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--rc) 85%,#fff 15%),var(--rc) 55%,color-mix(in srgb,var(--rc) 70%,#000 30%));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3);transition:transform .2s,filter .2s,box-shadow .2s}
+.rkd-s:hover,.rkd-s:focus-visible{z-index:3;transform:translateY(-3px);filter:brightness(1.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 16px color-mix(in srgb,var(--rc) 70%,transparent);outline:0}
+.rkd-l{overflow:hidden;white-space:nowrap;text-overflow:clip;padding:0 6px;font:800 .78rem/1 var(--ff-body)}
+.rkd-l span{font-family:var(--ff-head);text-transform:uppercase;letter-spacing:.03em}
+/* Klammer unter Diamant bis Challenger */
+.rkd-br{position:absolute;left:0;right:0;top:42px;height:0;border-top:2px solid rgba(255,255,255,.35)}   /* Linie genau so breit wie die Gruppe */
+.rkd-br::before,.rkd-br::after{content:"";position:absolute;top:-8px;width:2px;height:8px;background:rgba(255,255,255,.35)}.rkd-br::before{left:0}.rkd-br::after{right:0}
+.rkd-br b{position:absolute;right:0;top:7px;white-space:nowrap;font:700 .74rem/1 var(--ff-body);color:#cfe0ea}
+/* Infokasten beim Drüberfahren (über dem Abschnitt) */
+.rkd-tip{position:absolute;left:50%;bottom:calc(100% + 10px);width:max-content;display:flex;align-items:center;gap:8px;padding:8px 12px 8px 8px;border-radius:10px;white-space:nowrap;pointer-events:none;
+  background:color-mix(in srgb,var(--rc) 14%,#08182a);border:1px solid var(--rc);color:#fff;opacity:0;transform:translate(-50%,4px);transition:opacity .15s,transform .15s}
+.rkd-tip img{width:36px;height:36px;object-fit:contain;transform:scale(1.3)}
+.rkd-tip b{display:block;font:900 italic 1rem/1 var(--ff-head);text-transform:uppercase}.rkd-tip small{font-size:.74rem;color:#cfe0ea}
+.rkd-s:hover .rkd-tip,.rkd-s:focus-visible .rkd-tip{opacity:1;transform:translate(-50%,0)}
+.rkd-top .rkd-tip,.rkd-bar>.rkd-s:nth-last-child(2) .rkd-tip{left:auto;right:0;transform:translateY(4px)}
+.rkd-top .rkd-s:hover .rkd-tip,.rkd-bar>.rkd-s:nth-last-child(2):hover .rkd-tip{transform:none}   /* rechter Rand: Kasten nach links */
+.rkd-bar>.rkd-s:first-child .rkd-tip{left:0;transform:translateY(4px)}.rkd-bar>.rkd-s:first-child:hover .rkd-tip{transform:none}
+/* Quellenzeile als Unterschrift des Balkens */
+.nd #rk-list.rkx-mode-hex .rk-foot{max-width:1000px;margin:0 auto 20px;padding:0;font-size:.78rem}
+@media (max-width:640px){.rkd-l span{display:none}.rkd-bar{height:28px}.rkd-s,.rkd-top{height:28px}.rkd-s{border-radius:5px}.rkd-br{top:36px}.rkd-s,.rkd-top .rkd-s{min-width:8px}.rkd-top{min-width:42px}}
+@media (prefers-reduced-motion:reduce){.rkd-bar{animation:none}}

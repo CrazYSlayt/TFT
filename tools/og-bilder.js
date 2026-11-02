@@ -57,6 +57,25 @@ function championPages(){
   });
 }
 
+// ---------- Rang-Seiten ----------
+// Je Rang ein Bild: Hintergrund der Rang-Seite (assets/img/rank-bg.webp), Emblem mit Schein in der Rangfarbe unter der Lichtsäule, links Name
+// und „TFT Rang“ – ohne Prozentzahlen (ändern sich mit jeder Erhebung). Deutsch → assets/og/ranks/tft-rang-<rang>.jpg, Englisch → tft-rank-<rang>.jpg
+function rankPages(){
+  const R = [['iron', 'Eisen', 'Iron', 'Iron', '#8f8380'], ['bronze', 'Bronze', 'Bronze', 'Bronze', '#c98a72'], ['silver', 'Silber', 'Silver', 'Silver', '#a6b6d4'], ['gold', 'Gold', 'Gold', 'Gold', '#e3b15c'],
+    ['platinum', 'Platin', 'Platinum', 'Platinum', '#41b9d6'], ['emerald', 'Smaragd', 'Emerald', 'Emerald', '#2fbf7a'], ['diamond', 'Diamant', 'Diamond', 'Diamond', '#5b8cff'],
+    ['master', 'Meister', 'Master', 'Master', '#b45ce8'], ['grandmaster', 'Großmeister', 'Grandmaster', 'GrandMaster', '#e24a42'], ['challenger', 'Challenger', 'Challenger', 'Challenger', '#f2c14e']];
+  const img = f => `/assets/img/ranks/${f.toLowerCase()}.webp`;   // lokal, aus tools/rang-embleme.js
+  return R.flatMap(([k, de, en, f, c], i) => [['de', de, 'tft-rang-', 'TFT Rang', 'LP, Divisionen & Tipps'], ['en', en, 'tft-rank-', 'TFT Rank', 'LP, divisions & tips']].map(([lang, n, pre, kick, sub]) => ({file: `ranks/${pre}${k}`, jpg: true, html: page(`
+    <div class="rkbg"></div><div class="rkglow" style="--c:${c}"></div>
+    <img class="rkemb" src="${img(f)}" alt="">
+    <div class="l rkl">
+      <img class="logo" src="/assets/brand/logo-tftclimb.webp" alt="">
+      <div class="kick">${kick}</div>
+      <h1><em style="background:linear-gradient(90deg,#fff,${c});-webkit-background-clip:text;background-clip:text">${n}</em></h1>
+      <div class="sub">${sub}</div>
+      <div class="rkpos" style="--c:${c}">${lang === 'de' ? `Rang ${i + 1} von 10` : `Rank ${i + 1} of 10`}</div>
+    </div>`)})));
+}
 // ---------- Rolldown-Rechner ----------
 // Fünf Kosten-Chips in den Kostenfarben des Spiels (fest, ändern sich nicht), keine Prozente
 function rolldownPages(){
@@ -170,6 +189,13 @@ const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
   .ch{width:470px;top:70px}.ch h1{font-size:96px;white-space:nowrap}.ch h1 em{font-size:inherit}
   .ch .cost{display:inline-flex;align-items:center;gap:10px;margin-top:22px;padding:8px 18px 8px 14px;border-radius:99px;border:2px solid var(--c);font:700 24px Barlow;color:var(--c);background:rgba(4,18,27,.6)}
   .ch .cost::before{content:"";width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffe9a8,#f2c14e 55%,#b8861b)}
+  /* Rang-Seiten: Hintergrund der Rang-Seite, rechts das Emblem mit Schein, links dunkel für die Schrift */
+  .rkbg{position:absolute;inset:0;background:url(/assets/img/rank-bg.webp) 0 46%/140% auto no-repeat}   /* 140 %: die Lichtsäule (Bildmitte) fällt auf das Emblem bei x 840 */
+  .rkbg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,14,22,.95) 0,rgba(4,14,22,.75) 36%,rgba(4,14,22,.1) 62%,rgba(4,14,22,.25)),linear-gradient(transparent 70%,rgba(4,14,22,.55))}
+  .rkglow{position:absolute;left:840px;top:300px;width:560px;height:560px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,var(--c),transparent 72%);opacity:.6;filter:blur(20px);z-index:1}
+  .rkemb{position:absolute;z-index:2;left:840px;top:290px;width:480px;height:480px;transform:translate(-50%,-50%);object-fit:contain;filter:drop-shadow(0 20px 34px rgba(0,0,0,.65))}
+  .rkl{width:520px;top:84px}.rkl h1{font-size:100px;white-space:nowrap}.rkl h1 em{color:transparent;padding-right:.14em}
+  .rkpos{display:inline-block;margin-top:22px;padding:8px 18px;border-radius:99px;border:2px solid var(--c);font:700 24px Barlow;color:#fff;background:rgba(4,18,27,.6)}
   .sub{margin-top:10px;font:700 italic 38px 'Barlow Condensed';color:#cfe3ee}
   .line{display:inline-block;margin-top:24px;padding:10px 18px;border-radius:99px;border:2px solid rgba(46,230,214,.5);background:rgba(46,230,214,.1);font:700 22px Barlow;color:#7ff7ec}
   .tiers{display:flex;gap:20px;margin-top:30px}
@@ -253,7 +279,8 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
   fs.mkdirSync(OUT, {recursive: true});
   fs.mkdirSync(path.join(OUT, 'cs'), {recursive: true});
   fs.mkdirSync(path.join(OUT, 'champions'), {recursive: true});
-  const jobs = [...augmentPages(), ...rolldownPages(), ...toolPages(), ...nextSetPage(), ...cheatPages(), ...championPages()].filter(j => !process.argv[2] || j.file.includes(process.argv[2]));   // optional: nur Dateien mit diesem Namensteil
+  fs.mkdirSync(path.join(OUT, 'ranks'), {recursive: true});
+  const jobs = [...augmentPages(), ...rolldownPages(), ...toolPages(), ...nextSetPage(), ...cheatPages(), ...championPages(), ...rankPages()].filter(j => !process.argv[2] || j.file.includes(process.argv[2]));   // optional: nur Dateien mit diesem Namensteil
   const srv = await serve(), origin = 'http://127.0.0.1:' + srv.address().port;
   const port = 9300 + Math.floor(Math.random() * 500), prof = path.join(require('os').tmpdir(), 'tftclimb-og-' + port);
   const br = spawn(findBrowser(), ['--headless=new', '--hide-scrollbars', `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`, '--window-size=1200,630', 'about:blank'], {stdio: 'ignore'});

@@ -2120,6 +2120,10 @@ a.tc:hover .tc-ph{transform:rotate(0) scale(1.05)}
 .gd-err li::marker{color:#ff5c8a;font-weight:900}
 /* Platzhalter für Profi-Tipps, die noch aus der Sprachaufnahme kommen */
 .gd-todo{border-style:dashed}
+/* CrazYSlayt als Cartoon in Guide-Boxen: rechts unten, ragt oben leicht aus der Box; Text macht ihm Platz */
+.art-box.has-coach{position:relative;padding-right:150px;min-height:128px;margin-top:34px}
+.gd-coach{position:absolute;right:10px;bottom:0;height:150px;width:auto;pointer-events:none;filter:drop-shadow(0 6px 12px rgba(0,0,0,.45))}
+@media (max-width:600px){.art-box.has-coach{padding-right:100px;min-height:110px}.gd-coach{height:112px;right:4px}}
 .tool-seo .gd-todo-t{margin:0;font-size:.85rem;font-style:italic;color:var(--faint)}
 @media (max-width:760px){.gd-art .art-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.gd-stage{grid-template-columns:repeat(4,minmax(0,1fr))}.gd-zins{grid-template-columns:repeat(3,minmax(0,1fr))}.gd-two{grid-template-columns:minmax(0,1fr)}}
 /* Autor-Kasten am Ende jedes Tool-Artikels */
