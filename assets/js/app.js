@@ -2688,6 +2688,7 @@ function renderChampPage(slug){
     <section class="tool-seo" aria-labelledby="ts-champ">
       <div class="ts-main">
         <h2 id="ts-champ">${esc(n)} in TFT Set ${S}: So spielst du ihn</h2>
+        ${CH_RENDER[n] ? `<figure class="art-fig"><img src="assets/og/champions/tft-${champSlug(n)}-build.jpg" alt="${esc(n)} – ${L(`TFT Set ${S} Build`, `TFT Set ${S} build`)}" width="1200" height="630" loading="lazy"></figure>` : ''}
         <p>${esc(n)} ist ein ${c.c}-Kosten-Champion. Für ★★ brauchst du 3 Kopien, für ★★★ 9 Kopien.</p>
         <p>${cs.length ? (cs.length===1 ? `${esc(n)} spielt in einer Comp unserer Tierlist mit.` : `${esc(n)} spielt in ${cs.length} Comps unserer Tierlist mit.`) + (carryN ? (carryN===1 ? ' In einer davon ist er der Carry.' : ` In ${carryN} davon ist er der Carry.`) : ' Meist als Unterstützung für den Carry.') : `${esc(n)} ist gerade in keiner Comp unserer Tierlist – schau in die Traits, um zu sehen, mit wem er zusammenpasst.`}</p>
         <p>Die Werte und die Fähigkeit oben kommen aus den offiziellen Spieldaten des aktuellen Sets, die Items und Comps aus unserer Tierlist. Nach jedem Patch wird beides aktualisiert.</p>
@@ -6119,6 +6120,7 @@ function seoArtHTML(a, pre, hid){
   const sec = (a.s || []).map(([k, t])=>[k, t]).concat(a.q.length ? [['faq', L('Häufige Fragen', 'FAQ')]] : []);
   return `<div class="ts-main">
     <h2 id="${hid}">${a.h}</h2>
+    ${a.og ? `<figure class="art-fig"><img src="${a.og}" alt="${a.alt || ''}" width="1200" height="630" loading="lazy"></figure>` : ''}
     <p>${a.i}</p>
     ${a.st && a.st.length ? `<div class="art-stats">${a.st.map(([v, t, c])=>`<div class="${c || 'p'}"><b>${v}</b><span>${t}</span></div>`).join('')}</div>` : ''}
     ${(a.s || []).map(([k, t, html])=>`<h3 id="${pre}-${k}">${t}</h3>${html}`).join('')}
@@ -6172,10 +6174,12 @@ const rkComps = t => { const lo = RANK_TIERS.indexOf(t) <= 3, pool = mainComps.f
   return list.map(c=>`${artA('/tierlist?comp=' + encodeURIComponent(c.slug), esc(c.name))} (${c.tier}-Tier)`); };
 const rkLpTable = () => artTw([L('Platz', 'Place'), 'LP'], RK_LP.map((v, i)=>`<tr${i === 3 ? ' class="on"' : ''}><td><b>${i + 1}.</b></td><td>${v > 0 ? '+' : '−'}${Math.abs(v)} LP</td></tr>`));
 const rkGuideOk = () => GUIDES_LIVE || GD_PREVIEW;
+// Vorschaubilder der Ränge (tools/og-bilder.js): Übersicht mit allen Waben, je Rang das Emblem
+const rkOgImg = k => `assets/og/ranks/${k ? L('tft-rang-', 'tft-rank-') + k : L('tft-raenge', 'tft-ranks')}.jpg`;
 const SEO_ART = {
   // Übersicht /ranks: LP-System, Aufstieg und Abstieg, Verteilung, Belohnungen
   ranks: ()=>{ const S = TFT_DATA.set, big = RANK_TIERS.slice().sort((a, b)=>b.total - a.total)[0], top = t => fmtPct(t.topTier);
-    return {h:L(`TFT Ränge und LP-System in Set ${S}`, `TFT ranks and LP system in Set ${S}`),
+    return {h:L(`TFT Ränge und LP-System in Set ${S}`, `TFT ranks and LP system in Set ${S}`), og:rkOgImg(), alt:L('TFT Ränge von Eisen bis Challenger – LP, Divisionen und Verteilung bei TFTClimb', 'TFT ranks from Iron to Challenger – LP, divisions and distribution on TFTClimb'),
     i:L(`Ranked in Teamfight Tactics hat zehn Ränge von Eisen bis Challenger. Von Eisen bis Diamant ist jeder Rang in vier Divisionen (IV bis I) geteilt, ab Meister zählen nur noch LP. Hier siehst du, wie viele LP jede Platzierung bringt, wie Auf- und Abstieg funktionieren und wie sich die Spieler auf die Ränge verteilen.`,
       `Ranked in Teamfight Tactics has ten ranks from Iron to Challenger. From Iron to Diamond every rank is split into four divisions (IV to I); from Master on only LP count. Here you see how many LP each placement gives, how promotion and demotion work and how players spread across the ranks.`),
     st:[['+40', L('LP für Platz 1', 'LP for 1st place')], ['±10', L('LP-Unterschied zwischen Platz 4 und 5', 'LP from 4th to 5th place')], ['100', L('LP pro Division', 'LP per division'), 'g']],
@@ -6197,7 +6201,7 @@ const SEO_ART = {
   // je Rang: Einordnung, Tipps, LP kurz, Comps, FAQ
   rank: key=>{ const t = rankBy[key]; if(!t) return null; const S = TFT_DATA.set, i = RANK_TIERS.indexOf(t), prev = RANK_TIERS[i - 1], next = RANK_TIERS[i + 1], apex = !t.div, N = esc(t.n);
     const tips = RK_TIPS[key] || [], comps = rkComps(t), cut = stCut('euw') || {}, lpCut = key === 'grandmaster' ? cut.gm : key === 'challenger' ? cut.ch : 0;
-    return {h:L(`TFT Rang ${N}: Einordnung, Tipps und LP`, `TFT rank ${N}: where it stands, tips and LP`),
+    return {h:L(`TFT Rang ${N}: Einordnung, Tipps und LP`, `TFT rank ${N}: where it stands, tips and LP`), og:rkOgImg(key), alt:L(`TFT Rang ${N} – Emblem, LP und Tipps bei TFTClimb`, `TFT rank ${N} – emblem, LP and tips on TFTClimb`),
     i:L(`${N} ist der ${i + 1}. von zehn Rängen in TFT Set ${S}. ${fmtPct(t.total)} der erfassten Spieler stehen hier, ${fmtPct(t.below)} darunter – mit ${N} gehörst du zu den Top ${fmtPct(t.topTier)}.${prev ? ` Darunter liegt ${esc(prev.n)}` : ''}${next ? `${prev ? ', darüber' : ' Darüber liegt'} ${esc(next.n)}.` : '.'}`,
       `${N} is rank ${i + 1} of ten in TFT Set ${S}. ${fmtPct(t.total)} of tracked players are here, ${fmtPct(t.below)} below – with ${N} you are in the top ${fmtPct(t.topTier)}.${prev ? ` Below it is ${esc(tr(prev.n))}` : ''}${next ? `${prev ? ', above it' : ' Above it is'} ${esc(tr(next.n))}.` : '.'}`),
     st:[[fmtPct(t.total), L(`der Spieler sind ${N}`, `of players are ${N}`)], ['Top ' + fmtPct(t.topTier), L(`mit ${N} oder höher`, `with ${N} or higher`)], [apex ? (lpCut ? Number(lpCut).toLocaleString(LOC) + ' LP' : 'LP') : '4 × 100', apex ? (lpCut ? L('LP-Grenze auf EUW', 'LP cutoff on EUW') : L('keine Divisionen', 'no divisions')) : L('LP bis zum nächsten Rang', 'LP to the next rank'), 'g']],
@@ -6334,6 +6338,7 @@ function nsHTML(n, D){
   const back = ch.filter(c=>old.has(c.n)).length;
   const card = (k, t, d, sub) => `<div class="ns-date${k === phase || (k === 'pbe' && phase === 'soon') ? ' on' : ''}"><small>${t}</small><b>${d ? esc(day(d.d)) : L('Termin folgt', 'Date to follow')}</b>${d ? `<span>${d.d <= now ? sub[1] : cdDays(d.d)}</span>` : ''}</div>`;
   const art = SEO_ART.ns(n, D, {pbe, live, phase, ch:ch.length, back});
+  if(n === nsNext()) Object.assign(art, {og:`assets/og/tft-set-${n}.jpg`, alt:L(`TFT Set ${n}: PBE-Start und Release`, `TFT Set ${n}: PBE start and release`)});   // Bild gibt es nur fürs nächste Set (tools/og-bilder.js)
   return `<div class="page-head"><div class="crumb"><a href="/">Home</a> / Set ${n}</div>
       <h1>TFT <em class="serif">Set ${n}</em></h1>
       <p>${phase === 'live' ? L(`Set ${n} ist live – alle Champions, Traits und Augments auf einen Blick.`, `Set ${n} is live – every champion, trait and augment at a glance.`)
@@ -6828,7 +6833,7 @@ function setMeta(page, sub){
   const nsOg = page==='nextset' ? `assets/og/tft-set-${sub}.jpg` : '';   // tools/og-bilder.js
   // Champions mit Posen: eigenes großes Bild (Arena, Podest, Modell – tools/og-bilder.js → assets/og/champions/tft-<slug>-build.jpg)
   const chOg = page==='champion' && CH_RENDER[chN] ? `assets/og/champions/tft-${sub}-build.jpg` : '';
-  const rkOg = page==='ranks' && sub && rankBy[sub] ? `assets/og/ranks/${L('tft-rang-', 'tft-rank-')}${sub}.jpg` : '';   // Rang-Seiten: Emblem auf dem Hintergrund (tools/og-bilder.js)
+  const rkOg = page==='ranks' && (!sub || rankBy[sub]) ? rkOgImg(sub) : '';   // Ränge: Übersicht mit allen Waben, je Rang das Emblem (tools/og-bilder.js)
   const wide = chOg || (!chImg && (OG_TOOL[tool] || csOg || nsOg || rkOg));
   const img = chOg ? location.origin + '/' + chOg : chImg || location.origin + '/' + (wide || {tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
   const og = (k, v) => { headTag(`meta[property="${k}"]`, ()=>{ const m = document.createElement('meta'); m.setAttribute('property', k); return m; }).content = v; };
@@ -6867,8 +6872,8 @@ function setLd(page, sub, tool, title, desc, url, path, ogImg){
     const qa = [...document.querySelectorAll(page==='champion' ? '#chPage .tool-seo details' : page==='comp' ? '#compPage .tool-seo details' : page==='cheatsheet' ? '#csPage .tool-seo details' : page==='countdown' ? '#cdApp .tool-seo details' : page==='nextset' ? '#nsApp .tool-seo details' : page==='ranks' ? `${sub && rankBy[sub] ? '#rk-detail' : '#rk-list'} .tool-seo details` : `#page-guides .gd-view[data-guide="${sub}"] .tool-seo details`)].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}}));
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
   }
-  // Cheatsheet-Unterseite: Artikel mit Hauptbild, Datenstand und Autor (wie bei den Tools)
-  if(page==='cheatsheet' && sub && ogImg) graph.push({'@type':'WebPage', url, name:title.split(' | ')[0], primaryImageOfPage:{'@type':'ImageObject', url:ogImg, width:1200, height:630}, dateModified:TFT_DATA.generated, inLanguage:EN ? 'en' : 'de',
+  // Cheatsheet-Unterseite, Ränge, Champions und nächstes Set: Artikel mit Hauptbild, Datenstand und Autor (wie bei den Tools)
+  if(ogImg && ((page==='cheatsheet' && sub) || page==='ranks' || page==='champion' || page==='nextset')) graph.push({'@type':'WebPage', url, name:title.split(' | ')[0], primaryImageOfPage:{'@type':'ImageObject', url:ogImg, width:1200, height:630}, dateModified:TFT_DATA.generated, inLanguage:EN ? 'en' : 'de',
     author:{'@type':'Person', name:'Claudio "CrazYSlayt"', alternateName:'CrazYSlayt', jobTitle:'TFT Challenger & TFTClimb Coach', url:location.origin + withLang(PATCH_AUTHOR.href)}, publisher:org});
   const pt = page==='patches' && patchBySlug[sub];   // Patch-Seite als Artikel mit CrazYSlayt als Autor
   if(pt) graph.push({'@type':'Article', headline:title.split(' | ')[0], description:desc, datePublished:pt.date, inLanguage:EN ? 'en' : 'de', mainEntityOfPage:url, publisher:org,

@@ -76,6 +76,35 @@ function rankPages(){
       <div class="rkpos" style="--c:${c}">${lang === 'de' ? `Rang ${i + 1} von 10` : `Rank ${i + 1} of 10`}</div>
     </div>`)})));
 }
+// ---------- Ränge-Übersicht (/ranks): die Waben aller zehn Ränge von der echten Seite (RK_SHOT), links „TFT Ränge“ ----------
+// Wie die Cheatsheets: Ausschnitt der Seite, aber ohne Prozentzahlen und Divisionen (ändern sich mit jeder Erhebung). Deutsch → assets/og/ranks/tft-raenge.jpg, Englisch → tft-ranks.jpg
+function ranksOverviewPages(){
+  return [['/ranks', 'tft-raenge', 'TFT Ranked', 'Ränge', 'LP, Divisionen & Verteilung', 'Eisen bis Challenger'], ['/en/ranks', 'tft-ranks', 'TFT Ranked', 'Ranks', 'LP, divisions & distribution', 'Iron to Challenger']]
+    .map(([site, file, kick, h, sub, chip]) => ({file: `ranks/${file}`, jpg: true, site, shot: RK_SHOT, make: shot => page(`
+    <div class="l rko">
+      <img class="logo" src="/assets/brand/logo-tftclimb.webp" alt="">
+      <div class="kick">${kick}</div>
+      <h1>TFT <em>${h}</em></h1>
+      <div class="sub">${sub}</div>
+      <div class="line">${chip}</div>
+    </div>
+    <img class="rko-hex" src="${shot}" alt="">`)}));
+}
+const RK_SHOT = `(async () => {
+  const src = document.querySelector('#rkx .rkx-hex'); if (!src) return null;
+  const h2i = await csCutLoad(), wrap = document.createElement('div'), c = src.cloneNode(true);
+  wrap.className = 'rkx'; wrap.style.cssText = 'position:absolute;left:-99999px;top:0;width:900px;--w:200px;--g:30px;pointer-events:none'; wrap.appendChild(c); src.parentNode.appendChild(wrap);
+  try {
+    c.querySelectorAll('.rkx-in small,.rkx-divs,.rkx-tip').forEach(x => { x.style.display = 'none'; });
+    c.querySelectorAll('.rkx-in b').forEach(b => { b.style.fontSize = '1.35rem'; });   // im kleinen Vorschaubild sonst kaum lesbar
+    c.querySelectorAll('img').forEach(i => { i.loading = 'eager'; });
+    Object.assign(c.style, {margin: '0', padding: '30px 0'});
+    await Promise.race([Promise.all([...c.querySelectorAll('img')].map(i => i.complete ? 0 : new Promise(ok => { i.onload = i.onerror = ok; }))), new Promise(ok => setTimeout(ok, 4000))]);
+    const blob = await h2i.toBlob(c, {width: 900, height: c.offsetHeight, pixelRatio: 2});
+    return await new Promise(ok => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.readAsDataURL(blob); });
+  } finally { wrap.remove(); }
+})()`;
+
 // ---------- Rolldown-Rechner ----------
 // Fünf Kosten-Chips in den Kostenfarben des Spiels (fest, ändern sich nicht), keine Prozente
 function rolldownPages(){
@@ -195,6 +224,8 @@ const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
   .rkglow{position:absolute;left:840px;top:300px;width:560px;height:560px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,var(--c),transparent 72%);opacity:.6;filter:blur(20px);z-index:1}
   .rkemb{position:absolute;z-index:2;left:840px;top:290px;width:480px;height:480px;transform:translate(-50%,-50%);object-fit:contain;filter:drop-shadow(0 20px 34px rgba(0,0,0,.65))}
   .rkl{width:520px;top:84px}.rkl h1{font-size:100px;white-space:nowrap}.rkl h1 em{color:transparent;padding-right:.14em}
+  .rko{width:430px;top:96px}.rko h1{font-size:100px;white-space:nowrap}
+  .rko-hex{position:absolute;z-index:1;right:22px;top:50%;width:700px;height:590px;transform:translateY(-50%);object-fit:contain;filter:drop-shadow(0 14px 30px rgba(0,0,0,.5))}
   .rkpos{display:inline-block;margin-top:22px;padding:8px 18px;border-radius:99px;border:2px solid var(--c);font:700 24px Barlow;color:#fff;background:rgba(4,18,27,.6)}
   .sub{margin-top:10px;font:700 italic 38px 'Barlow Condensed';color:#cfe3ee}
   .line{display:inline-block;margin-top:24px;padding:10px 18px;border-radius:99px;border:2px solid rgba(46,230,214,.5);background:rgba(46,230,214,.1);font:700 22px Barlow;color:#7ff7ec}
@@ -280,7 +311,7 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
   fs.mkdirSync(path.join(OUT, 'cs'), {recursive: true});
   fs.mkdirSync(path.join(OUT, 'champions'), {recursive: true});
   fs.mkdirSync(path.join(OUT, 'ranks'), {recursive: true});
-  const jobs = [...augmentPages(), ...rolldownPages(), ...toolPages(), ...nextSetPage(), ...cheatPages(), ...championPages(), ...rankPages()].filter(j => !process.argv[2] || j.file.includes(process.argv[2]));   // optional: nur Dateien mit diesem Namensteil
+  const jobs = [...augmentPages(), ...rolldownPages(), ...toolPages(), ...nextSetPage(), ...cheatPages(), ...championPages(), ...rankPages(), ...ranksOverviewPages()].filter(j => !process.argv[2] || j.file.includes(process.argv[2]));   // optional: nur Dateien mit diesem Namensteil
   const srv = await serve(), origin = 'http://127.0.0.1:' + srv.address().port;
   const port = 9300 + Math.floor(Math.random() * 500), prof = path.join(require('os').tmpdir(), 'tftclimb-og-' + port);
   const br = spawn(findBrowser(), ['--headless=new', '--hide-scrollbars', `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`, '--window-size=1200,630', 'about:blank'], {stdio: 'ignore'});
@@ -301,7 +332,7 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
         const l = /^\/en(\/|$)/.test(j.site) ? 'en' : 'de';
         if (l !== lang) { await send('Page.navigate', {url: origin + j.site}); await sleep(3500); lang = l; await ev(`document.head.insertAdjacentHTML('beforeend', '<style>#ckb{display:none!important}</style>')`); }
         else { await ev(`go(${JSON.stringify(j.site.replace(/^\/en(?=\/|$)/, '') || '/')})`); await sleep(500); }
-        const img = await ev(CS_SHOT); if (!img) { console.warn('  ohne Tabelle:', j.site); continue; }
+        const img = await ev(j.shot || CS_SHOT); if (!img) { console.warn('  ohne Tabelle:', j.site); continue; }
         j.html = j.make(img);
       }
     }
