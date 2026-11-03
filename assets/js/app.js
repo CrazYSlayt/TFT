@@ -2409,8 +2409,15 @@ function champPatchTrend(name){
   }
   return null;
 }
+// Rolle wie im Spiel („Magic Tank“, „Attack Caster“) mit Riots Symbol; Varianten wie _Manaless zählen als Grundrolle.
+// Frontline/Backline wie in der Rollen-Anzeige im Spiel: Nahkämpfer vorne, Fernkämpfer und Assassinen hinten
+function chpRole(n){
+  const TR = window.TFT_ROLES || {roles:{}, champions:{}}, rk = TR.champions[n], st = (CH_DATA[n] || {}).st;
+  return {icon: (TR.roles[rk] || {}).icon, name: rk ? rk.replace(/_.*$/, '').replace(/([a-z])([A-Z])/g, '$1 $2') : gtRole(n),
+    line: st ? (st.range <= 2 && (TFT_CUSTOM_SET.combatRoles || {})[n] !== 'assassin' ? 'Frontline' : 'Backline') : ''};
+}
 function chp2HTML(c, x){
-  const n = c.n, d = CH_DATA[n] || {}, st = d.st, ab = d.ab, r = CH_RENDER[n], role = gtRole(n), S = TFT_DATA.set;
+  const n = c.n, d = CH_DATA[n] || {}, st = d.st, ab = d.ab, r = CH_RENDER[n], S = TFT_DATA.set;
   const stat = (ic, l, v) => `<div class="chp2-st">${ic}<small>${l}</small><b>${v}</b></div>`, si = k => `<img src="assets/icons/tft/stat-${k}.png" alt="" width="20" height="20">`;
   const stars = (v, m) => [v, v * m, v * m * m].map(y=>fmtNum(Math.round(y))).join(' / ');
   const stats = st ? [stat(si('hp'), L('Leben', 'Health'), stars(st.hp, 1.8)), stat(si('ad'), L('Angriffsschaden', 'Attack damage'), stars(st.ad, 1.5)), stat(si('as'), L('Angriffstempo', 'Attack speed'), fmtNum(st.as)),
@@ -2430,10 +2437,7 @@ function chp2HTML(c, x){
     return `<div class="chp2-tf" data-ttt="${esc(tn)}" tabindex="0">${traitHex(tn, t.bp.length === 1 ? 'unique' : 'base', 54)}<span class="chp2-tfn">
       <span class="chp2-tft"><b>${esc(tn)}</b><small>${t.cat === 'class' ? L('Klasse', 'Class') : L('Ursprung', 'Origin')}</small></span><span class="bp">${bpHTML(t)}</span>
       ${mates.length ? `<span class="chp2-trm">${mates.map(m=>`<a href="${champHref(m.n)}" class="c${m.c}" data-champ="${esc(m.n)}" aria-label="${esc(m.n)}" style="background-image:url('assets/img/champions-square/${champSlug(m.n)}.webp'),${champBg(m.n)}"></a>`).join('')}</span>` : ''}</span></div>`; }).join('');
-  // Frontline/Backline wie in der Rollen-Anzeige im Spiel: Nahkämpfer vorne, Fernkämpfer und Assassinen hinten
-  const line = st ? (st.range <= 2 && (TFT_CUSTOM_SET.combatRoles || {})[n] !== 'assassin' ? 'Frontline' : 'Backline') : '';
-  // Rolle wie im Spiel („Magic Tank“, „Attack Caster“) mit Riots Symbol; Varianten wie _Manaless zählen als Grundrolle
-  const rname = rk ? rk.replace(/_.*$/, '').replace(/([a-z])([A-Z])/g, '$1 $2') : role;
+  const {name: rname, line} = chpRole(n);
   // Comp: Name über die ganze Breite, darunter Spielweise und die teuersten Units
   const comp = k => `<button class="chp2-comp" data-comp="${k.slug}" style="--tc:${TIER_COL[k.tier]}"><b class="chp2-tier">${k.tier}</b><span><b>${esc(k.name)}</b>
     <span class="chp2-cl"><small>${esc(L(STYLE_DE[k.style] || k.style || '', k.style || ''))}${k.carry === n ? ' · Carry' : ''}</small><span class="chp2-units">${k.board.filter(b=>!PLANTS[b.u]).sort((a, b)=>costOf(b.u) - costOf(a.u)).slice(0, 5).map(b=>`<i class="c${costOf(b.u)}" style="background-image:${champBg(b.u)}"></i>`).join('')}</span></span></span></button>`;
@@ -2506,6 +2510,17 @@ function chp2HTML(c, x){
    „Bewegung reduzieren“ im System: keine Welle, kein Gleiten, kein Schubs */
 const CHS_MAX = .5, CHS_RANGE = 210, CHS_CALM = matchMedia('(prefers-reduced-motion: reduce)');
 let chpStripFrom = null;
+// Tooltip der Champion-Leiste als kleine Karte: Splash mit Name und Kosten, Traits, Rolle und wie die Tierlist ihn spielt (beste Comp-Stufe, Anzahl Comps)
+function chp2TipHTML(n){
+  const c = champBy[n], fo = TL2_FOCUS[n], ro = chpRole(n), cs = champCompsOf(n), carry = cs.some(x=>x.carry === n);
+  const best = cs.map(x=>x.tier).sort((a, b)=>TIER_ORDER.indexOf(a) - TIER_ORDER.indexOf(b))[0];
+  const img = [champImg(n), `assets/img/champions-square/${champSlug(n)}.webp`].filter(Boolean).map(u=>`url('${u}')`).join(',');
+  return `<span class="chp2-stt-img" style="background-image:${img}${fo ? `;background-position:${fo[0]}% ${fo[1]}%` : ''}"><span class="chp2-stt-c"><span class="coin"></span>${c.c}</span><b>${esc(n)}</b></span>
+    <span class="chp2-stt-bd"><span class="chp2-stt-tr">${c.t.map(t=>`<span>${traitHex(t, 'base', 18)}${esc(t)}</span>`).join('')}</span>
+      ${ro.name || ro.line ? `<small class="chp2-stt-ro">${ro.icon ? `<img src="${ro.icon}" alt="" width="14" height="14">` : ''}${[ro.name, ro.line].filter(Boolean).map(esc).join(' · ')}</small>` : ''}
+      <span class="chp2-stt-ft">${best ? `<b class="chp2-stt-tier" style="--tc:${TIER_COL[best]}">${best}</b><span>${L(`in ${cs.length} Tierlist-${cs.length === 1 ? 'Comp' : 'Comps'}`, `in ${cs.length} tier list ${cs.length === 1 ? 'comp' : 'comps'}`)}${carry ? ' · Carry' : ''}</span>`
+        : `<span>${L('In keiner Tierlist-Comp', 'Not in any tier list comp')}</span>`}</span></span>`;
+}
 function chp2Strip(nav){
   if(!nav) return;
   const row = nav.firstElementChild, kids = [...row.children], per = kids.length / 3, items = kids.filter(k=>k.tagName === 'A');
@@ -2560,9 +2575,9 @@ function chp2Strip(nav){
     // Tooltip über dem größten Feld: Name, Kosten, Traits – steht außerhalb der Leiste, damit er nicht abgeschnitten wird
     const top = kids[ti]; if(top.tagName !== 'A' || sc[ti] <= 1){ tip.classList.remove('show'); return; }
     const cx = base[ti].l + base[ti].w / 2 + (nl[ti] + shift + base[ti].w * (sc[ti] - 1) / 2 - base[ti].l) + (row.getBoundingClientRect().left - box.getBoundingClientRect().left) / z;
-    if(tip.dataset.n !== top.dataset.n){ tip.dataset.n = top.dataset.n; tip.className = 'chp2-stt c' + top.dataset.c;
-      tip.innerHTML = `<b>${esc(top.dataset.n)}</b><small><span class="coin"></span>${top.dataset.c}${top.dataset.t ? ' · ' + esc(top.dataset.t) : ''}</small>`; }
-    tip.style.left = Math.max(tip.offsetWidth / 2, Math.min(box.clientWidth - tip.offsetWidth / 2, cx)) + 'px'; tip.classList.add('show');
+    if(tip.dataset.n !== top.dataset.n){ tip.dataset.n = top.dataset.n; tip.className = 'chp2-stt c' + top.dataset.c; tip.innerHTML = chp2TipHTML(top.dataset.n); }
+    const tx = Math.max(tip.offsetWidth / 2, Math.min(box.clientWidth - tip.offsetWidth / 2, cx));
+    tip.style.left = tx + 'px'; tip.style.setProperty('--ax', (cx - tx).toFixed(1) + 'px'); tip.classList.add('show');
   };
   const go = () => { if(!raf) raf = requestAnimationFrame(wave); };
   nav.addEventListener('mousemove', e=>{ mx = e.clientX; nav.classList.add('wave'); go(); });

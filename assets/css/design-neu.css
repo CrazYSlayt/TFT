@@ -1561,7 +1561,7 @@ img.gt-ic{border:1px solid rgba(255,255,255,.18)}
   transform:scale(var(--s,1));transform-origin:calc(var(--fx) * 100%) calc(var(--fb) * 100%);pointer-events:none}
 .chp2-fig img{display:block;width:100%;max-width:none;height:auto;filter:drop-shadow(0 10px 12px rgba(0,0,0,.45))}
 /* Champion-Leiste unter Podest und Boxen über die ganze Breite (chp2Strip in app.js): waagerecht scrollbar und endlos, Dock-Welle beim Hovern,
-   darüber ein kleiner Tooltip (Name, Kosten, Traits) – oben Platz, damit die Felder wachsen können */
+   darüber eine Tooltip-Karte (chp2TipHTML) – oben Platz, damit die Felder wachsen können */
 .chp2-strip-w{grid-column:1 / -1;position:relative;z-index:6;margin-top:-6px}
 .chp2-strip{overflow-x:auto;overflow-y:hidden;padding:42px 0 26px;scrollbar-width:none;
   -webkit-mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
@@ -1593,12 +1593,28 @@ img.gt-ic{border:1px solid rgba(255,255,255,.18)}
 .chp2-arr:hover{background:#7ff7ec;color:#0b1018;transform:scale(1.06)}
 .chp2-strip.wave a{transition:transform .07s linear,filter .1s}
 .chp2-strip a:hover{filter:none;z-index:2}
-.chp2-stt{--tc:var(--c1);position:absolute;bottom:126px;left:0;transform:translate(-50%,4px);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 11px 7px;border-radius:9px;
-  border:1px solid var(--line-2);border-top:2px solid var(--tc);background:rgba(3,17,27,.95);box-shadow:0 8px 22px rgba(0,0,0,.55);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s,transform .12s}
+/* Tooltip als Karte: Splash mit Name und Kosten, darunter Traits, Rolle und Tierlist-Zeile; Spitze zeigt auf das Feld (--ax = Versatz, wenn die Karte am Rand anstößt) */
+.chp2-stt{--tc:var(--c1);--ax:0px;position:absolute;bottom:146px;left:0;width:236px;transform:translate(-50%,6px);border-radius:14px;
+  border:1px solid color-mix(in srgb,var(--tc) 55%,rgba(255,255,255,.12));background:#08131d;box-shadow:0 14px 34px rgba(0,0,0,.6),0 0 18px color-mix(in srgb,var(--tc) 18%,transparent);
+  pointer-events:none;opacity:0;transition:opacity .14s,transform .14s}
 .chp2-stt.show{opacity:1;transform:translate(-50%,0)}
 .chp2-stt.c2{--tc:var(--c2)}.chp2-stt.c3{--tc:var(--c3)}.chp2-stt.c4{--tc:var(--c4)}.chp2-stt.c5{--tc:var(--c5)}
-.chp2-stt b{font:900 italic .9rem/1.1 var(--ff-head);text-transform:uppercase;color:#fff;padding-right:.1em}
-.chp2-stt small{display:flex;align-items:center;gap:4px;font-size:.7rem;font-weight:600;color:#9fb6c4}.chp2-stt .coin{width:8px;height:8px}
+.chp2-stt::after{content:"";position:absolute;left:calc(50% + var(--ax));bottom:-7px;width:12px;height:12px;margin-left:-6px;background:#08131d;
+  border:solid color-mix(in srgb,var(--tc) 55%,rgba(255,255,255,.12));border-width:0 1px 1px 0;transform:rotate(45deg)}
+.chp2-stt-img{position:relative;display:flex;align-items:flex-end;height:118px;padding:0 14px 10px;border-radius:13px 13px 0 0;background:#0b1018 center 22%/cover no-repeat}
+.chp2-stt-img::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,transparent 35%,rgba(8,19,29,.6) 68%,#08131d)}
+.chp2-stt-img b{position:relative;font:900 italic 1.45rem/1 var(--ff-head);text-transform:uppercase;color:#fff;padding-right:.15em;text-shadow:0 2px 10px rgba(0,0,0,.7);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chp2-stt-c{position:absolute;top:9px;right:9px;display:flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;background:rgba(3,10,16,.8);border:1px solid var(--tc);
+  font:800 .74rem/1.4 var(--ff-body);color:#fff}
+.chp2-stt-c .coin{width:8px;height:8px;background:var(--tc);border-color:var(--tc)}
+.chp2-stt-bd{display:flex;flex-direction:column;gap:7px;padding:4px 14px 12px}
+.chp2-stt-tr{display:flex;flex-wrap:wrap;gap:4px 10px}
+.chp2-stt-tr>span{display:flex;align-items:center;gap:5px;font-size:.8rem;font-weight:700;color:#e6f1f7;white-space:nowrap}
+.chp2-stt-ro{display:flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;color:#8ea6b5}
+.chp2-stt-ft{display:flex;align-items:center;gap:8px;padding-top:9px;border-top:1px solid rgba(255,255,255,.08);font-size:.76rem;font-weight:600;color:#9fb6c4}
+.chp2-stt-tier{display:grid;place-items:center;width:24px;height:24px;border-radius:7px;border:1px solid var(--tc);background:color-mix(in srgb,var(--tc) 16%,transparent);
+  font:900 italic .82rem/1 var(--ff-head);color:var(--tc);padding-right:.08em}
 /* Pose-Schalter über der Figur (Idle / Angriff); die Posen liegen übereinander und blenden über */
 .chp2-fig:not(.on){opacity:0}
 /* Podest, Schatten und Figuren als Einheit. Wechsel wie ein Karussell (chp2Slide in app.js): das Neue schiebt das Alte hinaus,
