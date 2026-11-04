@@ -342,15 +342,29 @@ body.nd-mini .nds-col svg{transform:rotate(180deg)}
 .dsh-coach ul{margin-bottom:18px}
 .dsh-coach .dsh-btn{align-self:flex-start;margin-top:auto}
 @media (max-width:980px){.dsh-row3{grid-template-columns:minmax(0,1fr)}}
-/* Unten: Bibliothek | Tools | Cheatsheets – Tools und Cheatsheets als schmale Listen nebeneinander (vorher eine breite Tools-Karte mit viel Leerraum) */
-.dsh-row3{grid-template-columns:minmax(0,1fr) minmax(0,.5fr) minmax(0,.5fr)}
+/* Unten: Set 19 | Bibliothek | Tools, darunter Cheatsheets als flacher Balken über die ganze Breite (zwei Reihen) */
+.dsh-row3{grid-template-columns:minmax(0,.9fr) minmax(0,1fr) minmax(0,.62fr)}
 .dsh-row3 .dsh-tlist{max-width:none}
+.dsh-set{display:flex;flex-direction:column;background:radial-gradient(360px 240px at 100% 0,rgba(240,171,252,.14),transparent 65%),radial-gradient(320px 220px at 0 100%,rgba(46,230,214,.12),transparent 65%),linear-gradient(160deg,rgba(9,36,50,.82),rgba(3,17,27,.92))}
+.dsh-sds{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.dsh-sd{display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-radius:12px;border:1px solid rgba(46,230,214,.2);background:rgba(2,13,21,.5)}
+.dsh-sd small{font-size:.72rem;font-weight:700;color:#7ff7ec}
+.dsh-sd b{font:900 italic 1.25rem/1.1 var(--ff-head);color:#fff;padding-right:.1em}
+.dsh-sd em{font-style:normal;font-size:.76rem;color:var(--muted)}
+.dsh-sn{position:relative;flex:1;display:block;min-height:170px;overflow:hidden;border-radius:12px;border:1px solid rgba(46,230,214,.22);color:inherit;transition:border-color .18s}
+.dsh-sn:hover{border-color:rgba(46,230,214,.6)}
+.dsh-sn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:100% 22%;transition:transform .3s}
+.dsh-sn:hover img{transform:scale(1.04)}
+.dsh-sn span{position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:3px;padding:30px 14px 11px;background:linear-gradient(transparent,rgba(3,12,19,.94) 46%)}
+.dsh-sn small{font-size:.72rem;font-weight:700;color:#7ff7ec}
+.dsh-sn b{font:900 italic 1.08rem/1.15 var(--ff-head);color:#fff;padding-right:.1em}
+.dsh-clist{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 14px;max-width:none}
 .dsh-cheats{background:radial-gradient(320px 220px at 100% 100%,rgba(167,139,250,.14),transparent 65%),radial-gradient(300px 200px at 0 0,rgba(46,230,214,.1),transparent 65%),linear-gradient(160deg,rgba(9,36,50,.82),rgba(3,17,27,.92))}
 .dsh-cic{flex:none;display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;border:1px solid rgba(46,230,214,.28);background:rgba(46,230,214,.08);color:#7ff7ec}
 .dsh-cic svg{width:19px;height:19px}
 .dsh-cic img{width:24px;height:24px;border-radius:6px}
-@media (max-width:1250px){.dsh-row3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.dsh-row3 .dsh-lib{grid-column:1/-1}}
-@media (max-width:640px){.dsh-row3{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1250px){.dsh-row3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.dsh-row3 .dsh-lib{grid-column:1/-1;order:3}.dsh-clist{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.dsh-row3{grid-template-columns:minmax(0,1fr)}.dsh-clist{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:640px){.dsh-bar .dsh-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}.dsh-coaches .dsh-av{width:60px;height:60px}.dsh-coaches .dsh-c3 b i{display:inline}.dsh-coaches .dsh-c3 small em{display:inline}.dsh-coaches .dsh-sep{display:inline}}
 
 /* ---------- Dashboard: Coaches als Player Cards nebeneinander ---------- */

@@ -7257,6 +7257,14 @@ function ndColon(){
 }
 
 // Dashboard: Profil-Header, Top Comps, aktueller Patch, Tierlist im Kleinformat, Shop-Chancen, Coaching
+// Box zum nächsten Set: Termine aus dem Patch-Plan und der neueste Beitrag (data/news.js)
+function dshSetHTML(){
+  const n = nsNext(), {pbe, live} = nsDates(n), now = new Date(), p = NEWS.find(x=>x.set === n);
+  const date = (t, x) => `<span class="dsh-sd"><small>${t}</small><b>${x ? esc(cdDay(x.d, {day:'numeric', month:'long'})) : L('Termin folgt', 'Date to follow')}</b>${x ? `<em>${x.d <= now ? L('läuft', 'running') : cdDays(x.d)}</em>` : ''}</span>`;
+  return `<section class="dsh-card dsh-set"><div class="dsh-h"><h2>Set ${n}</h2><a href="${nsHref()}">${L('Alle Infos', 'All info')} →</a></div>
+    <div class="dsh-sds">${date(L('PBE-Start', 'PBE start'), pbe)}${date('Release', live)}</div>
+    ${p ? `<a class="dsh-sn" href="${nwHref(p)}"><img src="${p.img}" alt="${esc(nwL(p.alt))}" width="1200" height="630" loading="lazy"><span><small>News · ${esc(nwDay(p.date))}</small><b>${esc(nwL(p.title))}</b></span></a>` : ''}</section>`;
+}
 const dshHex = (n, cls='') => { const c = champBy[n] || CH_DATA[n]; if(!c) return ''; return `<span class="dsh-hx c${c.c} ${cls}" title="${esc(n)}"><i style="background-image:url('${champImg(n) || champFallback(n)}')"></i></span>`; };
 function renderDash(){
   const box = $('#dshApp'); if(!box || box.dataset.done) return;
@@ -7294,6 +7302,7 @@ function renderDash(){
       </section>
     </div>
     <div class="dsh-row3">
+      ${dshSetHTML()}
       <a class="dsh-card dsh-lib" href="/bibliothek"><div class="dsh-h"><h2>${L('Bibliothek', 'Library')}</h2><span class="dsh-more">${L('Entdecken', 'Explore')} →</span></div>
         <div class="dsh-comb">${(()=>{ const pick = champions.slice().sort((a,b)=>b.c - a.c || a.n.localeCompare(b.n)).slice(0, 16), rows = [5, 6, 5]; let i = 0;
           return rows.map(m=>`<div>${pick.slice(i, i += m).map(c=>`<span class="dsh-cb c${c.c}" title="${esc(c.n)}"><i style="background-image:url('${champImg(c.n) || champFallback(c.n)}')"></i></span>`).join('')}</div>`).join(''); })()}</div>
@@ -7308,12 +7317,12 @@ function renderDash(){
           ['/tools/tft-tierlist-maker', 'tierlist', 'Tierlist-Maker', L('Eigene Tierlist bauen', 'Build your own tier list')],
           ['/tft-team-builder', 'teambuilder', 'Team Builder', L('Board planen & teilen', 'Plan & share boards')]
         ].map(([h, img, t, d])=>`<a href="${h}"><img src="${toolArtSrc(img, true)}" alt="" width="34" height="34" loading="lazy"><span><b>${t}</b><small>${d}</small></span></a>`).join('')}</div></section>
-      <section class="dsh-card dsh-cheats">
-        <div class="dsh-h"><h2>Cheatsheets</h2><a href="/cheatsheet">${L('Alle', 'All')} →</a></div>
-        <div class="dsh-tlist dsh-clist">${(()=>{ const has = new Set(csList().map(s=>s[0]));   // unsere wichtigsten Tabellen (wie „TFTClimb Priority“ auf der Cheatsheet-Seite)
-          return CS_PRIO[1].filter(id=>has.has(id)).map(id=>{ const m = CS_META[id] || {};
-            return `<a href="${csHref(id)}"><span class="dsh-cic">${csIco(id)}</span><span><b>${esc(csName(id))}</b>${m.d ? `<small>${L(m.d[0], m.d[1])}</small>` : ''}</span></a>`; }).join(''); })()}</div></section>
-    </div>`;
+    </div>
+    <section class="dsh-card dsh-cheats">
+      <div class="dsh-h"><h2>Cheatsheets</h2><a href="/cheatsheet">${L('Alle', 'All')} →</a></div>
+      <div class="dsh-tlist dsh-clist">${(()=>{ const has = new Set(csList().map(s=>s[0]));   // unsere wichtigsten Tabellen (wie „TFTClimb Priority“ auf der Cheatsheet-Seite)
+        return CS_PRIO[1].filter(id=>has.has(id)).map(id=>{ const m = CS_META[id] || {};
+          return `<a href="${csHref(id)}"><span class="dsh-cic">${csIco(id)}</span><span><b>${esc(csName(id))}</b>${m.d ? `<small>${L(m.d[0], m.d[1])}</small>` : ''}</span></a>`; }).join(''); })()}</div></section>`;
   const f = box.querySelector('.dsh-ts'); if(f) f.classList.add('on');
   box.dataset.done = '1';
 }
