@@ -5148,12 +5148,6 @@ function renderCountdown(){
     [csHref('patch-schedule'), L('Patch-Plan', 'Patch schedule'), L('Alle Termine als Tabelle im Cheatsheet', 'Every date as a table in the cheatsheet')],
     ['/tierlist', L('TFT Tierlist', 'TFT Tier List'), L('Die besten Comps bis zum Patch', 'The best comps until the patch')],
     ['/patches', L('Alle Patches', 'All patches'), L(`Jede Änderung seit Set ${S - 1}`, `Every change since Set ${S - 1}`)]].filter(x=>x && x[0]);
-  const row = x => {
-    const st = x === n || (n && x.id === n.id) ? 'next' : x === prev ? 'cur' : x.d <= now ? 'past' : 'later', href = notes(x.id), e = L(x.ev[0], x.ev[1]) || [];
-    const tag = st === 'next' ? `<em class="cd-tag">${L('Nächster', 'Next')}</em>` : st === 'cur' ? `<em class="cd-tag live">${L('Läuft gerade', 'Live now')}</em>` : '';
-    const right = st === 'past' || st === 'cur' ? (href ? `<a href="${href}">${L('Patchnotes', 'Patch notes')} →</a>` : '') : `<span>${cdDays(x.d)}</span>`;
-    return `<li class="cd-row ${st}"><span class="cd-id">${esc(x.id)}</span><span class="cd-rd"><b>${esc(cdDay(x.d, {weekday:'short', day:'numeric', month:'short'}))}</b>${tag}${e.length ? `<small>${e.map(esc).join(' · ')}</small>` : ''}</span><span class="cd-rs">${right}</span></li>`;
-  };
   app.innerHTML = `<div class="page-head"><div class="crumb"><a href="/">Home</a> / <a href="/patches">Patches</a> / Countdown</div>
       <h1>${L('TFT Patch <em class="serif">Countdown</em>', 'TFT Next Patch <em class="serif">Countdown</em>')}</h1></div>
     ${n ? `<section class="cd-card" aria-label="${L('Countdown bis zum nächsten Patch', 'Countdown to the next patch')}"${cur && cur.img ? ` style="--img:url('${esc(cur.img)}?w=1280&fm=webp');--pos:${esc(patchFocus(cur))}"` : ''}>
@@ -5165,10 +5159,10 @@ function renderCountdown(){
       ${prev ? `<div class="cd-prog"><div class="cd-pl"><span>${prev.id ? L(`Patch ${esc(prev.id)} läuft`, `Patch ${esc(prev.id)} has been live`) : L('Aktueller Patch', 'Current patch')} <i data-cd="ago"></i></span><b data-cd="pct"></b></div><div class="cd-bar"><i data-cd="bar"></i></div></div>` : ''}
     </section>` : viSays(L('Für den nächsten Patch gibt es noch keinen Termin. Schau bald wieder vorbei!', 'There is no date for the next patch yet. Check back soon!'))}
     <div class="cd-grid">
-      ${all.length ? `<section class="cd-box cd-list"><h2>${L(`Alle Patch-Termine von Set ${S}`, `Every patch date of Set ${S}`)}</h2><ol>${all.map(row).join('')}</ol>
+      ${all.length ? `<section class="cd-box cd-list"><h2>${L(`Alle Patch-Termine von Set ${S}`, `Every patch date of Set ${S}`)}</h2>${patchPlanTable(true)}
         <p class="cd-src">${L(`Termine: ${esc((TFT_CUSTOM_SET.cheats || {}).patchSchedule ? TFT_CUSTOM_SET.cheats.patchSchedule.src : 'Riot Games')}. Die Uhrzeit ist geschätzt und gilt für die europäischen Server.`, `Dates: ${esc((TFT_CUSTOM_SET.cheats || {}).patchSchedule ? TFT_CUSTOM_SET.cheats.patchSchedule.src : 'Riot Games')}. The time is an estimate for the European servers.`)}</p></section>` : ''}
       <div class="cd-side">
-        ${ns ? `<section class="cd-box cd-set"><small>${L('Neues Set', 'New set')}</small><h2>${L(`Countdown bis Set ${nsN}`, `Countdown to Set ${nsN}`)}</h2><b class="cd-setn">${esc(cdDays(ns.d))}</b><p>${L(`Set ${nsN} startet laut Patch-Plan mit Patch ${esc(ns.id)} am ${esc(nsLong)}.`, `According to the patch schedule, Set ${nsN} launches with patch ${esc(ns.id)} on ${esc(nsLong)}.`)}</p><p><a class="art-a" href="/tft-set-${nsN}">${L(`Alles zu Set ${nsN}`, `Everything about Set ${nsN}`)} →</a></p></section>` : ''}
+        ${ns ? `<section class="cd-box cd-set"><small>${L('Neues Set', 'New set')}</small><h2>${L(`Countdown bis Set ${nsN}`, `Countdown to Set ${nsN}`)}</h2><b class="cd-setn">${esc(cdDays(ns.d))}</b><p>${L(`Set ${nsN} startet laut Patch-Plan mit Patch ${esc(ns.id)} am ${esc(nsLong)}.`, `According to the patch schedule, Set ${nsN} launches with patch ${esc(ns.id)} on ${esc(nsLong)}.`)}</p><p><a class="art-a" href="/tft-set-${nsN}">${L(`Alles zu Set ${nsN}`, `Everything about Set ${nsN}`)}</a></p></section>` : ''}
         <nav class="cd-box cd-links" aria-label="${L('Rund um den Patch', 'All about the patch')}"><h2>${L('Rund um den Patch', 'All about the patch')}</h2>${links.map(([h, t, d])=>`<a href="${h}"><b>${t}</b><small>${d}</small></a>`).join('')}</nav>
       </div>
     </div>
@@ -5541,13 +5535,19 @@ function csTraitSections(){
   const T = CS.traitTables; if(!T) return [];
   return T.list.filter(t=>traitBy[t.trait]).map(t=>[t.id, L(t.title[0], t.title[1]), (t.type==='prismatic' ? '' : csTraitHead(t.trait, t.text)) + csTraitBody(t) + csSrc(T.src)]);
 }
+// Patch-Plan als Tabelle für Cheatsheet und Countdown-Seite. links (Countdown, schmale Spalte): ohne Set und Tag, Wochentag steht beim Datum;
+// letzte Spalte mit den Patchnotes vergangener Patches, bei kommenden die Tage bis dahin
+function patchPlanTable(links){
+  const now = new Date(), all = stPatchDates(), cur = [...all].reverse().find(x=>x.d <= now), next = all.find(x=>x.d > now);
+  const rows = all.map(x=>{ const tag = x === cur ? ['aktuell', 'current'] : x === next ? ['nächster', 'next'] : null, slug = links && patchSlug(x.id);
+    return `<tr class="${x === cur ? 'cur' : x === next ? 'nxt' : x.d < now ? 'past' : ''}">${links ? '' : `<td class="set">Set ${x.id.split('.')[0]}</td>`}<td class="pv">${esc(x.id)}${tag ? ` <i class="ctr-tag">${L(tag[0], tag[1])}</i>` : ''}</td>
+      ${links ? '' : `<td>${esc(cdDay(x.d, {weekday:'long'}))}</td>`}<td class="dt">${esc(cdDay(x.d, {day:'numeric', month:'short', ...(links ? {weekday:'short'} : {})}))}</td><td class="ev">${(L(x.ev[0], x.ev[1]) || []).map(esc).join('<br>')}</td>
+      ${links ? `<td class="lk">${x.d > now ? esc(cdDays(x.d)) : patchBySlug[slug] ? `<a href="/patches/${slug}">${L('Patchnotes', 'Patch notes')} →</a>` : ''}</td>` : ''}</tr>`; }).join('');
+  return `<div class="cs-wrap"><table class="cs-table ctr-ps"><thead><tr>${links ? '' : '<th>Set</th>'}<th>Patch</th>${links ? '' : `<th>${L('Tag', 'Day')}</th>`}<th>${L('Datum', 'Date')}</th><th>${L('Was passiert', 'What happens')}</th>${links ? '<th></th>' : ''}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
 function csPatchSection(){
   const P = CS.patchSchedule; if(!P) return [];
-  const now = new Date(), d = s => new Date(s + 'T12:00:00'), cur = P.rows.filter(r=>d(r[1]) <= now).pop(), next = P.rows.find(r=>d(r[1]) > now);
-  const rows = P.rows.map(r=>{ const dt = d(r[1]), tag = r === cur ? ['aktuell', 'current'] : r === next ? ['nächster', 'next'] : null;
-    return `<tr class="${r === cur ? 'cur' : r === next ? 'nxt' : dt < now ? 'past' : ''}"><td class="set">Set ${r[0].split('.')[0]}</td><td class="pv">${esc(r[0])}${tag ? ` <i class="ctr-tag">${L(tag[0], tag[1])}</i>` : ''}</td>
-      <td>${dt.toLocaleDateString(EN ? 'en-US' : 'de-DE', {weekday:'long'})}</td><td class="dt">${dt.toLocaleDateString(EN ? 'en-US' : 'de-DE', {day:'numeric', month:'short'})}</td><td class="ev">${(L(r[2], r[3]) || []).map(esc).join('<br>')}</td></tr>`; }).join('');
-  return [['patch-schedule', L('Patch-Plan', 'Patch schedule'), `<div class="cs-wrap"><table class="cs-table ctr-ps"><thead><tr><th>Set</th><th>Patch</th><th>${L('Tag', 'Day')}</th><th>${L('Datum', 'Date')}</th><th>${L('Was passiert', 'What happens')}</th></tr></thead><tbody>${rows}</tbody></table></div>` + csSrc(P.src)
+  return [['patch-schedule', L('Patch-Plan', 'Patch schedule'), patchPlanTable() + csSrc(P.src)
     + `<p class="cs-cd"><a href="${COUNTDOWN_PATH}">${L('Live-Countdown bis zum nächsten Patch', 'Live countdown to the next patch')} →</a></p>`]];
 }
 // Seitenleiste & Panels: Kurzname (s), Unterzeile (h), Kurztext für Karten (d), Icon (SVG-Pfade), optional ein Hinweis (tip)

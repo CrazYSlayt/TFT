@@ -3369,21 +3369,14 @@ img.cs-ric{border-radius:0 !important;object-fit:contain;filter:drop-shadow(0 2p
 .cd-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px;align-items:start;margin-top:20px}
 .cd-box{padding:20px 22px;border-radius:18px;border:1px solid rgba(46,230,214,.18);background:linear-gradient(180deg,#0b2430,#071a23)}
 .cd-box h2{margin:0 0 12px;font:italic 900 1.25rem/1.1 var(--ff-head);text-transform:uppercase;color:#fff}
-.cd-list ol{display:flex;flex-direction:column;gap:6px;list-style:none;margin:0;padding:0}
-.cd-row{display:grid;grid-template-columns:60px minmax(0,1fr) auto;align-items:center;gap:12px;padding:9px 12px;border-radius:12px;border:1px solid transparent;background:rgba(255,255,255,.025)}
-.cd-id{font:italic 900 1.2rem/1 var(--ff-head);color:#cfe3ee}
-.cd-rd{display:flex;flex-wrap:wrap;align-items:center;gap:3px 8px;min-width:0}
-.cd-rd b{font-size:.92rem;color:#e2e8f4}
-.cd-rd small{flex-basis:100%;font-size:.78rem;color:#8193ab}
-.cd-tag{padding:2px 7px;border-radius:99px;background:rgba(46,230,214,.14);color:#7ff7ec;font-style:normal;font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
-.cd-tag.live{background:rgba(57,165,72,.18);color:#7ee08a}
-.cd-rs{font-size:.82rem;color:#9fb0c8;white-space:nowrap}
-.cd-rs a{color:#7ff7ec;font-weight:700}
-.cd-rs a:hover{color:#fff}
-.cd-row.past{opacity:.55}
-.cd-row.next{border-color:rgba(46,230,214,.45);background:rgba(46,230,214,.07)}
-.cd-row.next .cd-id,.cd-row.next .cd-rs{color:#7ff7ec}
+/* Patch-Plan wie im Cheatsheet (patchPlanTable), letzte Spalte: Patchnotes bzw. Tage bis zum Patch */
+.cd-list .lk{text-align:right;color:#9fb0c8;font-size:.82rem;white-space:nowrap}
+.cd-list .lk a{color:#7ff7ec;font-weight:700}
+.cd-list .lk a:hover{color:#fff}
+.ctr-ps tr.past td.lk{opacity:1}
 .cd-src{margin:12px 0 0;font-size:.76rem;color:#6f819a}
+.cd-list .ctr-ps td,.cd-list .ctr-ps th{padding-left:7px;padding-right:7px}
+.cd-list .ctr-tag{display:block;width:fit-content;margin:4px 0 0}
 .cd-side{display:flex;flex-direction:column;gap:18px}
 .cd-set>small{font-size:.68rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#f7166e}
 .cd-set h2{margin:4px 0 8px}
@@ -3398,7 +3391,7 @@ img.cs-ric{border-radius:0 !important;object-fit:contain;filter:drop-shadow(0 2p
 @media (max-width:860px){.cd-grid{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:640px){.cd-card{padding:20px 16px}.cd-badge{width:52px;height:59px}.cd-badge b{font-size:1.15rem}.cd-tt b{font-size:1.2rem}
   .cd-when{flex-direction:column;gap:2px}.cd-when span::before{display:none}
-  .cd-clock{gap:7px;margin:18px 0 14px}.cd-u{padding:12px 2px 10px;gap:6px}.cd-u small{font-size:.58rem;letter-spacing:.06em}.cd-box{padding:18px 14px}.cd-row{grid-template-columns:48px minmax(0,1fr) auto;gap:8px;padding:8px 10px}}
+  .cd-clock{gap:7px;margin:18px 0 14px}.cd-u{padding:12px 2px 10px;gap:6px}.cd-u small{font-size:.58rem;letter-spacing:.06em}.cd-box{padding:18px 14px}.cd-list .ctr-ps td,.cd-list .ctr-ps th{padding-left:4px;padding-right:4px}}
 /* Patches-Übersicht: nächster Patch mit Link zum Countdown; Patch-Plan im Cheatsheet: Link zum Countdown */
 .pt-next{display:inline-flex;align-items:center;gap:12px;margin-top:16px;padding:7px 16px 7px 8px;border-radius:14px;border:1px solid rgba(46,230,214,.3);background:rgba(7,28,40,.8);text-align:left;transition:border-color .15s,box-shadow .15s}
 .pt-next:hover{border-color:#2ee6d6;box-shadow:0 0 18px rgba(46,230,214,.18)}
