@@ -511,7 +511,11 @@ body.nd-mini .nds-vi{display:none}
 .nd h1.chp-h1{text-align:left;margin:0 0 12px}.nd h1.chp-h1 .th-key{margin:0 0 8px}
 
 /* ---------- Ranks: Sechsecke als Wabe 3-4-3, Rahmen als SVG, Emblem ragt über den Rahmen, Details beim Drüberfahren ---------- */
-.nd #rk-list{padding-bottom:10px}
+.nd #rk-list{padding-bottom:10px;position:relative;isolation:isolate}
+/* ganz dezent der Hintergrund der Rang-Seiten (assets/img/rank-bg.webp) hinter Überschrift und Waben: Lichtsäule mittig, zu allen Rändern ausgeblendet */
+.nd #rk-list.rkx-mode-hex::before{content:"";position:absolute;z-index:-1;top:-24px;left:0;right:0;height:min(1180px,100%);pointer-events:none;opacity:.32;
+  background:url('../img/rank-bg.webp') 50% 55%/cover no-repeat;
+  -webkit-mask:radial-gradient(ellipse 60% 62% at 50% 46%,#000 30%,transparent 100%);mask:radial-gradient(ellipse 60% 62% at 50% 46%,#000 30%,transparent 100%)}
 .nd #rk-list .rk-table,.nd #rk-list .buddy-inline{display:none}
 .nd #rk-list:not(.rkx-mode-hex) .rk-table{display:grid}
 .nd #rk-list:not(.rkx-mode-hex) .rkx-hex{display:none}

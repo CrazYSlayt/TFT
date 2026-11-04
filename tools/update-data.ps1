@@ -628,14 +628,15 @@ if ($Publish) {
   if (-not (Test-Path $git)) { Warn 'Git nicht gefunden – nicht veröffentlicht.' }
   else {
     Push-Location $root
+    $ErrorActionPreference = 'Continue'   # Git schreibt auch Hinweise („Created autostash“) nach stderr – mit 'Stop' bricht das Skript sonst vor dem Hochladen ab; Erfolg zeigt $LASTEXITCODE
     & $git add -- data index.html app.html
     & $git diff --cached --quiet -- data index.html app.html
     if ($LASTEXITCODE -ne 0) {
       & $git commit -q -m "Automatisches Daten-Update $today" -- data index.html app.html
       $env:GCM_INTERACTIVE = 'never'
       & $git pull -q --rebase --autostash   # die Redaktion veröffentlicht die Tierlist direkt auf GitHub (api/tierlist.js) – erst deren Stand holen
-      & $git push -q
-      if ($LASTEXITCODE -eq 0) { Write-Host '  Neue Daten veröffentlicht.' -ForegroundColor Green } else { Warn 'Hochladen fehlgeschlagen (Anmeldung?) – beim nächsten Mal "veröffentlichen" sagen.' }
+      if ($LASTEXITCODE -eq 0) { & $git push -q }
+      if ($LASTEXITCODE -eq 0) { Write-Host '  Neue Daten veröffentlicht.' -ForegroundColor Green } else { Warn 'Hochladen fehlgeschlagen (Anmeldung oder Konflikt?) – beim nächsten Mal "veröffentlichen" sagen.' }
     } else { Write-Host '  Keine neuen Daten – nichts zu veröffentlichen.' }
     Pop-Location
   }
