@@ -12,6 +12,7 @@ const ND_IC = {
   ranks:'<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 11l2 2 4-4"/>',
   coaching:'<path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11v5c3 2 7 2 10 0v-5"/>',
   about:'<circle cx="9" cy="8" r="3"/><path d="M3 20c.6-3.4 3-5.5 6-5.5s5.4 2.1 6 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.6c2.6.2 4.5 2.2 5 5.4"/>',
+  nextset:'<path d="M9 18V5.5l11-2.5v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
   col:'<path d="M15 6l-6 6 6 6"/>'
 };
 const ndSvg = (k, w=1.8) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ND_IC[k]}</svg>`;
@@ -40,6 +41,7 @@ function ndShellHTML(en){
       ${ndLink('tools', 'Tools', '/tools')}${ndLink('cheatsheet', 'Cheatsheet', '/cheatsheet', 'cheat')}${ndLink('guides', 'Guides', '/guides').replace('</span></a>', '</span><em class="nds-soon">Soon</em></a>')}
       <div class="nds-cap">${T('Daten', 'Data')}</div>
       ${ndLink('bibliothek', T('Bibliothek', 'Library'), '/bibliothek')}${ndLink('ranks', 'Ranks', '/ranks')}${ndLink('patches', 'Patches', '/patches')}
+      ${ndLink('nextset', 'Set 19', '/tft-set-19').replace('</span></a>', '</span><em class="nds-soon nds-new">News</em></a>')}
       <div class="nds-gap"></div><div class="nds-gap"></div>
       ${ndLink('coaching', 'Coaching', '/coaching').replace('class="nds-link"', 'class="nds-link nds-hot"')}${ndLink('about', 'Meet the Team', '/about')}
       <button class="nds-link nds-col" type="button" onclick="document.body.classList.toggle('nd-mini');try{localStorage.setItem('tftfreaks_side',document.body.classList.contains('nd-mini')?'mini':'')}catch(e){}">${ndSvg('col', 2)}<span>${T('Einklappen', 'Collapse')}</span></button>    </aside>
@@ -55,7 +57,7 @@ function ndShellHTML(en){
   const raw = (location.protocol === 'file:' ? location.hash.replace(/^#/, '') : location.pathname) || '/';
   const first = raw.replace(/^\/en(?=\/|$)/, '').replace(/^\/+/, '').split(/[/?]/)[0];
   const alias = {'': 'home', champions: 'bibliothek', items: 'bibliothek', traits: 'bibliothek', augments: 'tierlist', apply: 'coaching', 'tier-list': 'tierlist', library: 'bibliothek'};   // auch englische Adressen
-  const key = first in alias ? alias[first] : first;
+  const key = /^tft-set-\d+$/.test(first) ? 'nextset' : first in alias ? alias[first] : first;
   document.querySelectorAll('#ndSide [data-nd]').forEach(a=>a.classList.toggle('on', a.dataset.nd===key));
   // Ladebalken: läuft per CSS-Animation (auch während app.js rechnet), am Ende auf volle Breite und ausblenden
   document.addEventListener('DOMContentLoaded', function(){

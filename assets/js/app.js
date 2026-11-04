@@ -25,6 +25,7 @@ function langPath(p, en){   // en = true: deutsch → englisch, false: englisch 
   if(s[1]==='tools' && s[2]){ const k = unslug(tools[0], s[2]); if(tools[1][k]) s[2] = tools[1][k]; }
   if(s[1]==='cheatsheet' && s[2]){ const k = unslug(csFrom, s[2]); if(k !== s[2]) s[2] = csTo[k] || 'tft-' + k; }
   if(pages[s[1]]) s[1] = pages[s[1]];
+  if(/^tft-set-\d+$/.test(s[1]) && s[2]){ const n = (window.TFT_NEWS || []).find(x=>x.slug[en ? 'de' : 'en'] === s[2]); if(n) s[2] = n.slug[en ? 'en' : 'de']; }   // News-Beiträge: eigene englische Adresse
   return s.join('/') + rest;
 }
 function toEn(p){ return langPath(p, true); }
@@ -6345,6 +6346,7 @@ function nsHTML(n, D){
         : phase === 'pbe' ? L(`Set ${n} ist auf dem PBE: alle neuen Champions, Traits und Augments, laufend aktualisiert – Release ${live ? 'am ' + esc(cdDay(live.d, {day:'numeric', month:'long'})) : 'folgt'}.`, `Set ${n} is on the PBE: every new champion, trait and augment, updated continuously – release ${live ? 'on ' + esc(cdDay(live.d, {day:'numeric', month:'long'})) : 'to follow'}.`)
         : L(`Alles zu TFT Set ${n}: wann der PBE startet, wann das Set live geht und ab dem PBE alle neuen Champions, Traits und Augments.`, `Everything about TFT Set ${n}: when the PBE starts, when the set goes live and, from the PBE on, every new champion, trait and augment.`)}</p></div>
     <div class="ns-dates">${card('pbe', L('PBE-Start', 'PBE start'), pbe, ['', L('läuft auf dem PBE', 'live on the PBE')])}${card('live', L('Release', 'Release'), live, ['', L('ist live', 'is live')])}</div>
+    ${nwListHTML(n)}
     ${D && ch.length ? `<section class="ns-box"><div class="ns-hd"><h2>${L(`Alle ${ch.length} Champions von Set ${n}`, `All ${ch.length} champions of Set ${n}`)}</h2>
         ${isNew ? `<button type="button" class="btn btn-ghost" data-set-pick="${n}">${L(`Seite auf Set ${n} umschalten`, `Switch the site to Set ${n}`)}</button>` : ''}</div>
         ${phase !== 'live' ? `<p class="ns-note">${L('PBE-Daten: Champions, Werte und Traits können sich bis zum Release noch ändern.', 'PBE data: champions, stats and traits can still change until release.')}</p>` : ''}
@@ -6390,6 +6392,38 @@ function renderNextSet(sub){
   app.setAttribute('aria-busy', 'true');   // tools/seo-meta.js wartet darauf, dass die nachgeladenen Daten eingesetzt sind
   nsData(n).then(D=>{ draw(D); app.removeAttribute('aria-busy'); });
 }
+{ const a = document.querySelector('#ndSide [data-nd="nextset"]'); if(a){ a.href = nsHref(); a.title = a.querySelector('span').textContent = 'Set ' + nsNext(); } }   // Seitenleiste zeigt immer das nächste Set
+
+/* ================= NEWS ZU EINEM SET (/tft-set-<N>/<beitrag>) ================= */
+// Beiträge stehen in data/news.js (je Sprache Blöcke), die Karten auf der Set-Seite (nwListHTML) führen hierher. Bilder von Riot liegen lokal unter assets/img/news,
+// das Titelbild erzeugt tools/og-bilder.js. Videos laden erst beim Klick (nichts von YouTube, bevor man es möchte)
+const NEWS = (window.TFT_NEWS || []).slice().sort((a, b)=>String(b.date).localeCompare(a.date));
+const nwBy = slug => NEWS.find(p=>p.slug.de === slug), nwHref = p => `/tft-set-${p.set}/${p.slug.de}`, nwL = o => o[EN ? 'en' : 'de'];
+const nwDay = d => new Date(d + 'T12:00:00Z').toLocaleDateString(LOC, {day:'numeric', month:'long', year:'numeric'});
+function nwListHTML(n){
+  const l = NEWS.filter(p=>p.set === n); if(!l.length) return '';
+  return `<section class="ns-box nw-list"><h2>${L(`News zu Set ${n}`, `Set ${n} news`)}</h2><div class="nw-cards">${l.map(p=>`<a class="nw-card" href="${nwHref(p)}">
+    <img src="${p.img}" alt="${esc(nwL(p.alt))}" width="1200" height="630" loading="lazy"><span class="nw-cb"><small>${esc(nwDay(p.date))}</small><b>${esc(nwL(p.title))}</b><span>${esc(nwL(p.teaser))}</span></span></a>`).join('')}</div></section>`;
+}
+const NW_BLOCK = {
+  p:b=>`<p>${b.h}</p>`, h:b=>`<h2 id="nwa-${b.id}">${esc(b.t)}</h2>`, ul:b=>`<ul>${b.l.map(x=>`<li>${x}</li>`).join('')}</ul>`,
+  img:b=>`<figure class="nw-fig"><img src="${b.src}" alt="${esc(b.alt)}" width="1200" height="675" loading="lazy"><figcaption>${esc(b.cap)}</figcaption></figure>`,
+  yt:b=>`<figure class="nw-fig"><button type="button" class="nw-yt" data-yt="${b.id}" aria-label="${L('Video abspielen', 'Play video')}: ${esc(b.alt)}"><img src="${b.src}" alt="${esc(b.alt)}" width="1280" height="720" loading="lazy"><i aria-hidden="true"></i></button><figcaption>${esc(b.cap)}</figcaption></figure>`,
+  say:b=>`<div class="nw-say"><img src="${b.img}" alt="${esc(b.who)}" loading="lazy"><p><b>${esc(b.who)}</b>${esc(b.t)}</p></div>`};
+function nwHTML(p){
+  const body = nwL(p.body), heads = body.filter(b=>b.k === 'h');
+  return `<article class="nw"><div class="crumb"><a href="/">Home</a> / <a href="/tft-set-${p.set}">Set ${p.set}</a> / News</div>
+    <figure class="nw-hero"><img src="${p.img}" alt="${esc(nwL(p.alt))}" width="1200" height="630"></figure>
+    <h1 class="nw-h1">${esc(nwL(p.title))}</h1>
+    <p class="nw-lead" data-meta>${esc(nwL(p.meta))}</p>
+    <div class="nw-by"><a href="${PATCH_AUTHOR.href}"><img src="${PATCH_AUTHOR.img}" alt="Claudio „CrazYSlayt“" width="44" height="44"></a><span><a href="${PATCH_AUTHOR.href}">Claudio „CrazYSlayt“</a><small>${esc(nwDay(p.date))} · TFT Challenger</small></span></div>
+    <section class="tool-seo ag-art nw-art" aria-label="${esc(nwL(p.title))}"><div class="ts-main">${body.map(b=>NW_BLOCK[b.k](b)).join('')}
+      <p class="art-note">${L('Quelle', 'Source')}: <a href="${nwL(p.src.url)}" target="_blank" rel="noopener">Riot Games, „${esc(nwL(p.src.name))}“</a>, ${esc(nwDay(p.src.date))}. ${L('Bilder und Videos: Riot Games.', 'Images and videos: Riot Games.')}</p></div>
+      <aside class="ts-side art-side"><nav class="art-toc" aria-label="${L('Inhalt', 'Contents')}"><b>${L('Inhalt', 'Contents')}</b><ol>${heads.map(b=>`<li><a href="#nwa-${b.id}" data-toc="nwa-${b.id}">${esc(b.t)}</a></li>`).join('')}</ol></nav></aside></section></article>`;
+}
+function renderSetNews(slug){ const app = $('#nwApp'), p = nwBy(slug); if(!app || !p) return; app.innerHTML = nwHTML(p); artToc(app.querySelector('.nw-art')); }
+document.addEventListener('click', e=>{ const b = e.target.closest && e.target.closest('.nw-yt'); if(!b) return;
+  b.outerHTML = `<iframe class="nw-ytf" src="https://www.youtube-nocookie.com/embed/${b.dataset.yt}?autoplay=1&rel=0" title="${esc(b.getAttribute('aria-label'))}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`; });
 
 const csSvg = (ic, w=1.8) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${ic || ''}</svg>`;
 const csIco = id => { const m = CS_META[id] || {}; return m.trait ? csTrIc(m.trait, 0, 'cs-aic') : m.img ? `<img class="cs-aic${m.rio ? ' cs-ric' : ''}" src="${m.img}" alt="" width="24" height="24" loading="lazy">` : csSvg(m.ic); };   // Augment-Tabellen mit Augment-Icon
@@ -6701,6 +6735,7 @@ function pageMeta(page, sub){
         fit(`${c.name} TFT comp guide (${S}): positioning, items for ${c.carry}, augments and game plan – ${tEn} in our tier list.`,
         `${c.name} TFT comp guide (${S}): positioning, items for ${c.carry}, augments and game plan – ${tEn}.`, `${c.name} TFT comp guide: positioning, items, augments and game plan – ${tEn}.`))];
     }
+    case 'setnews': { const p = nwBy(sub); return [nwL(p.seo), nwL(p.meta)]; }
     case 'nextset': return [L(`TFT Set ${sub}: Release, PBE & alle Champions`, `TFT Set ${sub}: Release Date, PBE & All Champions`), L(`TFT Set ${sub}: wann PBE und Release kommen, dazu alle neuen Champions, Traits und Augments – laufend aktualisiert.`,
       `TFT Set ${sub}: when the PBE and release arrive, plus every new champion, trait and augment – updated continuously.`)];
     case 'builder': return [L(`TFT Team Builder ${S} – Board planen & teilen`, `TFT Team Builder ${S} – Plan & Share Boards`), L(`Kostenloser TFT Team Builder für ${S}: Units platzieren, Items verteilen, aktive Traits sehen und dein Board als Link teilen.`,
@@ -6814,7 +6849,7 @@ function setMeta(page, sub){
   if(noindex){ const c = document.head.querySelector('link[rel="canonical"]'); if(c) c.remove(); return; }
   // kanonische Adresse: eine Adresse pro Inhalt (z. B. /bibliothek statt /bibliothek/champions, Builder ohne Team-Code)
   const keep = {cheatsheet:csList().map(s=>s[0]), guides:['encounters'], tierlist:['items','augments','holds'], bibliothek:['items','traits','augments'], tools:['rolldown','tierlist','simulator','drops','dps','augments'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
-  const path = page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : page==='comp' ? compHref(compByKey[sub]) : page==='nextset' ? '/tft-set-' + sub : seoPath('/' + page + (keep.includes(sub) ? '/' + sub : ''));
+  const path = page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : page==='comp' ? compHref(compByKey[sub]) : page==='nextset' ? '/tft-set-' + sub : page==='setnews' ? nwHref(nwBy(sub)) : seoPath('/' + page + (keep.includes(sub) ? '/' + sub : ''));
   headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + withLang(path);
   // beide Sprachfassungen für Suchmaschinen verknüpfen
   [['de', path], ['en', enPath(path)], ['x-default', path]].forEach(([l, p])=>{ headTag(`link[rel="alternate"][hreflang="${l}"]`, ()=>Object.assign(document.createElement('link'), {rel:'alternate', hreflang:l})).href = location.origin + p; });
@@ -6834,7 +6869,8 @@ function setMeta(page, sub){
   // Champions mit Posen: eigenes großes Bild (Arena, Podest, Modell – tools/og-bilder.js → assets/og/champions/tft-<slug>-build.jpg)
   const chOg = page==='champion' && CH_RENDER[chN] ? `assets/og/champions/tft-${sub}-build.jpg` : '';
   const rkOg = page==='ranks' && (!sub || rankBy[sub]) ? rkOgImg(sub) : '';   // Ränge: Übersicht mit allen Waben, je Rang das Emblem (tools/og-bilder.js)
-  const wide = chOg || (!chImg && (OG_TOOL[tool] || csOg || nsOg || rkOg));
+  const nwOg = page==='setnews' ? nwBy(sub).img : '';   // News-Beitrag: Titelbild (tools/og-bilder.js)
+  const wide = chOg || (!chImg && (OG_TOOL[tool] || csOg || nsOg || rkOg || nwOg));
   const img = chOg ? location.origin + '/' + chOg : chImg || location.origin + '/' + (wide || {tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
   const og = (k, v) => { headTag(`meta[property="${k}"]`, ()=>{ const m = document.createElement('meta'); m.setAttribute('property', k); return m; }).content = v; };
   og('og:title', document.title); og('og:description', desc || ''); og('og:url', url); og('og:type', 'website'); og('og:site_name', 'TFTClimb'); og('og:locale', EN ? 'en_GB' : 'de_DE'); og('og:image', img);
@@ -6851,6 +6887,7 @@ function setLd(page, sub, tool, title, desc, url, path, ogImg){
     if(page==='champion') items.push([tr('Bibliothek'), '/bibliothek'], [champBySlug[sub].n, path]);
     else if(page==='comp') items.push(['Tierlist', '/tierlist'], [compByKey[sub].name, path]);
     else if(page==='countdown') items.push(['Patches', '/patches'], [title.split(' – ')[0], path]);
+    else if(page==='setnews') items.push(['Set ' + nwBy(sub).set, '/tft-set-' + nwBy(sub).set], [title.split(' | ')[0], path]);
     else {
       if(sec) items.push([tr(sec), '/' + page]);
       if(path !== '/' + page) items.push([title.split(' – ')[0], path]);
@@ -6878,6 +6915,9 @@ function setLd(page, sub, tool, title, desc, url, path, ogImg){
   const pt = page==='patches' && patchBySlug[sub];   // Patch-Seite als Artikel mit CrazYSlayt als Autor
   if(pt) graph.push({'@type':'Article', headline:title.split(' | ')[0], description:desc, datePublished:pt.date, inLanguage:EN ? 'en' : 'de', mainEntityOfPage:url, publisher:org,
     ...(pt.img ? {image:pt.img} : {}), author:{'@type':'Person', name:'Claudio "CrazYSlayt"', alternateName:'CrazYSlayt', jobTitle:'TFT Challenger & TFTClimb Coach', url:location.origin + withLang(PATCH_AUTHOR.href)}});
+  const nw = page==='setnews' && nwBy(sub);   // News-Beitrag: Nachrichtenartikel von CrazYSlayt
+  if(nw) graph.push({'@type':'NewsArticle', headline:nwL(nw.title), description:desc, datePublished:nw.date, inLanguage:EN ? 'en' : 'de', mainEntityOfPage:url, publisher:org, ...(ogImg ? {image:ogImg} : {}),
+    author:{'@type':'Person', name:'Claudio "CrazYSlayt"', alternateName:'CrazYSlayt', jobTitle:'TFT Challenger & TFTClimb Coach', url:location.origin + withLang(PATCH_AUTHOR.href)}});
   let el = document.getElementById('ldPage');
   if(!el){ el = document.createElement('script'); el.type = 'application/ld+json'; el.id = 'ldPage'; document.head.appendChild(el); }
   el.textContent = JSON.stringify({'@context':'https://schema.org', '@graph':graph});
@@ -6951,8 +6991,8 @@ function route(){
   // alte Adressen weiter unterstützen
   if(['champions','items','traits'].includes(page)){ sub = page; page = 'bibliothek'; }
   if(page==='augments'){ sub = 'augments'; page = 'tierlist'; }
-  { const m = page.match(/^tft-set-(\d+)$/); if(m){ page = 'nextset'; sub = m[1]; } }   // /tft-set-19: Seite zum nächsten Set
-  const valid = ['nextset','home','tierlist','bibliothek','champion','comp','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','gameplans','about','apply','impressum','datenschutz','patches','countdown'];
+  { const m = page.match(/^tft-set-(\d+)$/); if(m){ if(sub) page = nwBy(sub) ? 'setnews' : 'notfound'; else { page = 'nextset'; sub = m[1]; } } }   // /tft-set-19: Seite zum nächsten Set, /tft-set-19/<beitrag>: News
+  const valid = ['nextset','setnews','home','tierlist','bibliothek','champion','comp','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','gameplans','about','apply','impressum','datenschutz','patches','countdown'];
   if(!valid.includes(page)) page='notfound';
   const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche
   const isCv = page==='bibliothek' && !['items','traits','augments'].includes(sub);   // Champions: Wabenansicht (auch alte Adresse /bibliothek/v2)
@@ -6968,10 +7008,10 @@ function route(){
   tnUpdate(isSim ? 'simulator' : page === 'tools' ? sub : '');
   // Seitenbreite: Übersichtsseiten breit wie das Dashboard, Unterseiten (einzelnes Tool, Cheatsheet, Champion, Patch, Rang, Profil, Rechtliches) schmaler
   const subOk = {tools:['rolldown','tierlist','simulator','drops','dps','augments'], cheatsheet:csList().map(s=>s[0]), patches:Object.keys(patchBySlug), ranks:Object.keys(rankBy), about:['crazyslayt','humbadobo']}[page];
-  document.body.dataset.lvl = ['champion','comp','builder','apply','impressum','datenschutz','bedingungen','countdown'].includes(page) || (subOk && subOk.includes(sub)) ? 'sub' : 'top';
+  document.body.dataset.lvl = ['champion','comp','builder','apply','impressum','datenschutz','bedingungen','countdown','setnews'].includes(page) || (subOk && subOk.includes(sub)) ? 'sub' : 'top';
   toolHit(page==='builder' ? 'builder' : page==='tools' && subOk.includes(sub) ? sub : '');
   if(page==='tools' && !sub) tcHits();
-  let navKey = page==='champion' ? 'bibliothek' : page==='comp' ? 'tierlist' : page==='countdown' ? 'patches' : page;
+  let navKey = page==='champion' ? 'bibliothek' : page==='comp' ? 'tierlist' : page==='countdown' ? 'patches' : page==='setnews' ? 'nextset' : page;
   $('#statBar').classList.toggle('sb-off', page!=='home');   // LP-Grenzen und Patch-Countdown nur auf der Startseite
   if(page==='home') requestAnimationFrame(()=>sbCount(true));   // beim Öffnen der Startseite die LP hochzählen
   if(!isSim) simPause();
@@ -6991,6 +7031,7 @@ function route(){
   else if(page==='tools') renderTools(sub, parts[2], parts[3]);
   if(page==='patches') renderPatches(sub);
   if(page==='nextset') renderNextSet(sub);
+  if(page==='setnews') renderSetNews(sub);
   if(page==='countdown') renderCountdown();
   if(page==='champion') renderChampPage(sub);
   if(page==='comp') renderCompPage(sub);

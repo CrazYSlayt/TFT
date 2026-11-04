@@ -18,8 +18,14 @@ function enPath(p) {
   if (s[1] === 'tools' && s[2]) { const k = keyOf(TOOL_SLUG, s[2]); if (TOOL_SLUG_EN[k]) s[2] = TOOL_SLUG_EN[k]; }
   if (s[1] === 'cheatsheet' && s[2]) { const k = keyOf(CS_SLUG, s[2]); s[2] = CS_SLUG_EN[k] || (k !== s[2] ? 'tft-' + k : s[2]); }
   if (PAGE_EN[s[1]]) s[1] = PAGE_EN[s[1]];
+  if (/^tft-set-\d+$/.test(s[1]) && s[2]) { const n = newsList().find(x => x.slug.de === s[2]); if (n) s[2] = n.slug.en; }
   return '/en' + s.join('/');
 }
+// News-Beiträge aus data/news.js (Adresse wie in app.js: nwHref, englisch mit slug.en)
+function newsList(){
+  try { const w = {}; new Function('window', fs.readFileSync(path.join(process.cwd(), 'data', 'news.js'), 'utf8'))(w); return w.TFT_NEWS || []; } catch (e) { return []; }
+}
+const news = () => newsList().map(n => `/tft-set-${n.set}/${n.slug.de}`);
 
 const PAGES = [
   '/',
@@ -117,7 +123,7 @@ module.exports = (req, res) => {
   let host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
   if (host === 'tftclimb.com') host = 'www.tftclimb.com';   // immer die kanonische Domain
   const base = (req.headers['x-forwarded-proto'] || 'https') + '://' + host;
-  const paths = [...PAGES, ...nextSet(), ...compPages(), ...champions(), ...patches()];
+  const paths = [...PAGES, ...nextSet(), ...news(), ...compPages(), ...champions(), ...patches()];
   const alt = p => ['de', p, 'en', enPath(p), 'x-default', p].reduce((s, v, i, a) => i % 2 ? s : s + `\n    <xhtml:link rel="alternate" hreflang="${v}" href="${esc(base + a[i + 1])}"/>`, '');
   const lm = lastmods(), img = ogImages();
   const entry = (loc, p) => { const d = modOf(p, lm), im = img[loc];

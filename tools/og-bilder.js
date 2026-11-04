@@ -105,6 +105,17 @@ const RK_SHOT = `(async () => {
   } finally { wrap.remove(); }
 })()`;
 
+// ---------- News-Beiträge (data/news.js): Riots Bild als Hintergrund, Maskottchen, kleines Schild – Titelbild und Vorschau zugleich, ohne Überschrift, gilt für beide Sprachen ----------
+function newsPages(){
+  const w = {}; new Function('window', fs.readFileSync(path.join(ROOT, 'data', 'news.js'), 'utf8'))(w);
+  return (w.TFT_NEWS || []).map(p => ({file: p.img.replace('assets/og/', '').replace(/\.jpg$/, ''), jpg: true, html: page(`
+    <style>body::after{display:none}</style>   <!-- ohne Rahmen: das Bild steht als Titelbild schon in einem -->
+    <div class="nwbg" style="background-image:url(/${p.bg})"></div>
+    <img class="nwm" src="/${p.mascot}" alt="">
+    <img class="logo nwlogo" src="/assets/brand/logo-tftclimb.webp" alt="">
+    <div class="nwtag">TFT Set ${p.set} News</div>`)}));
+}
+
 // ---------- Rolldown-Rechner ----------
 // Fünf Kosten-Chips in den Kostenfarben des Spiels (fest, ändern sich nicht), keine Prozente
 function rolldownPages(){
@@ -224,6 +235,12 @@ const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
   .rkglow{position:absolute;left:840px;top:300px;width:560px;height:560px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,var(--c),transparent 72%);opacity:.6;filter:blur(20px);z-index:1}
   .rkemb{position:absolute;z-index:2;left:840px;top:290px;width:480px;height:480px;transform:translate(-50%,-50%);object-fit:contain;filter:drop-shadow(0 20px 34px rgba(0,0,0,.65))}
   .rkl{width:520px;top:84px}.rkl h1{font-size:100px;white-space:nowrap}.rkl h1 em{color:transparent;padding-right:.14em}
+  /* News: Riots Bild füllt die Fläche, unten dunkel für das Schild, rechts das Maskottchen */
+  .nwbg{position:absolute;inset:0;background:50% 100%/cover no-repeat}
+  .nwbg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,14,22,.72) 0,rgba(4,14,22,.2) 42%,transparent 60%),linear-gradient(transparent 62%,rgba(4,14,22,.8))}
+  .nwm{position:absolute;z-index:1;right:48px;bottom:0;height:580px;filter:drop-shadow(0 14px 30px rgba(0,0,0,.6))}
+  .nwlogo{position:absolute;z-index:2;left:48px;top:44px;height:58px}
+  .nwtag{position:absolute;z-index:2;left:48px;bottom:48px;padding:12px 26px 12px 22px;border-radius:14px;border:2px solid rgba(46,230,214,.6);background:rgba(4,14,22,.72);font:900 italic 44px/1 'Barlow Condensed';text-transform:uppercase;color:#fff}
   .rko{width:430px;top:96px}.rko h1{font-size:100px;white-space:nowrap}
   .rko-hex{position:absolute;z-index:1;right:22px;top:50%;width:700px;height:590px;transform:translateY(-50%);object-fit:contain;filter:drop-shadow(0 14px 30px rgba(0,0,0,.5))}
   .rkpos{display:inline-block;margin-top:22px;padding:8px 18px;border-radius:99px;border:2px solid var(--c);font:700 24px Barlow;color:#fff;background:rgba(4,18,27,.6)}
@@ -311,7 +328,8 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
   fs.mkdirSync(path.join(OUT, 'cs'), {recursive: true});
   fs.mkdirSync(path.join(OUT, 'champions'), {recursive: true});
   fs.mkdirSync(path.join(OUT, 'ranks'), {recursive: true});
-  const jobs = [...augmentPages(), ...rolldownPages(), ...toolPages(), ...nextSetPage(), ...cheatPages(), ...championPages(), ...rankPages(), ...ranksOverviewPages()].filter(j => !process.argv[2] || j.file.includes(process.argv[2]));   // optional: nur Dateien mit diesem Namensteil
+  fs.mkdirSync(path.join(OUT, 'news'), {recursive: true});
+  const jobs = [...augmentPages(), ...rolldownPages(), ...toolPages(), ...nextSetPage(), ...cheatPages(), ...championPages(), ...rankPages(), ...ranksOverviewPages(), ...newsPages()].filter(j => !process.argv[2] || j.file.includes(process.argv[2]));   // optional: nur Dateien mit diesem Namensteil
   const srv = await serve(), origin = 'http://127.0.0.1:' + srv.address().port;
   const port = 9300 + Math.floor(Math.random() * 500), prof = path.join(require('os').tmpdir(), 'tftclimb-og-' + port);
   const br = spawn(findBrowser(), ['--headless=new', '--hide-scrollbars', `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`, '--window-size=1200,630', 'about:blank'], {stdio: 'ignore'});
