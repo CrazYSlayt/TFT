@@ -32,30 +32,28 @@ function augmentPages(){
 }
 
 // ---------- Champion-Seiten ----------
-// Nur Champions mit Posen (data/champions3d-<Set>.js, tools/modelle/posen.js): Arena, Podest in der Kostenfarbe, Idle-Pose genau wie auf der Seite
-// auf der Scheibenmitte, links Name und „TFT Set <n> Build“ (Name + TFT + Set, wie gesucht wird). Gleiches Bild für beide Sprachen → assets/og/champions/tft-<slug>-build.jpg
+// Nur Champions mit Posen (data/champions3d-<Set>.js, tools/modelle/posen.js): Screenshot der englischen Seite oberhalb der Champion-Leiste (CHP_SHOT).
+// Gleiches Bild für beide Sprachen (Wunsch des Users) → assets/og/champions/tft-<slug>-build.jpg
 function championPages(){
   const vm = require('vm'), ctx = {window: {}}; vm.createContext(ctx);
   const sets = fs.readFileSync(path.join(ROOT, 'data', 'sets.js'), 'utf8'), list = JSON.parse(sets.slice(sets.indexOf('['), sets.lastIndexOf(']') + 1)), S = (list.find(s => s.status === 'live') || list[0]).set;
   for (const f of [`tft-data-${S}.js`, `champions3d-${S}.js`]) { const p = path.join(ROOT, 'data', f); if (fs.existsSync(p)) vm.runInContext(fs.readFileSync(p, 'utf8'), ctx); }
   const R = ctx.window.CH_RENDER_DATA || {}, champs = (ctx.window.TFT_DATA || {}).champions || [];
   const slug = n => String(n).toLowerCase().replace(/['’.]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');   // wie champSlug in app.js
-  const COST = [0, .8, .86, .92, .98, 1.05], col = ['', '#8a94a8', '#22a35a', '#2f80ed', '#a855f7', '#f2c14e'];
-  return champs.filter(c => R[c.n] && R[c.n][0]).map(c => {
-    const p = R[c.n][0], pw = 600, w = pw * 1.06, cx = 860, pb = 26, py = pb + pw * .26 * .756, s0 = (COST[c.c] || 1) * (p.s || 1), s = p.o != null && p.fb > p.o ? Math.min(s0, (630 - py - 24) / (w * (p.fb - p.o))) : s0;   // wie auf der Seite: nichts ragt oben aus dem Bild
-    return {file: `champions/tft-${slug(c.n)}-build`, jpg: true, html: page(`
-    <div class="arena"></div>
-    <img class="pod" src="/assets/img/podest-${c.c}.webp" alt="" style="width:${pw}px;left:${cx - pw / 2}px;bottom:${pb}px">
-    <img class="fig" src="/assets/img/champions3d/${slug(c.n)}${p.f || ''}.webp" alt="" style="width:${w}px;left:${cx - w * p.fx}px;bottom:${py - w * (1 - p.fb)}px;transform:scale(${s});transform-origin:${p.fx * 100}% ${p.fb * 100}%">
-    <div class="l ch">
-      <img class="logo" src="/assets/brand/logo-tftclimb.webp" alt="">
-      <div class="kick">TFT Set ${S} Build</div>
-      <h1><em>${c.n}</em></h1>
-      <div class="cost" style="--c:${col[c.c]}">${c.c} Gold</div>
-      <div class="sub">Items · Comps · Traits</div>
-    </div>`)};
-  });
+  return champs.filter(c => R[c.n] && R[c.n][0]).map(c => ({file: `champions/tft-${slug(c.n)}-build`, chp: `/champions/${slug(c.n)}`}));
 }
+// Läuft in der Seite: alle Bilder laden, Einblend-Animationen beenden, Dauer-Animationen anhalten (sonst wäre jedes Bild neu) und den Ausschnitt im Format 1200 × 630 melden
+const CHP_SHOT = `(async () => {
+  const hero = document.querySelector('.chp2-hero'), sleep = ms => new Promise(r => setTimeout(r, ms)); if (!hero) return null;
+  scrollTo(0, 0);
+  hero.querySelectorAll('img').forEach(i => { i.loading = 'eager'; });
+  const bgs = [...hero.querySelectorAll('[style*="background-image"]')].flatMap(e => e.style.backgroundImage.split(',').map(u => (u.match(/url\\("?([^")]+)/) || [])[1]).filter(Boolean));
+  await Promise.all([...[...hero.querySelectorAll('img')].map(i => i.decode().catch(() => {})), ...bgs.map(u => { const i = new Image(); i.src = u; return i.decode().catch(() => {}); }), document.fonts.ready]);
+  for (let k = 0; k < 3; k++) { document.getAnimations().forEach(a => { if (a.effect.getComputedTiming().iterations === Infinity) { a.currentTime = 0; a.pause(); } else a.finish(); }); await sleep(120); }
+  const l = hero.querySelector('.chp2-left').getBoundingClientRect(), r = hero.querySelector('.chp2-right').getBoundingClientRect();
+  const width = Math.max(r.right - l.left + 28, (l.height + 28) * 1200 / 630), height = width * 630 / 1200;
+  return {x: (l.left + r.right - width) / 2, y: l.top + l.height / 2 - height / 2, width, height, scale: 1200 / width};
+})()`;
 
 // ---------- Rang-Seiten ----------
 // Je Rang ein Bild: Hintergrund der Rang-Seite (assets/img/rank-bg.webp), Emblem mit Schein in der Rangfarbe unter der Lichtsäule, links Name
@@ -222,13 +220,6 @@ const page = body => `<!doctype html><html><head><meta charset="utf-8"><style>
   /* Verlauf per background-clip:text reicht nur bis zum Rand des Textfelds – kursive Buchstaben ragen rechts darüber hinaus und würden abgeschnitten.
      Innenabstand rechts (mit gleich großem negativem Rand, damit sich nichts verschiebt) gibt dem Verlauf Platz – gilt für alle Vorlagen */
   h1 em{font-style:inherit;background:linear-gradient(90deg,#2ee6d6,#93c5fd,#f0abfc);-webkit-background-clip:text;background-clip:text;color:transparent;padding:0 .14em 0 .04em;margin:0 -.14em 0 -.04em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-  /* Champion-Seiten: Arena als Hintergrund (zum Rand dunkel), Podest und Figur rechts, Name links */
-  .arena{position:absolute;inset:0;background:url(/assets/img/arena-bg.webp) 50% 78%/cover no-repeat}
-  .arena::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,18,27,.92) 0,rgba(4,18,27,.55) 38%,transparent 62%),linear-gradient(transparent 70%,rgba(4,18,27,.6))}
-  .pod{position:absolute;z-index:1}.fig{position:absolute;z-index:2;filter:drop-shadow(0 10px 14px rgba(0,0,0,.5))}
-  .ch{width:470px;top:70px}.ch h1{font-size:96px;white-space:nowrap}.ch h1 em{font-size:inherit}
-  .ch .cost{display:inline-flex;align-items:center;gap:10px;margin-top:22px;padding:8px 18px 8px 14px;border-radius:99px;border:2px solid var(--c);font:700 24px Barlow;color:var(--c);background:rgba(4,18,27,.6)}
-  .ch .cost::before{content:"";width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffe9a8,#f2c14e 55%,#b8861b)}
   /* Rang-Seiten: Hintergrund der Rang-Seite, rechts das Emblem mit Schein, links dunkel für die Schrift */
   .rkbg{position:absolute;inset:0;background:url(/assets/img/rank-bg.webp) 0 46%/140% auto no-repeat}   /* 140 %: die Lichtsäule (Bildmitte) fällt auf das Emblem bei x 840 */
   .rkbg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,14,22,.95) 0,rgba(4,14,22,.75) 36%,rgba(4,14,22,.1) 62%,rgba(4,14,22,.25)),linear-gradient(transparent 70%,rgba(4,14,22,.55))}
@@ -354,6 +345,21 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
         j.html = j.make(img);
       }
     }
+    const saveJpg = (file, buf) => { const f = path.join(OUT, `${file}.jpg`);
+      if (fs.existsSync(f) && fs.readFileSync(f).equals(buf)) return console.log(`  unverändert: assets\\og\\${file}.jpg`);
+      fs.writeFileSync(f, buf); console.log(`  geschrieben: assets\\og\\${file}.jpg`); };
+    // 1b) Champions: englische Seite auf breitem Bildschirm (einmal laden, dann innerhalb der Seite wechseln), Topleiste und Champion-Leiste ausblenden, Ausschnitt verkleinert auf 1200 × 630 speichern
+    const chp = jobs.filter(j => j.chp);
+    if (chp.length) {
+      await send('Emulation.setDeviceMetricsOverride', {width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false});
+      await send('Page.navigate', {url: origin + '/en' + chp[0].chp}); await sleep(3500);
+      await ev(`document.head.insertAdjacentHTML('beforeend', '<style>#ckb,#ndTop,.chp2-strip-w{visibility:hidden!important}</style>')`);
+      for (const j of chp) {
+        await ev(`go(${JSON.stringify(j.chp)})`); await sleep(300);
+        const clip = await ev(CHP_SHOT); if (!clip) { console.warn('  ohne Seite:', j.chp); continue; }
+        saveJpg(j.file, Buffer.from((await send('Page.captureScreenshot', {format: 'jpeg', quality: 78, clip})).result.data, 'base64'));
+      }
+    }
     await send('Emulation.setDeviceMetricsOverride', {width: 1200, height: 630, deviceScaleFactor: 1, mobile: false});
     // 2) Vorlagen rendern und speichern
     for (const j of jobs) {
@@ -362,9 +368,7 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
       await send('Page.navigate', {url: origin + '/__og?' + j.file}); await sleep(600);
       await send('Runtime.evaluate', {expression: 'document.fonts.ready.then(()=>Promise.all([...document.images].map(i=>i.decode().catch(()=>{}))))', awaitPromise: true});
       if (j.jpg) {   // Cheatsheets: nur ein JPG (klein genug für viele Seiten)
-        const buf = Buffer.from((await send('Page.captureScreenshot', {format: 'jpeg', quality: 78})).result.data, 'base64'), f = path.join(OUT, `${j.file}.jpg`);
-        if (fs.existsSync(f) && fs.readFileSync(f).equals(buf)) { console.log(`  unverändert: assets\\og\\${j.file}.jpg`); continue; }
-        fs.writeFileSync(f, buf); console.log(`  geschrieben: assets\\og\\${j.file}.jpg`); continue;
+        saveJpg(j.file, Buffer.from((await send('Page.captureScreenshot', {format: 'jpeg', quality: 78})).result.data, 'base64')); continue;
       }
       // Pixel der Seite holen (für das 256-Farben-PNG): Screenshot im Browser auf ein Canvas zeichnen und als Rohdaten zurückgeben
       const shot = (await send('Page.captureScreenshot', {format: 'png'})).result.data;

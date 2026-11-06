@@ -4973,9 +4973,9 @@ function patchRowHTML(r){
 }
 // Kopf der Patch-Seite: Patch-Nummer groß, rechts eine Nachricht von CrazYSlayt an die Besucher (Foto + Sprechblase, Klick auf Foto/Name → Profil)
 const PATCH_AUTHOR = {img:'assets/img/team-claudio.jpg', href:'/about/crazyslayt'};
-// Anfang der Ansage = Meta-Beschreibung der Patch-Seite (mit Keyword „TFT Patch 18.5“), danach ggf. der Hinweis auf B-Patches
-const patchIntro = p => p===CURRENT_PATCH ? L(`Hey Leute, TFT Patch ${p.id} ist draußen! Ich hab ihn für euch übersichtlich aufbereitet – alle Änderungen auf einen Blick.`, `Hey everyone, TFT patch ${p.id} is out! I've neatly prepared it for you – every change at a glance.`)
-  : L(`Hey Leute, hier ist TFT Patch ${p.id}! Ich hab ihn für euch übersichtlich aufbereitet – alle Änderungen auf einen Blick.`, `Hey everyone, here's TFT patch ${p.id}! I've neatly prepared it for you – every change at a glance.`);
+// Anfang der Ansage = Meta-Beschreibung der Patch-Seite (mit Keyword „TFT Patch Notes 18.5“), danach ggf. der Hinweis auf B-Patches
+const patchIntro = p => p===CURRENT_PATCH ? L(`Hey Leute, die TFT Patch Notes ${p.id} sind da! Ich hab sie für euch übersichtlich aufbereitet – alle Änderungen auf einen Blick.`, `Hey everyone, the TFT patch notes ${p.id} are out! I've neatly prepared them for you – every change at a glance.`)
+  : L(`Hey Leute, hier sind die TFT Patch Notes ${p.id}! Ich hab sie für euch übersichtlich aufbereitet – alle Änderungen auf einen Blick.`, `Hey everyone, here are the TFT patch notes ${p.id}! I've neatly prepared them for you – every change at a glance.`);
 function patchHero(p){
   // Patch-Aktualisierungen in zeitlicher Reihenfolge: „Der B-Patch vom 22. Oktober und der C-Patch vom 27. Oktober sind schon mit drin.“
   const bp = (p.notes || []).some(s=>PATCH_MID.test(s.grp || '')), mids = patchMids(p);
@@ -4985,7 +4985,7 @@ function patchHero(p){
       : L('Die B-Patch-Änderungen sind schon mit drin.', 'The B-patch changes are already included.')));
   return `<section class="pde"${p.img ? ` style="--img:url('${esc(p.img)}?w=1280&fm=webp');--pos:${esc(patchFocus(p))}"` : ''}>
     <div class="pde-kick"><span>Set ${esc(p.set)}</span>${p===CURRENT_PATCH ? `<span class="live">${L('Aktueller Patch', 'Current patch')}</span>` : ''}</div>
-    <h1 class="pde-h1">TFT Patch <span>${esc(p.id)}</span></h1>
+    <h1 class="pde-h1">TFT Patch Notes <span>${esc(p.id)}</span></h1>
     <a class="pde-by" href="${PATCH_AUTHOR.href}">
       <span class="pde-av"><img src="${PATCH_AUTHOR.img}" alt="Claudio „CrazYSlayt“" width="50" height="50"><img class="pde-emb" src="${rankImg(rankBy.challenger)}" alt="" width="22" height="22"></span>
       <span class="pde-who"><span>${L('Von', 'By')} <b>${L('Claudio „CrazYSlayt“', 'Claudio "CrazYSlayt"')}</b> · TFT Challenger · TFTClimb Coach</span><small>${fmtDate(p.date)}</small></span>
@@ -4996,21 +4996,21 @@ function patchHero(p){
 function renderPatches(sub){
   const app = $('#patchesApp'), art = document.querySelector('[data-pre="pt"]');
   if(art) art.style.display = (sub && patchBySlug[sub]) || !PATCHES.length ? 'none' : '';   // Text nur auf der Übersicht (hidden wirkt gegen display:grid nicht)
-  if(!PATCHES.length){ app.innerHTML = `<div class="page-head"><div class="crumb">Home / Patches</div><h1>TFT <em class="serif">Patches</em></h1></div>` + ornnSays('Hmph. Die Patchliste ist noch nicht geschmiedet – das Update-Skript holt sie beim nächsten Lauf.'); return; }
+  if(!PATCHES.length){ app.innerHTML = `<div class="page-head"><div class="crumb">Home / Patches</div><h1>TFT <em class="serif">Patch Notes</em></h1></div>` + ornnSays('Hmph. Die Patchliste ist noch nicht geschmiedet – das Update-Skript holt sie beim nächsten Lauf.'); return; }
   const p = sub && patchBySlug[sub];
   if(!p){
     const sets = [...new Set(PATCHES.map(x=>x.set))];
-    app.innerHTML = `<div class="page-head"><div class="crumb">Home / Patches</div><h1>TFT <em class="serif">Patches</em></h1>
-      <p>${L('Alle Patches für euch aufbereitet: jede Änderung übersichtlich nach Champions, Traits, Items und Augments sortiert – neu, sobald ein Patch erscheint (alle zwei Wochen, meist dienstags).', 'Every patch prepared for you: each change neatly sorted by champions, traits, items and augments – updated as soon as a patch drops (every two weeks, usually on Tuesdays).')}</p>
+    app.innerHTML = `<div class="page-head"><div class="crumb">Home / Patches</div><h1>TFT <em class="serif">Patch Notes</em></h1>
+      <p>${L('Alle TFT Patch Notes für euch aufbereitet: jede Änderung übersichtlich nach Champions, Traits, Items und Augments sortiert – neu, sobald ein Patch erscheint (alle zwei Wochen, meist dienstags).', 'All TFT patch notes prepared for you: each change neatly sorted by champions, traits, items and augments – updated as soon as a patch drops (every two weeks, usually on Tuesdays).')}</p>
       ${(()=>{ const n = stNextPatch(); return n ? `<a class="pt-next" href="${COUNTDOWN_PATH}"><span class="pt-nb">${esc(n.id || 'TFT')}</span><span><small>${L('Nächster Patch in', 'Next patch in')}</small><b data-countdown>${stCountdown()}</b></span><em>${L('Zum Countdown', 'Open countdown')} →</em></a>` : ''; })()}</div>`
       + sets.map(st=>`<div class="pt-set"><h2>Set ${st}</h2><div class="pt-grid">${PATCHES.filter(x=>x.set===st).map(x=>{
         const cur = x===CURRENT_PATCH, cnt = patchCount(x), note = PATCH_NOTES[x.id];
         return `<a class="pt-card${cur?' cur':''}" href="/patches/${patchSlug(x.id)}">
           <div class="pt-img"${x.img ? ` style="background-image:url('${esc(x.img)}?w=640&fm=webp');background-position:${esc(patchFocus(x))}"` : ''}>${cur ? '<span class="pill">Aktuell</span>' : ''}</div>
-          <div class="pt-body"><small>${fmtDate(x.date)}</small><h3>Patch ${esc(x.id)}</h3><p>${esc(x.teaser || '')}</p>
+          <div class="pt-body"><small>${fmtDate(x.date)}</small><h3>Patch Notes ${esc(x.id)}</h3><p>${esc(x.teaser || '')}</p>
           <div class="pt-meta">${cnt ? `<span>${cnt} Änderungen</span>` : ''}${note ? '<span class="hl">mit Einschätzung</span>' : ''}${x.lang==='en' && !EN ? '<span>vorerst auf Englisch</span>' : ''}</div></div></a>`;
       }).join('')}</div></div>`).join('')
-      + `<p class="note">${L('Quelle: offizielle Patchnotes von Riot Games, für euch übersichtlich aufbereitet.', 'Source: official patch notes by Riot Games, neatly prepared for you.')}</p>`;
+      + `<p class="note">${L('Quelle: offizielle Patch Notes von Riot Games, für euch übersichtlich aufbereitet.', 'Source: official patch notes by Riot Games, neatly prepared for you.')}</p>`;
     seoMount('pt');
     return;
   }
@@ -5024,8 +5024,8 @@ function renderPatches(sub){
     ${grps.length ? `<input class="input pd-search" id="pdSearch" placeholder="Champion, Trait, Item oder Augment suchen …" aria-label="Änderungen durchsuchen">
     <div id="pdList">${grps.map(g=>`<section class="pd-grp">${g.g ? `<h2>${esc(grpLabel(g.g, p))}</h2>` : ''}${g.secs.map(s=>`<div class="card pd-sec">${s.sec ? `<h3>${esc(secLabel(s.sec))}</h3>` : ''}${s.en ? `<p class="pd-en">${L('Riot hat diese Aktualisierung bisher nur auf Englisch veröffentlicht – die deutsche Fassung folgt automatisch.', 'Riot has only published this update in English so far.')}</p>` : ''}<ul>${s.ch.map(patchRowHTML).join('')}</ul></div>`).join('')}</section>`).join('')}</div>`
       : viSays('Für diesen Patch habe ich keine einzelnen Änderungen gefunden – schau direkt in die Patchnotes bei Riot.')}
-    <div class="pd-nav">${older ? `<a class="btn btn-ghost" href="/patches/${patchSlug(older.id)}">← Patch ${esc(older.id)}</a>` : '<span></span>'}${newer ? `<a class="btn btn-ghost" href="/patches/${patchSlug(newer.id)}">Patch ${esc(newer.id)} →</a>` : ''}</div>
-    <p class="note">${L('Quelle: offizielle Patchnotes von Riot Games, für euch übersichtlich aufbereitet. Im Zweifel gilt das', 'Source: official patch notes by Riot Games, neatly prepared for you. If in doubt, the')} <a href="${esc(p.url)}" target="_blank" rel="noopener">${L('Original bei Riot', 'original at Riot applies')}</a>.</p>`;
+    <div class="pd-nav">${older ? `<a class="btn btn-ghost" href="/patches/${patchSlug(older.id)}">← Patch Notes ${esc(older.id)}</a>` : '<span></span>'}${newer ? `<a class="btn btn-ghost" href="/patches/${patchSlug(newer.id)}">Patch Notes ${esc(newer.id)} →</a>` : ''}</div>
+    <p class="note">${L('Quelle: offizielle Patch Notes von Riot Games, für euch übersichtlich aufbereitet. Im Zweifel gilt das', 'Source: official patch notes by Riot Games, neatly prepared for you. If in doubt, the')} <a href="${esc(p.url)}" target="_blank" rel="noopener">${L('Original bei Riot', 'original at Riot applies')}</a>.</p>`;
   const s = $('#pdSearch');
   if(s) s.addEventListener('input', ()=>{
     const q = s.value.toLowerCase().trim();
@@ -6753,9 +6753,9 @@ function pageMeta(page, sub){
       'Apply for TFT coaching at TFTClimb: fill in the form and request a free intro call with our coaches.')];
     case 'patches': {
       const p = patchBySlug[sub];
-      if(p) return [L(`TFT Patch ${p.id} – alle Änderungen`, `TFT Patch ${p.id} – All Changes`), patchIntro(p)];
-      return [L('TFT Patch Notes – alle Änderungen', 'TFT Patch Notes – All Changes'), L('Alle TFT Patches übersichtlich aufbereitet: jede Änderung an Champions, Traits, Items und Augments auf einen Blick.',
-        'All TFT patches neatly prepared: every change to champions, traits, items and augments at a glance.')];
+      if(p) return [L(`TFT Patch Notes ${p.id} – alle Änderungen`, `TFT Patch Notes ${p.id} – All Changes`), patchIntro(p)];
+      return [L('TFT Patch Notes – alle Änderungen', 'TFT Patch Notes – All Changes'), L('TFT Patch Notes übersichtlich aufbereitet: jede Änderung an Champions, Traits, Items und Augments auf einen Blick.',
+        'TFT patch notes neatly prepared: every change to champions, traits, items and augments at a glance.')];
     }
     case 'countdown': {
       const n = stNextPatch(), id = n && n.id;
@@ -6866,7 +6866,7 @@ function setMeta(page, sub){
   // Cheatsheets: eigenes Bild je Seite und Sprache (tools/og-bilder.js → assets/og/cs/<adresse>.jpg, englisch en-<adresse>.jpg)
   const csOg = page==='cheatsheet' && (!sub || csList().some(s=>s[0]===sub)) ? csOgImg(sub) : '';
   const nsOg = page==='nextset' ? `assets/og/tft-set-${sub}.jpg` : '';   // tools/og-bilder.js
-  // Champions mit Posen: eigenes großes Bild (Arena, Podest, Modell – tools/og-bilder.js → assets/og/champions/tft-<slug>-build.jpg)
+  // Champions mit Posen: Screenshot der englischen Seite, gilt für beide Sprachen (tools/og-bilder.js → assets/og/champions/tft-<slug>-build.jpg)
   const chOg = page==='champion' && CH_RENDER[chN] ? `assets/og/champions/tft-${sub}-build.jpg` : '';
   const rkOg = page==='ranks' && (!sub || rankBy[sub]) ? rkOgImg(sub) : '';   // Ränge: Übersicht mit allen Waben, je Rang das Emblem (tools/og-bilder.js)
   const nwOg = page==='setnews' ? nwBy(sub).img : '';   // News-Beitrag: Titelbild (tools/og-bilder.js)
