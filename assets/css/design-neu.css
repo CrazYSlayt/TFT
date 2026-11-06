@@ -1187,7 +1187,7 @@ body.nd-mini .nds-gap{height:30px}
   background:linear-gradient(#071823,#071823) padding-box,linear-gradient(160deg,var(--g1),var(--g2) 55%,var(--g3)) border-box}
 /* Symbol: je höher der Rang, desto größer – Niche ist eine eigene Kategorie (mittel) */
 .tl2-head img{width:calc(var(--tl2w) * var(--ts,.9));max-width:100%;max-height:calc(var(--tl2w) * 1.2 - 12px);object-fit:contain;height:auto}   /* ohne Leuchten darunter */
-/* deutliche Stufen: Overpowered groß, Euuuuw klein; Niche eigene Kategorie (mittel) */
+/* deutliche Stufen: Overpowered groß, Ewww klein; Niche eigene Kategorie (mittel) */
 .tl2-s{--ts:1.15}.tl2-a{--ts:.94}.tl2-b{--ts:.74}.tl2-c{--ts:.52}.tl2-x{--ts:.86}
 .tl2-head{overflow:hidden}   /* Symbol bleibt im Kasten */
 .tl2-head b{font:italic 900 1.1rem/1 var(--ff-head);text-transform:uppercase;letter-spacing:.02em;color:#fff;text-shadow:0 0 14px color-mix(in srgb,var(--g1) 70%,transparent);text-align:center;padding-right:.1em}
@@ -1195,6 +1195,8 @@ body.nd-mini .nds-gap{height:30px}
 .tl2-cards{display:flex;flex-wrap:wrap;gap:14px;padding:14px 14px 8px;align-content:flex-start;
   background:linear-gradient(90deg,color-mix(in srgb,var(--g1) 9%,transparent),transparent 60%) padding-box,linear-gradient(#071823,#071823) padding-box,
     linear-gradient(90deg,var(--g1),var(--g2) 40%,color-mix(in srgb,var(--g2) 25%,transparent)) border-box}
+.tl2-cards.none{align-content:center}
+.tl2-none{margin:0;font-size:.95rem;font-weight:600;color:#9fb6c4}
 .tl2-gem{height:auto!important}
 .tl2-cards>.tl2-gem{display:none}   /* Reihen ohne Diamant – nur die Karten haben ihn */
 /* Karte: dünner Rahmen, flacher (Höhe = 1,12 × Breite, TL2_RATIO in app.js), Carry füllt die ganze Fläche, Items unten darüber */

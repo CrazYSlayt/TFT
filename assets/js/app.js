@@ -297,7 +297,9 @@ function boardHTML(c){
 /* --- Übersicht: eine Karte pro Comp --- */
 // Reihen mit eigenem Emblem und Namen (Overpowered … Niche), je Comp ein Rahmen in Tier-Farbe: Carry groß, darunter seine 3 Items,
 // oben rechts über der Ecke der Trend, unten links über der Ecke der höchste aktive Trait des Carrys
-const TL2_NAME = {S:'Overpowered', A:'Strong', B:'Meh', C:'Euuuuw', X:'Niche'};
+const TL2_NAME = {S:'Overpowered', A:'Strong', B:'Meh', C:'Ewww', X:'Niche'};
+// Reihe ohne Comp: Rang bleibt stehen, im Rahmen steht nur dieser Hinweis
+const tl2None = t => `<p class="tl2-none">${L(`Aktuell ist keine Comp ${TL2_NAME[t]}.`, `No comp is ${TL2_NAME[t]} right now.`)}</p>`;
 // Trend-Zeichen (Pfeil hoch, Pfeil runter, Plus für neu) als kräftige Striche im Stil der Vorlage
 const TL2_TREND = Object.fromEntries(Object.entries({up:'<path d="M12 19V6M6 11.5L12 5.5l6 6"/>', down:'<path d="M12 5v13M6 12.5l6 6 6-6"/>', new:'<path d="M12 5.5v13M5.5 12h13"/>'})
   .map(([k, d])=>[k, `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`]));
@@ -327,7 +329,7 @@ function tile2HTML(c, href){   // href: als Link (Dashboard → Comp in der Tier
 // Kartengröße so wählen, dass die ganze Tierlist auf einen Bildschirm passt: jede Reihe einzeilig (größte Reihe bestimmt die Breite)
 // und alle Reihen zusammen nicht höher als das Fenster unter der Leiste. Am Handy feste Größe (CSS)
 function tl2Fit(){
-  const box = $('#tierRows'), rows = box ? [...box.querySelectorAll('.tl2-cards')] : [];
+  const box = $('#tierRows'), all = box ? [...box.querySelectorAll('.tl2-cards')] : [], rows = all.filter(r=>r.querySelector('.tl2-frame'));   // Reihen ohne Comp haben keine Karten zum Messen
   if(!rows.length || !rows[0].offsetParent || innerWidth <= 760){ if(box) box.style.removeProperty('--tl2w'); return; }
   // Größe immer aus der ungefilterten Tierlist (alle Reihen, längste Reihe), damit Filter und Suche die Karten nicht umspringen lassen
   const full = ['S','A','B','C','X'].map(t=>mainComps.filter(c=>c.tier===t).length).filter(Boolean), nRows = full.length;
@@ -339,7 +341,8 @@ function tl2Fit(){
   box.style.setProperty('--tl2w', Math.floor(Math.max(56, Math.min(150, byW))) + 'px');   // erst einzeilig messen, sonst zählen umgebrochene Reihen mit
   const w0 = rows[0].querySelector('.tl2-frame').offsetWidth, perRow = TL2_RATIO + .1;
   const open = [...box.querySelectorAll('.tl-detail:not([hidden])')].reduce((s, d)=>{ const m = getComputedStyle(d); return s + d.offsetHeight + parseFloat(m.marginTop) + parseFloat(m.marginBottom); }, 0);   // aufgeklappte Comp zählt nicht mit
-  const fixed = (box.offsetHeight - open - rows.length * perRow * w0) * nRows / rows.length, byH = (innerHeight - topH - 16 - fixed) / (nRows * perRow);
+  const none = all.filter(r=>!rows.includes(r)).reduce((s, r)=>s + r.closest('.tl2-tier').offsetHeight + 14, 0);   // leere Reihen: feste Höhe, wachsen nicht mit den Karten
+  const fixed = (box.offsetHeight - open - none - rows.length * perRow * w0) * nRows / rows.length + none, byH = (innerHeight - topH - 16 - fixed) / (nRows * perRow);
   box.style.setProperty('--tl2w', Math.floor(Math.max(56, Math.min(150, byW, byH))) + 'px');
   box.querySelectorAll('.tl-detail:not([hidden])').forEach(cp2Notch);   // Kartengröße geändert: Spitze des Comp-Details nachziehen
 }
@@ -389,12 +392,12 @@ if(matchMedia('(hover:hover)').matches){
   addEventListener('scroll', tl2HideTip, {passive:true});
 }
 function renderTiers(target, list){
-  const html = ['S','A','B','C','X'].map(t=>{
+  const html = !list.length ? '' : ['S','A','B','C','X'].map(t=>{
     const rows = list.filter(c=>c.tier===t).sort((a,b)=>t==='X' ? 'SABC'.indexOf(a.sub)-'SABC'.indexOf(b.sub) : 0);
-    if(!rows.length) return '';
+    if(!rows.length && mainComps.some(c=>c.tier===t)) return '';   // nur vom Filter ausgeblendet; wirklich leere Ränge bleiben stehen
     return `<div class="tl-tier tl2-tier tl2-${t.toLowerCase()}" style="--tc:${TIER_COL[t]}">
       <div class="tl2-row"><div class="tl2-head tl2-f${t.toLowerCase()}"><img src="assets/tierlist/tier-${t.toLowerCase()}.webp" alt="" width="173" height="160"><b>${TL2_NAME[t]}</b></div>
-        <div class="tl2-cards">${rows.map(c=>tile2HTML(c)).join('')}${t === 'X' ? `<span class="tl2-sit" title="${L('Stark unter bestimmten Bedingungen (Augments, Items, Emblem)', 'Strong under certain conditions (augments, items, emblem)')}"><i>Situational</i></span>` : ''}</div></div>
+        <div class="tl2-cards${rows.length ? '' : ' none'}">${rows.length ? rows.map(c=>tile2HTML(c)).join('') : tl2None(t)}${t === 'X' && rows.length ? `<span class="tl2-sit" title="${L('Stark unter bestimmten Bedingungen (Augments, Items, Emblem)', 'Strong under certain conditions (augments, items, emblem)')}"><i>Situational</i></span>` : ''}</div></div>
       <div class="tl-detail" hidden></div>
     </div>`;
   }).join('');
@@ -7284,9 +7287,9 @@ function renderDash(){
   const live = `<i class="sb-dot${ST_CUT_LIVE ? ' live' : ''}" title="${ST_CUT_LIVE ? L('Live-Daten', 'Live data') : L('Gespeicherter Stand', 'Saved data')}"></i>`;
   // Tierlist im Kleinformat: dieselben Reihen (Emblem + Name) und Comp-Karten wie auf /tierlist, kleiner (alle fünf Reihen inkl. Niche;
   // je Reihe bis zu 7 Comps, Niche nach Bewertung), Klick → Comp in der Tierlist aufklappen
-  const mtl = ['S', 'A', 'B', 'C', 'X'].map(t=>{ const list = mainComps.filter(c=>c.tier === t).sort((a,b)=>t === 'X' ? 'SABC'.indexOf(a.sub) - 'SABC'.indexOf(b.sub) : 0).slice(0, 7); if(!list.length) return '';
+  const mtl = ['S', 'A', 'B', 'C', 'X'].map(t=>{ const list = mainComps.filter(c=>c.tier === t).sort((a,b)=>t === 'X' ? 'SABC'.indexOf(a.sub) - 'SABC'.indexOf(b.sub) : 0).slice(0, 7);
     return `<div class="tl2-tier tl2-${t.toLowerCase()}"><div class="tl2-row"><div class="tl2-head"><img src="assets/tierlist/tier-${t.toLowerCase()}.webp" alt="" width="173" height="160"><b>${TL2_NAME[t]}</b></div>
-      <div class="tl2-cards">${list.map(c=>tile2HTML(c, `/tierlist?comp=${encodeURIComponent(c.slug)}`)).join('')}</div></div></div>`; }).join('');
+      <div class="tl2-cards${list.length ? '' : ' none'}">${list.length ? list.map(c=>tile2HTML(c, `/tierlist?comp=${encodeURIComponent(c.slug)}`)).join('') : tl2None(t)}</div></div></div>`; }).join('');
   const lpStat = (key, v, tier, label) => `<a class="dsh-lp" href="/ranks/${tier.k}"><img src="${rankImg(tier)}" alt=""><span><b data-dlp="${v || 0}" data-key="${key}">${v ? fmt(v) + ' LP' : '–'}</b><small>${live}${label}</small></span></a>`;
   box.innerHTML = `
     <div class="dsh-title"><h1>${L('TFT Tierlist, Comps', 'TFT Tier List, Comps')} <em>&amp; Coaching</em></h1></div>
