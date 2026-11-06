@@ -103,9 +103,15 @@ let tierSource = loadTierSource();
 // Item-/Augment-Bewertungen: aus dem Entwurf, sonst aus der veröffentlichten Datei
 const tlPart = k => tierSource.data[k] || (TL_FILE && TL_FILE[k]) || {};
 let ITEM_TL = tlPart('itemTL'), AUG_TL = tlPart('augTL'), HOLD_TL = tlPart('holdTL'), ENC_TL = tlPart('encTL');
-const TL_PATCH = tierSource.data.patch || (TL_FILE && TL_FILE.patch) || '';
 // Eigene Ergänzungen zum Set (data/custom-<Set>.js): Pflanzen-Bilder, Icons für Platzhalter-Augments
 const TFT_CUSTOM_SET = window.TFT_CUSTOM && (!TFT_CUSTOM.set || TFT_CUSTOM.set===TFT_DATA.set) ? window.TFT_CUSTOM : {};
+// Angezeigter Patch: immer der gerade live laufende des Sets, automatisch ab seinem Termin im Patch-Plan (stPatchDates; „18.6B“ zählt als 18.6, den Buchstaben
+// ergänzt tlPatchVar aus Riots Nachträgen). Ohne Termin die neuesten Patchnotes des Sets, zuletzt der Wert aus der Tierlist-Datei
+const TL_PATCH = (()=>{ const set = TFT_DATA.set + '.', now = new Date(), today = now.toISOString().slice(0, 10);
+  const plan = stPatchDates().filter(x=>String(x.id).startsWith(set) && x.d <= now).pop(), notes = (window.TFT_PATCHES || []).find(p=>String(p.id).startsWith(set) && p.date <= today);
+  return plan ? String(plan.id).replace(/[a-z]$/i, '') : notes ? String(notes.id) : tierSource.data.patch || (TL_FILE && TL_FILE.patch) || ''; })();
+const tlPatchVar = () => { const pt = (window.TFT_PATCHES || []).find(x=>String(x.id) === String(TL_PATCH)); return pt ? patchVariant(pt) : ''; };
+const setStatus = () => (window.TFT_SET && TFT_SET.status) || TFT_DATA.channel || 'live';
 const PLANT_IMG = TFT_CUSTOM_SET.plants || {};
 // Sonderregeln für Units (data/custom-<Set>.js → unitRules): Teamplätze (slots) und Zählwert pro Trait (traits), z. B. Elder Dragon = 2 Plätze, +2 Riftbeast
 const UNIT_RULES = TFT_CUSTOM_SET.unitRules || {};
@@ -1454,7 +1460,7 @@ function admEnsure(){
   if(adm) return;
   try { const w = JSON.parse(localStorage.getItem(ADM_WIP_KEY) || 'null'); if(w && Array.isArray(w.comps)){ adm = w; admDirty = true; return; } } catch(e){}
   const d = tierSource.data;
-  adm = JSON.parse(JSON.stringify({version:1, set:TFT_DATA.set, rev:d.rev||'', patch:d.patch||TL_PATCH, updated:d.updated||'', source:d.source||'', basedOn:d.basedOn||'', comps:d.comps, itemTL:d.itemTL||ITEM_TL, augTL:d.augTL||AUG_TL, holdTL:d.holdTL||HOLD_TL, encTL:d.encTL||ENC_TL}));
+  adm = JSON.parse(JSON.stringify({version:1, set:TFT_DATA.set, rev:d.rev||'', patch:TL_PATCH, updated:d.updated||'', source:d.source||'', basedOn:d.basedOn||'', comps:d.comps, itemTL:d.itemTL||ITEM_TL, augTL:d.augTL||AUG_TL, holdTL:d.holdTL||HOLD_TL, encTL:d.encTL||ENC_TL}));
 }
 function admStatus(t){ const el = $('#admStatus'); if(el) el.textContent = t; }
 // Speichern-Knopf und Hinweis: ungespeicherte Änderungen sichtbar machen
@@ -1483,17 +1489,17 @@ function updateTlNote(){
   const el = $('#tlSrc'); if(!el) return;
   const D = tierSource.data, link = '<a href="https://tftacademy.com/tierlist/comps" target="_blank" rel="noopener" style="text-decoration:underline">TFTAcademy</a>';
   if(!(D.comps||[]).length){ el.textContent = `Für Set ${TFT_DATA.set} gibt es noch keine Tierlist.`; return; }
-  if(D.source==='TFTAcademy'){ el.innerHTML = `Stand: Patch ${esc(D.patch||TL_PATCH)} · Bewertungen und Aufstellungen nach ${link}`; return; }
+  if(D.source==='TFTAcademy'){ el.innerHTML = `Stand: Patch ${esc(TL_PATCH)} · Bewertungen und Aufstellungen nach ${link}`; return; }
   const d = D.updated ? new Date(D.updated).toLocaleDateString(LOC) : '';
-  if(ND){   // neues Design: kompaktes Abzeichen oben rechts – grüner Punkt „Live“, wenn die Tierlist zum aktuellen Patch passt
-    // Patch mit Variante (18.5c) wie auf den Datenseiten, dazu „geändert am“ = Tag der letzten Änderung in der Redaktion (admSave setzt updated)
-    const cur = (window.TFT_PATCHES||[])[0] || {}, p = String(D.patch||TL_PATCH), live = p === String(cur.id || TL_PATCH), v = live ? patchVariant(cur) : '';
+  if(ND){   // neues Design: kompaktes Abzeichen oben rechts – grüner Punkt „Live“ beim laufenden Set
+    // Aktueller Patch mit Variante (18.5c) wie auf den Datenseiten, dazu „geändert am“ = Tag der letzten Änderung in der Redaktion (admSave setzt updated)
+    const live = setStatus() === 'live';
     el.classList.add('tl-badge'); el.classList.toggle('old', !live);
     el.title = L('Bewertungen von TFTClimb', 'Ratings by TFTClimb');
-    el.innerHTML = `<i class="tl-dot"></i>${live ? '<b>Live</b>' : ''}<span>Patch ${esc(p + v)}</span>${d ? `<span>${L('geändert am', 'updated')} ${esc(d)}</span>` : ''}${D.basedOn==='TFTAcademy' || (TL_FILE && TL_FILE.source==='TFTAcademy') ? `<span>${L('Aufstellungen nach', 'Boards from')} ${link}</span>` : ''}`;
+    el.innerHTML = `<i class="tl-dot"></i>${live ? '<b>Live</b>' : ''}<span>Patch ${esc(TL_PATCH + tlPatchVar())}</span>${d ? `<span>${L('geändert am', 'updated')} ${esc(d)}</span>` : ''}${D.basedOn==='TFTAcademy' || (TL_FILE && TL_FILE.source==='TFTAcademy') ? `<span>${L('Aufstellungen nach', 'Boards from')} ${link}</span>` : ''}`;
     return;
   }
-  el.innerHTML = `Stand: Patch ${esc(D.patch||TL_PATCH)}${d?' · aktualisiert am '+d:''} · Bewertungen von TFTClimb${D.basedOn==='TFTAcademy' || (TL_FILE && TL_FILE.source==='TFTAcademy') ? ' · Aufstellungen ursprünglich nach ' + link : ''}`;
+  el.innerHTML = `Stand: Patch ${esc(TL_PATCH)}${d?' · aktualisiert am '+d:''} · Bewertungen von TFTClimb${D.basedOn==='TFTAcademy' || (TL_FILE && TL_FILE.source==='TFTAcademy') ? ' · Aufstellungen ursprünglich nach ' + link : ''}`;
 }
 function admCardHTML(c){
   const st = STICKER[c.sticker];
@@ -1834,7 +1840,6 @@ document.addEventListener('dragend', ()=>{ admTLDrag = null; admClearMarks(); do
 
 /* ================= SET-AUSWAHL (Live / PBE / Archiv) ================= */
 const SET_LABEL = {live:'Live', pbe:'PBE', archiv:'Archiv'};
-const setStatus = () => (window.TFT_SET && TFT_SET.status) || TFT_DATA.channel || 'live';
 const fmtDay = d => { const x = new Date(d); return isNaN(x) ? '' : x.toLocaleDateString(LOC); };
 function renderSetSwitcher(){
   const sets = window.TFT_SETS || [], cur = TFT_DATA.set, st = setStatus();
@@ -7240,7 +7245,7 @@ function ndInit(){
 // Oben rechts: LP-Grenzen (Challenger, Großmeister · EUW) und Patch-Stand mit Variante und Countdown zum nächsten Patch
 function ndStats(){
   const el = $('#ndStats'); if(!el) return;
-  const cut = stCut('euw'), cur = (window.TFT_PATCHES || [])[0] || {}, p = ST_PATCH ? String(ST_PATCH) + (String(cur.id) === String(ST_PATCH) ? patchVariant(cur) : '') : '';
+  const cut = stCut('euw'), p = ST_PATCH ? String(ST_PATCH) + tlPatchVar() : '';
   // grüner Punkt (pulsiert) = Live-Daten von /api/cutoffs, grau = gespeicherter Stand
   const lp = (v, t) => v ? `<a class="nd-lp" href="/ranks/${t.k}" title="${esc(t.n)} · EUW · ${ST_CUT_LIVE ? 'Live' : L('Gespeicherter Stand', 'Saved data')}"><img src="${rankImg(t)}" alt="" width="56" height="56"><i class="tl-dot${ST_CUT_LIVE ? '' : ' off'}"></i><b data-noi18n data-key="${t.k}" data-to="${v}">${Number(ndLpShown[t.k] ?? v).toLocaleString(LOC)} LP</b></a>` : '';
   el.innerHTML = (cut ? lp(cut.ch, rankBy.challenger) + lp(cut.gm, rankBy.grandmaster) : '')
