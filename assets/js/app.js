@@ -306,6 +306,11 @@ const TL2_TREND = Object.fromEntries(Object.entries({up:'<path d="M12 19V6M6 11.
 // Bildausschnitt je Champion, wenn das Gesicht sonst hinter den Items liegt: [Bildhöhe in %, Lage von oben in %] – höher = Bild weiter nach oben
 const TL2_FOCUS = {Karma:[140, 100], Azir:[126, 100]};
 const TL2_RATIO = 396 / 360;   // Höhe : Breite des Rahmenkörpers (comp-<tier>-3.webp), CSS aspect-ratio passend
+// Comp-Art als Kürzel oben links auf der Karte, Farbe = Kosten der Units, um die es geht (Fast 8 → 4 Kosten, Fast 9 → 5 Kosten)
+const TL2_STYLE = {'1-Cost Reroll':['R1', 'var(--c1)'], '2-Cost Reroll':['R2', 'var(--c2)'], '3-Cost Reroll':['R3', 'var(--c3)'], '4-Cost Fast 8':['F8', 'var(--c4)'], 'Fast 9':['F9', 'var(--c5)'], 'Lose Streak':['LS', '#f7166e']};
+const tl2Style = (style, title) => { const s = TL2_STYLE[style]; return s ? `<span class="tl2-style" style="--sc:${s[1]}"${title ? ` title="${esc(title)}"` : ''}>${s[0]}</span>` : ''; };
+// Legende über der Tierlist: nur Comp-Arten, die gerade vorkommen
+const tl2Legend = () => `<div class="tl2-legend">${Object.keys(TL2_STYLE).filter(s=>mainComps.some(c=>c.style === s)).map(s=>`<span>${tl2Style(s)}${esc(L(STYLE_DE[s] || s, s))}</span>`).join('')}</div>`;
 function tile2HTML(c, href){   // href: als Link (Dashboard → Comp in der Tierlist aufklappen), sonst Knopf
   const st = STICKER[c.sticker], ch = champBy[c.carry] || {t:[]};
   const tr = compTraits(c).find(t=>ch.t.includes(t.n)) || tileTrait(c);   // höchster aktiver Trait des Carrys (compTraits ist nach Stufe sortiert)
@@ -323,6 +328,7 @@ function tile2HTML(c, href){   // href: als Link (Dashboard → Comp in der Tier
       <img class="tl2-fr" src="assets/tierlist/comp-${t}-3.webp" alt="" width="372" height="408" loading="lazy"></span>
     ${c.tier === 'X' ? (c.sub ? `<img class="tl2-rate r-${c.sub.toLowerCase()}" src="assets/tierlist/tier-${c.sub.toLowerCase()}.webp" alt="${TL2_NAME[c.sub]}" title="${L('Bewertung, wenn die Bedingungen passen', 'Rating when the conditions are met')}: ${TL2_NAME[c.sub]}" width="173" height="160">` : '')
       : st ? `<span class="tl2-trend ${st[0]}" title="${st[2]}">${TL2_TREND[st[0]]}</span>` : ''}
+    ${tl2Style(c.style, compStyleName(c))}
     ${tr ? `<span class="tl2-trait">${traitHex(tr.n, traitCls(tr), 34)}</span>` : ''}
     <span></span></${tag}>`;
 }
@@ -401,7 +407,7 @@ function renderTiers(target, list){
       <div class="tl-detail" hidden></div>
     </div>`;
   }).join('');
-  $(target).innerHTML = html || viSays('Keine Comp passt zu deinen Filtern. Lockere sie ein bisschen, dann finden wir was!');
+  $(target).innerHTML = html ? tl2Legend() + html : viSays('Keine Comp passt zu deinen Filtern. Lockere sie ein bisschen, dann finden wir was!');
   requestAnimationFrame(tl2Fit);
 }
 
@@ -2067,7 +2073,15 @@ function setLib(tab){
 // Alle Champions als große Sechsecke, sortiert nach Kosten und Name. Die Positionen rechnet cvLayout() aus (versetzte Reihen),
 // der Hover hebt die Wabe unter der Maus stark an und zieht die Nachbarn je nach Abstand mit (Welle).
 const cv = {cost:'all', trait:'', q:'', tiles:[], raf:0, mx:0, my:0, inside:false, base:120};   // base = feste Wabengröße im CSS, skaliert wird per Transform
-const CV_CLASSES = () => TFT_DATA.traits.filter(t=>((TFT_CUSTOM_SET.traits || {})[t.n] || {}).cat==='class').map(t=>t.n);
+// Trait-Filter als drei Klappmenüs: Klassen, Ursprünge und Uniques (Traits mit nur einer Unit, egal welche Kategorie)
+const CV_TRAITS = () => { const cnt = {}, cat = n=>((TFT_CUSTOM_SET.traits || {})[n] || {}).cat; champions.forEach(c=>c.t.forEach(t=>{ cnt[t] = (cnt[t] || 0) + 1; }));
+  const ns = TFT_DATA.traits.map(t=>t.n).filter(n=>cnt[n]).sort((a, b)=>a.localeCompare(b));
+  return [[L('Klassen', 'Classes'), ns.filter(n=>cnt[n] > 1 && cat(n)==='class')], [L('Ursprünge', 'Origins'), ns.filter(n=>cnt[n] > 1 && cat(n)!=='class')], ['Uniques', ns.filter(n=>cnt[n]===1)]]; };
+const cvDropdown = ([label, ns]) => ns.length ? `<div class="tl2-dd cv-dd"><button class="tl2-ddb" type="button" aria-haspopup="listbox" aria-expanded="false"><span>${label}</span><b>${L('Alle', 'All')}</b>${TL2_CHEV}</button>
+  <div class="tl2-ddm" role="listbox" hidden><button type="button" role="option" data-cvtrait="" aria-selected="true">${L('Alle', 'All')}</button>${ns.map(n=>`<button type="button" role="option" data-cvtrait="${esc(n)}" aria-selected="false"><img src="${traitImg(n)}" alt="" width="18" height="18" loading="lazy">${esc(n)}</button>`).join('')}</div></div>` : '';
+// Gewählter Trait: Anzeige aller drei Menüs angleichen (es gilt immer nur ein Trait)
+function cvTraitSync(){ document.querySelectorAll('.cv-dd').forEach(d=>{ const os = [...d.querySelectorAll('[data-cvtrait]')], on = cv.trait && os.find(o=>o.dataset.cvtrait===cv.trait);
+  os.forEach(o=>o.setAttribute('aria-selected', o === (on || os[0]))); d.querySelector('.tl2-ddb b').textContent = on ? on.textContent : L('Alle', 'All'); d.classList.toggle('on', !!on); }); }
 function renderChampV2(){
   const box = $('#cvApp'); if(!box) return;
   if(!box.dataset.done){
@@ -2082,9 +2096,8 @@ function renderChampV2(){
       <div class="cv-filters">
         <button type="button" class="cv-chip on" data-cvcost="all">${L('Alle', 'All')}<span></span></button>
         ${[1,2,3,4,5].map(c=>`<button type="button" class="cv-chip cv-cost c${c}" data-cvcost="${c}" title="${c} Gold"><i></i>${c}<span></span></button>`).join('')}
-        <span class="cv-sep"></span>
-        ${CV_CLASSES().map(n=>`<button type="button" class="cv-chip cv-trait" data-cvtrait="${esc(n)}" title="${esc(n)}" aria-label="${esc(n)}"><img src="${traitImg(n)}" alt="" loading="lazy"><span></span></button>`).join('')}
-        <input class="cv-search" id="cvSearch" type="search" placeholder="${L('Champion oder Trait suchen …', 'Search champion or trait …')}" autocomplete="off">
+        ${CV_TRAITS().map(cvDropdown).join('')}
+        <input class="cv-search" id="cvSearch" type="search" placeholder="${L('Champion oder Trait …', 'Champion or trait …')}" aria-label="${L('Champion oder Trait suchen', 'Search champion or trait')}" autocomplete="off">
       </div>
       <div class="cv-count" id="cvCount"></div>
       <div class="cv-grid" id="cvGrid">${list.map(c=>`<a class="cv-tile c${c.c}" href="${champHref(c.n)}" data-n="${esc(c.n)}" data-c="${c.c}" data-t="${esc(c.t.join('|'))}" aria-label="${esc(c.n)}">
@@ -2186,7 +2199,9 @@ document.addEventListener('click', e=>{
   const c = e.target.closest('[data-cvcost]');
   if(c){ const v = c.dataset.cvcost; cv.cost = v !== 'all' && cv.cost === v ? 'all' : v;   // zweiter Klick auf einen aktiven Filter schaltet ihn aus
     document.querySelectorAll('[data-cvcost]').forEach(b=>b.classList.toggle('on', b.dataset.cvcost===cv.cost)); cvFilter(); return; }
-  const t = e.target.closest('[data-cvtrait]'); if(t){ cv.trait = cv.trait===t.dataset.cvtrait ? '' : t.dataset.cvtrait; document.querySelectorAll('[data-cvtrait]').forEach(b=>b.classList.toggle('on', b.dataset.cvtrait===cv.trait)); cvFilter(); }
+  const dd = e.target.closest('.cv-dd .tl2-ddb');
+  if(dd){ const m = dd.nextElementSibling, open = m.hidden; tl2CloseMenus(); m.hidden = !open; dd.setAttribute('aria-expanded', open); return; }
+  const t = e.target.closest('[data-cvtrait]'); if(t){ cv.trait = cv.trait===t.dataset.cvtrait ? '' : t.dataset.cvtrait; cvTraitSync(); tl2CloseMenus(); cvFilter(); }
 });
 document.addEventListener('input', e=>{ if(e.target.id==='cvSearch'){ cv.q = e.target.value; cvFilter(); } });
 document.addEventListener('focusin', e=>{ const t = e.target.closest && e.target.closest('.cv-tile'); if(t){ cv.inside = true; cv.mx = t._cx; cv.my = t._cy; cvWave(); } });
