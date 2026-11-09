@@ -335,7 +335,7 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
     // 1) Cheatsheets: echte Seite öffnen (pro Sprache einmal laden, dann innerhalb der Seite wechseln), Tabellen-Rahmen in 1,5-facher Größe ausschneiden
     const cs = jobs.filter(j => j.site);
     if (cs.length) {
-      await send('Emulation.setDeviceMetricsOverride', {width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false});
+      await send('Emulation.setDeviceMetricsOverride', {width: 1440, height: 1200, deviceScaleFactor: 1, mobile: false});   // höher als 1150 px: sonst greift die Verkleinerung für flache Desktop-Fenster (design-neu.css)
       let lang = '';
       for (const j of cs) {
         const l = /^\/en(\/|$)/.test(j.site) ? 'en' : 'de';

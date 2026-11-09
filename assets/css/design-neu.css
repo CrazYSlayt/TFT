@@ -238,7 +238,7 @@ body.nd-mini .nds-col svg{transform:rotate(180deg)}
 .dsh-lib>*{position:relative;z-index:1}
 .dsh-more{font-size:.82rem;font-weight:700;color:var(--cy);text-shadow:0 0 10px rgba(46,230,214,.4)}
 .dsh-lib:hover .dsh-more{text-decoration:underline}
-.dsh-comb{--s:58px;--h:calc(var(--s) * 1.1547);display:flex;flex-direction:column;align-items:center;padding:4px 0 6px}
+.dsh-comb{--s:66px;--h:calc(var(--s) * 1.1547);display:flex;flex-direction:column;align-items:center;padding:4px 0 6px}
 .dsh-comb>div{display:flex;gap:5px}
 .dsh-comb>div+div{margin-top:calc(var(--h) * -.25 + 4px)}
 .dsh-cb{width:var(--s);height:var(--h);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:linear-gradient(160deg,var(--cc),color-mix(in srgb,var(--cc) 40%,#0a0d17));padding:3px;transition:transform .22s ease-out,filter .22s}
@@ -1141,6 +1141,10 @@ html.nd{scrollbar-gutter:stable}
 .dsh-mtl .tl2-cards,.dsh-mtl .tl2-x .tl2-cards{gap:10px;padding:8px 12px 1px}
 .dsh-mtl .ct.tl2-card{position:relative;display:flex;flex-direction:column;align-items:center;width:var(--tl2w);height:auto;flex:none;filter:none}
 .dsh-mtl .ct.tl2-card::after{display:none}
+@media (min-width:641px){.dsh-mtl .tl2-cards,.dsh-mtl .tl2-x .tl2-cards{flex-wrap:nowrap}}   /* einzeilig; was nicht passt, blendet dshMtlFit aus */
+.dsh-mtl .ct.tl2-card[hidden]{display:none}
+.dsh-mtl-more{flex:none;align-self:center;padding:5px 9px;border-radius:9px;border:1px solid var(--line-2);background:rgba(2,13,21,.6);color:var(--cy);font-weight:800;font-size:.8rem;text-decoration:none}
+.dsh-mtl-more:hover{border-color:var(--cy)}
 @media (max-width:640px){.dsh-mtl{--tl2w:58px}.dsh-mtl .tl2-row{grid-template-columns:minmax(0,1fr);gap:6px}.dsh-mtl .tl2-head{flex-direction:row;padding:4px}.dsh-mtl .tl2-head img{width:36px}
   .dsh-mtl .tl2-cards{gap:14px 8px;justify-content:center}}
 /* Topleiste neu: Logo → Dashboard, Suche über die ganze Seite, rechts LP-Grenzen, Patch-Stand, Set und Einstellungen (Zahnrad) */
@@ -1201,7 +1205,7 @@ body.nd-mini .nds-gap{height:30px}
 .tl2-cards{display:flex;flex-wrap:wrap;gap:14px;padding:14px 14px 8px;align-content:flex-start;
   background:linear-gradient(90deg,color-mix(in srgb,var(--g1) 9%,transparent),transparent 60%) padding-box,linear-gradient(#071823,#071823) padding-box,
     linear-gradient(90deg,var(--g1),var(--g2) 40%,color-mix(in srgb,var(--g2) 25%,transparent)) border-box}
-.tl2-cards.none{align-content:center}
+.tl2-cards.none{align-content:center;align-items:center}
 .tl2-none{margin:0;font-size:.95rem;font-weight:600;color:#9fb6c4}
 .tl2-gem{height:auto!important}
 .tl2-cards>.tl2-gem{display:none}   /* Reihen ohne Diamant – nur die Karten haben ihn */
@@ -1971,3 +1975,48 @@ img.gt-ic{border:1px solid rgba(255,255,255,.18)}
 .nd #rk-list.rkx-mode-hex .rk-foot{max-width:1000px;margin:0 auto 20px;padding:0;font-size:.78rem}
 @media (max-width:640px){.rkd-l span{display:none}.rkd-bar{height:28px}.rkd-s,.rkd-top{height:28px}.rkd-s{border-radius:5px}.rkd-br{top:36px}.rkd-s,.rkd-top .rkd-s{min-width:8px}.rkd-top{min-width:42px}}
 @media (prefers-reduced-motion:reduce){.rkd-bar{animation:none}}
+/* ================= Desktop mit wenig Höhe (z. B. 1920 × 1080: im Browser ≈ 940 px) =================
+   Dashboard bis zu den Cheatsheets und die ganze Tierlist auf einen Bildschirm: Abstände und Kartengrößen etwas kompakter.
+   Was danach noch fehlt, gleicht dshFit (app.js) mit einer leichten Verkleinerung aus; die Tierlist-Karten rechnet tl2Fit passend */
+@media (min-width:1300px) and (max-height:1150px){
+  #dshApp{gap:12px}
+  .nd .dsh-card{padding:14px 18px}
+  .dsh-h{margin-bottom:10px}
+  .dsh-row2,.dsh-row3{gap:12px}
+  .dsh-mtl{--tl2w:48px}
+  .dsh-mtl .tl2-row{grid-template-columns:80px minmax(0,1fr)}
+  .dsh-mtl .tl2-tier,.dsh-mtl .tl2-tier.tl2-x{margin:0 0 4px}
+  .dsh-mtl .tl2-cards,.dsh-mtl .tl2-x .tl2-cards{gap:9px;padding:6px 10px 0}
+  .dsh-pcards{margin-bottom:8px}
+  .dsh-pcard{padding:12px 10px 10px}
+  .dsh-pav{width:78px;height:78px;margin-bottom:10px}
+  .dsh-pemb{width:42px;height:42px;bottom:-15px}
+  .dsh-pfacts{margin-top:8px;padding-top:6px}
+  .dsh-sds{margin-bottom:8px}
+  .dsh-sd{padding:7px 12px}
+  .dsh-sn{min-height:110px}
+  .dsh-comb{--s:60px}
+  .dsh-libstats{margin-top:6px}
+  .dsh-tlist{gap:2px}
+  .dsh-tlist a{padding:4px 8px}
+  .dsh-tlist img{width:30px;height:30px}
+  .dsh-clist{gap:2px 14px}
+  .nd #page-tierlist .page-head h1{font-size:3.3rem}
+  .nd #page-tierlist .page-head>p[data-meta]{margin:6px auto 6px}
+  .tl2-bar{margin:12px 0 10px}
+  .tl2-legend{margin-bottom:8px}
+  /* Rang-Kästen nicht höher als die Karten, sonst verschenken sie Höhe und die Karten werden unnötig klein */
+  #tierRows .tl2-row{grid-template-columns:118px minmax(0,1fr)}
+  #tierRows .tl2-tier>.tl-detail>.cp2{margin-left:130px}   /* bündig mit dem Kartenrahmen (118 px + 12 px Abstand) */
+  #tierRows .tl2-head{padding:4px}
+  #tierRows .tl2-head img{max-height:calc(var(--tl2w) * .82)}
+  #tierRows .tl2-head b{font-size:.95rem}
+  #tierRows .tl2-tier{margin-bottom:10px}
+  #tierRows .tl2-tier.tl2-x{margin-top:26px}
+  .tl2-cards{padding-top:12px}
+  /* Ränge, Tools, Team Builder/Simulator und Cheatsheets wirken sonst riesig. Ränge auf 86 % (Waben und Verteilungsbalken passen so ins Bild),
+     Tools und Cheatsheets – Übersicht und jede einzelne Seite gleich – auf 92 %, damit Tabellen und Rechner gut lesbar bleiben.
+     Positionen, die app.js aus Rechtecken berechnet, teilen durch den Zoom (czoom) */
+  #page-ranks{zoom:.86}
+  #page-tools,#page-builder,#page-cheatsheet{zoom:.92}
+}

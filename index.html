@@ -73,9 +73,9 @@
 <link rel="preconnect" href="https://ddragon.leagueoflegends.com">
 <!-- app.js und sim.js stehen am Ende von <body>: hier schon anmelden, damit sie am Handy vor den Bildern geladen werden -->
 <link rel="preload" href="assets/js/sim.js?v=416a7d3541" as="script">
-<link rel="preload" href="assets/js/app.js?v=a5d64f6422" as="script">
+<link rel="preload" href="assets/js/app.js?v=5fe7c84ab5" as="script">
 <link rel="stylesheet" href="assets/css/fonts.css?v=56685235ed">
-<link rel="stylesheet" href="assets/css/site.css?v=86c1bfd665">
+<link rel="stylesheet" href="assets/css/site.css?v=6d6fb1f492">
 <script>
 // Design: das neue TFTClimb-Design gilt für alle. Nur zum Vergleich lässt sich mit ?design=alt das alte Design ansehen
 // (der Browser merkt sich die Wahl), ?design=neu schaltet zurück.
@@ -88,7 +88,7 @@
     alt = localStorage.getItem('tftfreaks_design') === 'alt';
   } catch(e){}
   if(!alt){
-    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=10c59a8b8f">');
+    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=63e6e90328">');
     // Topleiste und Seitenleiste stehen sofort (assets/js/shell.js), den Inhalt baut app.js: bis alle Skripte gelaufen sind, bleibt er verborgen und oben läuft ein Ladebalken
     document.addEventListener('DOMContentLoaded', function(){ document.documentElement.classList.add('nd-ready'); });
   }
@@ -891,6 +891,9 @@
       <section class="tool-seo ag-art gd-art" id="gdBeginner" aria-labelledby="gda-start"></section>
     </div>
 
+    <!-- Guides aus data/guides.js (Rolldown, Reroll, Fast 8 …): Kopf und Artikel baut gdDataHTML in app.js -->
+    <div class="gd-view" data-guide="data" hidden><div id="gdData"></div></div>
+
     <!-- Guide: Encounters -->
     <div class="gd-view" data-guide="encounters" hidden>
       <div class="page-head">
@@ -1319,6 +1322,7 @@
 <script src="data/cutoffs.js"></script>
 <script src="data/patches.js"></script>
 <script src="data/news.js"></script>
+<script src="data/guides.js"></script>
 <script src="data/patch-kommentare.js"></script>
 <script>if (window.TFT_LANG === 'en') document.write('<script src="data/patches-en.js"><\/script>');</script>
 <script>
@@ -1340,6 +1344,6 @@ document.write('<script src="data/rollen-' + pick.set + '.js"><\/script>');  // 
 })();
 </script>
 <script src="assets/js/sim.js?v=416a7d3541"></script>
-<script src="assets/js/app.js?v=a5d64f6422"></script>
+<script src="assets/js/app.js?v=5fe7c84ab5"></script>
 </body>
 </html>
