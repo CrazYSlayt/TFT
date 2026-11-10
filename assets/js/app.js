@@ -7310,8 +7310,7 @@ function numUp(el, from, to, suf = '', delay = 0, dur = 1300){
 }
 document.addEventListener('keydown', e=>{ if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && !$('#page-builder').classList.contains('active')){ e.preventDefault(); openSearch(); } });   // Strg+K: Suche (im Team Builder hat Strg eigene Kürzel)
 function ndRoute(page, navKey){
-  const key = page==='champion' ? 'bibliothek' : page==='apply' ? 'coaching' : navKey;
-  document.querySelectorAll('#ndSide [data-nd]').forEach(a=>a.classList.toggle('on', a.dataset.nd===key));
+  ndMark();   // shell.js: aktiver Punkt nach Adresse, seine Gruppe klappt auf
   document.body.classList.remove('nd-drawer');
   if(page==='home'){ renderDash(); seoMount('home'); dshFit(); dshIntro(); requestAnimationFrame(()=>dshCount(true)); }
   setTimeout(ndColon, 0);   // erst nach der Übersetzung (läuft vorher als Microtask)

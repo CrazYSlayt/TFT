@@ -2020,3 +2020,45 @@ img.gt-ic{border:1px solid rgba(255,255,255,.18)}
   #page-ranks{zoom:.86}
   #page-tools,#page-builder,#page-cheatsheet{zoom:.92}
 }
+
+/* ---------- Seitenleiste: wichtigste Seiten direkt, der Rest in aufklappbaren Gruppen (shell.js: ndGroup, ndMark, ndFly) ----------
+   Name mit eigener Seite (Tierlist, Tools) führt direkt hin, der Pfeil rechts klappt auf. Die Gruppe der aktuellen Seite ist offen.
+   Eingeklappte Leiste: Untermenü als Fenster neben dem Symbol */
+.nds-grp{flex:none;margin-bottom:6px}
+.nds-row{position:relative}
+.nds-row>.nds-link{margin-bottom:0;padding-right:42px}
+.nds-tg{position:absolute;right:5px;top:50%;width:30px;height:30px;margin-top:-15px;display:flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:8px;background:none;color:var(--faint);cursor:pointer;transition:color .2s,background .2s}
+.nds-tg svg{width:16px;height:16px;transition:transform .25s ease}
+.nds-tg:hover,.nds-row:hover .nds-tg{color:var(--cy2)}
+.nds-tg:hover{background:rgba(46,230,214,.1)}
+.nds-grp.open .nds-tg svg{transform:rotate(180deg)}
+.nds-sub{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s ease}
+.nds-grp.open>.nds-sub{grid-template-rows:1fr}
+.nds-sub-in{min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:2px;margin-left:27px;padding-left:18px;border-left:1px solid var(--line)}
+.nds-sub-in>:first-child{margin-top:6px}
+.nds-sub-in>:last-child{margin-bottom:4px}
+.nds-sub-a{position:relative;display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;color:var(--muted);font-size:.86rem;font-weight:600;white-space:nowrap}
+.nds-sub-a:hover{color:var(--cy2);background:rgba(46,230,214,.07)}
+.nds-sub-a.on{color:#fff;background:rgba(46,230,214,.1)}
+.nds-sub-a.on::before{content:"";position:absolute;left:-22px;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:var(--cy);box-shadow:0 0 8px var(--cy)}
+.nds-sub-a.off{opacity:.6;cursor:default}
+.nds-sub-a.off:hover{color:var(--muted);background:none}
+.nds-link[data-nd="builder"]>svg{width:26px;height:26px;margin:0 2.5px;color:var(--cy)}   /* Team Builder: Strich-Symbol, so groß wie die Bild-Symbole */
+@media (prefers-reduced-motion:reduce){.nds-sub,.nds-tg svg{transition:none}}
+@media (min-width:981px){
+  body.nd-mini .nds-tg,body.nd-mini .nds-sub{display:none}
+  body.nd-mini .nds-row>.nds-link{padding-right:0}
+}
+.nds-fly{position:fixed;z-index:70;min-width:200px;padding:8px;border-radius:14px;border:1px solid var(--line-2);background:rgba(4,20,30,.97);box-shadow:0 18px 40px rgba(0,0,0,.55),0 0 0 1px rgba(46,230,214,.06);display:flex;flex-direction:column;gap:2px}
+.nds-fly[hidden]{display:none}
+.nds-fly .nds-fly-h{display:block;padding:6px 10px 8px;font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.nds-fly a.nds-fly-h:hover{color:var(--cy2)}
+.nds-fly .nds-sub-a.on::before{display:none}
+body.nd-mini .nds-fly .nds-soon{display:inline-block}
+/* Unterpunkte: dieselben Symbole wie bisher in der Leiste, nur kleiner */
+.nds-sub-in{padding-left:12px}
+.nds-sub-a{gap:10px;padding:5px 8px}
+.nds-sub-a .nds-sub-ic{width:24px;height:24px;margin:0}
+.nds-sub-a>svg{width:20px;height:20px;margin:0 2px;flex:none;color:var(--cy)}
+.nds-sub-a:hover .nds-sub-ic{transform:scale(1.1);filter:drop-shadow(0 0 5px rgba(46,230,214,.8)) saturate(1.2) brightness(1.15)}
+.nds-sub-a.on::before{left:-16px}
