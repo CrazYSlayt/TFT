@@ -3888,3 +3888,15 @@ figure.nw-hero.er-hero img{display:block;width:100%;height:auto;border-radius:16
 .er-frame figure.nw-hero.er-hero{margin:22px 0 26px}
 .er-frame>.tool-seo{margin-top:0;padding:0;border:0;background:none;box-shadow:none}
 @media (max-width:900px){.er-frame{padding:20px 18px 22px}}
+/* „Deine Meinung“ in Lila + Pink (Logo-Farben), damit die Abstimmung sich vom Petrol-Text abhebt (Wunsch 12.11.) */
+.nw-poll.nw-opinion{border:1.5px solid rgba(255,77,148,.75);background:radial-gradient(120% 140% at 100% 0%,rgba(255,77,148,.22),rgba(255,77,148,0) 55%),linear-gradient(135deg,#2c1145 0%,#22103a 55%,#170c2b 100%);box-shadow:0 0 0 1px rgba(255,77,148,.15),0 18px 44px -20px rgba(255,77,148,.55)}
+.nw-opinion .op-k{color:#ff7ab3}
+.nw-opinion .op-cta{background:linear-gradient(90deg,#ff4d94,#c056ff);color:#fff}
+.nw-opinion .nw-poll-o button{border-color:rgba(255,122,179,.35);background:rgba(255,255,255,.05)}
+.nw-opinion .nw-poll-o button:hover{border-color:#ff4d94;background:rgba(255,77,148,.14)}
+.nw-opinion .nw-poll-o button::before{background:linear-gradient(90deg,rgba(255,77,148,.55),rgba(192,86,255,.35))}
+.nw-opinion .op-l{background:linear-gradient(135deg,#ff4d94,#c056ff);color:#fff}
+.nw-opinion .nw-poll-o button.mine{border-color:#ff4d94!important;box-shadow:0 0 0 1px rgba(255,77,148,.5) inset}
+.nw-opinion .nw-poll-o button.mine .nw-po-l::after{color:#ff7ab3}
+.nw-opinion .nw-po-p{color:#ffd6e8}
+.nw-opinion .nw-poll-n{color:#d8c4ea}
