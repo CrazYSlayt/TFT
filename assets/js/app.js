@@ -3204,6 +3204,7 @@ function gdBeginnerHTML(){
   return `<div class="ts-main">
     <h2 id="gda-start">TFT für Anfänger: das Wichtigste in Kürze</h2>
     <div class="art-stats"><div class="p"><b>Top 4</b><span>bringt dir in Ranked LP</span></div><div class="g"><b>5 Gold</b><span>Zinsen pro Runde ab 50 Gold</span></div><div class="p"><b>4 Gold</b><span>für 4 XP zum Leveln</span></div><div class="g"><b>9 Kopien</b><span>für einen 3-Sterne-Champion</span></div></div>
+    <header class="gd-chap" id="gdk-1" data-n="01"><span class="gd-chap-n">Kapitel 1</span><h2>TFT Grundlagen: So läuft eine Partie ab</h2><p>Acht Spieler, eine Lobby, ein Ziel: Top 4. Hier lernst du den Ablauf einer Partie und woher dein Gold kommt.</p></header>
     ${h('ziel')}
     <p>Teamfight Tactics ist ein Strategiespiel für acht Spieler. Jeder baut sein eigenes Team aus Champions, und die Teams kämpfen automatisch gegeneinander. Im Kampf selbst steuerst du nichts – gewonnen wird davor: welche Champions du kaufst, wo du sie hinstellst und welche Items sie tragen. Genau da entscheidet sich, wer climbt 😉</p>
     <p>Jeder Spieler startet mit 100 Leben. Verlierst du einen Kampf, verlierst du Leben. Wer auf 0 fällt, ist raus. Die Partie endet, wenn nur noch einer übrig ist.</p>
@@ -3239,6 +3240,7 @@ function gdBeginnerHTML(){
       'Auf 2-1 frage ich mich: Gewinne ich mit meinem Board die ganze Stage 2? Wenn nicht – kaum Upgrades, nichts Gutes zum Slammen – nehme ich ein Econ-Augment und verliere bewusst. TFT ist am Ende immer ein Tausch: Gold gegen Leben.',
       'Und dann konsequent: In der Lose Streak will ich der Schwächste in der Lobby sein.')}
     ${GD_BLOCK.decide({q:'Ist dein Board auf 2-1 stark genug, die ganze Stage 2 zu gewinnen?', y:{t:'Win Streak', l:['Item-Augment', 'Leveln und Items slammen']}, n:{t:'Lose Streak', l:['Econ-Augment', 'Nicht leveln, nicht slammen']}})}
+    <header class="gd-chap" id="gdk-2" data-n="02"><span class="gd-chap-n">Kapitel 2</span><h2>Dein Team bauen: Shop, Level, Traits und Items</h2><p>Mit deinem Gold kaufst du Champions, levelst und baust Items. So wird aus einzelnen Champions ein starkes Team.</p></header>
     ${h('shop')}
     <p>Jede Runde zeigt dir der Shop fünf Champions. Sie kosten 1 bis 5 Gold – je teurer, desto stärker und seltener.</p>
     <div class="gd-cost">${[1, 2, 3, 4, 5].map(c=>`<span class="c${c}">${ic('champ-' + c)}<b>${c} Gold</b></span>`).join('')}</div>
@@ -3285,6 +3287,7 @@ function gdBeginnerHTML(){
     </ul>
     ${GD_BLOCK.talk({t:'So rechne ich Items', b:[{k:'widget', w:'mult'}, {k:'p', h:'Faustregel: Jedes Item gibt grob 50 % obendrauf – auf das, was schon da ist. Darum drei Items auf einen Champion statt auf drei verteilt.'}]})}
     <p>Welche Komponenten wie oft droppen, zeigen das ${artA(csHref('loot'), 'Loot-Cheatsheet')} und die ${artA(toolHref('drops'), 'Item-Drop-Chance')}.</p>
+    <header class="gd-chap" id="gdk-3" data-n="03"><span class="gd-chap-n">Kapitel 3</span><h2>TFT Aufstellung: So gewinnst du deine Kämpfe</h2><p>Dein Team kämpft von allein – entscheidend ist, wo es steht. Und jede Niederlage kostet dich Leben.</p></header>
     ${h('aufstellung')}
     ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-felder.webp', w:1110, h:500, alt:'Ziehst du eine Unit, siehst du die Felder', cap:'Ziehst du eine Unit, leuchten die Waben auf.', pos:'right'})}
     <p>Richtig stellst du auf, wenn deine Tanks vorne den Schaden abfangen und dein Carry hinten in Ruhe Schaden macht. Dein Feld hat dafür vier Reihen mit je sieben Waben – du siehst sie, sobald du eine Unit ziehst.</p>
@@ -3298,6 +3301,7 @@ function gdBeginnerHTML(){
     ${GD_BLOCK.board({t:'Feld an Feld', cap:'Der Melee-Carry steht in der Ecke, der Tank direkt daneben – die Gegner greifen zuerst den Tank an, der die Aggro zieht.', u:[['A1', 'carry', 'C'], ['A2', 'tank', 'T']]})}
     ${h('schaden')}
     <p>Verlierst du einen Kampf, verlierst du Leben – abhängig von der <b>Stage</b> und davon, <b>wie viele gegnerische Champions</b> am Ende noch stehen. Späte Niederlagen tun deshalb viel mehr weh als frühe. Die genauen Werte stehen im ${artA(csHref('damage'), 'Spielerschaden-Cheatsheet')}.</p>
+    <header class="gd-chap" id="gdk-4" data-n="04"><span class="gd-chap-n">Kapitel 4</span><h2>Besser werden: Fehler, Begriffe und Fragen</h2><p>Die typischen Anfängerfehler, die wichtigsten Begriffe und Antworten auf die häufigsten Fragen.</p></header>
     ${h('fehler')}
     <ol class="art-list gd-err">${fehler.map(f=>`<li>${f}</li>`).join('')}</ol>
     ${tip('Der Fehler, den ich bei meinen Coaching-Schülern am häufigsten sehe', 'facepalm',
@@ -3311,7 +3315,10 @@ function gdBeginnerHTML(){
     ${artAuthor()}
   </div>
   <aside class="ts-side art-side"><nav class="art-toc" aria-label="Inhalt"><b>Inhalt</b>
-    <ol>${Object.entries(sec).map(([k, t])=>`<li><a href="#gda-${k}" data-toc="gda-${k}">${t}</a></li>`).join('')}</ol></nav></aside>`;
+    <ol class="gd-toc-ch">${(()=>{ const st = ["ziel","shop","aufstellung","fehler"], nm = ["Kapitel 1","Kapitel 2","Kapitel 3","Kapitel 4"]; let out = '', n = -1;
+      Object.entries(sec).forEach(([k, t])=>{ const j = st.indexOf(k); if(j > -1){ if(n > -1) out += '</ol></li>'; n = j; out += `<li class="gd-toc-k"><span>${nm[j]}</span><ol>`; }
+        out += `<li><a href="#gda-${k}" data-toc="gda-${k}">${t}</a></li>`; });
+      return out + '</ol></li>'; })()}</ol></nav></aside>`;
 }
 // Anfänger-Guide auf Englisch (/en/guides/tft-beginner-guide): gleicher Aufbau wie gdBeginnerHTML, eigener Text.
 // data-noi18n: die Übersetzung über i18n-en.js fasst diesen Text nicht an
@@ -3334,6 +3341,7 @@ function gdBeginnerHTMLEn(){
   return `<div class="ts-main" data-noi18n>
     <h2 id="gda-start">TFT for beginners: the key points</h2>
     <div class="art-stats"><div class="p"><b>Top 4</b><span>gains you LP in ranked</span></div><div class="g"><b>5 gold</b><span>interest per round from 50 gold</span></div><div class="p"><b>4 gold</b><span>for 4 XP to level up</span></div><div class="g"><b>9 copies</b><span>for a 3-star champion</span></div></div>
+    <header class="gd-chap" id="gdk-1" data-n="01"><span class="gd-chap-n">Chapter 1</span><h2>TFT basics: how a game works</h2><p>Eight players, one lobby, one goal: top 4. Here you learn how a game is structured and where your gold comes from.</p></header>
     ${h('ziel')}
     <p>Teamfight Tactics is a strategy game for eight players. Everyone builds their own team of champions, and the teams fight each other automatically. You don't control anything during the fight – the game is won before it: which champions you buy, where you place them and which items they hold. That's exactly where it's decided who climbs 😉</p>
     <p>Every player starts with 100 health. Lose a fight and you lose health. Whoever drops to 0 is out. The game ends when only one player is left.</p>
@@ -3369,6 +3377,7 @@ function gdBeginnerHTMLEn(){
       'On 2-1 I ask myself: does my board win all of stage 2? If not – barely any upgrades, nothing good to slam – I take an econ augment and lose on purpose. In the end TFT is always a trade: gold for health.',
       'And then all the way: in a lose streak I want to be the weakest player in the lobby.')}
     ${GD_BLOCK.decide({q:'Is your board on 2-1 strong enough to win all of stage 2?', y:{t:'Win streak', l:['Item augment', 'Level up and slam items']}, n:{t:'Lose streak', l:['Econ augment', 'Don\'t level, don\'t slam']}})}
+    <header class="gd-chap" id="gdk-2" data-n="02"><span class="gd-chap-n">Chapter 2</span><h2>Building your team: shop, levels, traits and items</h2><p>With your gold you buy champions, level up and build items. That turns single champions into a strong team.</p></header>
     ${h('shop')}
     <p>Every round the shop shows you five champions. They cost 1 to 5 gold – the more expensive, the stronger and rarer.</p>
     <div class="gd-cost">${[1, 2, 3, 4, 5].map(c=>`<span class="c${c}">${ic('champ-' + c)}<b>${c} gold</b></span>`).join('')}</div>
@@ -3415,6 +3424,7 @@ function gdBeginnerHTMLEn(){
     </ul>
     ${GD_BLOCK.talk({t:'How I count items', b:[{k:'widget', w:'mult'}, {k:'p', h:'Rule of thumb: every item adds roughly 50 % on top – of what is already there. That\'s why three items go on one champion instead of being spread over three.'}]})}
     <p>Which components drop how often is in the ${artA(csHref('loot'), 'loot cheatsheet')} and the ${artA(toolHref('drops'), 'item drop odds')}.</p>
+    <header class="gd-chap" id="gdk-3" data-n="03"><span class="gd-chap-n">Chapter 3</span><h2>TFT positioning: how you win your fights</h2><p>Your team fights on its own – what matters is where it stands. And every loss costs you health.</p></header>
     ${h('aufstellung')}
     ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-felder.webp', w:1110, h:500, alt:'Drag a unit and you see the hexes', cap:'Drag a unit and the hexes light up.', pos:'right'})}
     <p>You position right when your tanks soak up the damage in front and your carry deals damage safely in the back. Your board has four rows of seven hexes for that – you see them as soon as you drag a unit.</p>
@@ -3428,6 +3438,7 @@ function gdBeginnerHTMLEn(){
     ${GD_BLOCK.board({t:'Hex to hex', cap:'The melee carry stands in the corner, the tank right next to it – enemies attack the tank first, which draws the aggro.', u:[['A1', 'carry', 'C'], ['A2', 'tank', 'T']]})}
     ${h('schaden')}
     <p>Lose a fight and you lose health – depending on the <b>stage</b> and on <b>how many enemy champions</b> are still standing at the end. That's why late losses hurt much more than early ones. The exact values are in the ${artA(csHref('damage'), 'player damage cheatsheet')}.</p>
+    <header class="gd-chap" id="gdk-4" data-n="04"><span class="gd-chap-n">Chapter 4</span><h2>Getting better: mistakes, terms and questions</h2><p>The typical beginner mistakes, the most important terms and answers to the most common questions.</p></header>
     ${h('fehler')}
     <ol class="art-list gd-err">${fehler.map(f=>`<li>${f}</li>`).join('')}</ol>
     ${tip('The mistake I see most often with my coaching students', 'facepalm',
@@ -3441,7 +3452,10 @@ function gdBeginnerHTMLEn(){
     ${artAuthor()}
   </div>
   <aside class="ts-side art-side" data-noi18n><nav class="art-toc" aria-label="Contents"><b>Contents</b>
-    <ol>${Object.entries(sec).map(([k, t])=>`<li><a href="#gda-${k}" data-toc="gda-${k}">${t}</a></li>`).join('')}</ol></nav></aside>`;
+    <ol class="gd-toc-ch">${(()=>{ const st = ["ziel","shop","aufstellung","fehler"], nm = ["Chapter 1","Chapter 2","Chapter 3","Chapter 4"]; let out = '', n = -1;
+      Object.entries(sec).forEach(([k, t])=>{ const j = st.indexOf(k); if(j > -1){ if(n > -1) out += '</ol></li>'; n = j; out += `<li class="gd-toc-k"><span>${nm[j]}</span><ol>`; }
+        out += `<li><a href="#gda-${k}" data-toc="gda-${k}">${t}</a></li>`; });
+      return out + '</ol></li>'; })()}</ol></nav></aside>`;
 }
 function gdBeginnerMount(){
   const box = $('#gdBeginner'); if(!box || box.dataset.done) return;
