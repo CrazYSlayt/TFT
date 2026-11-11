@@ -2970,19 +2970,22 @@ function setErklaert(sub){
       return on || pre ? `<a class="gd-pl${on ? ' on' : ''}" href="/tft-erklaert/${a.slug}">${inner}</a>` : `<div class="gd-pl">${inner}</div>`; }).join('')}</div>`; enHrefs(box); } return; }
   const a = ER_BY[sub], box = $('#erData'); if(!box || box.dataset.key === a.key) return;
   box.innerHTML = gdTok(erHTML({...a, ...(EN && a.en ? a.en : {})}));
-  box.dataset.key = a.key; gdLinkFix(box); gdWidgets(box); enHrefs(box); artToc(box.querySelector('.nw-art'));
+  box.dataset.key = a.key; gdLinkFix(box); gdWidgets(box); enHrefs(box); artToc(box.querySelector('.nw-art')); nwPolls(box);
 }
 // Artikel wie ein Magazin-Beitrag (gleicher Aufbau wie die Set-News): Titelbild mit Szene, Überschrift, Einleitung, Autor mit Datum,
 // darunter die Blöcke aus GD_BLOCK (Bilder, Grafiken, Tabellen) und das Inhaltsverzeichnis
 function erHTML(a){
   const heads = a.body.filter(b=>b.k === 'h'), day = a.date ? new Date(a.date + 'T12:00:00Z').toLocaleDateString(LOC, {day:'numeric', month:'long', year:'numeric'}) : '';
+  // Aufbau wie bei dota2news (Wunsch 11.11.): Überschrift, Meta-Text, Autor, darunter das Titelbild (a.hero = Nano-Banana-Bild ohne Schild, sonst das Vorschaubild)
+  // Ein Rahmen um alles (Wunsch 11.11.): Überschrift, Meta, Autor und Bild stehen im selben Kasten wie der Text (.er-frame)
   return `<article class="nw er"><div class="crumb"><a href="/">Home</a> / <a href="/tft-erklaert">${L('TFT erklärt', 'TFT explained')}</a> / ${esc(a.crumb)}</div>
-    <figure class="nw-hero"><img src="assets/og/erklaert/${a.slug}${EN ? '-en' : ''}.jpg" alt="${esc(a.h1.join(' '))}" width="1200" height="630"></figure>
+    <div class="er-frame"><header class="er-head">
     <h1 class="nw-h1">${esc(a.h1.join(' '))}</h1>
     <p class="nw-lead" data-meta>${esc(a.meta)}</p>
-    <div class="nw-by"><a href="${PATCH_AUTHOR.href}"><img src="${PATCH_AUTHOR.img}" alt="Claudio „CrazYSlayt“" width="44" height="44"></a><span><a href="${PATCH_AUTHOR.href}">Claudio „CrazYSlayt“</a><small>${day ? esc(day) + ' · ' : ''}TFT Challenger</small></span></div>
+    <div class="nw-by"><a href="${PATCH_AUTHOR.href}"><img src="${PATCH_AUTHOR.img}" alt="Claudio „CrazYSlayt“" width="44" height="44"></a><span><span class="nw-by-n">${L('Von', 'By')} <a href="${PATCH_AUTHOR.href}">Claudio „CrazYSlayt“</a> · TFT Challenger · Coach</span><small>${day ? esc(day) : ''}</small></span></div>
+    <figure class="nw-hero er-hero"><img src="${a.hero || `assets/og/erklaert/${a.slug}${EN ? '-en' : ''}.jpg`}" alt="${esc(a.h1.join(' '))}" width="${a.hero ? 1600 : 1200}" height="${a.hero ? 893 : 630}"></figure></header>
     <section class="tool-seo ag-art nw-art er-art" aria-labelledby="gdx-${heads[0] ? heads[0].id : 'start'}"><div class="ts-main">${a.body.map(b=>GD_BLOCK[b.k](b)).join('')}${artAuthor()}</div>
-      <aside class="ts-side art-side"><nav class="art-toc" aria-label="${L('Inhalt', 'Contents')}"><b>${L('Inhalt', 'Contents')}</b><ol>${heads.map(b=>`<li><a href="#gdx-${b.id}" data-toc="gdx-${b.id}">${esc(b.t)}</a></li>`).join('')}</ol></nav></aside></section></article>`;
+      <aside class="ts-side art-side"><nav class="art-toc" aria-label="${L('Inhalt', 'Contents')}"><b>${L('Inhalt', 'Contents')}</b><ol>${heads.map(b=>`<li><a href="#gdx-${b.id}" data-toc="gdx-${b.id}">${esc(b.t)}</a></li>`).join('')}</ol></nav></aside></section></div></article>`;
 }
 // Links auf Guides, die noch nicht erschienen sind, werden zu normalem Text – niemand landet auf einer leeren Seite
 function gdLinkFix(box){
@@ -3028,6 +3031,10 @@ const GD_BLOCK = {
   board:b=>gdBoard(b),
   // Bild mit Bildunterschrift (Magazin): {src, alt, cap, w, h}
   // pos: 'right' (Standard, halbe Breite rechts), 'left', 'center' (mittig unter dem Text); side = schmales Bild; wide = breiter Streifen mittig
+  // Abstimmung „Deine Meinung“ (wie bei dota2news): Frage, 4 Antworten A–D mit Emoji, danach Prozent über alle (api/votes.js, nwPolls)
+  vote:b=>`<div class="nw-poll nw-opinion" data-poll="${b.id}"><div class="op-top"><span class="op-k"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>${L('Deine Meinung', 'Your opinion')}</span><span class="op-cta">${L('Tippen zum Abstimmen', 'Tap to vote')} ↓</span></div>
+    <p class="nw-poll-q">${esc(b.q)}</p><div class="nw-poll-o">${b.o.map(([v, e, l], i)=>`<button type="button" data-o="${v}"><span class="op-l">${'ABCD'[i]}</span><span class="nw-po-l"><i aria-hidden="true">${e}</i> ${esc(l)}</span><span class="nw-po-p"></span></button>`).join('')}</div>
+    <small class="nw-poll-n">${L('Tipp deine Antwort.', 'Tap your answer.')}</small></div>`,
   // Klick aufs Bild vergrößert es (data-zoom)
   img:b=>{ const cls = (b.side ? ' side' : b.wide ? ' wide' : '') + (b.pos === 'left' ? ' l' : b.pos === 'center' ? ' c' : '');
     return `<figure class="nw-fig gd-fig${cls}"><img src="${b.src}" alt="${esc(b.alt || '')}" width="${b.w || 1200}" height="${b.h || 675}" loading="lazy" data-zoom>${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`; },
@@ -7020,12 +7027,15 @@ function nwGuessShow(el, counts){
 const NW_VKEY = 'tftfreaks_votes';
 const nwVoted = () => { try { return JSON.parse(localStorage.getItem(NW_VKEY) || '{}') || {}; } catch(e){ return {}; } };
 function nwPollShow(el, counts){
-  const mine = nwVoted()[el.dataset.poll]; if(!mine) return;
+  const mine = nwVoted()[el.dataset.poll];
+  if(!mine){ if(counts && el.classList.contains('nw-opinion')){ const n = Object.values(counts).reduce((s, x)=>s + x, 0);   // „Deine Meinung“: schon vor der Stimme zeigen, wie viele mitgemacht haben
+      el.querySelector('.nw-poll-n').textContent = n ? L(`Bisher ${n} ${n === 1 ? 'Stimme' : 'Stimmen'}. Tipp deine Antwort.`, `${n} ${n === 1 ? 'vote' : 'votes'} so far. Tap your answer.`) : L('Noch keine Stimme – sei die erste!', 'No votes yet – be the first!'); } return; }
   const c = counts || {}, btns = [...el.querySelectorAll('.nw-poll-o button')], total = btns.reduce((s, b)=>s + (c[b.dataset.o] || 0), 0);
   el.classList.add('done');
   btns.forEach(b=>{ const n = c[b.dataset.o] || 0, pc = total ? Math.round(n / total * 100) : 0; b.disabled = true; b.classList.toggle('mine', b.dataset.o === mine);
     b.style.setProperty('--w', (counts ? pc : b.dataset.o === mine ? 100 : 0) + '%'); b.querySelector('.nw-po-p').textContent = counts ? pc + ' %' : ''; });
-  el.querySelector('.nw-poll-n').textContent = counts ? L(`${total} ${total === 1 ? 'Stimme' : 'Stimmen'} bisher – danke fürs Mitraten!`, `${total} ${total === 1 ? 'vote' : 'votes'} so far – thanks for guessing!`)
+  const op = el.classList.contains('nw-opinion');   // „Deine Meinung“ = abstimmen, sonst raten
+  el.querySelector('.nw-poll-n').textContent = counts ? L(`${total} ${total === 1 ? 'Stimme' : 'Stimmen'} bisher – danke fürs ${op ? 'Abstimmen' : 'Mitraten'}!`, `${total} ${total === 1 ? 'vote' : 'votes'} so far – thanks for ${op ? 'voting' : 'guessing'}!`)
     : L('Danke! Das Ergebnis siehst du, sobald die Abstimmung wieder erreichbar ist.', 'Thanks! You will see the result as soon as the poll is reachable again.');
 }
 function nwPolls(root){

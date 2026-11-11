@@ -5,6 +5,7 @@
 window.TFT_ARTICLES = [
 {
   key:'ranked-reset', slug:'tft-ranked-reset', crumb:'Ranked-Reset', frei:true, date:'2026-11-11',
+  hero:'assets/img/erklaert/ranked-reset.webp',   // Titelbild mit Nano Banana (tools/nano-banana.js), CrazYSlayt vor der Rang-Treppe
   t:'TFT Ranked-Reset', d:'Was zum neuen Set zurückgesetzt wird, wie die Platzierungsspiele funktionieren und wie du am besten startest.',
   title:'TFT Ranked-Reset: So funktioniert der Neustart',
   h1:['TFT Ranked-Reset:', 'So startest du ins neue Set'],
@@ -13,6 +14,7 @@ window.TFT_ARTICLES = [
     {k:'lead', h:'Mit jedem neuen Set beginnt in TFT eine neue Ranked-Saison – und dein Rang fängt von vorn an. Für Set 19 ist das laut Riots Patch-Plan der <b>1. Dezember 2026</b> mit Patch 19.1. Hier steht, was dabei zurückgesetzt wird, wie die Platzierungsspiele laufen und welche Regeln danach gelten.'},
     {k:'h', id:'start', t:'TFT Ranked-Reset: das Wichtigste in Kürze'},
     {k:'stats', l:[['5', 'Platzierungsspiele zum Start', 'p'], ['Eisen II', 'dein Rang nach dem ersten Spiel', 'g'], ['bis 100 LP', 'pro Platzierungsspiel', 'p'], ['0 LP', 'Verlust in den Platzierungen', 'g']]},
+    {k:'vote', id:'er-ranked-start', q:'Wann startest du nach dem Reset in Ranked?', o:[['sofort', '🚀', 'Sofort zum Release – keine Zeit verlieren'], ['spaeter', '⏰', 'Ein paar Stunden später, wie Claudio'], ['normals', '🧪', 'Erst nach ein paar normalen Partien'], ['meta', '😴', 'Erst, wenn die Meta steht']]},
     {k:'h', id:'reset', t:'Was passiert beim TFT Ranked-Reset?'},
     {k:'p', h:'Beim Ranked-Reset werden zwei Dinge zurückgesetzt: dein sichtbarer <b>Rang</b> und deine versteckte <b>MMR</b>, also die Spielstärke, nach der dir das Spiel Gegner sucht. Der Rang fängt komplett neu an. Die MMR dagegen bekommt nur einen <b>Soft Reset</b>: Riot zieht sie ein Stück in Richtung Mitte, aber nicht ganz auf null. Wer letzte Saison hoch stand, trifft also schnell wieder auf stärkere Gegner.'},
     {k:'flow', l:[['Set-Start', 'Rang auf null, MMR Richtung Mitte'], ['1. Spiel', 'provisorisch Eisen II – oder bis Bronze IV, wenn du letzte Saison gerankt warst'], ['Spiel 1–5', 'Platzierung: bis 100 LP pro Spiel, kein Verlust'], ['Danach', 'normale LP – und dein Rang steht']]},
@@ -58,6 +60,7 @@ window.TFT_ARTICLES = [
       {k:'lead', h:'Every new set starts a new ranked season in TFT – and your rank starts over. For Set 19 that is <b>December 1, 2026</b> with patch 19.1, according to Riot\'s patch schedule. Here is what gets reset, how placement games work and which rules apply after that.'},
       {k:'h', id:'start', t:'TFT ranked reset: the key points'},
       {k:'stats', l:[['5', 'placement games at the start', 'p'], ['Iron II', 'your rank after the first game', 'g'], ['up to 100 LP', 'per placement game', 'p'], ['0 LP', 'lost in placements', 'g']]},
+      {k:'vote', id:'er-ranked-start', q:'When do you start ranked after the reset?', o:[['sofort', '🚀', 'Right at release – no time to lose'], ['spaeter', '⏰', 'A few hours later, like Claudio'], ['normals', '🧪', 'Only after a few normal games'], ['meta', '😴', 'Only once the meta is settled']]},
       {k:'h', id:'reset', t:'What happens in the TFT ranked reset?'},
       {k:'p', h:'The ranked reset resets two things: your visible <b>rank</b> and your hidden <b>MMR</b>, the skill rating the game uses to find your opponents. Your rank starts completely fresh. Your MMR only gets a <b>soft reset</b>: Riot pulls it a bit towards the middle, but not all the way down. If you were high last season, you quickly meet stronger opponents again.'},
       {k:'flow', l:[['Set start', 'rank to zero, MMR towards the middle'], ['Game 1', 'provisionally Iron II – or up to Bronze IV if you were ranked last season'], ['Games 1–5', 'placements: up to 100 LP per game, no loss'], ['After that', 'normal LP – and your rank is set']]},

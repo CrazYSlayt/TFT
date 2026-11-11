@@ -13,11 +13,13 @@ const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TO
 const slug = s => String(s).toLowerCase().normalize('NFD').replace(/[^a-z]/g, '');
 function polls(){
   const out = {}, load = f => { const w = {}; new Function('window', fs.readFileSync(path.join(process.cwd(), 'data', f), 'utf8'))(w); return w; };
-  try { const champs = new Set([...(load('lol-champions.js').LOL_CHAMPS || []).map(slug), 'neu']);
-    (load('news.js').TFT_NEWS || []).forEach(p => Object.values(p.body || {}).forEach(list => (list || []).flatMap(b => b && (b.k === 'guesses' || b.k === 'matches') ? b.items || [] : [b]).forEach(b => {
-      if (b && b.k === 'poll' && b.id) out[b.id] = new Set([...(out[b.id] || []), ...(b.o || []).map(o => o[0])]);
-      if (b && b.k === 'guess' && b.id) out[b.id] = champs;
-      if (b && b.k === 'match' && b.id) out[b.id] = new Set(['ja', 'nein']); }))); } catch (e) {}   // match = „Passt das?“ (ja/nein)
+  let champs = new Set(['neu']); try { champs = new Set([...(load('lol-champions.js').LOL_CHAMPS || []).map(slug), 'neu']); } catch (e) {}
+  const add = list => (list || []).flatMap(b => b && (b.k === 'guesses' || b.k === 'matches') ? b.items || [] : [b]).forEach(b => {
+    if (b && (b.k === 'poll' || b.k === 'vote') && b.id) out[b.id] = new Set([...(out[b.id] || []), ...(b.o || []).map(o => o[0])]);
+    if (b && b.k === 'guess' && b.id) out[b.id] = champs;
+    if (b && b.k === 'match' && b.id) out[b.id] = new Set(['ja', 'nein']); });   // match = „Passt das?“ (ja/nein)
+  try { (load('news.js').TFT_NEWS || []).forEach(p => Object.values(p.body || {}).forEach(add)); } catch (e) {}   // News: body.de / body.en
+  try { (load('articles.js').TFT_ARTICLES || []).forEach(a => { add(a.body); add(a.en && a.en.body); }); } catch (e) {}   // TFT erklärt: body + englische Fassung
   return out;
 }
 async function redis(p){

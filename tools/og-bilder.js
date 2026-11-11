@@ -190,7 +190,11 @@ function guidePages(){
   // Magazin-Titelbild wie bei den News: Szene als Hintergrund, Motiv, Pose, Schild unten links – ohne Überschrift (die steht darunter auf der Seite)
   const AS = {'ranked-reset':{bg:'/assets/img/rank-bg.webp', pose:'schockiert', tag:['TFT erklärt · Ranked-Reset', 'TFT explained · Ranked reset'],
     art:`<div class="rkglow" style="--c:#f6d77a;left:385px;top:245px"></div><img class="er-emb big" src="/assets/img/ranks/challenger.webp" alt=""><div class="er-arrow">↺</div><img class="er-emb small" src="/assets/img/ranks/iron.webp" alt="">`}};
-  (A.TFT_ARTICLES || []).filter(a => a.body && AS[a.key]).forEach(a => [0, 1].forEach(en => { const m = AS[a.key];
+  // Titelbild aus Nano Banana (a.hero, tools/nano-banana.js): Bild füllt alles, dazu nur Logo und Schild
+  (A.TFT_ARTICLES || []).filter(a => a.body && a.hero).forEach(a => [0, 1].forEach(en => { const tag = (AS[a.key] || {}).tag || ['TFT erklärt', 'TFT explained'];
+    out.push({file:`erklaert/${a.slug}${en ? '-en' : ''}`, jpg:true, html:page(`<style>body::after{display:none}.er-nb{position:absolute;inset:0;background:url(/${a.hero}) center/cover no-repeat}.er-nb::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 62%,rgba(4,14,22,.75))}.nwtag{z-index:4}</style>
+    <div class="er-nb"></div><img class="logo nwlogo" src="/assets/brand/logo-tftclimb.webp" alt=""><div class="nwtag">${tag[en]}</div>`)}); }));
+  (A.TFT_ARTICLES || []).filter(a => a.body && AS[a.key] && !a.hero).forEach(a => [0, 1].forEach(en => { const m = AS[a.key];
     out.push({file:`erklaert/${a.slug}${en ? '-en' : ''}`, jpg:true, html:page(`<style>body::after{display:none}
       .er-bg{position:absolute;inset:0;background:url(${m.bg}) 0 46%/140% auto no-repeat}
       .er-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,14,22,.25),rgba(4,14,22,.05) 45%,rgba(4,14,22,.35)),linear-gradient(transparent 60%,rgba(4,14,22,.85))}
