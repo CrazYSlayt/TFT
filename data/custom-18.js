@@ -446,7 +446,14 @@ window.TFT_CUSTOM = {
     patchSchedule: {src:'Little Buddy Bot', rows:[
       ['18.1','2026-08-26',['Battle Pass Teil 1','TPC Cup #1'],['Battle Pass Part 1','TPC Cup #1']],['18.2','2026-09-10',['Tactician\'s Trials #1, Woche 1','TPC Cup #2'],['Tactician\'s Trials #1 wk 1','TPC Cup #2']],
       ['18.3','2026-09-23',['Tactician\'s Trials #1, Woche 2','TPC Cup #3'],['Tactician\'s Trials #1 wk 2','TPC Cup #3']],['18.4','2026-10-07',['Battle Pass Teil 2','Tactician\'s Trials #2'],['Battle Pass Part 2','Tactician\'s Trials #2']],
-      ['18.5','2026-10-21',['Regionals'],['Regionals']],['18.6','2026-11-04',['Patch für 1 Woche','4v4 Superbrawl'],['1 week patch','4v4 Superbrawl']],['18.6B','2026-11-11',['Worlds','Set 19 PBE'],['Worlds','Set 19 PBE']],['19.1','2026-12-01',['Set 19 startet'],['Set 19 launches']]]}
+      ['18.5','2026-10-21',['Regionals'],['Regionals']],['18.6','2026-11-04',['Patch für 1 Woche','4v4 Superbrawl'],['1 week patch','4v4 Superbrawl']],['18.6B','2026-11-11',['Worlds'],['Worlds']],['19.1','2026-12-01',['Set 19 startet'],['Set 19 launches']]]},
+    // PBE-Start des nächsten Sets, solange Riot ihn nicht im Patch-Plan nennt (est = noch nicht bestätigt, Seite schreibt „voraussichtlich“).
+    // 17.11.2026: Riot hat noch kein Datum genannt; üblich ist der Dienstag zwei Wochen vor dem Release (Stand 10.11.)
+    setDates: {19:{pbe:'2026-11-17', est:true}},
+    // Gold-Regeln für den Streak- & Zins-Rechner (app.js: skRun). Bestätigt von CrazYSlayt am 10.11.2026:
+    // ab 2-1 jede Runde 5 Gold, Sieg +1, Zinsen 1 je 10 Gold (höchstens 5, vor dem Grundgold gerechnet), Streak 3–4 = +1, 5 = +2, ab 6 = +3 (Sieg wie Niederlage).
+    // Monster-Runden zahlen alles und brechen keine Serie, das Karussell zählt nicht als Runde (kein Einkommen)
+    econ: {base:5, win:1, per:10, cap:5, streak:[[3, 1], [5, 2], [6, 3]], src:'CrazYSlayt · LoL Wiki'}
   },
   // Elderwood-Pflanzen (platzierbare Einheiten ohne Champion-Daten). Reihenfolge nicht ändern – Builder-Links hängen davon ab.
   plants: {

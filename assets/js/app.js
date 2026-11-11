@@ -11,20 +11,23 @@ const rawPath = () => (FILE_MODE ? location.hash.replace(/^#/, '') : location.pa
 const curPath = () => { const p = rawPath(); return fromEn(EN ? (p.replace(/^\/en(?=\/|$)/, '') || '/') : p); };
 // Sprechende Adressen für Google: das Keyword steht in der Adresse (/tools/tft-item-drop-chance), intern bleiben die kurzen Schlüssel (drops).
 // Alte Adressen leiten weiter – online per 301 (vercel.json), in der Seite über seoPath(). Gleiche Listen in api/sitemap.js
-const TOOL_SLUG = {rolldown:'tft-rolldown-rechner', drops:'tft-item-drop-chance', tierlist:'tft-tierlist-maker', simulator:'tft-kampf-simulator', dps:'tft-dps-rechner', augments:'tft-augment-chancen'};
+const TOOL_SLUG = {rolldown:'tft-rolldown-rechner', drops:'tft-item-drop-chance', tierlist:'tft-tierlist-maker', simulator:'tft-kampf-simulator', dps:'tft-dps-rechner', augments:'tft-augment-chancen', streak:'tft-streak-rechner'};
 const CS_SLUG = {shop:'tft-shop-odds', power:'tft-hierarchy-of-power', augments:'tft-augment-stufen', orbs:'tft-loot-orbs', loot:'tft-loot-verteilung', damage:'tft-spielerschaden', emblems:'tft-embleme', solo:'tft-stage-1-solo', 'patch-schedule':'tft-patch-plan', carousel:'tft-karussell'};   // sonst „tft-“ + Schlüssel
 const GUIDE_SLUG = {encounters:'tft-encounters', anfaenger:'tft-anfaenger-guide', ...Object.fromEntries((window.TFT_GUIDES || []).map(g=>[g.key, g.slug]))};   // dazu die Guides aus data/guides.js
+const ER_SLUG = Object.fromEntries((window.TFT_ARTICLES || []).map(a=>[a.key, a.slug]));   // TFT erklärt: Artikel-Adressen (data/articles.js), englisch gleich
+const GUIDE_SLUG_EN = {...GUIDE_SLUG, ...Object.fromEntries((window.TFT_GUIDE_PLAN || []).filter(p=>p.se).map(p=>[p.key, p.se]))};   // englische Adresse (se im Plan), sonst wie deutsch
 // Englische Seite: eigene englische Adressen mit englischem Keyword (/en/tools/tft-rolldown-calculator, /en/library …).
 // toEn() macht aus einem internen (deutschen) Pfad den englischen, fromEn() umgekehrt
-const TOOL_SLUG_EN = {rolldown:'tft-rolldown-calculator', drops:'tft-item-drop-odds', tierlist:'tft-tier-list-maker', simulator:'tft-battle-simulator', dps:'tft-dps-calculator', augments:'tft-augment-odds'};
+const TOOL_SLUG_EN = {rolldown:'tft-rolldown-calculator', drops:'tft-item-drop-odds', tierlist:'tft-tier-list-maker', simulator:'tft-battle-simulator', dps:'tft-dps-calculator', augments:'tft-augment-odds', streak:'tft-streak-calculator'};
 const CS_SLUG_EN = {shop:'tft-shop-odds', power:'tft-hierarchy-of-power', augments:'tft-augment-tiers', orbs:'tft-loot-orbs', loot:'tft-loot-distribution', damage:'tft-player-damage', emblems:'tft-emblems', solo:'tft-solo-stage-1', 'patch-schedule':'tft-patch-schedule', carousel:'tft-carousel'};
-const PAGE_EN = {tierlist:'tier-list', bibliothek:'library', impressum:'legal-notice', datenschutz:'privacy-policy', bedingungen:'terms', 'tft-patch-countdown':'tft-next-patch-countdown'};
+const PAGE_EN = {'tft-erklaert':'tft-explained', tierlist:'tier-list', bibliothek:'library', impressum:'legal-notice', datenschutz:'privacy-policy', bedingungen:'terms', 'tft-patch-countdown':'tft-next-patch-countdown'};
 function langPath(p, en){   // en = true: deutsch → englisch, false: englisch → deutsch
   const i = p.search(/[?#]/), rest = i < 0 ? '' : p.slice(i), s = (i < 0 ? p : p.slice(0, i)).split('/');
   const [pages, tools, csFrom, csTo] = en ? [PAGE_EN, [TOOL_SLUG, TOOL_SLUG_EN], CS_SLUG, CS_SLUG_EN] : [Object.fromEntries(Object.entries(PAGE_EN).map(([a, b])=>[b, a])), [TOOL_SLUG_EN, TOOL_SLUG], CS_SLUG_EN, CS_SLUG];
   if(s[1]==='tools' && s[2]){ const k = unslug(tools[0], s[2]); if(tools[1][k]) s[2] = tools[1][k]; }
   if(s[1]==='cheatsheet' && s[2]){ const k = unslug(csFrom, s[2]); if(k !== s[2]) s[2] = csTo[k] || 'tft-' + k; }
   if(pages[s[1]]) s[1] = pages[s[1]];
+  if(s[1]==='guides' && s[2]){ const [a, b] = en ? [GUIDE_SLUG, GUIDE_SLUG_EN] : [GUIDE_SLUG_EN, GUIDE_SLUG], k = unslug(a, s[2]); if(b[k]) s[2] = b[k]; }   // Guides: eigene englische Adresse
   if(/^tft-set-\d+$/.test(s[1]) && s[2]){ const n = (window.TFT_NEWS || []).find(x=>x.slug[en ? 'de' : 'en'] === s[2]); if(n) s[2] = n.slug[en ? 'en' : 'de']; }   // News-Beiträge: eigene englische Adresse
   return s.join('/') + rest;
 }
@@ -2935,18 +2938,81 @@ function testimonialHTML(t){
   return `<figure class="card co-quote"><span class="co-qm" aria-hidden="true">“</span><blockquote>${esc(t.q)}</blockquote><figcaption><b>${esc(t.n)}</b>${t.r?`<span>${esc(t.r)}</span>`:''}</figcaption></figure>`;
 }
 // Guides: Übersicht oder ein einzelner Guide (/guides/encounters, /guides/tft-anfaenger-guide)
-// Vorerst pausiert: die Seite zeigt „Coming in Set 19“. Mit GUIDES_LIVE = true kommen Übersicht und Guides zurück.
-// Der Anfänger-Guide ist bis dahin nur lokal als Vorschau sichtbar (127.0.0.1 / localhost)
-const GUIDES_LIVE = false, GD_PREVIEW = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+// Guides erscheinen nach Plan (data/guides.js → TFT_GUIDE_PLAN): ein Guide ist online, sobald er freigegeben ist (frei:true),
+// auf /en/ erst mit englischer Fassung (en:true). Lokal (127.0.0.1 / localhost) sind zur Vorschau alle offen.
+const GD_PREVIEW = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const GD_DATA = Object.fromEntries((window.TFT_GUIDES || []).map(g=>[g.key, g]));
+const GD_PLAN = window.TFT_GUIDE_PLAN || [], GD_PLAN_BY = Object.fromEntries(GD_PLAN.map(p=>[p.key, p]));
+const gdOn = k => { const p = GD_PLAN_BY[k]; return !!(p && p.frei && (!EN || p.en)); };   // wirklich veröffentlicht (online)
+const gdOpen = k => GD_PREVIEW || gdOn(k);                                                // aufrufbar (online oder lokale Vorschau)
+const GUIDES_LIVE = GD_PLAN.some(p=>gdOn(p.key));                                         // mindestens ein Guide ist draußen
+const gdSlug = k => GUIDE_SLUG[k] || k;
 function setGuide(sub){
-  const open = GUIDES_LIVE || GD_PREVIEW;
-  const key = sub==='encounters' && GUIDES_LIVE ? 'encounters' : sub==='anfaenger' && open ? 'anfaenger' : GD_DATA[sub] && open ? 'data' : '';
-  if(sub && !key) setUrl('/guides');   // alte Links auf /guides/encounters landen auf der Übersicht
+  const key = sub==='encounters' && gdOpen('encounters') ? 'encounters' : sub==='anfaenger' && gdOpen('anfaenger') ? 'anfaenger' : GD_DATA[sub] && gdOpen(sub) ? 'data' : '';
+  if(sub && !key) setUrl('/guides');   // noch nicht erschienene Guides und alte Links landen auf der Übersicht
   document.querySelectorAll('#page-guides .gd-view').forEach(v=>{ v.hidden = v.dataset.guide!==key; });
   if(key==='encounters') renderEncTL();
   if(key==='anfaenger') gdBeginnerMount();
   if(key==='data') gdDataMount(GD_DATA[sub]);
+}
+// TFT erklärt: Artikel aus data/articles.js – erschienen = frei (englisch mit en), lokal alle als Vorschau
+const ER_LIST = window.TFT_ARTICLES || [], ER_BY = Object.fromEntries(ER_LIST.map(a=>[a.key, a]));
+const erOn = k => { const a = ER_BY[k]; return !!(a && a.body && a.frei && (!EN || a.en)); };
+const erOpen = k => !!(ER_BY[k] && ER_BY[k].body) && (GD_PREVIEW || erOn(k));
+const ER_LIVE = ER_LIST.some(a=>erOn(a.key));
+function setErklaert(sub){
+  const key = sub && erOpen(sub) ? 'er' : 'erlist';
+  if(sub && key !== 'er') setUrl('/tft-erklaert');   // noch nicht erschienen → Übersicht
+  document.querySelectorAll('#page-guides .gd-view').forEach(v=>{ v.hidden = v.dataset.guide !== key; });
+  if(key === 'erlist'){ const box = $('#erList'); if(box && !box.dataset.done){ box.dataset.done = '1';
+    box.innerHTML = `<div class="gd-plan">${ER_LIST.map(a=>{ const on = erOn(a.key), pre = !on && erOpen(a.key), x = EN ? {t:a.te || a.t, d:a.dEn || a.d} : a;
+      const inner = `${a.body ? `<img class="gd-pl-img" src="assets/og/erklaert/${a.slug}${EN ? '-en' : ''}.jpg" alt="" width="1200" height="630" loading="lazy">` : ''}<span class="gd-pl-when">${on ? L('Jetzt lesen', 'Read now') : L('Bald', 'Soon')}</span><b>${esc(x.t)}</b><p>${esc(x.d)}</p><span class="gd-pl-go">${on ? L('Zum Artikel', 'Read the article') + ' →' : pre ? L('Vorschau (nur lokal)', 'Preview (local only)') + ' →' : ''}</span>`;
+      return on || pre ? `<a class="gd-pl${on ? ' on' : ''}" href="/tft-erklaert/${a.slug}">${inner}</a>` : `<div class="gd-pl">${inner}</div>`; }).join('')}</div>`; enHrefs(box); } return; }
+  const a = ER_BY[sub], box = $('#erData'); if(!box || box.dataset.key === a.key) return;
+  box.innerHTML = gdTok(erHTML({...a, ...(EN && a.en ? a.en : {})}));
+  box.dataset.key = a.key; gdLinkFix(box); gdWidgets(box); enHrefs(box); artToc(box.querySelector('.nw-art'));
+}
+// Artikel wie ein Magazin-Beitrag (gleicher Aufbau wie die Set-News): Titelbild mit Szene, Überschrift, Einleitung, Autor mit Datum,
+// darunter die Blöcke aus GD_BLOCK (Bilder, Grafiken, Tabellen) und das Inhaltsverzeichnis
+function erHTML(a){
+  const heads = a.body.filter(b=>b.k === 'h'), day = a.date ? new Date(a.date + 'T12:00:00Z').toLocaleDateString(LOC, {day:'numeric', month:'long', year:'numeric'}) : '';
+  return `<article class="nw er"><div class="crumb"><a href="/">Home</a> / <a href="/tft-erklaert">${L('TFT erklärt', 'TFT explained')}</a> / ${esc(a.crumb)}</div>
+    <figure class="nw-hero"><img src="assets/og/erklaert/${a.slug}${EN ? '-en' : ''}.jpg" alt="${esc(a.h1.join(' '))}" width="1200" height="630"></figure>
+    <h1 class="nw-h1">${esc(a.h1.join(' '))}</h1>
+    <p class="nw-lead" data-meta>${esc(a.meta)}</p>
+    <div class="nw-by"><a href="${PATCH_AUTHOR.href}"><img src="${PATCH_AUTHOR.img}" alt="Claudio „CrazYSlayt“" width="44" height="44"></a><span><a href="${PATCH_AUTHOR.href}">Claudio „CrazYSlayt“</a><small>${day ? esc(day) + ' · ' : ''}TFT Challenger</small></span></div>
+    <section class="tool-seo ag-art nw-art er-art" aria-labelledby="gdx-${heads[0] ? heads[0].id : 'start'}"><div class="ts-main">${a.body.map(b=>GD_BLOCK[b.k](b)).join('')}${artAuthor()}</div>
+      <aside class="ts-side art-side"><nav class="art-toc" aria-label="${L('Inhalt', 'Contents')}"><b>${L('Inhalt', 'Contents')}</b><ol>${heads.map(b=>`<li><a href="#gdx-${b.id}" data-toc="gdx-${b.id}">${esc(b.t)}</a></li>`).join('')}</ol></nav></aside></section></article>`;
+}
+// Links auf Guides, die noch nicht erschienen sind, werden zu normalem Text – niemand landet auf einer leeren Seite
+function gdLinkFix(box){
+  if(!box || GD_PREVIEW) return;
+  box.querySelectorAll('a[href*="/guides/"]').forEach(a=>{
+    const s = (a.getAttribute('href').split('/guides/')[1] || '').split(/[?#]/)[0], k = unslug(GUIDE_SLUG, s);
+    if(!(k && GD_PLAN_BY[k] && !gdOn(k))) return;
+    const sp = Object.assign(document.createElement('span'), {innerHTML:a.innerHTML, className:a.className ? a.className + ' off' : ''});
+    const sm = a.classList.contains('gd-next') && sp.querySelector('small'), p = GD_PLAN_BY[k];   // Teaser-Karte: statt „Weiterlesen“ das Erscheinungsdatum
+    if(sm) sm.textContent = p.pub ? L('Erscheint am ', 'Out on ') + new Date(p.pub + 'T12:00:00').toLocaleDateString(LOC, {day:'numeric', month:'long'}) : L('Bald', 'Soon');
+    a.replaceWith(sp);
+  });
+}
+// Übersicht /guides: alle Guides mit Erscheinungsdatum – erschienene zum Lesen, die nächsten als Teaser
+function gdPlanHTML(){
+  const day = s => new Date(s + 'T12:00:00').toLocaleDateString(LOC, {weekday:'long', day:'numeric', month:'long'});
+  const info = p => { const g = GD_DATA[p.key]; return EN ? {t:p.te || p.t || p.key, d:p.dEn || p.d || ''} : {t:p.t || (g && g.h1.join(' ')) || p.key, d:p.d || (g ? g.meta.replace(/^[^:]+:\s*/, '').replace(/^./, c=>c.toUpperCase()) : '')}; };   // Meta ohne „TFT … Guide vom Challenger:“ davor
+  const next = GD_PLAN.find(p=>!gdOn(p.key) && p.pub);
+  const card = p => {
+    const on = gdOn(p.key), pre = !on && GD_PREVIEW && (GD_DATA[p.key] || p.key === 'anfaenger'), x = info(p), href = '/guides/' + gdSlug(p.key);
+    const when = on ? L('Jetzt online', 'Out now') : p.pub ? (EN && p.frei ? L('Englische Fassung folgt', 'English version coming soon') : L('Erscheint am ', 'Out on ') + day(p.pub)) : (p.when ? L(p.when, p.whenEn || p.when) : L('Bald', 'Soon'));
+    const cls = 'gd-pl' + (on ? ' on' : '') + (p === next ? ' next' : '');
+    const pic = GD_DATA[p.key] || p.key === 'anfaenger' ? `<img class="gd-pl-img" src="${gdHeroImg(p.key)}" alt="" width="1200" height="630" loading="lazy">` : '';
+    const inner = `${pic}<span class="gd-pl-when">${p === next ? `<em>${L('Als Nächstes', 'Up next')}</em>` : ''}${esc(when)}</span><b>${esc(x.t)}</b><p>${esc(x.d)}</p>
+      <span class="gd-pl-go">${on ? L('Zum Guide', 'Read the guide') + ' →' : pre ? L('Vorschau (nur lokal)', 'Preview (local only)') + ' →' : ''}</span>`;
+    return on || pre ? `<a class="${cls}" href="${href}">${inner}</a>` : `<div class="${cls}">${inner}</div>`;
+  };
+  return `<p class="gd-pl-intro">${L('Alle zwei Tage erscheint ein neuer Guide von CrazYSlayt – Challenger seit Set 15 und Coach bei TFTClimb. Hier siehst du, wann welcher kommt.',
+    'A new guide by CrazYSlayt – Challenger since Set 15 and coach at TFTClimb – comes out every two days. Here is when each one arrives.')}</p>
+    <div class="gd-plan">${GD_PLAN.map(card).join('')}</div>`;
 }
 /* --- Guides aus data/guides.js: gleicher Aufbau wie der Anfänger-Guide (Kopf, Artikel, Inhaltsverzeichnis, Profi-Tipps mit Cartoon, Autor-Kasten).
    „open“-Blöcke = Fragen aus der Liste, die CrazYSlayt noch beantwortet – nur lokal sichtbar, online fallen sie weg --- */
@@ -2957,23 +3023,168 @@ const GD_BLOCK = {
   stats:b=>`<div class="art-stats">${b.l.map(([v, t, c])=>`<div class="${c || 'p'}"><b>${esc(v)}</b><span>${esc(t)}</span></div>`).join('')}</div>`,
   table:b=>artTw(b.head, b.rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`)),
   tip:b=>`<div class="art-box tip${b.pose ? ' has-coach' : ''}">${artTipHead()}<p><b>${b.q}</b></p>${b.a.map(t=>`<p>${t}</p>`).join('')}${b.pose ? gdCoach(b.pose, 'CrazYSlayt als Cartoon') : ''}</div>`,
-  open:b=>GD_PREVIEW && !GUIDES_LIVE ? `<div class="art-box gd-open"><p><b>Noch offen (Frage ${b.n.join(', ')}):</b> ${esc(b.t)}</p></div>` : '',
-  faq:b=>artFaq(b.l)};
+  open:b=>GD_PREVIEW ? `<div class="art-box gd-open"><p><b>Noch offen (Frage ${b.n.join(', ')}):</b> ${esc(b.t)}</p></div>` : '',
+  faq:b=>artFaq(b.l),
+  board:b=>gdBoard(b),
+  // Bild mit Bildunterschrift (Magazin): {src, alt, cap, w, h}
+  // pos: 'right' (Standard, halbe Breite rechts), 'left', 'center' (mittig unter dem Text); side = schmales Bild; wide = breiter Streifen mittig
+  // Klick aufs Bild vergrößert es (data-zoom)
+  img:b=>{ const cls = (b.side ? ' side' : b.wide ? ' wide' : '') + (b.pos === 'left' ? ' l' : b.pos === 'center' ? ' c' : '');
+    return `<figure class="nw-fig gd-fig${cls}"><img src="${b.src}" alt="${esc(b.alt || '')}" width="${b.w || 1200}" height="${b.h || 675}" loading="lazy" data-zoom>${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`; },
+  // Alle Rang-Embleme von Eisen bis Challenger (assets/img/ranks), hervorgehoben: on = [Schlüssel …]
+  ranks:b=>{ const K = ['iron', 'bronze', 'silver', 'gold', 'platinum', 'emerald', 'diamond', 'master', 'grandmaster', 'challenger'];
+    return `<figure class="gd-rk">${b.t ? `<b class="gd-chips-t">${b.t}</b>` : ''}<div class="gd-rk-r">${K.map((k, i)=>`<span class="${(b.on || []).includes(k) ? 'on' : ''}"><img src="assets/img/ranks/${k}.webp" alt="" width="72" height="72" loading="lazy"><small>${esc(L(ranks[i][0], ranks[i][2].replace('GrandMaster', 'Grandmaster')))}</small></span>`).join('')}</div>${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`; },
+  // Leitartikel-Einstieg: großer erster Absatz mit Initiale
+  lead:b=>`<p class="gd-lead">${b.h}</p>`,
+  // Item-Karten mit echtem Icon (englischer Name wie in den Spieldaten) und kurzer Notiz: l: [[item, notiz], …]
+  items:b=>`<figure class="gd-items">${b.t ? `<b class="gd-chips-t">${b.t}</b>` : ''}<div class="gd-items-r">${b.l.map(([n, x])=>{ const it = findItem(n);
+      return `<span class="gd-item"${it ? ` data-tti="${it.id}"` : ''}>${it ? `<img src="${it.img}" alt="" width="44" height="44" loading="lazy">` : ''}<b>${esc(it ? L(it.de || it.en, it.en) : n)}</b>${x ? `<small>${x}</small>` : ''}</span>`; }).join('')}</div>${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`,
+  // Item-Paare, die zusammen auf einen Champion gehören: l: [[a, b], …]
+  pair:b=>`<figure class="gd-pairs">${b.l.map(([a, c])=>`<div class="gd-pair">${gdIt(a, 46)}<em>+</em>${gdIt(c, 46)}<span>${L('auf einen Champion', 'on one champion')}</span></div>`).join('')}${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`,
+  // Rezept: zwei Komponenten ergeben ein Item: l: [item, …]
+  recipe:b=>`<figure class="gd-pairs">${b.l.map(n=>{ const it = findItem(n); if(!it) return ''; const [a, c] = it.comp || [];
+      return `<div class="gd-pair">${gdIt(a, 40)}<em>+</em>${gdIt(c, 40)}<em>=</em>${gdIt(n, 50)}</div>`; }).join('')}${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`,
+  // Zeitleiste über die Stages: ax = Spalten (z. B. ['2-1', '3-2' …]), rows: [name, [[von, bis, text, farbe] …]] – von/bis sind Spalten-Indizes
+  bars:b=>`<figure class="gd-bars" style="--n:${b.ax.length}"><div class="gd-bars-g">${b.rows.map(([n, segs])=>`<span class="gd-bars-n">${n}<small class="gd-bars-m">${segs.filter(s=>s[3] !== 'x').map(([f, t, x])=>`${b.ax[f]}${t > f ? L(' bis ', ' to ') + b.ax[t] : ''}: ${x}`).join(' · ')}</small></span><div class="gd-bars-r">${segs.map(([f, t, x, c])=>`<span class="gd-bars-s ${c || 'p'}" style="grid-column:${f + 1}/${t + 2}">${x}</span>`).join('')}</div>`).join('')}
+    <span></span><div class="gd-bars-ax">${b.ax.map(a=>`<span>${a}</span>`).join('')}</div></div>${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`,
+  // Reihe kleiner Kacheln (z. B. Runden einer Stage): [text, unten, farbe]; farbe: w (Sieg) · l (Niederlage) · p · g · x (grau)
+  chips:b=>`<figure class="gd-chips">${b.t ? `<b class="gd-chips-t">${b.t}</b>` : ''}<div class="gd-chips-r">${b.l.map(([x, s, c])=>`<span class="gd-chip ${c || 'x'}"><b>${x}</b>${s ? `<small>${s}</small>` : ''}</span>`).join('')}</div>${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`,
+  // Übersichts-Tabelle mit farbigen Kürzeln: Zellen-Kürzel i (Item) · e (Econ) · k (Kampf) · y (✓) · n (–), sonst Text
+  matrix:b=>{ const P = {i:['Item', 'g'], e:['Econ', 'c'], k:[L('Kampf', 'Combat'), 'r'], y:['✓', 'y'], n:['–', 'n']};
+    const cell = v => v.split(' ').map(x=>P[x] ? `<span class="gd-mx-p ${P[x][1]}">${P[x][0]}</span>` : x).join(' ');
+    return artTw(b.head, b.rows.map(([n, ...c])=>`<tr><td><b>${n}</b></td>${c.map(v=>`<td class="gd-mx-c">${cell(v)}</td>`).join('')}</tr>`)).replace('art-table', 'art-table gd-mx'); },
+  // kurzer Spruch mit kleinem Kopf-Bild
+  quote:b=>`<blockquote class="gd-quote"><img src="assets/img/coach/${b.pose || 'selbstbewusst'}.webp" alt="" width="56" height="56" loading="lazy"><p>${b.t}</p></blockquote>`,
+  // „Meine Regeln“: große Nummern, je eine Zeile
+  rules:b=>`<div class="gd-rules"><b class="gd-rules-t">${b.t || L('Meine Regeln', 'My rules')}</b><ol>${b.l.map(x=>`<li>${x}</li>`).join('')}</ol></div>`,
+  // Entscheidung: Frage oben, links „Ja“, rechts „Nein“ – je {t, l:[…]}
+  decide:b=>`<figure class="gd-dec"><div class="gd-dec-q">${b.q}</div><div class="gd-dec-a">${[[b.y, L('Ja', 'Yes'), 'g'], [b.n, L('Nein', 'No'), 'r']].map(([a, w, c])=>`<div class="gd-dec-b ${c}"><span class="gd-dec-w">${w}</span><b>${a.t}</b>${a.l ? `<ul>${a.l.map(x=>`<li>${x}</li>`).join('')}</ul>` : ''}</div>`).join('')}</div></figure>`,
+  // Karte zu einem anderen Guide oder Tool: {href, t, d, ic} – ic = Seitenleisten-Symbol (assets/icons/side-*.webp)
+  next:b=>`<a class="gd-next" href="${b.href}"><img src="assets/icons/side-${b.ic || 'guides'}.webp" alt="" width="56" height="56" loading="lazy"><span><small>${b.s || L('Weiterlesen', 'Read next')}</small><b>${b.t}</b>${b.d ? `<em>${b.d}</em>` : ''}</span><i aria-hidden="true">→</i></a>`,
+  // kleine Rechner im Guide (gdWidgets bindet sie nach dem Einbauen): w = lvl8 · wins · floor · mult
+  widget:b=>`<div class="gd-w" data-w="${b.w}">${GD_WIDGET[b.w] ? GD_WIDGET[b.w].html() : ''}</div>`,
+  // CrazYSlayt an der Leinwand: links die Figur mit Zeigestock, rechts die Leinwand mit Titel und beliebigen Blöcken (b: [...], z. B. ul, flow, board, table)
+  talk:b=>`<figure class="gd-talk"><img class="gd-talk-me" src="assets/img/coach/leinwand.webp" alt="${L('CrazYSlayt erklärt an der Leinwand', 'CrazYSlayt explaining at the screen')}" width="570" height="620" loading="lazy" decoding="async">
+    <div class="gd-talk-screen"><b class="gd-talk-t">${b.t}</b>${(b.b || []).map(x=>x.k === 'talk' ? '' : GD_BLOCK[x.k](x)).join('')}</div></figure>`,
+  // Vergleich in zwei (oder drei) Karten nebeneinander: {t, c:'p'|'g'|'r', l:[…]}
+  cmp:b=>`<div class="gd-cmp">${b.l.map(x=>`<div class="gd-cmp-c ${x.c || 'p'}"><b>${x.t}</b><ul>${x.l.map(y=>`<li>${y}</li>`).join('')}</ul></div>`).join('')}</div>`,
+  // Ablauf als Leiste mit Stationen: [Zeitpunkt, was passiert]
+  flow:b=>`<ol class="gd-flow">${b.l.map(([w, t])=>`<li><b>${w}</b><span>${t}</span></li>`).join('')}</ol>`};
+// Titelbild eines Guides (tools/og-bilder.js → assets/og/guides/<adresse>[-en].jpg) – zugleich das Vorschaubild beim Teilen
+const gdHeroImg = k => `assets/og/guides/${GUIDE_SLUG[k] || k}${EN ? '-en' : ''}.jpg`;
+const gdHero = (k, alt) => `<figure class="nw-hero gd-hero"><img src="${gdHeroImg(k)}" alt="${esc(alt + ' – ' + L('Guide von CrazYSlayt', 'guide by CrazYSlayt'))}" width="1200" height="630"></figure>`;
+// Item-Icon mit Namen und Tooltip (Spieldaten des Live-Sets); fehlt das Item im Set, bleibt nur der Name
+function gdIt(n, s = 40){ const it = findItem(n); if(!it) return `<b class="gd-it">${esc(n)}</b>`;
+  return `<span class="gd-it" data-tti="${it.id}"><img src="${it.img}" alt="" width="${s}" height="${s}" loading="lazy"><small>${esc(L(it.de || it.en, it.en))}</small></span>`; }
+// Kurzzeichen im Guide-Text: [[i:Infinity Edge]] = Item mit Icon und Tooltip, [[g:gold]] = kleines Spiel-Symbol (assets/icons/tft/<name>.png)
+function gdTok(html){
+  return html.replace(/\[\[(i|g):([^\]]+)\]\]/g, (m, k, v)=>{
+    if(k === 'g') return `<img class="gd-gi" src="assets/icons/tft/${v}.png" alt="" width="20" height="20" loading="lazy">`;
+    const it = findItem(v); return it ? `<span class="gd-ii" data-tti="${it.id}"><img src="${it.img}" alt="" width="22" height="22" loading="lazy">${esc(L(it.de || it.en, it.en))}</span>` : esc(v); });
+}
+// Kleine Rechner in den Guides – nur mit den Faustregeln von CrazYSlayt aus den Guides, keine erfundenen Werte
+const GD_WIDGET = {
+  // Fast 8: HP und Gold auf 4-2 → Ampel (über 50 HP und über 50 Gold = gut, ab 40 Gold eng, darunter schwerer Spot)
+  lvl8:{html:()=>`<b class="gd-w-t">${L('Bin ich bereit für Level 8?', 'Am I ready for level 8?')}</b>
+      <label class="gd-w-sl"><span>HP <output data-o="hp">60</output></span><input type="range" min="1" max="100" value="60" data-k="hp" aria-label="HP"></label>
+      <label class="gd-w-sl"><span>${L('Gold auf 4-2', 'Gold on 4-2')} <output data-o="g">50</output></span><input type="range" min="0" max="90" value="50" data-k="g" aria-label="Gold"></label>
+      <div class="gd-w-res" aria-live="polite"></div><small class="gd-w-n">${L('Nach meinen Faustregeln für eine Standard-Fast-8-Comp.', 'Based on my rules of thumb for a standard Fast 8 comp.')}</small>`,
+    run:(el)=>{ const v = k => +el.querySelector(`[data-k="${k}"]`).value, hp = v('hp'), g = v('g');
+      el.querySelector('[data-o="hp"]').textContent = hp; el.querySelector('[data-o="g"]').textContent = g;
+      const [c, t, d] = g < 40 ? ['r', L('Schwerer Spot', 'Tough spot'), L('Du brauchst auf 4-2 ein Econ-Augment. Sonst: Core-Units behalten, einen 4-Kosten-Tank und -Carry mit Trait spielen und die Top 4 sichern.', 'You need an econ augment on 4-2. Otherwise keep your core units, play a 4-cost tank and carry with a trait and secure top 4.')]
+        : g <= 50 ? ['y', L('Eng', 'Tight'), L('Mit 40 bis 50 Gold hittest du wahrscheinlich nicht alles. Roll trotzdem und bleib flexibel.', 'With 40 to 50 gold you probably will not hit everything. Roll anyway and stay flexible.')]
+        : hp <= 50 ? ['y', L('Gold passt, Puffer knapp', 'Gold is fine, little buffer'), L('Unter etwa 50 HP wird es eng. Roll, bis dein Board stabil ist.', 'Below about 50 HP it gets tight. Roll until your board is stable.')]
+        : ['g', L('Perfekt', 'Perfect'), L('Geh auf 4-2 auf Level 8 und roll für deine Comp – bis etwa 10 Gold.', 'Go level 8 on 4-2 and roll for your comp – down to about 10 gold.')];
+      el.querySelector('.gd-w-res').className = 'gd-w-res ' + c; el.querySelector('.gd-w-res').innerHTML = `<b>${t}</b><span>${d}</span>`; }},
+  // 13-Siege-Faustregel zum Mitzählen
+  wins:{html:()=>`<b class="gd-w-t">${L('Mein Siege-Zähler', 'My win counter')}</b>
+      <div class="gd-w-cnt"><button type="button" data-d="-1" aria-label="${L('Ein Sieg weniger', 'One win less')}">−</button><output data-o="n">0</output><button type="button" data-d="1" aria-label="${L('Ein Sieg mehr', 'One win more')}">+</button></div>
+      <div class="gd-w-bar"><i></i>${Array.from({length:13}, ()=>'<span></span>').join('')}</div><div class="gd-w-res" aria-live="polite"></div>
+      <small class="gd-w-n">${L('Faustregel aus meinem Coaching – keine Garantie für eine Platzierung.', 'Rule of thumb from my coaching – no guarantee for a placement.')}</small>`,
+    run:(el, d)=>{ const o = el.querySelector('[data-o="n"]'); let n = Math.max(0, Math.min(20, (+o.textContent || 0) + (d || 0))); o.textContent = n;
+      el.querySelectorAll('.gd-w-bar span').forEach((s, i)=>s.classList.toggle('on', i < n));
+      const r = el.querySelector('.gd-w-res'); r.className = 'gd-w-res ' + (n >= 13 ? 'g' : n >= 9 ? 'y' : 'x');
+      r.innerHTML = n >= 13 ? `<b>${L('13 Siege', '13 wins')}</b><span>${L('Damit kommst du meistens in die Top 4.', 'That usually gets you top 4.')}</span>` : `<b>${L('Noch ', '')}${13 - n} ${L(13 - n === 1 ? 'Sieg' : 'Siege', 13 - n === 1 ? 'win to go' : 'wins to go')}</b><span>${n >= 11 ? L('Die kommen nicht von allein – in Stage 5 ist jeder stark. Dein Board muss die Runden noch gewinnen können.', 'They will not come by themselves – in Stage 5 everyone is strong. Your board has to be able to still win those rounds.') : L('Je früher die Siege kommen, desto entspannter entscheidest du später.', 'The earlier the wins come, the calmer you decide later.')}</span>`; }},
+  // Wie tief darf ich rollen? – die Goldgrenzen aus dem Rolldown-Guide
+  floor:{html:()=>{ const s = [[L('2-Kosten-Reroll auf 3-2', '2-cost reroll on 3-2'), '32', L('So bist du auch ohne Sieg nach zwei Runden wieder bei 50 Gold und kannst slowrollen.', 'That way you are back at 50 gold after two rounds even without a win.')],
+        [L('Fast 8 auf 4-2', 'Fast 8 on 4-2'), '~10', L('Darunter kommen keine Zinsen mehr. Fehlt noch was: auf 4-5 weiterrollen.', 'Below that you get no interest. Still missing something: roll again on 4-5.')],
+        [L('Nur noch zwei Leben', 'Only two lives left'), '0', L('All-in, bis das Board stabil ist.', 'All-in until your board is stable.')],
+        [L('Es geht um Platz 4 oder 5', 'It is about 4th or 5th'), '0', L('Auf 4-2 auf 0 rollen – sonst auf 4-5 noch mal all-in.', 'Roll to 0 on 4-2 – otherwise all-in again on 4-5.')]];
+      return `<b class="gd-w-t">${L('Wie tief darf ich rollen?', 'How low can I roll?')}</b><div class="gd-w-opts">${s.map(([t, g, d], i)=>`<button type="button" data-i="${i}" data-g="${g}" data-t="${esc(d)}">${t}</button>`).join('')}</div>
+        <div class="gd-w-res x" aria-live="polite"><b>?</b><span>${L('Wähl deine Situation.', 'Pick your situation.')}</span></div>`; },
+    run:(el, d, btn)=>{ if(!btn) return; el.querySelectorAll('.gd-w-opts button').forEach(b=>b.classList.toggle('on', b === btn));
+      const r = el.querySelector('.gd-w-res'); r.className = 'gd-w-res ' + (btn.dataset.g === '0' ? 'r' : 'g'); r.innerHTML = `<b>${btn.dataset.g} Gold</b><span>${btn.dataset.t}</span>`; }},
+  // Lose Streak mit einem Sieg zwischendurch: Was kostet der Bruch bis 4-2? (Rechnung wie im Streak-Rechner, skRun)
+  streak:{html:()=>{ const opts = ['2-3', '2-6', '3-2', '3-5', '4-1'];
+      return `<b class="gd-w-t">${L('Was kostet mich ein Sieg in der Lose Streak?', 'What does one win in my lose streak cost me?')}</b><div class="gd-w-opts">${opts.map(r=>`<button type="button" data-i="${SK_PVP.indexOf(r)}" data-r="${r}">${L('Sieg auf ', 'Win on ')}${r}</button>`).join('')}</div>
+        <div class="gd-w-res x" aria-live="polite"><b>?</b><span>${L('Wähl die Runde, in der du aus Versehen gewinnst.', 'Pick the round where you win by accident.')}</span></div>
+        <small class="gd-w-n">${L('Gold auf 4-2 ohne Ausgaben, mit 10 Gold vor 2-1. Den vollen Rechner findest du unter Tools.', 'Gold on 4-2 without spending, with 10 gold before 2-1. The full calculator is under tools.')}</small>`; },
+    run:(el, d, btn)=>{ if(!btn) return; el.querySelectorAll('.gd-w-opts button').forEach(b=>b.classList.toggle('on', b === btn));
+      const full = skRun(Array(SK_PVP.length).fill('l'), 10).gold, res = Array(SK_PVP.length).fill('l'); res[+btn.dataset.i] = 'w';
+      const diff = full - skRun(res, 10).gold, r = el.querySelector('.gd-w-res');
+      r.className = 'gd-w-res ' + (diff > 0 ? 'r' : 'g'); r.innerHTML = `<b>${diff > 0 ? '−' + diff : '+' + (-diff)} Gold</b><span>${L(`bis 4-2 – wenn du nach dem Sieg auf ${btn.dataset.r} weiter verlierst. Der Sieg selbst bringt dir 1 Gold und spart Leben.`, `until 4-2 – if you keep losing after the win on ${btn.dataset.r}. The win itself gives you 1 gold and saves health.`)}</span>`; }},
+  // Items multiplizieren sich: Regler 0–3 Items → Balken
+  mult:{html:()=>`<b class="gd-w-t">${L('Wie stark wird mein Carry?', 'How strong does my carry get?')}</b>
+      <label class="gd-w-sl"><span>Items <output data-o="i">0</output></span><input type="range" min="0" max="3" value="0" data-k="i" aria-label="Items"></label>
+      <div class="gd-w-mult">${[100, 150, 225, 338].map((p, i)=>`<span data-i="${i}" style="--h:${p / 3.38}%"><b>${i === 3 ? L('gut 330', 'over 330') : p} %</b></span>`).join('')}</div>
+      <small class="gd-w-n">${L('Faustregel: jedes Item grob 50 % obendrauf.', 'Rule of thumb: every item adds roughly 50 % on top.')}</small>`,
+    run:(el)=>{ const n = +el.querySelector('[data-k="i"]').value; el.querySelector('[data-o="i"]').textContent = n;
+      el.querySelectorAll('.gd-w-mult span').forEach((s, i)=>{ s.classList.toggle('on', i <= n); s.classList.toggle('now', i === n); }); }}
+};
+document.addEventListener('click', e=>{ const im = e.target.closest('.gd-fig img[data-zoom]'); if(!im) return;
+  const o = document.createElement('div'); o.className = 'gd-zoom'; o.innerHTML = `<img src="${im.src}" alt="${esc(im.alt)}">`;
+  const close = () => { o.remove(); document.removeEventListener('keydown', key); }, key = ev => { if(ev.key === 'Escape') close(); };
+  o.addEventListener('click', close); document.addEventListener('keydown', key); document.body.appendChild(o); });
+function gdWidgets(box){
+  box.querySelectorAll('.gd-w[data-w]').forEach(el=>{ const w = GD_WIDGET[el.dataset.w]; if(!w || el.dataset.on) return; el.dataset.on = '1';
+    el.addEventListener('input', ()=>w.run(el));
+    el.addEventListener('click', e=>{ const b = e.target.closest('button'); if(!b) return; w.run(el, +b.dataset.d || 0, b.dataset.i != null ? b : null); });
+    w.run(el); });
+}
+// Brett-Skizze wie im Team-Planer: dein Brett mit 4 Reihen × 7 Feldern (A = vorne, D = hinten, Spalten 1–7 von links),
+// optional das gegnerische Brett darüber (foe, gleiche Schreibweise aus Sicht des Gegners – wird gespiegelt).
+// u/foe: [[feld, rolle, kürzel], …]; Rollen siehe GD_ROLE. Legende zeigt nur die benutzten Rollen
+const GD_ROLE = {tank:['#2ee6d6', L('Main-Tank', 'Main tank')], tank2:['#60a5fa', L('2. Tank', '2nd tank')], carry:['#f7166e', 'Carry'], util:['#a78bfa', 'Utility'],
+  bait:['#94a3b8', L('Köder', 'Bait')], foe:['#f59e0b', L('Gegner', 'Enemy')], safe:['#22c55e', L('Sichere Ecke', 'Safe corner')], risk:['#ef4444', L('Gefährlich', 'Risky')]};
+function gdBoard(b){
+  const R = 25, W = Math.sqrt(3) * R, pad = 26, foe = b.foe || [], top = foe.length ? 4 : 0, gap = foe.length ? 16 : 0;
+  const cell = {}; (b.u || []).forEach(([f, r, k])=>{ cell['o' + f] = [r, k]; }); foe.forEach(([f, r, k])=>{ cell['f' + f] = [r || 'foe', k]; });
+  const hex = (cx, cy) => Array.from({length:6}, (_, i)=>{ const a = Math.PI / 180 * (60 * i - 90); return `${(cx + R * Math.cos(a)).toFixed(1)},${(cy + R * Math.sin(a)).toFixed(1)}`; }).join(' ');
+  const rows = 'ABCD', used = new Set(); let s = '';
+  for(let g = 0; g < top + 4; g++){   // g = Reihe von oben; oben Gegner (D…A), dann dein Brett (A…D)
+    const own = g >= top, ri = own ? g - top : 3 - g, y = pad + R + g * 1.5 * R + (own ? gap : 0), off = g % 2 ? W / 2 : 0;
+    if(own) s += `<text x="8" y="${y + 4}" class="gb-l">${rows[ri]}</text>`;
+    for(let c = 1; c <= 7; c++){
+      const x = pad + W / 2 + (c - 1) * W + off, key = own ? 'o' + rows[ri] + c : 'f' + rows[ri] + (8 - c), u = cell[key];
+      if(u){ used.add(u[0]); const col = (GD_ROLE[u[0]] || GD_ROLE.foe)[0];
+        s += `<polygon points="${hex(x, y)}" fill="${col}33" stroke="${col}" stroke-width="2"/><text x="${x}" y="${y + 5}" class="gb-u">${esc(u[1] || '')}</text>`; }
+      else s += `<polygon points="${hex(x, y)}" class="gb-e"/>`;
+    }
+  }
+  const h = pad + R + (top + 3) * 1.5 * R + R + gap + 22, w = pad + 7 * W + W / 2 + 10;
+  for(let c = 1; c <= 7; c++) s += `<text x="${pad + W / 2 + (c - 1) * W + (top + 3) % 2 * W / 2}" y="${h - 6}" class="gb-n">${c}</text>`;
+  if(foe.length) s += `<line x1="${pad}" x2="${w - 10}" y1="${pad + top * 1.5 * R + gap / 2 + 2}" y2="${pad + top * 1.5 * R + gap / 2 + 2}" class="gb-mid"/>`;
+  const leg = [...used].map(r=>`<span><i style="background:${(GD_ROLE[r] || GD_ROLE.foe)[0]}"></i>${(GD_ROLE[r] || GD_ROLE.foe)[1]}</span>`).join('');
+  return `<figure class="gd-board"><svg viewBox="0 0 ${w.toFixed(0)} ${h.toFixed(0)}" role="img" aria-label="${esc(b.t || L('Aufstellung', 'Positioning'))}">${s}</svg>
+    <figcaption>${b.t ? `<b>${esc(b.t)}</b>` : ''}${b.cap ? `<span>${b.cap}</span>` : ''}<span class="gb-leg">${leg}</span></figcaption></figure>`;
+}
 function gdDataHTML(g){
   const heads = g.body.filter(b=>b.k === 'h');
-  return `<div class="page-head"><div class="crumb"><a href="/guides">Guides</a> / ${esc(g.crumb)}</div>
+  return `<div class="page-head"><div class="crumb"><a href="${(g.home || ['/guides'])[0]}">${(g.home || [0, 'Guides'])[1]}</a> / ${esc(g.crumb)}</div>
       <h1 class="tool-h1"><span class="th-key">${esc(g.h1[0])}</span> ${esc(g.h1[1])}</h1><p data-meta>${esc(g.meta)}</p></div>
+    ${gdHero(g.key, g.h1.join(' '))}
     <section class="tool-seo ag-art gd-art nw-art" aria-labelledby="gdx-start"><div class="ts-main">${g.body.map(b=>GD_BLOCK[b.k](b)).join('')}${artAuthor()}</div>
       <aside class="ts-side art-side"><nav class="art-toc" aria-label="Inhalt"><b>Inhalt</b><ol>${heads.map(b=>`<li><a href="#gdx-${b.id}" data-toc="gdx-${b.id}">${esc(b.t)}</a></li>`).join('')}</ol></nav></aside></section>`;
 }
 function gdDataMount(g){
   const box = $('#gdData'); if(!box || box.dataset.key === g.key) return;
-  box.innerHTML = gdDataHTML(g); box.dataset.key = g.key; enHrefs(box); artToc(box.querySelector('.gd-art'));
+  // englische Fassung: g.en mit title, h1, meta, crumb, body
+  box.innerHTML = gdTok(gdDataHTML(EN && g.en ? {...g, ...g.en} : g)); box.dataset.key = g.key; gdLinkFix(box); gdWidgets(box); enHrefs(box); artToc(box.querySelector('.gd-art'));
 }
 /* --- Anfänger-Guide: bewusst ohne Set-Bezug. Alles hier gilt seit vielen Sets; Zahlen, die Riot pro Set ändert
    (Shop-Chancen, Serien-Gold, Spielerschaden, Augment-Stufen, Loot), stehen nicht im Text, sondern kommen über Links auf die Cheatsheets --- */
 function gdBeginnerHTML(){
-  const sec = {ziel:'Worum es geht', ablauf:'Ablauf einer Partie', gold:'Gold und Zinsen', shop:'Shop und Rollen', sterne:'Sterne', level:'Leveln oder rollen', traits:'Traits', items:'Items', aufstellung:'Aufstellung', schaden:'Schaden am Spieler', fehler:'Die 8 häufigsten Fehler', begriffe:'Begriffe', faq:'Häufige Fragen'};
+  const sec = {ziel:'Wie funktioniert TFT?', ablauf:'Eine TFT-Partie: So laufen Stages und Runden ab', gold:'Gold und Zinsen: So verdienst du mehr', shop:'Shop und Rollen: So findest du deine Champions', sterne:'Wie bekommt man 2 und 3 Sterne?', level:'Leveln oder rollen? Die große Frage jeder Partie', traits:'TFT Traits: So aktivierst du ihre Boni', items:'TFT Items: Komponenten, Rezepte und wer sie trägt', aufstellung:'Richtig aufstellen: Frontline vorne, Carry hinten', schaden:'Wie viel Leben kostet eine Niederlage?', fehler:'Die 8 häufigsten Anfängerfehler in TFT', begriffe:'TFT-Begriffe einfach erklärt', faq:'Häufige Fragen von TFT-Anfängern'};
   const h = k => `<h3 id="gda-${k}">${sec[k]}</h3>`, ic = (k, alt = '') => `<img src="assets/icons/tft/${k}.png" alt="${alt}" width="28" height="28" loading="lazy">`;
   // Platzhalter für die Profi-Tipps aus der Sprachaufnahme von CrazYSlayt
   // CrazYSlayt als Cartoon (assets/img/coach/<pose>.webp, aus seinen Vorlagen): sitzt rechts in der Box und ragt oben leicht heraus – dosiert, nur an Tipps und Kernaussagen
@@ -2991,7 +3202,7 @@ function gdBeginnerHTML(){
     '<b>Irgendwelche Items slammen</b>, nur um zu slammen – statt passender Items für Carry und Tank.', '<b>Den Carry nach vorne stellen.</b>', '<b>Sich auf einen Champion versteifen</b>, den drei andere Spieler auch sammeln.',
     '<b>Zu spät leveln</b> – und mit zu kleinem Team zu viel Leben verlieren.', '<b>Mit wenig Leben weiter sparen</b>, statt endlich das Gold für ein starkes Team auszugeben.'];
   return `<div class="ts-main">
-    <h2 id="gda-start">Das Wichtigste in Kürze</h2>
+    <h2 id="gda-start">TFT für Anfänger: das Wichtigste in Kürze</h2>
     <div class="art-stats"><div class="p"><b>Top 4</b><span>bringt dir in Ranked LP</span></div><div class="g"><b>5 Gold</b><span>Zinsen pro Runde ab 50 Gold</span></div><div class="p"><b>4 Gold</b><span>für 4 XP zum Leveln</span></div><div class="g"><b>9 Kopien</b><span>für einen 3-Sterne-Champion</span></div></div>
     ${h('ziel')}
     <p>Teamfight Tactics ist ein Strategiespiel für acht Spieler. Jeder baut sein eigenes Team aus Champions, und die Teams kämpfen automatisch gegeneinander. Im Kampf selbst steuerst du nichts – gewonnen wird davor: welche Champions du kaufst, wo du sie hinstellst und welche Items sie tragen. Genau da entscheidet sich, wer climbt 😉</p>
@@ -3000,6 +3211,7 @@ function gdBeginnerHTML(){
     ${h('ablauf')}
     <p>Eine Partie ist in <b>Stages</b> eingeteilt, jede Stage in Runden. „3-2“ heißt: Stage 3, Runde 2. Ab Stage 2 sieht jede Stage gleich aus:</p>
     <div class="gd-stage" role="list">${stage.map(([k, t], i)=>`<div class="gd-r${k === 'combat' ? '' : ' sp'}" role="listitem">${ic(k)}<b>x-${i + 1}</b><span>${t}</span></div>`).join('')}</div>
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-encounter.webp', w:1300, h:890, alt:'Runde 1-1', cap:'Runde 1-1: Alle acht Spieler stehen im Kreis, in der Mitte erscheint der Encounter der Partie.', pos:'right'})}
     <ul class="art-list">
       <li><b>Start:</b> Alle acht Spieler stehen im Kreis, in der Mitte wird der <b>Encounter</b> der Partie gezeigt – ein Ereignis, das für alle gilt. Was die Encounters bewirken, steht im ${artA(csHref('encounters'), 'Encounter-Cheatsheet')}.</li>
       <li><b>Stage 1:</b> Du startest meist mit einem 1-Kosten-Champion auf der Bank – manche Encounters geben dir stattdessen stärkere oder mehrere Champions. Danach folgen die Runden <b>1-1 bis 1-3</b> gegen Monster, die deine ersten Komponenten und Champions fallen lassen – was dort droppen kann, zeigt das ${artA(csHref('loot'), 'Loot-Cheatsheet')}.</li>
@@ -3008,6 +3220,7 @@ function gdBeginnerHTML(){
       <li><b>Monster:</b> Ein Kampf gegen Monster, die Beute fallen lassen – Gold, Champions oder Komponenten.</li>
       <li><b>Augments:</b> In den Runden <b>2-1, 3-2 und 4-2</b> wählst du jeweils einen von drei Augments – dauerhafte Boni in Silber, Gold oder Prismatisch. Wann welche Stufe kommt, zeigt das ${artA(csHref('augments'), 'Augment-Stufen-Cheatsheet')}.</li>
     </ul>
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-augments.webp', w:1165, h:845, alt:'Die Augment-Auswahl auf 2-1', cap:'Die Augment-Auswahl auf 2-1: drei Augments zur Wahl – jedes kannst du einmal neu rollen (Knopf darunter).', pos:'center'})}
     ${h('gold')}
     <p>Fast alles in TFT kostet Gold: Champions, Level und neue Shops. Und Gold ist kein Selbstzweck – es kauft dir Power aufs Board. Wer damit gut umgeht, gewinnt auf Dauer. Gold bekommst du auf vier Wegen:</p>
     <ol class="art-list">
@@ -3016,20 +3229,22 @@ function gdBeginnerHTML(){
       <li><b>Serien:</b> Gewinnst oder verlierst du mehrere Runden in Folge, gibt es Bonus-Gold.</li>
       <li><b>Siege:</b> Ein gewonnener Kampf gegen einen Spieler bringt 1 Gold extra.</li>
     </ol>
-    <h4>So funktionieren die Zinsen</h4>
+    <h4>Wie viel Zinsen bekommst du?</h4>
     <div class="gd-zins">${[['0–9', 0], ['10–19', 1], ['20–29', 2], ['30–39', 3], ['40–49', 4], ['50+', 5]].map(([g, n])=>`<div${n === 5 ? ' class="max"' : ''}><span class="gd-c">${coins(n)}</span><b>+${n}</b><small>${g} Gold</small></div>`).join('')}</div>
     <p>Wer früh auf 50 Gold spart, bekommt jede Runde 5 Gold geschenkt – über eine Partie sind das schnell 40 bis 60 Gold mehr als bei jemandem, der immer alles ausgibt. Mehr als 50 Gold bringt keine zusätzlichen Zinsen.</p>
     <div class="art-box"><p><b>Faustregel:</b> Gib Gold möglichst so aus, dass du über einer Zehnerstufe bleibst. Mit 34 Gold kannst du 4 ausgeben und hast immer noch 3 Zinsen – gibst du 5 aus, sind es nur noch 2.</p></div>
-    <h4>Win Streak und Lose Streak</h4>
+    <h4>Win Streak oder Lose Streak: Beide bringen Gold</h4>
     <p>Serien belohnen beide Richtungen: Mehrere Siege in Folge (Win Streak) bringen Bonus-Gold, mehrere Niederlagen (Lose Streak) aber auch. Eine Lose Streak ist deshalb nicht automatisch schlecht – richtig gespielt sammelst du Gold und schlägst später mit einem starken Team zurück. Aber: Leben sind Zeit. Wer zu tief fällt, hat später keinen Spielraum mehr. Und wer mittendrin hängt, bekommt weder das eine noch das andere Gold.</p>
     ${tip('Wann lohnt sich eine Lose Streak – und wann nicht?', 'neutral',
       'Auf 2-1 frage ich mich: Gewinne ich mit meinem Board die ganze Stage 2? Wenn nicht – kaum Upgrades, nichts Gutes zum Slammen – nehme ich ein Econ-Augment und verliere bewusst. TFT ist am Ende immer ein Tausch: Gold gegen Leben.',
       'Und dann konsequent: In der Lose Streak will ich der Schwächste in der Lobby sein.')}
+    ${GD_BLOCK.decide({q:'Ist dein Board auf 2-1 stark genug, die ganze Stage 2 zu gewinnen?', y:{t:'Win Streak', l:['Item-Augment', 'Leveln und Items slammen']}, n:{t:'Lose Streak', l:['Econ-Augment', 'Nicht leveln, nicht slammen']}})}
     ${h('shop')}
     <p>Jede Runde zeigt dir der Shop fünf Champions. Sie kosten 1 bis 5 Gold – je teurer, desto stärker und seltener.</p>
     <div class="gd-cost">${[1, 2, 3, 4, 5].map(c=>`<span class="c${c}">${ic('champ-' + c)}<b>${c} Gold</b></span>`).join('')}</div>
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-shop.webp', w:1225, h:213, alt:'Der Shop', cap:'Der Shop: fünf Champions mit Traits und Kosten, links Buy XP für 4 Gold und Reroll für 2 Gold. Darüber dein Level, die Chancen je Kostenstufe und dein Gold.', wide:true})}
     <ul class="art-list">
-      <li><b>Rollen:</b> Für 2 Gold bekommst du einen neuen Shop.</li>
+      <li>[[g:shop-reroll]]<b>Rollen:</b> Für 2 Gold bekommst du einen neuen Shop.</li>
       <li><b>Welche Champions</b> im Shop auftauchen, hängt von deinem Level ab: Auf niedrigem Level siehst du fast nur günstige Champions, auf hohem Level öfter teure. Die genauen Chancen pro Level stehen im ${artA(csHref('shop'), 'Shop-Odds-Cheatsheet')}.</li>
       <li><b>Der Pool ist geteilt:</b> Von jedem Champion gibt es nur eine begrenzte Anzahl Kopien für alle acht Spieler zusammen. Sammeln zwei Spieler denselben Champion, finden beide ihn seltener – er ist <b>contested</b>.</li>
     </ul>
@@ -3040,14 +3255,17 @@ function gdBeginnerHTML(){
     <p>Jede Sternstufe macht einen Champion deutlich stärker – ein 2-Sterne-Champion schlägt meist einen 1-Sterne-Champion, der eine Kostenstufe teurer ist. Deshalb lohnt es sich früh, Paare auf der Bank zu halten. Deine <b>Bank</b> hat 9 Plätze: Champions dort kämpfen nicht mit, zählen aber zum Verschmelzen.</p>
     ${h('level')}
     <p>Dein Level bestimmt, <b>wie viele Champions</b> auf dem Feld kämpfen (Level 5 heißt 5 Champions) und <b>welche Champions</b> im Shop erscheinen. Jede Runde bekommst du automatisch 2 XP, zusätzlich kannst du für 4 Gold 4 XP kaufen. Das Maximum ist Level 10.</p>
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-lategame.webp', w:1220, h:640, alt:'Late Game auf Level 9', cap:'Late Game auf Level 9: neun Champions kämpfen auf dem Feld.', pos:'center'})}
     <p>Die große Frage jeder Partie lautet: <b>Gold in Level stecken oder in Rollen?</b> Dafür gibt es grob zwei Spielweisen:</p>
     <div class="gd-two"><div><b>${ic('shop-xp')}Leveln (Fast 8 / Fast 9)</b><p>Du sparst, levelst zügig und suchst auf hohem Level nach starken 4- und 5-Kostern.</p></div>
       <div><b>${ic('shop-reroll')}Rerollen</b><p>Du bleibst auf niedrigerem Level und rollst so lange, bis deine günstigen Carrys 3 Sterne haben.</p></div></div>
     <p>Welche Comps gerade welche Spielweise nutzen, steht in unserer ${artA('/tierlist', 'Tierlist')}.</p>
     ${tip('Woran erkennst du, dass du jetzt leveln solltest – und wann rollen?', 'selbstbewusst',
-      'Kommt auf die Comp an: 1-Kosten-Reroll rollt schon auf 2-7 mit Level 4, 2-Kosten-Reroll auf 3-2 mit Level 6, 3-Kosten-Reroll um 3-5 – und Fast 8 spätestens auf 4-2 mit Level 8.',
+      'Kommt auf die Comp an: 1-Kosten-Reroll rollt schon auf 2-7 mit Level 4, 2-Kosten-Reroll auf 3-2 mit Level 6, 3-Kosten-Reroll auf 3-5 mit Level 7 – und Fast 8 zwischen 4-1 und 4-2 mit Level 8. Fehlt dir das Gold, kannst du mit genug Tempo auch erst auf 4-5 auf Level 8 rollen.',
       'Und: Ich gebe kein Gold fürs Leveln aus, wenn ich die nächsten Runden sowieso verliere.')}
+    ${GD_BLOCK.bars({ax:['2-1', '2-7', '3-2', '3-5', '4-1', '4-2', '4-5', '5-1'], rows:[['1-Kosten-Reroll', [[1, 1, 'Level 4', 'g']]], ['2-Kosten-Reroll', [[2, 2, 'Level 6', 'g']]], ['3-Kosten-Reroll', [[3, 3, 'Level 7', 'g']]], ['Fast 8', [[4, 5, 'Level 8', 'c'], [6, 6, 'mit Tempo', 'c']]], ['Fast 9', [[7, 7, 'Level 9', 'r']]]], cap:'Wann welche Spielweise ihren großen Rolldown macht. Fast 8 rollt zwischen 4-1 und 4-2 – fehlt das Gold, mit genug Tempo auch erst auf 4-5.'})}
     ${h('traits')}
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-traits.webp', w:272, h:638, alt:'Die Trait-Leiste links', cap:'Die Trait-Leiste: Die Zahl zeigt, wie viele verschiedene Champions den Trait haben, daneben die Stufen. Aktive Traits sind farbig.', side:true, pos:'left'})}
     <p>Jeder Champion hat zwei oder drei <b>Traits</b>. Stellst du genug verschiedene Champions mit demselben Trait aufs Feld, wird ein Bonus aktiv – je mehr, desto stärker.</p>
     <ul class="art-list">
       <li>Es zählen nur <b>verschiedene</b> Champions. Zwei gleiche zählen einfach.</li>
@@ -3057,19 +3275,27 @@ function gdBeginnerHTML(){
     <p>Trait-Kombinationen ausprobieren kannst du im ${artA(BUILDER_PATH, 'Team Builder')}.</p>
     ${h('items')}
     <p>Komponenten bekommst du aus Monster-Runden, vom Karussell und aus Beutekugeln. Zwei Komponenten ergeben zusammen ein fertiges Item.</p>
+    ${GD_BLOCK.recipe({l:['Infinity Edge', "Warmog's Armor"], cap:'Zwei Beispiele: Riesenschwert und Kampfhandschuhe ergeben die Klinge der Unendlichkeit, zwei Gürtel des Riesen Warmogs Rüstung. Fahr über ein Item für alle Werte.'})}
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-karussell.webp', w:1330, h:930, alt:'Das Karussell', cap:'Das Karussell: In der Mitte drehen sich Champions mit Items. Wer am wenigsten Leben hat, darf zuerst los.', pos:'right'})}
     <ul class="art-list">
       <li>Ein Champion trägt <b>höchstens 3 Items</b>.</li>
       <li>Ein gegebenes Item bleibt am Champion. Verkaufst du ihn, kommen die Items zurück auf die Bank.</li>
       <li>Gib Items an deinen <b>Carry</b> und an deinen <b>Tank</b> – nicht verteilt auf alle.</li>
       <li>Ein fertiges Item in Stage 2 ist ein riesiger Teil deiner Stärke – bei zwei Items die Hälfte. Bau aber keine Items nur um des Bauens willen, sondern solche, die zu deinem Carry oder Tank passen.</li>
     </ul>
+    ${GD_BLOCK.talk({t:'So rechne ich Items', b:[{k:'widget', w:'mult'}, {k:'p', h:'Faustregel: Jedes Item gibt grob 50 % obendrauf – auf das, was schon da ist. Darum drei Items auf einen Champion statt auf drei verteilt.'}]})}
     <p>Welche Komponenten wie oft droppen, zeigen das ${artA(csHref('loot'), 'Loot-Cheatsheet')} und die ${artA(toolHref('drops'), 'Item-Drop-Chance')}.</p>
     ${h('aufstellung')}
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-felder.webp', w:1110, h:500, alt:'Ziehst du eine Unit, siehst du die Felder', cap:'Ziehst du eine Unit, leuchten die Waben auf.', pos:'right'})}
+    <p>Richtig stellst du auf, wenn deine Tanks vorne den Schaden abfangen und dein Carry hinten in Ruhe Schaden macht. Dein Feld hat dafür vier Reihen mit je sieben Waben – du siehst sie, sobald du eine Unit ziehst.</p>
     <div class="gd-two"><div><b>Vorne: Frontline</b><p>Tanks und Kämpfer mit viel Leben. Sie halten den Schaden ab.</p></div><div><b>Hinten: Backline</b><p>Champions mit großer Reichweite, die Schaden machen – sie sollen möglichst lange überleben.</p></div></div>
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-board-lvl6.webp', w:1200, h:640, alt:'Ein Board auf Level 6', cap:'Ein Board auf Level 6 – der Melee-Carry steht in der dritten Reihe.', pos:'left'})}
     <p>Ein Klassiker bei Anfängern: der Carry in der ersten Reihe. Er stirbt als Erstes, und der Kampf ist verloren, bevor er richtig angefangen hat.</p>
+    <p>Besser wie im Bild: Vorne steht ein Tank allein und fängt den Schaden ab, der Melee-Carry startet aus der dritten Reihe.</p>
     ${tip('Ein Positionierungstrick, den Anfänger nicht kennen', 'daumen-hoch',
       'Stell deinen Frontline-Carry Feld an Feld neben deinen Tank. Dann zieht der Tank die Aggro – und nicht dein Carry.',
       'Und neben deinen eigentlichen Carry gehört immer dein stärkster Tank. Stirbt der Tank, ist dein Carry als Nächstes dran.')}
+    ${GD_BLOCK.board({t:'Feld an Feld', cap:'Der Melee-Carry steht in der Ecke, der Tank direkt daneben – die Gegner greifen zuerst den Tank an, der die Aggro zieht.', u:[['A1', 'carry', 'C'], ['A2', 'tank', 'T']]})}
     ${h('schaden')}
     <p>Verlierst du einen Kampf, verlierst du Leben – abhängig von der <b>Stage</b> und davon, <b>wie viele gegnerische Champions</b> am Ende noch stehen. Späte Niederlagen tun deshalb viel mehr weh als frühe. Die genauen Werte stehen im ${artA(csHref('damage'), 'Spielerschaden-Cheatsheet')}.</p>
     ${h('fehler')}
@@ -3078,6 +3304,7 @@ function gdBeginnerHTML(){
       'Erstens: Auf 2-1 falsch eingeschätzt, ob das Board gewinnt – und dann das falsche Augment. Schwaches Board, trotzdem Items genommen.',
       'Zweitens: Schwach, aber trotzdem auf 2-1 leveln. 4 Gold für eine Unit mehr – und verloren wird trotzdem 🙈 Bleib konsequent: Win Streak heißt gute Units, leveln, Items slammen. Lose Streak heißt nicht leveln, nicht slammen.',
       'Drittens: Items verteilt statt gestapelt. Items addieren sich nicht, sie multiplizieren sich – meine Faustregel: jedes Item gibt grob 50 % obendrauf, aus 100 % werden 150, 225 und gut 330 %. Hat dein Carry oder Tank zwei Items, muss das dritte so schnell wie möglich drauf.')}
+    ${GD_BLOCK.next({href:'/guides/tft-fortgeschrittene-guide', ic:'guides', t:'TFT Guide für Fortgeschrittene', d:'Grundlagen sitzen? Dann geht es um Entscheidungen: Strongest Board, Tempo oder Econ, Scouting.'})}
     ${h('begriffe')}
     <div class="art-tw"><table class="art-table"><thead><tr><th>Begriff</th><th>Bedeutung</th></tr></thead><tbody>${words.map(([w, d])=>`<tr><td><b>${w}</b></td><td>${d}</td></tr>`).join('')}</tbody></table></div>
     ${h('faq')}${artFaq(faq)}
@@ -3086,9 +3313,146 @@ function gdBeginnerHTML(){
   <aside class="ts-side art-side"><nav class="art-toc" aria-label="Inhalt"><b>Inhalt</b>
     <ol>${Object.entries(sec).map(([k, t])=>`<li><a href="#gda-${k}" data-toc="gda-${k}">${t}</a></li>`).join('')}</ol></nav></aside>`;
 }
+// Anfänger-Guide auf Englisch (/en/guides/tft-beginner-guide): gleicher Aufbau wie gdBeginnerHTML, eigener Text.
+// data-noi18n: die Übersetzung über i18n-en.js fasst diesen Text nicht an
+function gdBeginnerHTMLEn(){
+  const sec = {ziel:'How does TFT work?', ablauf:'A game of TFT: how stages and rounds work', gold:'Gold and interest: how to earn more', shop:'Shop and rolling: how to find your champions', sterne:'How do you get 2 and 3 stars?', level:'Leveling or rolling? The big question of every game', traits:'TFT traits: how to activate their bonuses', items:'TFT items: components, recipes and who holds them', aufstellung:'Positioning: frontline in front, carry in the back', schaden:'How much health does a loss cost?', fehler:'The 8 most common beginner mistakes in TFT', begriffe:'TFT terms explained', faq:'FAQ for TFT beginners'};
+  const h = k => `<h3 id="gda-${k}">${sec[k]}</h3>`, ic = (k, alt = '') => `<img src="assets/icons/tft/${k}.png" alt="${alt}" width="28" height="28" loading="lazy">`;
+  const coach = (pose, alt) => `<img class="gd-coach" src="assets/img/coach/${pose}.webp" alt="${alt}" loading="lazy" decoding="async">`;
+  const tip = (q, pose, ...a) => `<div class="art-box tip${pose ? ' has-coach' : ''}">${artTipHead()}<p><b>${q}</b></p>${a.map(t=>`<p>${t}</p>`).join('')}${pose ? coach(pose, 'CrazYSlayt as a cartoon') : ''}</div>`;
+  const stage = [['combat', 'PvP'], ['combat', 'PvP'], ['combat', 'PvP'], ['stage-carousel', 'Carousel'], ['combat', 'PvP'], ['combat', 'PvP'], ['stage-krugs', 'Monsters']];
+  const coins = n => n ? Array.from({length:n}, ()=>`<img src="assets/icons/tft/gold.png" alt="" width="18" height="18" loading="lazy">`).join('') : '<span>–</span>';
+  const words = [['Carry', 'The champion that deals the most damage and gets the items'], ['Tank', 'A champion with lots of health who stands in front'], ['Econ', 'Your economy – how well you save gold and collect interest'],
+    ['Roll / reroll', 'Pay 2 gold for a new shop'], ['Rolldown', 'Spend a lot of gold at once to find the champions you need'], ['Fast 8 / Fast 9', 'Level quickly to 8 or 9 to find expensive champions'],
+    ['Contested', 'Several players collect the same champions'], ['Pivot', 'Switch to a different comp in the middle of a game'], ['Streak', 'Several wins or losses in a row'], ['Comp', 'A team composition, for example from the tier list'], ['Top 4', 'Places 1 to 4 – that gains you LP in ranked']];
+  const faq = [['What is the most interest you can get in TFT?', '5 gold per round, from 50 gold in the bank. More gold brings no extra interest.'], ['How many copies do you need for 3 stars?', 'Nine: three for 2 stars, and three 2-star champions for 3 stars.'],
+    ['How much does a level cost in TFT?', '4 gold for 4 experience points. On top of that you get 2 XP automatically every round.'], ['Is it worth saving gold in TFT?', 'Yes, especially early: if you save up to 50 gold, you get 5 gold interest every round. With low health, surviving comes before saving.'],
+    ['What does top 4 mean in TFT?', 'Places 1 to 4 of a game. In ranked you gain LP with it, places 5 to 8 lose you LP.']];
+  const fehler = ['<b>Spending every gold right away</b> – and giving up all interest.', '<b>Leveling on 2-1 with a weak board</b> – 4 gold for one more unit, and you lose anyway.', '<b>Too many small traits</b> instead of a clear plan.',
+    '<b>Slamming random items</b> just to slam – instead of fitting items for your carry and tank.', '<b>Putting the carry in front.</b>', '<b>Locking onto a champion</b> that three other players are collecting too.',
+    '<b>Leveling too late</b> – and losing too much health with a team that is too small.', '<b>Still saving with low health</b> instead of finally spending the gold on a strong team.'];
+  return `<div class="ts-main" data-noi18n>
+    <h2 id="gda-start">TFT for beginners: the key points</h2>
+    <div class="art-stats"><div class="p"><b>Top 4</b><span>gains you LP in ranked</span></div><div class="g"><b>5 gold</b><span>interest per round from 50 gold</span></div><div class="p"><b>4 gold</b><span>for 4 XP to level up</span></div><div class="g"><b>9 copies</b><span>for a 3-star champion</span></div></div>
+    ${h('ziel')}
+    <p>Teamfight Tactics is a strategy game for eight players. Everyone builds their own team of champions, and the teams fight each other automatically. You don't control anything during the fight – the game is won before it: which champions you buy, where you place them and which items they hold. That's exactly where it's decided who climbs 😉</p>
+    <p>Every player starts with 100 health. Lose a fight and you lose health. Whoever drops to 0 is out. The game ends when only one player is left.</p>
+    <div class="art-box has-coach"><p><b>Important for ranked:</b> You don't have to finish first. Places 1 to 4 gain you LP, places 5 to 8 cost you LP – the biggest gap is between 4th and 5th. That's why I always play for <b>top 4</b> first and only then for top 2 or the win.</p>${coach('tft-koenig', 'CrazYSlayt as the TFT king')}</div>
+    ${h('ablauf')}
+    <p>A game is split into <b>stages</b>, each stage into rounds. “3-2” means stage 3, round 2. From stage 2 on, every stage looks the same:</p>
+    <div class="gd-stage" role="list">${stage.map(([k, t], i)=>`<div class="gd-r${k === 'combat' ? '' : ' sp'}" role="listitem">${ic(k)}<b>x-${i + 1}</b><span>${t}</span></div>`).join('')}</div>
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-encounter.webp', w:1300, h:890, alt:'Round 1-1', cap:'Round 1-1: all eight players stand in a circle, and the game\'s encounter appears in the middle.', pos:'right'})}
+    <ul class="art-list">
+      <li><b>Start:</b> All eight players stand in a circle, and the middle shows the game's <b>encounter</b> – an event that applies to everyone. What each encounter does is in the ${artA(csHref('encounters'), 'encounter cheatsheet')}.</li>
+      <li><b>Stage 1:</b> You usually start with a 1-cost champion on your bench – some encounters give you stronger or more champions instead. Then come rounds <b>1-1 to 1-3</b> against monsters that drop your first components and champions – what can drop there is in the ${artA(csHref('loot'), 'loot cheatsheet')}.</li>
+      <li><b>PvP:</b> Fights against other players – most rounds of the game.</li>
+      <li><b>Carousel:</b> A circle of champions with items turns in the middle. Players run out in pairs: first the two with the lowest health, then the next two – so weaker players get a chance to catch up.</li>
+      <li><b>Monsters:</b> A fight against monsters that drop loot – gold, champions or components.</li>
+      <li><b>Augments:</b> In rounds <b>2-1, 3-2 and 4-2</b> you pick one of three augments each time – permanent bonuses in silver, gold or prismatic. When each tier shows up is in the ${artA(csHref('augments'), 'augment tiers cheatsheet')}.</li>
+    </ul>
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-augments.webp', w:1165, h:845, alt:'The augment choice on 2-1', cap:'The augment choice on 2-1: three augments to pick from – you can reroll each one once (button below).', pos:'center'})}
+    ${h('gold')}
+    <p>Almost everything in TFT costs gold: champions, levels and new shops. And gold isn't an end in itself – it buys you power on the board. Handle it well and you win in the long run. You get gold in four ways:</p>
+    <ol class="art-list">
+      <li><b>Base income:</b> A fixed amount every round.</li>
+      <li><b>Interest:</b> For every 10 gold in your bank you get 1 extra gold at the start of the round – at most 5 gold at 50 gold.</li>
+      <li><b>Streaks:</b> Win or lose several rounds in a row and you get bonus gold.</li>
+      <li><b>Wins:</b> A won fight against a player gives 1 extra gold.</li>
+    </ol>
+    <h4>How much interest do you get?</h4>
+    <div class="gd-zins">${[['0–9', 0], ['10–19', 1], ['20–29', 2], ['30–39', 3], ['40–49', 4], ['50+', 5]].map(([g, n])=>`<div${n === 5 ? ' class="max"' : ''}><span class="gd-c">${coins(n)}</span><b>+${n}</b><small>${g} gold</small></div>`).join('')}</div>
+    <p>Save up to 50 gold early and you get 5 free gold every round – over a game that's easily 40 to 60 gold more than someone who always spends everything. More than 50 gold gives no extra interest.</p>
+    <div class="art-box"><p><b>Rule of thumb:</b> Spend gold so you stay above a multiple of ten. With 34 gold you can spend 4 and still get 3 interest – spend 5 and it's only 2.</p></div>
+    <h4>Win streak or lose streak: both give gold</h4>
+    <p>Streaks pay both ways: several wins in a row (win streak) give bonus gold, but so do several losses (lose streak). That's why a lose streak isn't automatically bad – played right, you collect gold and strike back later with a strong team. But: health is time. Drop too low and you have no room left later. And if you're stuck in the middle, you get neither kind of gold.</p>
+    ${tip('When is a lose streak worth it – and when not?', 'neutral',
+      'On 2-1 I ask myself: does my board win all of stage 2? If not – barely any upgrades, nothing good to slam – I take an econ augment and lose on purpose. In the end TFT is always a trade: gold for health.',
+      'And then all the way: in a lose streak I want to be the weakest player in the lobby.')}
+    ${GD_BLOCK.decide({q:'Is your board on 2-1 strong enough to win all of stage 2?', y:{t:'Win streak', l:['Item augment', 'Level up and slam items']}, n:{t:'Lose streak', l:['Econ augment', 'Don\'t level, don\'t slam']}})}
+    ${h('shop')}
+    <p>Every round the shop shows you five champions. They cost 1 to 5 gold – the more expensive, the stronger and rarer.</p>
+    <div class="gd-cost">${[1, 2, 3, 4, 5].map(c=>`<span class="c${c}">${ic('champ-' + c)}<b>${c} gold</b></span>`).join('')}</div>
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-shop.webp', w:1225, h:213, alt:'The shop', cap:'The shop: five champions with traits and cost, on the left Buy XP for 4 gold and Reroll for 2 gold. Above it your level, the odds per cost tier and your gold.', wide:true})}
+    <ul class="art-list">
+      <li>[[g:shop-reroll]]<b>Rolling:</b> For 2 gold you get a new shop.</li>
+      <li><b>Which champions</b> show up in the shop depends on your level: on a low level you see almost only cheap champions, on a high level more expensive ones. The exact odds per level are in the ${artA(csHref('shop'), 'shop odds cheatsheet')}.</li>
+      <li><b>The pool is shared:</b> There is only a limited number of copies of each champion for all eight players together. If two players collect the same champion, both find it less often – it's <b>contested</b>.</li>
+    </ul>
+    <p>How much gold you need to find a specific champion is calculated by the ${artA(toolHref('rolldown'), 'rolldown calculator')}.</p>
+    ${h('sterne')}
+    <div class="gd-stars"><span>1★ <i>×3</i></span><em>→</em><span>2★ <i>×3</i></span><em>→</em><span class="max">3★</span></div>
+    <p>Three identical champions merge automatically into a <b>2-star champion</b>, three 2-stars into a <b>3-star champion</b>. So for 3 stars you need 9 copies.</p>
+    <p>Every star level makes a champion a lot stronger – a 2-star champion usually beats a 1-star champion that costs one tier more. That's why it pays to hold pairs on your bench early. Your <b>bench</b> has 9 slots: champions there don't fight, but they count for merging.</p>
+    ${h('level')}
+    <p>Your level decides <b>how many champions</b> fight on the board (level 5 means 5 champions) and <b>which champions</b> show up in the shop. You get 2 XP automatically every round, and you can buy 4 XP for 4 gold. The maximum is level 10.</p>
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-lategame.webp', w:1220, h:640, alt:'Late game on level 9', cap:'Late game on level 9: nine champions fight on the board.', pos:'center'})}
+    <p>The big question of every game: <b>put gold into levels or into rolling?</b> There are roughly two play styles for that:</p>
+    <div class="gd-two"><div><b>${ic('shop-xp')}Leveling (Fast 8 / Fast 9)</b><p>You save, level quickly and look for strong 4- and 5-costs on a high level.</p></div>
+      <div><b>${ic('shop-reroll')}Rerolling</b><p>You stay on a lower level and roll until your cheap carries have 3 stars.</p></div></div>
+    <p>Which comps use which play style right now is in our ${artA('/tierlist', 'tier list')}.</p>
+    ${tip('How do you know whether to level now – or to roll?', 'selbstbewusst',
+      'It depends on the comp: a 1-cost reroll already rolls on 2-7 at level 4, a 2-cost reroll on 3-2 at level 6, a 3-cost reroll on 3-5 at level 7 – and Fast 8 between 4-1 and 4-2 at level 8. If you\'re short on gold, with enough tempo you can also roll on 4-5 at level 8.',
+      'And: I don\'t spend gold on leveling if I\'m going to lose the next rounds anyway.')}
+    ${GD_BLOCK.bars({ax:['2-1', '2-7', '3-2', '3-5', '4-1', '4-2', '4-5', '5-1'], rows:[['1-cost reroll', [[1, 1, 'Level 4', 'g']]], ['2-cost reroll', [[2, 2, 'Level 6', 'g']]], ['3-cost reroll', [[3, 3, 'Level 7', 'g']]], ['Fast 8', [[4, 5, 'Level 8', 'c'], [6, 6, 'with tempo', 'c']]], ['Fast 9', [[7, 7, 'Level 9', 'r']]]], cap:'When each play style does its big rolldown. Fast 8 rolls between 4-1 and 4-2 – short on gold, with enough tempo also on 4-5.'})}
+    ${h('traits')}
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-traits.webp', w:272, h:638, alt:'The trait bar on the left', cap:'The trait bar: the number shows how many different champions have the trait, next to it the tiers. Active traits are colored.', side:true, pos:'left'})}
+    <p>Every champion has two or three <b>traits</b>. Put enough different champions with the same trait on the board and a bonus activates – the more, the stronger.</p>
+    <ul class="art-list">
+      <li>Only <b>different</b> champions count. Two identical ones count once.</li>
+      <li>The tiers have colors: <span class="gd-tier bronze">Bronze</span> <span class="gd-tier silver">Silver</span> <span class="gd-tier gold">Gold</span> <span class="gd-tier prism">Prismatic</span></li>
+      <li>A team is usually built around <b>one or two strong traits</b>, not around as many small ones as possible.</li>
+    </ul>
+    <p>You can try out trait combinations in the ${artA(BUILDER_PATH, 'team builder')}.</p>
+    ${h('items')}
+    <p>You get components from monster rounds, the carousel and loot orbs. Two components together make a finished item.</p>
+    ${GD_BLOCK.recipe({l:['Infinity Edge', "Warmog's Armor"], cap:'Two examples: B.F. Sword and Sparring Gloves make Infinity Edge, two Giant\'s Belts make Warmog\'s Armor. Hover over an item for all its stats.'})}
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-karussell.webp', w:1330, h:930, alt:'The carousel', cap:'The carousel: champions with items circle in the middle. Whoever has the least health goes first.', pos:'right'})}
+    <ul class="art-list">
+      <li>A champion holds <b>at most 3 items</b>.</li>
+      <li>An item you give stays on the champion. If you sell it, the items go back to your bench.</li>
+      <li>Give items to your <b>carry</b> and your <b>tank</b> – not spread over everyone.</li>
+      <li>A finished item in stage 2 is a huge part of your strength – with two items it's half. But don't build items just for the sake of it – build ones that fit your carry or tank.</li>
+    </ul>
+    ${GD_BLOCK.talk({t:'How I count items', b:[{k:'widget', w:'mult'}, {k:'p', h:'Rule of thumb: every item adds roughly 50 % on top – of what is already there. That\'s why three items go on one champion instead of being spread over three.'}]})}
+    <p>Which components drop how often is in the ${artA(csHref('loot'), 'loot cheatsheet')} and the ${artA(toolHref('drops'), 'item drop odds')}.</p>
+    ${h('aufstellung')}
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-felder.webp', w:1110, h:500, alt:'Drag a unit and you see the hexes', cap:'Drag a unit and the hexes light up.', pos:'right'})}
+    <p>You position right when your tanks soak up the damage in front and your carry deals damage safely in the back. Your board has four rows of seven hexes for that – you see them as soon as you drag a unit.</p>
+    <div class="gd-two"><div><b>Front: frontline</b><p>Tanks and fighters with lots of health. They soak up the damage.</p></div><div><b>Back: backline</b><p>Long-range champions that deal damage – they should survive as long as possible.</p></div></div>
+    ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-board-lvl6.webp', w:1200, h:640, alt:'A board on level 6', cap:'A board on level 6 – the melee carry stands in the third row.', pos:'left'})}
+    <p>A classic beginner mistake: the carry in the front row. It dies first, and the fight is lost before it really started.</p>
+    <p>Better like in the picture: one tank stands alone in front and soaks up the damage, the melee carry starts from the third row.</p>
+    ${tip('A positioning trick beginners don\'t know', 'daumen-hoch',
+      'Put your frontline carry right next to your tank, hex to hex. Then the tank draws the aggro – not your carry.',
+      'And next to your actual carry always goes your strongest tank. If the tank dies, your carry is next.')}
+    ${GD_BLOCK.board({t:'Hex to hex', cap:'The melee carry stands in the corner, the tank right next to it – enemies attack the tank first, which draws the aggro.', u:[['A1', 'carry', 'C'], ['A2', 'tank', 'T']]})}
+    ${h('schaden')}
+    <p>Lose a fight and you lose health – depending on the <b>stage</b> and on <b>how many enemy champions</b> are still standing at the end. That's why late losses hurt much more than early ones. The exact values are in the ${artA(csHref('damage'), 'player damage cheatsheet')}.</p>
+    ${h('fehler')}
+    <ol class="art-list gd-err">${fehler.map(f=>`<li>${f}</li>`).join('')}</ol>
+    ${tip('The mistake I see most often with my coaching students', 'facepalm',
+      'First: misjudging on 2-1 whether the board wins – and then the wrong augment. Weak board, items taken anyway.',
+      'Second: weak, but leveling on 2-1 anyway. 4 gold for one more unit – and they lose anyway 🙈 Stay consistent: win streak means good units, level up, slam items. Lose streak means don\'t level, don\'t slam.',
+      'Third: items spread instead of stacked. Items don\'t add up, they multiply – my rule of thumb: every item adds roughly 50 % on top, so 100 % becomes 150, 225 and over 330 %. If your carry or tank has two items, the third has to go on as fast as possible.')}
+    ${GD_BLOCK.next({href:'/guides/tft-fortgeschrittene-guide', ic:'guides', t:'TFT Advanced Guide', d:'Got the basics? Then it\'s about decisions: strongest board, tempo or econ, scouting.'})}
+    ${h('begriffe')}
+    <div class="art-tw"><table class="art-table"><thead><tr><th>Term</th><th>Meaning</th></tr></thead><tbody>${words.map(([w, d])=>`<tr><td><b>${w}</b></td><td>${d}</td></tr>`).join('')}</tbody></table></div>
+    ${h('faq')}${artFaq(faq)}
+    ${artAuthor()}
+  </div>
+  <aside class="ts-side art-side" data-noi18n><nav class="art-toc" aria-label="Contents"><b>Contents</b>
+    <ol>${Object.entries(sec).map(([k, t])=>`<li><a href="#gda-${k}" data-toc="gda-${k}">${t}</a></li>`).join('')}</ol></nav></aside>`;
+}
 function gdBeginnerMount(){
   const box = $('#gdBeginner'); if(!box || box.dataset.done) return;
-  box.innerHTML = gdBeginnerHTML(); box.dataset.done = '1'; enHrefs(box); artToc(box);
+  if(EN){   // Kopf der englischen Seite (in app.html steht der deutsche)
+    const hd = box.parentElement.querySelector('.page-head');
+    if(hd){ hd.setAttribute('data-noi18n', ''); hd.innerHTML = `<div class="crumb"><a href="/guides">Guides</a> / Beginner</div>
+      <h1 class="tool-h1"><span class="th-key">TFT Beginner Guide:</span> How Teamfight Tactics works</h1>
+      <p>New to TFT? Here you learn every basic for your first games: how gold and interest work, when to level or roll, how traits and items work and where your champions belong – explained simply, with tips from a Challenger player.</p>`; }
+  }
+  if(!box.previousElementSibling || !box.previousElementSibling.classList.contains('gd-hero')) box.insertAdjacentHTML('beforebegin', gdHero('anfaenger', L('TFT Anfänger Guide', 'TFT Beginner Guide')));
+  box.innerHTML = gdTok(EN ? gdBeginnerHTMLEn() : gdBeginnerHTML()); box.dataset.done = '1'; gdLinkFix(box); gdWidgets(box); enHrefs(box); artToc(box);
 }
 function guideHTML(g){
   if(g.href) return `<a class="card guide guide-on" href="${g.href}"><div class="guide-cover" style="background:${g.col}"><div>${esc(g.t)}<small>TFTClimb</small></div></div><div><span class="pill gold">${esc(g.s)}</span><h3 style="margin-top:10px">${esc(g.t)}</h3><p>${esc(g.d)}</p><p style="color:var(--faint);font-size:.82rem">${esc(g.x)}</p><span class="link-arrow">Zum Guide →</span></div></a>`;
@@ -3104,9 +3468,7 @@ function renderHome(){
   $('#teamViTraits').innerHTML = vi ? vi.t.map(n=>`<span class="tbadge">${traitHex(n,'base',18)}<span>${esc(n)}</span></span>`).join('') : '';
   $('#coachPkgs').innerHTML = packages.map(pkgHTML).join('');
   $('#coachQuotes').innerHTML = testimonials.map(testimonialHTML).join('');
-  $('#allGuides').innerHTML = GUIDES_LIVE ? guides.map(guideHTML).join('') : `<div class="gd-soon"><span class="gd-soon-ic">${ndSvg('guides', 1.6)}</span><b>Coming in Set 19</b><p>${L('Wir schreiben gerade neue Guides von Challenger-Spielern – sie erscheinen mit dem Start von Set 19.', 'We are writing new guides from Challenger players – they arrive with the launch of Set 19.')}</p></div>`
-    // nur lokal: Liste der fertigen Entwürfe zum Durchklicken
-    + (GD_PREVIEW && !GUIDES_LIVE ? `<div class="gd-preview"><b>Vorschau (nur lokal)</b>${[['/guides/tft-anfaenger-guide', 'Anfänger'], ...(window.TFT_GUIDES || []).map(g=>['/guides/' + g.slug, g.crumb])].map(([h, t])=>`<a href="${h}">${esc(t)}</a>`).join('')}</div>` : '');
+  $('#allGuides').innerHTML = gdPlanHTML();   // Veröffentlichungsplan mit allen Guides (lokal: alle als Vorschau klickbar)
 }
 
 /* ================= APPLY ================= */
@@ -3721,8 +4083,111 @@ function dpsHover(e){
   tip.style.left = Math.min(r.width - tip.offsetWidth - 4, px + 12) + 'px';
 }
 
+/* ================= STREAK- & ZINS-RECHNER ================= */
+// Rechnet von 2-1 bis zum Rolldown auf 4-2: Grundgold, Zinsen, Streak-Gold und Sieg-Gold je Runde – und was ein Streak-Bruch kostet.
+// Regeln aus cheats.econ (data/custom-<Set>.js). Annahme: Bis 4-2 wird nichts ausgegeben. Karussell = keine Runde, Monster = Einkommen ohne Ergebnis
+const SK_ECON = () => Object.assign({base:5, win:1, per:10, cap:5, streak:[[3, 1], [5, 2], [6, 3]]}, (TFT_CUSTOM_SET.cheats || {}).econ || {});
+const SK_ROUNDS = ['2-1', '2-2', '2-3', ['2-4', 'car'], '2-5', '2-6', ['2-7', 'pve'], '3-1', '3-2', '3-3', ['3-4', 'car'], '3-5', '3-6', ['3-7', 'pve'], '4-1', ['4-2', 'end']].map(r=>Array.isArray(r) ? {r:r[0], t:r[1]} : {r, t:'pvp'});
+const SK_PVP = SK_ROUNDS.filter(x=>x.t === 'pvp').map(x=>x.r);
+const skStreakGold = n => SK_ECON().streak.reduce((g, [k, v])=>n >= k ? v : g, 0);
+// eff: Ergebnis je PvP-Runde ('w' | 'l' | null), start: Gold vor 2-1
+function skRun(eff, start){
+  const E = SK_ECON(); let gold = start, streak = 0, type = '', sum = {base:0, it:0, sg:0, win:0}; const rows = [];
+  SK_ROUNDS.forEach(x=>{
+    if(x.t === 'car'){ rows.push({...x, gold}); return; }
+    const it = Math.min(E.cap, Math.floor(gold / E.per)), sg = skStreakGold(streak);   // Zinsen vor dem Grundgold, Streak-Gold für die Serie bis hierher
+    gold += it + E.base + sg; Object.assign(sum, {base:sum.base + E.base, it:sum.it + it, sg:sum.sg + sg});
+    const row = {...x, it, base:E.base, sg, streak, type};
+    if(x.t === 'pvp'){ const res = eff[SK_PVP.indexOf(x.r)] || null; row.res = res;
+      if(res){ if(res === type) streak++; else { type = res; streak = 1; } if(res === 'w'){ gold += E.win; sum.win += E.win; row.win = E.win; } } }
+    row.gold = gold; rows.push(row);
+  });
+  return {gold, rows, sum};
+}
+const sk = {start:10, res:Array(SK_PVP.length).fill(null)};
+try { const s = JSON.parse(localStorage.getItem('tftfreaks_streak_v1')); if(s && Array.isArray(s.res) && s.res.length === SK_PVP.length) Object.assign(sk, {start:Math.max(0, Math.min(40, +s.start || 0)), res:s.res}); } catch(e){}
+const skSave = () => { try { localStorage.setItem('tftfreaks_streak_v1', JSON.stringify(sk)); } catch(e){} };
+const skEff = res => { let last = null; return res.map(v=>(last = v || last)); };   // nicht angeklickte Runden setzen die letzte Serie fort
+let skMounted = false, skShown = null;
+function skMount(){
+  if(skMounted) return; skMounted = true;
+  const app = $('#skApp'); if(!app) return;
+  const art = document.querySelector('[data-pre="streak"]'), trust = document.querySelector('[data-pre="streak-trust"]');
+  if(art){ art.innerHTML = gdTok(skArticle()); enHrefs(art); artToc(art); }
+  if(trust) trust.innerHTML = tioTrust(L('Wir halten unsere Tools für euren Climb aktuell: Die Gold-Regeln prüfen wir mit jedem Set – damit eure Econ-Planung stimmt.', 'We keep our tools up to date for your climb: we check the gold rules with every set – so your econ planning is right.'));
+  const stage = s => `<div class="sk-st"><span class="sk-sn">Stage ${s}</span><div class="sk-rr">${SK_ROUNDS.filter(x=>x.r[0] === String(s)).map(x=>x.t === 'pvp'
+      ? `<button type="button" class="sk-r" data-skr="${SK_PVP.indexOf(x.r)}"><b>${x.r}</b><i></i></button>`
+      : `<span class="sk-r sk-${x.t}"><b>${x.r}</b><i>${x.t === 'car' ? L('Karussell', 'Carousel') : x.t === 'pve' ? 'Monster' : 'Rolldown'}</i></span>`).join('')}</div></div>`;
+  app.innerHTML = `<div class="sk">
+    <section class="card sk-in tio-in" aria-label="${L('Deine Angaben', 'Your input')}">
+      ${tioHead(false, tioReset('id="skReset"'), L('Klick deine Runden an – das Ergebnis rechnet sofort mit.', 'Click your rounds – the result updates instantly.'))}
+      <section><h3 class="rd-h"><b>1</b> ${L('Dein Gold vor 2-1', 'Your gold before 2-1')}</h3>
+        <label class="rd-f"><span>Gold</span><b id="skStartV"></b><input type="range" id="skStart" min="0" max="40" step="1" value="${sk.start}" aria-label="${L('Gold vor 2-1', 'Gold before 2-1')}"></label></section>
+      <section><h3 class="rd-h"><b>2</b> ${L('Deine Runden bis 4-2', 'Your rounds until 4-2')}</h3>
+        <div class="sk-pre"><button type="button" data-skpre="w">${L('Win Streak', 'Win streak')}</button><button type="button" data-skpre="l">${L('Lose Streak', 'Lose streak')}</button><button type="button" data-skpre="">${L('Leeren', 'Clear')}</button></div>
+        ${[2, 3, 4].map(stage).join('')}
+        <p class="rd-hint">${L('Klick auf eine Runde: Sieg → Niederlage → leer. Runden ohne Eintrag setzen deine letzte Serie fort.', 'Click a round: win → loss → empty. Rounds without an entry continue your last streak.')}</p></section>
+    </section>
+    <section class="card sk-res tio-out" aria-label="${L('Dein Ergebnis', 'Your result')}">${tioHead(true)}<div id="skRes" aria-live="polite"></div>
+      ${tioSec(`<span class="tio-sic">${ic('gold')}</span>`, L('Runde für Runde', 'Round by round'), L('So setzt sich dein Gold zusammen', 'How your gold adds up'), '<div id="skTable"></div>')}</section>
+  </div>`;
+  function ic(k){ return `<img src="assets/icons/tft/${k}.png" alt="" width="22" height="22">`; }
+  app.addEventListener('click', e=>{
+    const r = e.target.closest('[data-skr]'); if(r){ const i = +r.dataset.skr; sk.res[i] = sk.res[i] === null ? 'w' : sk.res[i] === 'w' ? 'l' : null; skSave(); skUpdate(); return; }
+    const p = e.target.closest('[data-skpre]'); if(p){ const v = p.dataset.skpre || null; sk.res = Array(SK_PVP.length).fill(null); if(v) sk.res[0] = v; skSave(); skUpdate(); return; }
+    if(e.target.closest('#skReset')){ sk.start = 10; sk.res = Array(SK_PVP.length).fill(null); $('#skStart').value = 10; skSave(); skUpdate(); }
+  });
+  $('#skStart').addEventListener('input', e=>{ sk.start = +e.target.value; skSave(); skUpdate(); });
+  skUpdate();
+}
+function skUpdate(){
+  const eff = skEff(sk.res), idle = !eff[0], E = SK_ECON();
+  $('#skStartV').textContent = sk.start + ' Gold';
+  document.querySelectorAll('#skApp [data-skr]').forEach(b=>{ const i = +b.dataset.skr, v = eff[i], own = !!sk.res[i];
+    b.className = 'sk-r' + (v ? ' ' + v : '') + (v && !own ? ' ghost' : '') + (idle && i === 0 ? ' pulse' : '');
+    b.querySelector('i').textContent = v === 'w' ? L('Sieg', 'Win') : v === 'l' ? L('Niederl.', 'Loss') : '–'; });
+  const me = skRun(eff, sk.start), W = skRun(Array(SK_PVP.length).fill('w'), sk.start), Lo = skRun(Array(SK_PVP.length).fill('l'), sk.start);
+  const base = eff[0] === 'w' ? W : Lo, brk = eff.some(v=>v !== eff[0]), loss = base.gold - me.gold, max = Math.max(W.gold, Lo.gold, me.gold);
+  const bar = (t, g, c, on) => `<div class="sk-bar${on ? ' on' : ''}"><span>${t}</span><div><i class="${c}" style="width:${Math.round(g / max * 100)}%"></i></div><b>${g}</b></div>`;
+  const res = $('#skRes');
+  if(idle){ res.innerHTML = `<div class="sk-idle"><b>${L('Wie viel Gold hast du auf 4-2?', 'How much gold do you have on 4-2?')}</b><span>${L('Klick links deine Runden an oder wähl eine Serie. Zum Vergleich – wenn du nichts ausgibst:', 'Click your rounds on the left or pick a streak. For comparison – if you spend nothing:')}</span>
+      ${bar(L('Win Streak durchgezogen', 'Full win streak'), W.gold, 'w')}${bar(L('Lose Streak durchgezogen', 'Full lose streak'), Lo.gold, 'l')}</div>`;
+    $('#skTable').innerHTML = ''; skShown = null; return; }
+  res.innerHTML = `<div class="sk-big"><small>${L('Dein Gold auf 4-2', 'Your gold on 4-2')}</small><b id="skGold">${me.gold}</b><span>${L('vor dem Rolldown, wenn du bis dahin nichts ausgibst', 'before the rolldown, if you spend nothing until then')}</span></div>
+    ${brk && loss > 0 ? `<div class="sk-loss"><b>−${loss} Gold</b><span>${L(`kostet dich der Bruch gegenüber der durchgezogenen ${eff[0] === 'w' ? 'Win' : 'Lose'} Streak.`, `is what the break costs you compared to the full ${eff[0] === 'w' ? 'win' : 'lose'} streak.`)}</span></div>` : brk ? `<div class="sk-loss ok"><b>${loss < 0 ? '+' + (-loss) : '±0'} Gold</b><span>${L('gegenüber der durchgezogenen Serie – die Siege holen den Bruch wieder rein.', 'compared to the full streak – the wins make up for the break.')}</span></div>` : ''}
+    <div class="sk-bars">${bar(L('Deine Partie', 'Your game'), me.gold, eff[0], true)}${bar(L('Win Streak durchgezogen', 'Full win streak'), W.gold, 'w')}${bar(L('Lose Streak durchgezogen', 'Full lose streak'), Lo.gold, 'l')}</div>
+    <div class="sk-sum">${[[L('Grundgold', 'Base income'), me.sum.base], [L('Zinsen', 'Interest'), me.sum.it], ['Streak-Gold', me.sum.sg], [L('Sieg-Gold', 'Win gold'), me.sum.win]].map(([t, v])=>`<span><small>${t}</small><b>+${v}</b></span>`).join('')}</div>
+    <p class="sk-note">${L(`Ohne Ausgaben und ohne Gold aus Augments, Encountern oder Beute. Niederlagen kosten dich außerdem Leben – das zeigt der Rechner nicht. Regeln: ${E.base} Gold pro Runde, Sieg +${E.win}, Zinsen 1 je ${E.per} Gold (höchstens ${E.cap}), Streak ab 3 in Folge.`, `Without spending and without gold from augments, encounters or loot. Losses also cost you health – the calculator doesn't show that. Rules: ${E.base} gold per round, win +${E.win}, interest 1 per ${E.per} gold (max ${E.cap}), streak from 3 in a row.`)}</p>`;
+  const el = $('#skGold'); if(skShown != null && skShown !== me.gold) numUp(el, skShown, me.gold, '', 0, 600); skShown = me.gold;
+  $('#skTable').innerHTML = `<div class="art-tw"><table class="art-table sk-tb"><thead><tr><th>${L('Runde', 'Round')}</th><th>${L('Ergebnis', 'Result')}</th><th>${L('Zinsen', 'Interest')}</th><th>Streak</th><th>${L('Sieg', 'Win')}</th><th>Gold</th></tr></thead><tbody>${me.rows.map(x=>x.t === 'car'
+      ? `<tr class="car"><td>${x.r}</td><td colspan="4">${L('Karussell – kein Einkommen', 'Carousel – no income')}</td><td>${x.gold}</td></tr>`
+      : `<tr><td>${x.r}</td><td>${x.t === 'pve' ? 'Monster' : x.t === 'end' ? 'Rolldown' : x.res === 'w' ? L('Sieg', 'Win') : x.res === 'l' ? L('Niederlage', 'Loss') : '–'}</td><td>+${x.it}</td><td>${x.sg ? '+' + x.sg + ` <small>(${x.streak}×)</small>` : '–'}</td><td>${x.win ? '+' + x.win : '–'}</td><td><b>${x.gold}</b></td></tr>`).join('')}</tbody></table></div>`;
+}
+// Artikel unter dem Rechner (für Suchmaschinen schon im HTML, siehe data-pre)
+function skArticle(){
+  const E = SK_ECON(), W = skRun(Array(SK_PVP.length).fill('w'), 10), Lo = skRun(Array(SK_PVP.length).fill('l'), 10);
+  const st = E.streak.map(([k, v], i)=>[i < E.streak.length - 1 ? `${k}–${E.streak[i + 1][0] - 1}` : `${L('ab', 'from')} ${k}`, '+' + v]);
+  const body = `<p>${L('In TFT entscheidet dein Gold, wie stark du später bist. Neben dem Grundgold bringen dir <b>Zinsen</b> und <b>Serien</b> das meiste Extra-Gold. Der Rechner zeigt dir, wie viel Gold du bis zum Rolldown auf 4-2 hast – und was es dich kostet, wenn deine Win Streak oder Lose Streak bricht.',
+      'In TFT your gold decides how strong you are later. Besides base income, <b>interest</b> and <b>streaks</b> give you the most extra gold. The calculator shows how much gold you have by the rolldown on 4-2 – and what it costs you when your win streak or lose streak breaks.')}</p>
+    <h3 id="sk-streak">${L('So viel Streak-Gold gibt es', 'How much streak gold you get')}</h3>
+    ${artTw([L('Serie', 'Streak'), L('Bonus pro Runde', 'Bonus per round')], st.map(([a, b])=>`<tr><td>${a} ${L('in Folge', 'in a row')}</td><td><b>${b} Gold</b></td></tr>`))}
+    <p>${L('Das gilt für Siege und Niederlagen gleich. Monster-Runden zahlen das Streak-Gold weiter und brechen keine Serie. Das Karussell zählt nicht als Runde – dort gibt es kein Einkommen.', 'This applies to wins and losses alike. Monster rounds keep paying streak gold and don\'t break a streak. The carousel doesn\'t count as a round – there is no income there.')}</p>
+    <h3 id="sk-zinsen">${L('So funktionieren die Zinsen', 'How interest works')}</h3>
+    <p>${L(`Zu Beginn jeder Runde bekommst du 1 Gold für je ${E.per} Gold auf deinem Konto – höchstens ${E.cap} Gold. Die Zinsen werden vor dem Grundgold von ${E.base} Gold gerechnet. Wer früh auf 50 Gold spart, kassiert jede Runde das Maximum.`, `At the start of every round you get 1 gold for every ${E.per} gold in your bank – at most ${E.cap} gold. Interest is counted before the base income of ${E.base} gold. Save up to 50 gold early and you collect the maximum every round.`)}</p>
+    <h3 id="sk-bruch">${L('Was kostet ein Streak-Bruch?', 'What does a broken streak cost?')}</h3>
+    <p>${L(`Mit 10 Gold vor 2-1 und ohne Ausgaben hast du auf 4-2 mit einer durchgezogenen Win Streak ${W.gold} Gold, mit einer durchgezogenen Lose Streak ${Lo.gold} Gold. Bricht die Serie, startet der Zähler von vorn – bis zum nächsten Bonus vergehen wieder drei Runden. Probier oben aus, wie viel dich ein Bruch in Stage 2 oder 3 kostet.`, `With 10 gold before 2-1 and no spending, a full win streak gets you ${W.gold} gold on 4-2, a full lose streak ${Lo.gold} gold. If the streak breaks, the counter starts over – it takes three rounds again until the next bonus. Try above how much a break in stage 2 or 3 costs you.`)}</p>
+    ${GD_BLOCK.quote({pose:'selbstbewusst', t:L('Ab Stage 4 ist mir fast egal, ob ich Win oder Lose Streak spiele – dann will eigentlich jeder gewinnen.', 'From stage 4 on I barely care whether I play a win or lose streak – by then everyone wants to win.')})}
+    <p>${L(`Wann sich eine Lose Streak lohnt und wie du sie sauber spielst, steht im ${artA('/guides/tft-lose-streak-guide', 'Lose-Streak-Guide')}. Wie viel Gold du dann für deine Units brauchst, rechnet der ${artA(toolHref('rolldown'), 'Rolldown-Rechner')} aus.`, `When a lose streak pays off and how to play it cleanly is in the ${artA('/guides/tft-lose-streak-guide', 'lose streak guide')}. How much gold you then need for your units is calculated by the ${artA(toolHref('rolldown'), 'rolldown calculator')}.`)}</p>`;
+  const faq = [[L('Wie viel Streak-Gold gibt es in TFT?', 'How much streak gold do you get in TFT?'), L(`Ab 3 Siegen oder Niederlagen in Folge +1 Gold pro Runde, ab 5 +2 und ab 6 +3 – für Win Streak und Lose Streak gleich.`, `From 3 wins or losses in a row +1 gold per round, from 5 +2 and from 6 +3 – the same for win and lose streaks.`)],
+    [L('Wie viele Zinsen gibt es in TFT?', 'How much interest do you get in TFT?'), L(`1 Gold für je ${E.per} Gold auf dem Konto, höchstens ${E.cap} Gold pro Runde – also ab 50 Gold das Maximum.`, `1 gold for every ${E.per} gold in the bank, at most ${E.cap} gold per round – so the maximum from 50 gold.`)],
+    [L('Bricht eine Monster-Runde die Serie?', 'Does a monster round break the streak?'), L('Nein. Monster-Runden zahlen das Streak-Gold weiter, das Karussell bringt gar kein Einkommen.', 'No. Monster rounds keep paying streak gold, the carousel gives no income at all.')],
+    [L('Lohnt sich eine Lose Streak?', 'Is a lose streak worth it?'), L(`Gold-mäßig bringt sie fast so viel wie eine Win Streak – dafür verlierst du Leben. Wann sie sich lohnt, steht im Lose-Streak-Guide.`, `Gold-wise it brings almost as much as a win streak – but you lose health. When it pays off is in the lose streak guide.`)]];
+  return artFrame({id:'ts-streak', h2:L('TFT Streak-Gold und Zinsen: So rechnest du bis 4-2', 'TFT streak gold and interest: how to count until 4-2'), og:L('tft-streak-rechner', 'tft-streak-calculator'),
+    alt:L('TFT Streak-Rechner: Wie viel Gold kostet der Bruch? – kostenloses Tool von TFTClimb', 'TFT streak calculator: what does a broken streak cost? – free tool by TFTClimb'), body, faq, tools:['rolldown', 'augments', 'drops', 'dps'], src:E.src});
+}
 function renderTools(sub, a, b){
-  const key = ['rolldown','tierlist','drops','dps','augments'].includes(sub) ? sub : '';
+  const key = ['rolldown','tierlist','drops','dps','augments','streak'].includes(sub) ? sub : '';
+  if(key==='streak') skMount();
   const views = [...document.querySelectorAll('#page-tools .tool-view')];
   if(!key || !(views.find(v=>!v.hidden) || {}).dataset.tool) slideDir = 0;   // Übersicht ↔ Tool ohne Wischen
   const to = views.find(v=>v.dataset.tool===key);
@@ -6242,7 +6707,7 @@ const rkComps = t => { const lo = RANK_TIERS.indexOf(t) <= 3, pool = mainComps.f
   const list = (lo && easy.length >= 2 ? easy : pool).slice().sort((a, b)=>'SABC'.indexOf(a.tier) - 'SABC'.indexOf(b.tier) || (D[a.diff] ?? 2) - (D[b.diff] ?? 2)).slice(0, 3);   // niedrige Ränge: stärkste unter den leichten/mittleren Comps
   return list.map(c=>`${artA('/tierlist?comp=' + encodeURIComponent(c.slug), esc(c.name))} (${c.tier}-Tier)`); };
 const rkLpTable = () => artTw([L('Platz', 'Place'), 'LP'], RK_LP.map((v, i)=>`<tr${i === 3 ? ' class="on"' : ''}><td><b>${i + 1}.</b></td><td>${v > 0 ? '+' : '−'}${Math.abs(v)} LP</td></tr>`));
-const rkGuideOk = () => GUIDES_LIVE || GD_PREVIEW;
+const rkGuideOk = () => gdOpen('anfaenger');   // Rang-Seiten verlinken den Anfänger-Guide, sobald er erschienen ist
 // Vorschaubilder der Ränge (tools/og-bilder.js): Übersicht mit allen Waben, je Rang das Emblem
 const rkOgImg = k => `assets/og/ranks/${k ? L('tft-rang-', 'tft-rank-') + k : L('tft-raenge', 'tft-ranks')}.jpg`;
 const SEO_ART = {
@@ -6395,7 +6860,10 @@ function nsData(n){
 // Termine aus dem Patch-Plan: PBE-Start (Eintrag mit „Set N PBE“) und Release (Patch N.1)
 function nsDates(n){
   const all = stPatchDates(), ev = x => (x.ev && x.ev[0] || []).join(' ');
-  return {pbe:all.find(x=>new RegExp(`Set ${n} PBE`).test(ev(x))), live:all.find(x=>x.id === n + '.1')};
+  // PBE: aus dem Patch-Plan („Set N PBE“), sonst aus cheats.setDates (est = noch nicht von Riot bestätigt)
+  const sd = ((TFT_CUSTOM_SET.cheats || {}).setDates || {})[n], m = sd && String(sd.pbe || '').match(/^(\d{4})-(\d\d)-(\d\d)/);
+  const pbe = all.find(x=>new RegExp(`Set ${n} PBE`).test(ev(x))) || (m ? {id:'pbe', d:berlinTime(+m[1], +m[2], +m[3], 20, 0), est:!!sd.est} : undefined);
+  return {pbe, live:all.find(x=>x.id === n + '.1')};
 }
 const NS_COST = ['#9aa4b2', '#2bb673', '#2f8cf0', '#b066f3', '#f2a516'];
 function nsHTML(n, D){
@@ -6405,7 +6873,7 @@ function nsHTML(n, D){
   const ch = D ? (D.champions || []).filter(c=>c.c >= 1 && c.c <= 5) : [], tr = D ? (D.traits || []).filter(t=>t.bp && t.bp.length) : [], au = D ? (D.augments || []).length : 0;
   const img = p => p ? (/^https?:/.test(p) ? p : (D.cdn || '') + p) : '';
   const back = ch.filter(c=>old.has(c.n)).length;
-  const card = (k, t, d, sub) => `<div class="ns-date${k === phase || (k === 'pbe' && phase === 'soon') ? ' on' : ''}"><small>${t}</small><b>${d ? esc(day(d.d)) : L('Termin folgt', 'Date to follow')}</b>${d ? `<span>${d.d <= now ? sub[1] : cdDays(d.d)}</span>` : ''}</div>`;
+  const card = (k, t, d, sub) => `<div class="ns-date${k === phase || (k === 'pbe' && phase === 'soon') ? ' on' : ''}"><small>${t}${d && d.est ? ' · ' + L('voraussichtlich', 'expected') : ''}</small><b>${d ? esc(day(d.d)) : L('Termin folgt', 'Date to follow')}</b>${d ? `<span>${d.d <= now ? sub[1] : cdDays(d.d)}</span>` : ''}</div>`;
   const art = SEO_ART.ns(n, D, {pbe, live, phase, ch:ch.length, back});
   if(n === nsNext()) Object.assign(art, {og:`assets/og/tft-set-${n}.jpg`, alt:L(`TFT Set ${n}: PBE-Start und Release`, `TFT Set ${n}: PBE start and release`)});   // Bild gibt es nur fürs nächste Set (tools/og-bilder.js)
   return `<div class="page-head"><div class="crumb"><a href="/">Home</a> / Set ${n}</div>
@@ -6422,18 +6890,19 @@ function nsHTML(n, D){
           <img src="${esc(img(c.tile || c.sq))}" alt="${esc(c.n)}" width="64" height="64" loading="lazy"><b>${esc(c.n)}</b>${isNew ? `<em class="${old.has(c.n) ? 'back' : 'new'}">${old.has(c.n) ? L('zurück', 'returning') : L('neu', 'new')}</em>` : ''}<small>${(c.t || []).map(esc).join(' · ')}</small></div>`).join('')}</div></div>` : ''; }).join('')}</section>
       ${tr.length ? `<section class="ns-box"><h2>${L(`Alle ${tr.length} Traits von Set ${n}`, `All ${tr.length} traits of Set ${n}`)}</h2><div class="ns-trs">${[...tr].sort((a, b)=>L(a.de || a.n, a.n).localeCompare(L(b.de || b.n, b.n))).map(t=>`<div class="ns-tr">${t.icon ? `<img src="${esc(img(t.icon))}" alt="" width="32" height="32" loading="lazy">` : ''}<b>${esc(L(t.de || t.n, t.n))}</b><small>${t.bp.join(' / ')}</small></div>`).join('')}</div>
         ${au ? `<p class="ns-note">${L(`Dazu ${au} Augments in den Spieldaten von Set ${n}.`, `Plus ${au} augments in the Set ${n} game data.`)}</p>` : ''}</section>` : ''}`
-    : `<section class="ns-box ns-wait">${viSays(phase === 'soon' ? L(`Sobald Set ${n} auf dem PBE ist${pbe ? ` (${esc(cdDay(pbe.d, {day:'numeric', month:'long'}))})` : ''}, findest du hier alle neuen Champions, Traits und Augments – direkt aus den Spieldaten.`, `As soon as Set ${n} hits the PBE${pbe ? ` (${esc(cdDay(pbe.d, {day:'numeric', month:'long'}))})` : ''}, you'll find every new champion, trait and augment here – straight from the game data.`)
+    : `<section class="ns-box ns-wait">${viSays(phase === 'soon' ? L(`Sobald Set ${n} auf dem PBE ist${pbe ? ` (${pbe.est ? 'voraussichtlich ' : ''}${esc(cdDay(pbe.d, {day:'numeric', month:'long'}))})` : ''}, findest du hier alle neuen Champions, Traits und Augments – direkt aus den Spieldaten.`, `As soon as Set ${n} hits the PBE${pbe ? ` (${pbe.est ? 'expected ' : ''}${esc(cdDay(pbe.d, {day:'numeric', month:'long'}))})` : ''}, you'll find every new champion, trait and augment here – straight from the game data.`)
       : L(`Die Daten von Set ${n} werden gerade aufbereitet – schau in ein paar Stunden wieder vorbei.`, `The Set ${n} data is being prepared – check back in a few hours.`))}</section>`}
     <section class="tool-seo ag-art" aria-labelledby="ts-ns">${seoArtHTML(art, 'nsa', 'ts-ns')}</section>`;
 }
 SEO_ART.ns = (n, D, o)=>{ const S = TFT_DATA.set, {pbe, live, phase} = o, dd = d => cdDay(d.d, {day:'numeric', month:'long', year:'numeric'}), prev = n - 1;
-  const evs = pbe && pbe.ev ? L(pbe.ev[0], pbe.ev[1]).filter(x=>!/PBE/.test(x)) : [];
+  const evs = pbe && pbe.ev ? L(pbe.ev[0], pbe.ev[1]).filter(x=>!/PBE/.test(x)) : [], vo = pbe && pbe.est ? L('voraussichtlich ', 'expected ') : '';   // vo: PBE-Termin noch nicht von Riot bestätigt
   return {h:L(`TFT Set ${n}: Release, PBE und was sich ändert`, `TFT Set ${n}: release, PBE and what changes`),
-  i:L(`Mit jedem neuen Set tauscht Riot in Teamfight Tactics fast alles aus: Champions, Traits, Augments und oft auch Items. ${pbe ? `Set ${n} kommt am ${esc(dd(pbe))} auf den PBE` : `Set ${n} kommt zuerst auf den PBE`}${live ? ` und geht am ${esc(dd(live))} auf den Live-Servern an den Start` : ''}. Hier findest du alle Termine und ab dem PBE alle Inhalte des neuen Sets.`,
-    `With every new set Riot swaps out almost everything in Teamfight Tactics: champions, traits, augments and often items too. ${pbe ? `Set ${n} hits the PBE on ${esc(dd(pbe))}` : `Set ${n} hits the PBE first`}${live ? ` and launches on the live servers on ${esc(dd(live))}` : ''}. Here you find every date and, from the PBE on, every piece of content of the new set.`),
+  i:L(`Mit jedem neuen Set tauscht Riot in Teamfight Tactics fast alles aus: Champions, Traits, Augments und oft auch Items. ${pbe ? `Set ${n} kommt ${vo}am ${esc(dd(pbe))} auf den PBE` : `Set ${n} kommt zuerst auf den PBE`}${live ? ` und geht am ${esc(dd(live))} auf den Live-Servern an den Start` : ''}. Hier findest du alle Termine und ab dem PBE alle Inhalte des neuen Sets.`,
+    `With every new set Riot swaps out almost everything in Teamfight Tactics: champions, traits, augments and often items too. ${pbe ? `Set ${n} hits the PBE ${pbe.est ? 'on ' + esc(dd(pbe)) + ' (expected)' : 'on ' + esc(dd(pbe))}` : `Set ${n} hits the PBE first`}${live ? ` and launches on the live servers on ${esc(dd(live))}` : ''}. Here you find every date and, from the PBE on, every piece of content of the new set.`),
   ...(D && o.ch ? {st:[[o.ch, L('Champions', 'champions')], [(D.traits || []).filter(t=>t.bp && t.bp.length).length, L('Traits', 'traits')], ...(o.back ? [[o.back, L(`Champions aus Set ${prev} kehren zurück`, `champions return from Set ${prev}`), 'g']] : [])]} : {}),
   s:[['termine', L(`Wann kommt Set ${n}?`, `When does Set ${n} launch?`), csUl([
-      pbe ? L(`<b>PBE-Start:</b> ${esc(dd(pbe))} – mit Patch ${esc(pbe.id)}${evs.length ? ` (${esc(evs.join(', '))})` : ''}.`, `<b>PBE start:</b> ${esc(dd(pbe))} – with patch ${esc(pbe.id)}${evs.length ? ` (${esc(evs.join(', '))})` : ''}.`) : '',
+      pbe ? (pbe.est ? L(`<b>PBE-Start:</b> voraussichtlich ${esc(dd(pbe))} – Riot hat den Termin noch nicht bestätigt.`, `<b>PBE start:</b> expected on ${esc(dd(pbe))} – Riot has not confirmed the date yet.`)
+        : L(`<b>PBE-Start:</b> ${esc(dd(pbe))} – mit Patch ${esc(pbe.id)}${evs.length ? ` (${esc(evs.join(', '))})` : ''}.`, `<b>PBE start:</b> ${esc(dd(pbe))} – with patch ${esc(pbe.id)}${evs.length ? ` (${esc(evs.join(', '))})` : ''}.`)) : '',
       live ? L(`<b>Release:</b> ${esc(dd(live))} mit Patch ${esc(live.id)}.`, `<b>Release:</b> ${esc(dd(live))} with patch ${esc(live.id)}.`) : '',
       L(`<b>Bis dahin:</b> Set ${S} bleibt das Live-Set – die ${artA('/tierlist', 'Tierlist')} und alle Tools zeigen weiter Set ${S}.`, `<b>Until then:</b> Set ${S} stays the live set – the ${artA('/tierlist', 'tier list')} and every tool keep showing Set ${S}.`)])
       + csPs(L(`Alle Termine bis zum Release stehen im ${artA(csHref('patch-schedule'), 'Patch-Plan')}, den genauen Countdown zum nächsten Patch zeigt der ${artA(COUNTDOWN_PATH, 'Patch-Countdown')}.`, `Every date until release is in the ${artA(csHref('patch-schedule'), 'patch schedule')}, the exact countdown to the next patch is in the ${artA(COUNTDOWN_PATH, 'patch countdown')}.`))],
@@ -6446,8 +6915,8 @@ SEO_ART.ns = (n, D, o)=>{ const S = TFT_DATA.set, {pbe, live, phase} = o, dd = d
       L('<b>Ranked:</b> Mit dem neuen Set beginnt eine neue Ranked-Saison.', '<b>Ranked:</b> a new ranked season starts with the new set.')])],
     ['tftclimb', L(`Set ${n} bei TFTClimb`, `Set ${n} on TFTClimb`), csPs(L(`Ab dem PBE findest du alle Champions, Traits und Augments von Set ${n} auf dieser Seite. Über die Set-Auswahl oben rechts schaltest du die ganze Seite auf Set ${n} um – Bibliothek, Team Builder und Tools nutzen dann die PBE-Daten. Zum Release folgen Tierlist, Cheatsheets und Comp-Guides für Set ${n}.`,
       `From the PBE on you find every champion, trait and augment of Set ${n} on this page. With the set selector at the top right you switch the whole site to Set ${n} – library, team builder and tools then use the PBE data. Tier list, cheatsheets and comp guides for Set ${n} follow at release.`))]],
-  q:[[L(`Wann kommt TFT Set ${n}?`, `When does TFT Set ${n} come out?`), live ? L(`Set ${n} startet am ${dd(live)} mit Patch ${live.id}${pbe ? `, auf dem PBE schon ab dem ${dd(pbe)}` : ''}.`, `Set ${n} launches on ${dd(live)} with patch ${live.id}${pbe ? `, on the PBE from ${dd(pbe)}` : ''}.`) : L(`Den genauen Termin nennt Riot im Patch-Plan – sobald er feststeht, steht er hier.`, `Riot announces the exact date in the patch schedule – as soon as it is set, it is listed here.`)],
-    [L(`Kann ich Set ${n} schon spielen?`, `Can I play Set ${n} already?`), L(`${phase === 'soon' ? `Ab dem PBE-Start${pbe ? ` am ${dd(pbe)}` : ''}` : 'Ja'}: auf dem PBE, Riots Testserver, mit einem eigenen PBE-Konto. Auf den normalen Servern erst ab dem Release.`, `${phase === 'soon' ? `From the PBE start${pbe ? ` on ${dd(pbe)}` : ''}` : 'Yes'}: on the PBE, Riot's test server, with a separate PBE account. On the regular servers only from release.`)],
+  q:[[L(`Wann kommt TFT Set ${n}?`, `When does TFT Set ${n} come out?`), live ? L(`Set ${n} startet am ${dd(live)} mit Patch ${live.id}${pbe ? `, auf dem PBE ${vo}schon ab dem ${dd(pbe)}` : ''}.`, `Set ${n} launches on ${dd(live)} with patch ${live.id}${pbe ? `, on the PBE ${vo}from ${dd(pbe)}` : ''}.`) : L(`Den genauen Termin nennt Riot im Patch-Plan – sobald er feststeht, steht er hier.`, `Riot announces the exact date in the patch schedule – as soon as it is set, it is listed here.`)],
+    [L(`Kann ich Set ${n} schon spielen?`, `Can I play Set ${n} already?`), L(`${phase === 'soon' ? `Ab dem PBE-Start${pbe ? ` ${vo}am ${dd(pbe)}` : ''}` : 'Ja'}: auf dem PBE, Riots Testserver, mit einem eigenen PBE-Konto. Auf den normalen Servern erst ab dem Release.`, `${phase === 'soon' ? `From the PBE start${pbe ? ` ${vo}on ${dd(pbe)}` : ''}` : 'Yes'}: on the PBE, Riot's test server, with a separate PBE account. On the regular servers only from release.`)],
     [L('Wird mein Rang zurückgesetzt?', 'Will my rank be reset?'), L('Mit jedem neuen Set beginnt eine neue Ranked-Saison – du startest dann neu in die Platzierung.', 'Every new set starts a new ranked season – you begin your climb anew.')]],
   ln:['countdown', 'patch-schedule', 'tierlist', 'patches']};
 };
@@ -6856,13 +7325,21 @@ function pageMeta(page, sub){
     case 'bedingungen': return [L('Widerruf & Bedingungen', 'Withdrawal & Terms'), L('Widerruf & Bedingungen für das TFT Coaching bei TFTClimb: Widerrufsbelehrung, Muster-Formular und Regeln für alle Pakete.',
       'Withdrawal & terms for TFT coaching at TFTClimb: withdrawal policy, model form and the rules for every package.')];
     case 'gameplans': return ['TFT Gameplans', L(`TFT Gameplans für jeden Patch: wie du die besten Comps von Start bis Late Game spielst – bald hier auf TFTClimb.`, `TFT game plans for every patch: how to play the best comps from start to late game – coming soon to TFTClimb.`), true];   // Platzhalter, noindex
+    case 'erklaert': {   // TFT erklärt: Artikel oder Übersicht (indexierbar, sobald ein Artikel erschienen ist)
+      const a = sub && ER_BY[sub] && erOpen(sub) && ER_BY[sub].body ? ER_BY[sub] : null;
+      if(a) return [a.title, a.meta];
+      return [L('TFT erklärt – Ranked, Gold & Regeln', 'TFT Explained – Ranked, Gold & Rules'), L('TFT erklärt: Ranked-Reset, LP und MMR, Gold, Zinsen und Serien – die Regeln von Teamfight Tactics einfach erklärt.',
+        'TFT explained: ranked reset, LP and MMR, gold, interest and streaks – the rules of Teamfight Tactics explained simply.'), !ER_LIVE];
+    }
     case 'guides':
-      if((GUIDES_LIVE || GD_PREVIEW) && sub==='anfaenger') return ['TFT Anfänger Guide: Grundlagen, Gold & Zinsen', L('TFT Anfänger Guide: Gold, Zinsen, Leveln, Items und Traits einfach erklärt – alles für deine ersten Partien in Teamfight Tactics.',
+      if(gdOpen('anfaenger') && sub==='anfaenger') return [L('TFT Anfänger Guide: Grundlagen, Gold & Zinsen', 'TFT Beginner Guide: Basics, Gold & Interest'), L('TFT Anfänger Guide: Gold, Zinsen, Leveln, Items und Traits einfach erklärt – alles für deine ersten Partien in Teamfight Tactics.',
         'TFT beginner guide: gold, interest, leveling, items and traits explained simply – everything for your first games of Teamfight Tactics.')];
-      if((GUIDES_LIVE || GD_PREVIEW) && GD_DATA[sub]) return [GD_DATA[sub].title, GD_DATA[sub].meta];
-      if(GUIDES_LIVE && sub==='encounters') return [`TFT Encounters Guide ${S}`, L(`TFT Encounters Guide für ${S}: was jeder Encounter macht, wie oft er kommt und welche Comp du darauf spielst.`,
+      if(GD_DATA[sub] && gdOpen(sub)){ const g = EN && GD_DATA[sub].en ? GD_DATA[sub].en : GD_DATA[sub]; return [g.title, g.meta]; }
+      if(gdOpen('encounters') && sub==='encounters') return [`TFT Encounters Guide ${S}`, L(`TFT Encounters Guide für ${S}: was jeder Encounter macht, wie oft er kommt und welche Comp du darauf spielst.`,
         `TFT encounters guide for ${S}: what each encounter does, how often it shows up and which comp to play on it.`)];
-      return ['TFT Guides', L(`TFT Guides von Challenger-Spielern für ${S}: Strategien, Comps und Encounters – bald hier auf TFTClimb.`, `TFT guides from Challenger players for ${S}: strategies, comps and encounters – coming soon to TFTClimb.`), true];
+      // Übersicht mit dem Veröffentlichungsplan: indexierbar, sobald der erste Guide erschienen ist
+      return [L('TFT Guides vom Challenger – alle Termine', 'TFT Guides by a Challenger – release dates'), L('TFT Guides vom Challenger: Rolldown, Items, Augments, Positionierung, Fast 8 und mehr – alle zwei Tage ein neuer Guide.',
+        'TFT guides by a Challenger: rolldown, items, augments, positioning, Fast 8 and more – a new guide every two days.'), !GUIDES_LIVE];
     case 'tools':
       // Keyword: „Augment-Chancen“ / „augment odds“ – so wird gesucht (nicht „Vorhersage“)
       if(sub==='augments') return [L(`TFT Augment-Chancen ${S} – Prismatisch-Rechner`, `TFT Augment Odds ${S} – Prismatic Calculator`), L(`TFT Augment-Chancen ${S}: alle Augment-Wahrscheinlichkeiten für 2-1, 3-2 und 4-2 – wie oft kommt ein prismatisches Augment?`,
@@ -6873,6 +7350,8 @@ function pageMeta(page, sub){
       // Keyword: Rolldown-Rechner, dazu „Odds“ / „Shop Odds“ / „Reroll-Chancen“ (so wird auch gesucht)
       if(sub==='rolldown') return [L(`TFT Rolldown-Rechner ${S} – Shop Odds pro Level`, `TFT Rolldown Calculator ${S} – Shop Odds`), L(`TFT Rolldown-Rechner ${S}: Shop Odds pro Level, Pool-Größen und Reroll-Chancen – wie viel Gold brauchst du für deine Units?`,
         `TFT rolldown calculator ${S}: shop odds per level, pool sizes and reroll odds – how much gold do you need to hit your units?`)];
+      if(sub==='streak') return [L('TFT Streak-Rechner – Zinsen & Streak-Gold bis 4-2', 'TFT Streak Calculator – Interest & Streak Gold'), L('TFT Streak-Rechner: Wie viel Gold bringen Win Streak und Lose Streak bis 4-2 – und was kostet es dich, wenn die Serie bricht?',
+        'TFT streak calculator: how much gold do win and lose streaks bring until 4-2 – and what does it cost you when the streak breaks?')];
       if(sub==='drops') return [L(`TFT Item-Drop-Chance ${S} – nächste Komponente`, `TFT Item Drop Odds ${S} – Next Component`), L(`TFT Item-Drop-Chance für ${S}: Trag deine Drops aus den Creep-Runden ein und sieh, welche Komponente als Nächstes kommt.`,
         `TFT item drop odds for ${S}: enter your drops from the creep rounds and see which component comes next.`)];
       if(sub==='dps') return [L(`TFT DPS-Rechner ${S} – Builds vergleichen`, `TFT DPS Calculator ${S} – Compare Builds`), L(`TFT DPS-Rechner für ${S}: Vergleich bis zu vier Item-Builds eines Champions und sieh, welcher am meisten Schaden macht.`,
@@ -6917,11 +7396,14 @@ function setMeta(page, sub){
   if(FILE_MODE) return;
   if(noindex){ const c = document.head.querySelector('link[rel="canonical"]'); if(c) c.remove(); return; }
   // kanonische Adresse: eine Adresse pro Inhalt (z. B. /bibliothek statt /bibliothek/champions, Builder ohne Team-Code)
-  const keep = {cheatsheet:csList().map(s=>s[0]), guides:['encounters'], tierlist:['items','augments','holds'], bibliothek:['items','traits','augments'], tools:['rolldown','tierlist','simulator','drops','dps','augments'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
-  const path = page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : page==='comp' ? compHref(compByKey[sub]) : page==='nextset' ? '/tft-set-' + sub : page==='setnews' ? nwHref(nwBy(sub)) : seoPath('/' + page + (keep.includes(sub) ? '/' + sub : ''));
+  const keep = {cheatsheet:csList().map(s=>s[0]), guides:GD_PLAN.map(p=>p.key).filter(gdOpen), tierlist:['items','augments','holds'], bibliothek:['items','traits','augments'], tools:['rolldown','tierlist','simulator','drops','dps','augments','streak'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
+  const path = page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : page==='comp' ? compHref(compByKey[sub]) : page==='nextset' ? '/tft-set-' + sub : page==='setnews' ? nwHref(nwBy(sub)) : page==='erklaert' ? '/tft-erklaert' + (sub && ER_BY[sub] && erOpen(sub) ? '/' + ER_SLUG[sub] : '') : seoPath('/' + page + (keep.includes(sub) ? '/' + sub : ''));
   headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + withLang(path);
   // beide Sprachfassungen für Suchmaschinen verknüpfen
-  [['de', path], ['en', enPath(path)], ['x-default', path]].forEach(([l, p])=>{ headTag(`link[rel="alternate"][hreflang="${l}"]`, ()=>Object.assign(document.createElement('link'), {rel:'alternate', hreflang:l})).href = location.origin + p; });
+  // Guides ohne englische Fassung: kein Verweis auf /en/ (die Adresse leitet dort noch auf die Übersicht)
+  const noEn = (page==='guides' && sub && GD_PLAN_BY[sub] && !GD_PLAN_BY[sub].en) || (page==='erklaert' && sub && ER_BY[sub] && !ER_BY[sub].en);
+  document.head.querySelectorAll('link[rel="alternate"][hreflang="en"]').forEach(l=>{ if(noEn) l.remove(); });
+  [['de', path], ...(noEn ? [] : [['en', enPath(path)]]), ['x-default', path]].forEach(([l, p])=>{ headTag(`link[rel="alternate"][hreflang="${l}"]`, ()=>Object.assign(document.createElement('link'), {rel:'alternate', hreflang:l})).href = location.origin + p; });
   // Sprachumschalter zeigen auf die Gegenstück-Adresse dieser Seite
   document.querySelectorAll('a[hreflang="de"]').forEach(a=>a.setAttribute('href', path));
   document.querySelectorAll('a[hreflang="en"]').forEach(a=>a.setAttribute('href', enPath(path)));
@@ -6931,7 +7413,7 @@ function setMeta(page, sub){
   const chImg = chN && (champImg(chN) || champFallback(chN));
   // Tools mit eigenem Vorschaubild (tools/og-bilder.js, 1200 × 630 PNG) – große Vorschau-Karte bei Google Discover, Discord, X
   const OG_TOOL = Object.fromEntries(Object.entries({augments:['tft-augment-chancen', 'tft-augment-odds'], rolldown:['tft-rolldown-rechner', 'tft-rolldown-calculator'], builder:['tft-team-builder', 'tft-team-builder-en'],
-    dps:['tft-dps-rechner', 'tft-dps-calculator'], drops:['tft-item-drop-chance', 'tft-item-drop-odds'], tierlist:['tft-tierlist-maker', 'tft-tier-list-maker'], simulator:['tft-kampf-simulator', 'tft-battle-simulator']}).map(([k, [d, e]])=>[k, `assets/og/${L(d, e)}.png`]));
+    dps:['tft-dps-rechner', 'tft-dps-calculator'], drops:['tft-item-drop-chance', 'tft-item-drop-odds'], streak:['tft-streak-rechner', 'tft-streak-calculator'], tierlist:['tft-tierlist-maker', 'tft-tier-list-maker'], simulator:['tft-kampf-simulator', 'tft-battle-simulator']}).map(([k, [d, e]])=>[k, `assets/og/${L(d, e)}.png`]));
   // Cheatsheets: eigenes Bild je Seite und Sprache (tools/og-bilder.js → assets/og/cs/<adresse>.jpg, englisch en-<adresse>.jpg)
   const csOg = page==='cheatsheet' && (!sub || csList().some(s=>s[0]===sub)) ? csOgImg(sub) : '';
   const nsOg = page==='nextset' ? `assets/og/tft-set-${sub}.jpg` : '';   // tools/og-bilder.js
@@ -6939,7 +7421,9 @@ function setMeta(page, sub){
   const chOg = page==='champion' && CH_RENDER[chN] ? `assets/og/champions/tft-${sub}-build.jpg` : '';
   const rkOg = page==='ranks' && (!sub || rankBy[sub]) ? rkOgImg(sub) : '';   // Ränge: Übersicht mit allen Waben, je Rang das Emblem (tools/og-bilder.js)
   const nwOg = page==='setnews' ? nwBy(sub).img : '';   // News-Beitrag: Titelbild (tools/og-bilder.js)
-  const wide = chOg || (!chImg && (OG_TOOL[tool] || csOg || nsOg || rkOg || nwOg));
+  const erOg = page==='erklaert' && sub && erOpen(sub) ? `assets/og/erklaert/${ER_SLUG[sub]}${EN ? '-en' : ''}.jpg` : '';   // TFT erklärt: Titelbild (tools/og-bilder.js)
+  const gdOg = page==='guides' && sub && GD_PLAN_BY[sub] && gdOpen(sub) && (GD_DATA[sub] || sub === 'anfaenger') ? gdHeroImg(sub) : '';   // Guide: Titelbild (tools/og-bilder.js)
+  const wide = chOg || (!chImg && (OG_TOOL[tool] || csOg || nsOg || rkOg || nwOg || gdOg || erOg));
   const img = chOg ? location.origin + '/' + chOg : chImg || location.origin + '/' + (wide || {tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
   const og = (k, v) => { headTag(`meta[property="${k}"]`, ()=>{ const m = document.createElement('meta'); m.setAttribute('property', k); return m; }).content = v; };
   og('og:title', document.title); og('og:description', desc || ''); og('og:url', url); og('og:type', 'website'); og('og:site_name', 'TFTClimb'); og('og:locale', EN ? 'en_GB' : 'de_DE'); og('og:image', img);
@@ -6974,8 +7458,8 @@ function setLd(page, sub, tool, title, desc, url, path, ogImg){
     const qa = box ? [...box.querySelectorAll('details')].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}})) : [];
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
   }
-  if(page==='champion' || page==='comp' || page==='cheatsheet' || page==='countdown' || page==='nextset' || page==='ranks' || (page==='guides' && sub && GUIDES_LIVE)){   // Fragen aus dem Textblock der Champion-/Comp-Seite, des Cheatsheets, des Countdowns, der Ränge bzw. des Guides
-    const qa = [...document.querySelectorAll(page==='champion' ? '#chPage .tool-seo details' : page==='comp' ? '#compPage .tool-seo details' : page==='cheatsheet' ? '#csPage .tool-seo details' : page==='countdown' ? '#cdApp .tool-seo details' : page==='nextset' ? '#nsApp .tool-seo details' : page==='ranks' ? `${sub && rankBy[sub] ? '#rk-detail' : '#rk-list'} .tool-seo details` : `#page-guides .gd-view[data-guide="${sub}"] .tool-seo details`)].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}}));
+  if(page==='champion' || page==='comp' || page==='cheatsheet' || page==='countdown' || page==='nextset' || page==='ranks' || (page==='guides' && sub && gdOpen(sub)) || (page==='erklaert' && sub && erOpen(sub))){   // Fragen aus dem Textblock der Champion-/Comp-Seite, des Cheatsheets, des Countdowns, der Ränge bzw. des Guides
+    const qa = [...document.querySelectorAll(page==='champion' ? '#chPage .tool-seo details' : page==='comp' ? '#compPage .tool-seo details' : page==='cheatsheet' ? '#csPage .tool-seo details' : page==='countdown' ? '#cdApp .tool-seo details' : page==='nextset' ? '#nsApp .tool-seo details' : page==='ranks' ? `${sub && rankBy[sub] ? '#rk-detail' : '#rk-list'} .tool-seo details` : '#page-guides .gd-view:not([hidden]) .tool-seo details')].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}}));
     if(qa.length) graph.push({'@type':'FAQPage', mainEntity:qa});
   }
   // Cheatsheet-Unterseite, Ränge, Champions und nächstes Set: Artikel mit Hauptbild, Datenstand und Autor (wie bei den Tools)
@@ -7053,6 +7537,7 @@ function route(){
   if(sub && page==='tools') sub = unslug(TOOL_SLUG, sub);
   if(sub && page==='cheatsheet'){ const k = unslug(CS_SLUG, sub); sub = k !== sub ? k : sub.replace(/^tft-/, ''); }
   if(sub && page==='guides') sub = unslug(GUIDE_SLUG, sub);
+  if(page==='tft-erklaert'){ page = 'erklaert'; if(sub) sub = unslug(ER_SLUG, sub); }   // TFT erklärt: Übersicht und Artikel
   // Champion-Seiten: /champions/<name>
   if(page==='champions' && sub){ page = 'champion'; }
   // Comp-Seiten: /comps/<name>, /comps allein = Tierlist
@@ -7061,11 +7546,11 @@ function route(){
   if(['champions','items','traits'].includes(page)){ sub = page; page = 'bibliothek'; }
   if(page==='augments'){ sub = 'augments'; page = 'tierlist'; }
   { const m = page.match(/^tft-set-(\d+)$/); if(m){ if(sub) page = nwBy(sub) ? 'setnews' : 'notfound'; else { page = 'nextset'; sub = m[1]; } } }   // /tft-set-19: Seite zum nächsten Set, /tft-set-19/<beitrag>: News
-  const valid = ['nextset','setnews','home','tierlist','bibliothek','champion','comp','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','gameplans','about','apply','impressum','datenschutz','patches','countdown'];
+  const valid = ['nextset','setnews','home','tierlist','bibliothek','champion','comp','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','gameplans','about','apply','impressum','datenschutz','patches','countdown','erklaert'];
   if(!valid.includes(page)) page='notfound';
   const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche
   const isCv = page==='bibliothek' && !['items','traits','augments'].includes(sub);   // Champions: Wabenansicht (auch alte Adresse /bibliothek/v2)
-  const pageId = isCv ? 'champv2' : page==='bibliothek' ? 'library' : isSim ? 'builder' : ND && page==='home' ? 'dash' : page;
+  const pageId = isCv ? 'champv2' : page==='erklaert' ? 'guides' : page==='bibliothek' ? 'library' : isSim ? 'builder' : ND && page==='home' ? 'dash' : page;
   // Champions ↔ Traits/Items/Augments: zwei Seiten, die wie eine wirken sollen – dort ohne Einblenden (wie beim Reiterwechsel)
   const prevId = (document.querySelector('.page.active') || {}).id, LIB = ['page-champv2', 'page-library'];
   const calm = LIB.includes(prevId) && LIB.includes('page-' + pageId) && prevId !== 'page-' + pageId;
@@ -7076,7 +7561,7 @@ function route(){
   const pageEl = $('#page-' + pageId); if(pageEl && pageId !== 'tools') toolArtLoad(pageEl);   // Tools: nur das geöffnete Tool (renderTools)
   tnUpdate(isSim ? 'simulator' : page === 'tools' ? sub : '');
   // Seitenbreite: Übersichtsseiten breit wie das Dashboard, Unterseiten (einzelnes Tool, Cheatsheet, Champion, Patch, Rang, Profil, Rechtliches) schmaler
-  const subOk = {tools:['rolldown','tierlist','simulator','drops','dps','augments'], cheatsheet:csList().map(s=>s[0]), patches:Object.keys(patchBySlug), ranks:Object.keys(rankBy), about:['crazyslayt','humbadobo']}[page];
+  const subOk = {tools:['rolldown','tierlist','simulator','drops','dps','augments','streak'], cheatsheet:csList().map(s=>s[0]), patches:Object.keys(patchBySlug), ranks:Object.keys(rankBy), about:['crazyslayt','humbadobo']}[page];
   document.body.dataset.lvl = ['champion','comp','builder','apply','impressum','datenschutz','bedingungen','countdown','setnews'].includes(page) || (subOk && subOk.includes(sub)) ? 'sub' : 'top';
   toolHit(page==='builder' ? 'builder' : page==='tools' && subOk.includes(sub) ? sub : '');
   if(page==='tools' && !sub) tcHits();
@@ -7088,6 +7573,7 @@ function route(){
   const tlComp = page==='tierlist' && !sub && qParam('comp');
   if(tlComp){ history.replaceState(history.state, '', location.pathname); setTimeout(()=>tlOpenComp(tlComp), 0); }   // nach dem Hochscrollen unten
   if(page==='guides') setGuide(sub);
+  if(page==='erklaert') setErklaert(sub);
   if(page==='gameplans'){ if(sub) setUrl('/gameplans');   // Platzhalter bis Set 19: Gamepläne pro Patch
     $('#gpSoon').innerHTML = `<div class="gd-soon"><img class="gd-soon-img" src="assets/icons/side-gameplans.webp" alt="" width="96" height="96"><b>Coming in Set 19</b><p>${L('Hier entstehen Gamepläne für jeden Patch: wie du die besten Comps vom Start bis ins Late Game spielst – mit dem Start von Set 19.', 'Game plans for every patch are coming here: how to play the best comps from the start to the late game – with the launch of Set 19.')}</p></div>`; }
   if(isCv) renderChampV2();   // sofort (die Seite ist schon sichtbar) – sonst blitzt beim Wechsel ein leeres Bild auf
@@ -7285,6 +7771,9 @@ function ndInit(){
     </div>`);
   }
   $('#ndSide').addEventListener('click', e=>{ if(e.target.closest('a')) document.body.classList.remove('nd-drawer'); });
+  if(GUIDES_LIVE) document.querySelectorAll('#ndSide [data-m="/guides"] .nds-soon').forEach(e=>e.remove());
+  if(ER_LIVE || GD_PREVIEW){ const sp = [...document.querySelectorAll('#ndSide .nds-sub-a.off')].find(x=>/erklärt|explained/i.test(x.textContent));
+    if(sp){ const a = document.createElement('a'); a.className = 'nds-sub-a'; a.href = withLang('/tft-erklaert'); a.dataset.m = '/tft-erklaert|/tft-explained'; a.innerHTML = sp.innerHTML; if(ER_LIVE) a.querySelector('.nds-soon')?.remove(); sp.replaceWith(a); ndMark(); } }   // erster Guide ist erschienen: „Soon“ bei Guides weg
   $('#ndSearch').addEventListener('click', openSearch);
   ndStats();
 }

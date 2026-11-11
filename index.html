@@ -19,7 +19,7 @@
   var wantEn = pref === 'en' || (!pref && !bot && !langs.some(function(l){ return /^de/i.test(l); }));
   if(!en && wantEn && !file){ location.replace('/en' + p + location.search); return; }
   window.TFT_LANG = en ? 'en' : 'de';
-  if(en){ document.documentElement.lang = 'en'; document.write('<script src="assets/js/i18n-en.js?v=4aeb8840ad"><\/script>'); }
+  if(en){ document.documentElement.lang = 'en'; document.write('<script src="assets/js/i18n-en.js?v=43e74e43dc"><\/script>'); }
 })();
 </script>
 <!-- Google Analytics (G-BTL7VP5CTK): misst jeden Besuch ab dem Aufruf, nicht erst nach Bestätigung im Hinweis-Banner (bewusste Entscheidung).
@@ -73,9 +73,9 @@
 <link rel="preconnect" href="https://ddragon.leagueoflegends.com">
 <!-- app.js und sim.js stehen am Ende von <body>: hier schon anmelden, damit sie am Handy vor den Bildern geladen werden -->
 <link rel="preload" href="assets/js/sim.js?v=416a7d3541" as="script">
-<link rel="preload" href="assets/js/app.js?v=b1fcca1860" as="script">
+<link rel="preload" href="assets/js/app.js?v=ec8b5dda29" as="script">
 <link rel="stylesheet" href="assets/css/fonts.css?v=56685235ed">
-<link rel="stylesheet" href="assets/css/site.css?v=6d6fb1f492">
+<link rel="stylesheet" href="assets/css/site.css?v=737e254fd6">
 <script>
 // Design: das neue TFTClimb-Design gilt für alle. Nur zum Vergleich lässt sich mit ?design=alt das alte Design ansehen
 // (der Browser merkt sich die Wahl), ?design=neu schaltet zurück.
@@ -607,6 +607,13 @@
           <div class="tc-cap"><span>TFT Rolldown-Rechner</span><span class="tc-st" data-hits="rolldown">Neu</span></div>
         </div>
         <div class="tc-item">
+          <a class="tc" href="/tools/tft-streak-rechner">
+            <div class="tc-text"><span class="tc-tag">Econ</span><h3>Streak-Rechner</h3><p>Zinsen und Streak-Gold bis 4-2 – und was dich ein Bruch kostet.</p></div>
+            <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/streak.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v4c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 10v4c0 1.7 3.1 3 7 3s7-1.3 7-3v-4"/><path d="M5 14v4c0 1.7 3.1 3 7 3s7-1.3 7-3v-4"/></svg></span></div>
+          </a>
+          <div class="tc-cap"><span>TFT Streak-Rechner</span><span class="tc-st" data-hits="streak">Neu</span></div>
+        </div>
+        <div class="tc-item">
           <a class="tc" href="/tools/tft-kampf-simulator">
             <div class="tc-text"><span class="tc-tag">Simulator</span><h3>Kampf-Simulator</h3><p>Zwei Teams, ein Kampf. Wer läuft wohin – und wer gewinnt?</p></div>
             <div class="tc-art" aria-hidden="true"><img data-src="assets/tools/simulator.webp" alt="" loading="lazy" onerror="this.remove()"><span class="tc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4l9 9M4 4h4M4 4v4"/><path d="M20 4l-9 9M20 4h-4M20 4v4"/><path d="M9 15l-4 4M15 15l4 4M7.5 13.5l3 3M16.5 13.5l-3 3"/></svg></span></div>
@@ -628,6 +635,7 @@
           <h3>Welches Tool hilft dir wobei?</h3>
           <ul class="ts-list">
             <li><a href="/tools/tft-rolldown-rechner">Rolldown-Rechner</a><span>Rollen oder leveln? Die Chancen, deine Units zu finden – mit Shop-Odds pro Level und Pool-Größen.</span></li>
+            <li><a href="/tools/tft-streak-rechner">Streak-Rechner</a><span>Wie viel Gold bringen Zinsen, Win Streak und Lose Streak bis 4-2 – und was kostet dich ein Streak-Bruch?</span></li>
             <li><a href="/tools/tft-dps-rechner">DPS-Rechner</a><span>Vergleich bis zu vier Item-Builds eines Champions und sieh im Graph, welcher am meisten Schaden macht.</span></li>
             <li><a href="/tools/tft-item-drop-chance">Item-Drop-Chance</a><span>Welche Komponente kommt als Nächstes aus dem Item-Pool? Trag deine Drops ein und plan deine Items.</span></li>
             <li><a href="/tools/tft-tierlist-maker">Tierlist-Maker</a><span>Deine eigene Tierlist für Champions, Items, Artefakte, Embleme und Augments – per Link teilbar.</span></li>
@@ -692,6 +700,18 @@
       <div id="dpsApp"></div>
       <div class="tio-trust-wrap" data-pre="dps-trust" data-noi18n></div>
       <section class="tool-seo ag-art" aria-labelledby="ts-dps" data-pre="dps" data-noi18n></section>
+    </div>
+
+    <!-- Streak- & Zins-Rechner (app.js: skMount, skArticle) -->
+    <div class="tool-view" data-tool="streak" hidden>
+      <div class="page-head" data-tool-art="streak" data-art-src="assets/img/mascot-heimer-wave.webp" data-art-buddy="rolldown">
+        <div class="crumb"><a href="/tools">Tools</a> / Streak-Rechner</div>
+        <h1 class="tool-h1"><span class="th-key">TFT Streak-Rechner:</span> Wie viel Gold kostet der Bruch?</h1>
+        <p>Wie viel Gold hast du auf 4-2, wenn du deine Serie durchziehst – und wie viel, wenn sie bricht? Klick deine Runden an: Zinsen, Streak-Gold und Sieg-Gold rechnet der Rechner sofort mit.</p>
+      </div>
+      <div id="skApp"></div>
+      <div class="tio-trust-wrap" data-pre="streak-trust" data-noi18n></div>
+      <section class="tool-seo ag-art" aria-labelledby="ts-streak" data-pre="streak" data-noi18n></section>
     </div>
 
     <!-- Augment-Chancen (Aufbau „Deine Angaben“ → „Dein Ergebnis“, Vorlage für die anderen Tools) -->
@@ -893,6 +913,17 @@
 
     <!-- Guides aus data/guides.js (Rolldown, Reroll, Fast 8 …): Kopf und Artikel baut gdDataHTML in app.js -->
     <div class="gd-view" data-guide="data" hidden><div id="gdData"></div></div>
+
+    <!-- TFT erklärt (/tft-erklaert): Übersicht und Artikel aus data/articles.js – nutzt die Guide-Seite mit eigenen Ansichten (app.js: setErklaert) -->
+    <div class="gd-view" data-guide="erlist" hidden>
+      <div class="page-head">
+        <div class="crumb">Home / TFT erklärt</div>
+        <h1>TFT <em class="serif">erklärt</em></h1>
+        <p>Wie funktioniert Ranked, was sind LP und MMR, woher kommt dein Gold? Hier erklären wir die Regeln von Teamfight Tactics – kurz, verständlich und mit Tipps von CrazYSlayt.</p>
+      </div>
+      <div id="erList"></div>
+    </div>
+    <div class="gd-view" data-guide="er" hidden><div id="erData"></div></div>
 
     <!-- Guide: Encounters -->
     <div class="gd-view" data-guide="encounters" hidden>
@@ -1323,6 +1354,7 @@
 <script src="data/patches.js"></script>
 <script src="data/news.js"></script>
 <script src="data/guides.js"></script>
+<script src="data/articles.js"></script>
 <script src="data/patch-kommentare.js"></script>
 <script>if (window.TFT_LANG === 'en') document.write('<script src="data/patches-en.js"><\/script>');</script>
 <script>
@@ -1344,6 +1376,6 @@ document.write('<script src="data/rollen-' + pick.set + '.js"><\/script>');  // 
 })();
 </script>
 <script src="assets/js/sim.js?v=416a7d3541"></script>
-<script src="assets/js/app.js?v=b1fcca1860"></script>
+<script src="assets/js/app.js?v=ec8b5dda29"></script>
 </body>
 </html>

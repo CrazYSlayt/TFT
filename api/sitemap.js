@@ -4,13 +4,13 @@ const fs = require('fs');
 const path = require('path');
 
 // Sprechende Adressen mit Keyword – gleiche Liste wie in assets/js/app.js (TOOL_SLUG, CS_SLUG, BUILDER_PATH)
-const TOOL_SLUG = {rolldown: 'tft-rolldown-rechner', drops: 'tft-item-drop-chance', tierlist: 'tft-tierlist-maker', simulator: 'tft-kampf-simulator', dps: 'tft-dps-rechner', augments: 'tft-augment-chancen'};
+const TOOL_SLUG = {rolldown: 'tft-rolldown-rechner', drops: 'tft-item-drop-chance', tierlist: 'tft-tierlist-maker', simulator: 'tft-kampf-simulator', dps: 'tft-dps-rechner', augments: 'tft-augment-chancen', streak: 'tft-streak-rechner'};
 const CS_SLUG = {shop: 'tft-shop-odds', power: 'tft-hierarchy-of-power', augments: 'tft-augment-stufen', orbs: 'tft-loot-orbs', loot: 'tft-loot-verteilung', damage: 'tft-spielerschaden', emblems: 'tft-embleme', solo: 'tft-stage-1-solo', 'patch-schedule': 'tft-patch-plan', carousel: 'tft-karussell'};
 const csPath = id => '/cheatsheet/' + (CS_SLUG[id] || 'tft-' + id);
 // Englische Adressen – gleiche Tabellen wie in app.js (TOOL_SLUG_EN, CS_SLUG_EN, PAGE_EN, langPath)
-const TOOL_SLUG_EN = {rolldown: 'tft-rolldown-calculator', drops: 'tft-item-drop-odds', tierlist: 'tft-tier-list-maker', simulator: 'tft-battle-simulator', dps: 'tft-dps-calculator', augments: 'tft-augment-odds'};
+const TOOL_SLUG_EN = {rolldown: 'tft-rolldown-calculator', drops: 'tft-item-drop-odds', tierlist: 'tft-tier-list-maker', simulator: 'tft-battle-simulator', dps: 'tft-dps-calculator', augments: 'tft-augment-odds', streak: 'tft-streak-calculator'};
 const CS_SLUG_EN = {shop: 'tft-shop-odds', power: 'tft-hierarchy-of-power', augments: 'tft-augment-tiers', orbs: 'tft-loot-orbs', loot: 'tft-loot-distribution', damage: 'tft-player-damage', emblems: 'tft-emblems', solo: 'tft-solo-stage-1', 'patch-schedule': 'tft-patch-schedule', carousel: 'tft-carousel'};
-const PAGE_EN = {tierlist: 'tier-list', bibliothek: 'library', impressum: 'legal-notice', datenschutz: 'privacy-policy', bedingungen: 'terms', 'tft-patch-countdown': 'tft-next-patch-countdown'};
+const PAGE_EN = {'tft-erklaert': 'tft-explained', tierlist: 'tier-list', bibliothek: 'library', impressum: 'legal-notice', datenschutz: 'privacy-policy', bedingungen: 'terms', 'tft-patch-countdown': 'tft-next-patch-countdown'};
 const keyOf = (map, slug) => (Object.entries(map).find(([, v]) => v === slug) || [slug])[0];
 function enPath(p) {
   if (p === '/') return '/en/';
@@ -19,7 +19,22 @@ function enPath(p) {
   if (s[1] === 'cheatsheet' && s[2]) { const k = keyOf(CS_SLUG, s[2]); s[2] = CS_SLUG_EN[k] || (k !== s[2] ? 'tft-' + k : s[2]); }
   if (PAGE_EN[s[1]]) s[1] = PAGE_EN[s[1]];
   if (/^tft-set-\d+$/.test(s[1]) && s[2]) { const n = newsList().find(x => x.slug.de === s[2]); if (n) s[2] = n.slug.en; }
+  if (s[1] === 'guides' && s[2]) { const g = guideList().find(x => x.de === s[2]); if (g) s[2] = g.en; }
   return '/en' + s.join('/');
+}
+// Guides aus data/guides.js (Veröffentlichungsplan TFT_GUIDE_PLAN): nur freigegebene (frei), englisch erst mit en:true.
+// Adresse wie in app.js: GUIDE_SLUG (deutsch) und se im Plan (englisch, sonst gleich)
+function guideList(){
+  try { const w = {}; new Function('window', fs.readFileSync(path.join(process.cwd(), 'data', 'guides.js'), 'utf8'))(w);
+    const slug = {encounters: 'tft-encounters', anfaenger: 'tft-anfaenger-guide', ...Object.fromEntries((w.TFT_GUIDES || []).map(g => [g.key, g.slug]))};
+    return (w.TFT_GUIDE_PLAN || []).filter(p => slug[p.key]).map(p => ({key: p.key, de: slug[p.key], en: p.se || slug[p.key], frei: !!p.frei, enOk: !!p.en}));
+  } catch (e) { return []; }
+}
+const guidesOn = () => guideList().filter(g => g.frei);
+// TFT erklärt (data/articles.js): nur erschienene Artikel (frei, mit Text), englisch erst mit en:true – Adresse /tft-erklaert/<slug>, englisch /en/tft-explained/<slug>
+function articlesOn(){
+  try { const w = {}; new Function('window', fs.readFileSync(path.join(process.cwd(), 'data', 'articles.js'), 'utf8'))(w);
+    return (w.TFT_ARTICLES || []).filter(a => a.frei && a.body).map(a => ({p: '/tft-erklaert/' + a.slug, en: !!a.en})); } catch (e) { return []; }
 }
 // News-Beiträge aus data/news.js (Adresse wie in app.js: nwHref, englisch mit slug.en)
 function newsList(){
@@ -123,12 +138,14 @@ module.exports = (req, res) => {
   let host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
   if (host === 'tftclimb.com') host = 'www.tftclimb.com';   // immer die kanonische Domain
   const base = (req.headers['x-forwarded-proto'] || 'https') + '://' + host;
-  const paths = [...PAGES, ...nextSet(), ...news(), ...compPages(), ...champions(), ...patches()];
-  const alt = p => ['de', p, 'en', enPath(p), 'x-default', p].reduce((s, v, i, a) => i % 2 ? s : s + `\n    <xhtml:link rel="alternate" hreflang="${v}" href="${esc(base + a[i + 1])}"/>`, '');
+  // Guides: Übersicht ab dem ersten erschienenen Guide, jeder Guide ab Freigabe – englisch nur mit fertiger Übersetzung
+  const gOn = guidesOn(), aOn = articlesOn(), deOnly = new Set([...gOn.filter(g => !g.enOk).map(g => '/guides/' + g.de), ...aOn.filter(a => !a.en).map(a => a.p)]);
+  const paths = [...PAGES, ...nextSet(), ...news(), ...compPages(), ...champions(), ...patches(), ...(gOn.length ? ['/guides', ...gOn.map(g => '/guides/' + g.de)] : []), ...(aOn.length ? ['/tft-erklaert', ...aOn.map(a => a.p)] : [])];
+  const alt = p => (deOnly.has(p) ? ['de', p, 'x-default', p] : ['de', p, 'en', enPath(p), 'x-default', p]).reduce((s, v, i, a) => i % 2 ? s : s + `\n    <xhtml:link rel="alternate" hreflang="${v}" href="${esc(base + a[i + 1])}"/>`, '');
   const lm = lastmods(), img = ogImages();
   const entry = (loc, p) => { const d = modOf(p, lm), im = img[loc];
     return `  <url><loc>${esc(base + loc)}</loc>${d ? `<lastmod>${esc(d)}</lastmod>` : ''}${alt(p)}${im ? `\n    <image:image><image:loc>${esc(/^https?:/.test(im) ? im : base + im)}</image:loc></image:image>` : ''}\n  </url>`; };
-  const urls = [...paths.map(p => entry(p, p)), ...paths.map(p => entry(enPath(p), p))];
+  const urls = [...paths.map(p => entry(p, p)), ...paths.filter(p => !deOnly.has(p)).map(p => entry(enPath(p), p))];
   res.setHeader('Content-Type', 'application/xml; charset=utf-8');
   res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=86400');
   res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls.join('\n')}\n</urlset>\n`);

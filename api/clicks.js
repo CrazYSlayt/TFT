@@ -6,7 +6,7 @@
 // KV_REST_API_URL / KV_REST_API_TOKEN (bzw. UPSTASH_REDIS_REST_URL / _TOKEN) an – sie stehen nie im Code.
 // Ohne Speicher antwortet die Funktion mit counts: null, die Kacheln zeigen dann keine Zahl.
 // Es wird nur die Zahl pro Tool gespeichert – keine IP, kein Cookie, nichts über die Besucher.
-const TOOLS = ['builder', 'augments', 'drops', 'dps', 'rolldown', 'simulator', 'tierlist'];
+const TOOLS = ['builder', 'augments', 'drops', 'dps', 'rolldown', 'simulator', 'tierlist', 'streak'];
 const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 

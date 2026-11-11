@@ -140,7 +140,7 @@ function render(p, base) {
 // erster Teil der Adresse wie in route() in app.js, englische Adressen mitgezählt. Alles andere ist ein echtes 404
 const APP_PAGES = new Set(['tierlist', 'tier-list', 'bibliothek', 'library', 'champions', 'comps', 'items', 'traits', 'augments', 'cheatsheet', 'bedingungen', 'terms', 'ranks',
   'tft-team-builder', 'admin', 'news', 'tools', 'coaching', 'guides', 'gameplans', 'about', 'apply', 'impressum', 'legal-notice', 'datenschutz', 'privacy-policy', 'patches',
-  'tft-patch-countdown', 'tft-next-patch-countdown']);
+  'tft-patch-countdown', 'tft-next-patch-countdown', 'tft-erklaert', 'tft-explained']);
 function known(p) {
   if (lookup(p)) return true;
   const seg = String(p || '').replace(/^\/+/, '').replace(/^en(\/|$)/, '').split('/')[0];

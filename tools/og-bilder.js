@@ -114,6 +114,106 @@ function newsPages(){
     <div class="nwtag">TFT Set ${p.set} News</div>`)}));
 }
 
+// ---------- Guides (data/guides.js): Titelbild und Vorschau zugleich – je Guide eigenes Motiv aus Spiel-Icons und eine Pose von CrazYSlayt ----------
+// Deutsch → assets/og/guides/<adresse>.jpg, Englisch → assets/og/guides/<adresse>-en.jpg (app.js: gdHeroImg). Keine Zahlen, die sich pro Set ändern
+function guidePages(){
+  const w = {}; new Function('window', fs.readFileSync(path.join(ROOT, 'data', 'guides.js'), 'utf8'))(w);
+  const D = {}; try { new Function('window', fs.readFileSync(path.join(ROOT, 'data', 'tft-data-18.js'), 'utf8'))(D); } catch (e) {}
+  const T = D.TFT_DATA || {}, item = en => { const i = (T.items || []).find(x => x.en === en); return i ? T.cdn + i.icon : ''; };
+  const slug = {anfaenger: 'tft-anfaenger-guide', ...Object.fromEntries((w.TFT_GUIDES || []).map(g => [g.key, g.slug]))};
+  const hex = (n, c) => `<div class="gh-hex" style="--c:${c}"><b>${n}</b><small>Level</small></div>`;
+  const costs = [['#9aa4b2', 1], ['#2bb673', 2], ['#2f8cf0', 3], ['#b066f3', 4], ['#f2a516', 5]];
+  const coins = n => `<div class="gh-coins">${Array.from({length:n}, (_, i) => `<img style="--r:${(i % 3 - 1) * 14}deg;--y:${(i % 2) * 10}px" src="/assets/icons/tft/gold.png" alt="">`).join('')}</div>`;
+  const board = () => { let s = ''; const R = 26, W = Math.sqrt(3) * R; const on = {'0,0':'#f7166e', '0,1':'#2ee6d6', '3,3':'#f7166e', '3,4':'#a78bfa', '1,4':'#60a5fa'};
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 7; c++) { const x = W / 2 + c * W + (r % 2 ? W / 2 : 0) + 4, y = R + r * 1.5 * R + 4, col = on[r + ',' + c];
+      const pts = Array.from({length:6}, (_, i) => { const a = Math.PI / 180 * (60 * i - 90); return `${(x + R * Math.cos(a)).toFixed(1)},${(y + R * Math.sin(a)).toFixed(1)}`; }).join(' ');
+      s += `<polygon points="${pts}" fill="${col ? col + '40' : 'rgba(255,255,255,.05)'}" stroke="${col || 'rgba(120,166,255,.4)'}" stroke-width="${col ? 3 : 1.5}"/>`; }
+    return `<svg class="gh-board" viewBox="0 0 ${(7.5 * W + 8).toFixed(0)} ${(5.5 * R + 8).toFixed(0)}">${s}</svg>`; };
+  const z = h => `<div class="gh-z">${h}</div>`, mid = h => `<div class="gh-m">${h}</div>`;
+  // Motiv, Pose und Titel je Guide (Titel: [deutsch, englisch]); z = Zone unter dem Titel, mid = Mitte (nur bei kurzen Titeln)
+  const M = {
+    anfaenger:{t:['Anfänger', 'Beginner'], pose:'daumen-hoch', art:z(`${coins(5)}<div class="gh-costs">${costs.map(([c, n]) => `<span style="--c:${c}"><img src="/assets/icons/tft/champ-${n}.png" alt=""><b>${n}</b></span>`).join('')}</div>`)},
+    fortgeschritten:{t:['Fortgeschritten', 'Advanced'], pose:'flex', art:z(`<div class="gh-ranks">${['platinum', 'diamond', 'master'].map((r, i) => `<img style="--s:${120 + i * 36}px" src="/assets/img/ranks/${r}.webp" alt="">`).join('<i>›</i>')}</div>`)},
+    rolldown:{t:['Rolldown', 'Rolldown'], pose:'selbstbewusst', art:z(`<div class="gh-row"><div class="gh-roll"><img src="/assets/icons/tft/shop-reroll.png" alt=""></div>${coins(6)}</div>`)},
+    items:{t:['Items', 'Items'], pose:'neutral', art:z(`<div class="gh-items">${['Infinity Edge', "Guinsoo's Rageblade", "Kraken's Fury", 'Spear of Shojin'].map((n, i) => `<img style="--r:${i % 2 ? 6 : -6}deg" src="${item(n)}" alt="">`).join('')}</div>`)},
+    augments:{t:['Augments', 'Augments'], pose:'schockiert', art:z(`<div class="gh-augs">${['silver', 'gold', 'prism'].map((f, i) => `<img style="--r:${(i - 1) * 10}deg" src="/assets/icons/tft/augment-frame-${f}.webp" alt="">`).join('')}</div>`)},
+    positionierung:{t:['Positionierung', 'Positioning'], pose:'leinwand', flip:true, art:z(board())},
+    fast8:{t:['Fast 8', 'Fast 8'], pose:'tft-koenig', art:mid(hex(8, '#2ee6d6'))},
+    fast9:{t:['Fast 9', 'Fast 9'], pose:'jubel', art:mid(hex(9, '#f2a516'))},
+    reroll:{t:['Reroll', 'Reroll'], pose:'lachen', art:z(`<div class="gh-stars"><span>★</span><span>★</span><span>★</span></div>`)},
+    losestreak:{t:['Lose Streak', 'Lose Streak'], pose:'daumen-runter', art:z(`${coins(4)}<div class="gh-ls">${[0, 1, 2, 3].map(() => '<span>L</span>').join('')}</div>`)},
+    ranked:{t:['Ranked', 'Ranked'], pose:'facepalm', art:mid(`<img class="gh-chall" src="/assets/img/ranks/challenger.webp" alt="">`)}
+  };
+  const css = `<style>
+    .gh-l{position:absolute;left:66px;top:58px;width:640px;z-index:3}
+    .gh-l h1{margin-top:4px;font-size:var(--fs,112px);line-height:.92;white-space:nowrap}
+    .gh-by{display:inline-flex;align-items:center;gap:12px;margin-top:22px;padding:8px 20px 8px 8px;border-radius:99px;border:2px solid rgba(247,22,110,.55);background:rgba(4,18,27,.7);font:700 22px Barlow;color:#fff}
+    .gh-by img{width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:50% 10%;background:#0d2a34;box-shadow:0 0 0 2px #f7166e}
+    .gh-by small{font:700 18px Barlow;color:#ff9cc2;letter-spacing:.06em}
+    .gh-art{position:absolute;inset:0;z-index:1}
+    /* Zone unter dem Titel (links unten) und Mitte (zwischen kurzem Titel und Pose) */
+    .gh-z{position:absolute;left:66px;bottom:58px;width:600px;height:230px;display:flex;flex-direction:column;justify-content:flex-end;gap:18px}
+    .gh-m{position:absolute;left:400px;top:70px;width:340px;height:420px;display:grid;place-items:center}
+    .gh-pose{position:absolute;right:30px;bottom:14px;height:540px;max-width:540px;object-fit:contain;object-position:100% 100%;z-index:2;filter:drop-shadow(0 18px 40px rgba(0,0,0,.6)) drop-shadow(0 0 40px rgba(167,139,250,.3))}
+    .gh-pose.flip{transform:scaleX(-1);height:560px;max-width:520px;right:16px}
+    .gh-costs{display:flex;gap:14px}
+    .gh-costs span{display:flex;flex-direction:column;align-items:center;justify-content:center;width:84px;height:84px;border-radius:18px;border:3px solid var(--c);background:color-mix(in srgb,var(--c) 22%,#061520);box-shadow:0 0 20px color-mix(in srgb,var(--c) 50%,transparent)}
+    .gh-costs img{width:40px;height:40px}.gh-costs b{font:900 italic 26px/1 'Barlow Condensed'}
+    .gh-coins{display:flex;gap:4px}
+    .gh-coins img{width:58px;height:58px;transform:translateY(var(--y)) rotate(var(--r));filter:drop-shadow(0 6px 10px rgba(0,0,0,.5)) drop-shadow(0 0 12px rgba(245,184,46,.55))}
+    .gh-row{display:flex;align-items:center;gap:22px}
+    .gh-ranks{display:flex;align-items:flex-end;gap:6px}
+    .gh-ranks img{width:var(--s);height:var(--s);object-fit:contain;filter:drop-shadow(0 12px 20px rgba(0,0,0,.7))}
+    .gh-ranks i{font-style:normal;font:900 64px/1 'Barlow Condensed';color:#7ff7ec;margin-bottom:40px;text-shadow:0 0 14px rgba(46,230,214,.6)}
+    .gh-roll{width:150px;height:150px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(closest-side,rgba(46,230,214,.4),transparent)}
+    .gh-roll img{width:120px;height:120px;filter:drop-shadow(0 0 22px rgba(46,230,214,.75))}
+    .gh-items{display:flex;gap:22px;padding-bottom:10px}
+    .gh-items img{width:112px;height:112px;border-radius:20px;transform:rotate(var(--r));box-shadow:0 0 0 3px rgba(245,184,46,.75),0 16px 28px rgba(0,0,0,.6),0 0 26px rgba(245,184,46,.35)}
+    .gh-augs{display:flex;gap:0;padding-left:10px}
+    .gh-augs img{width:150px;margin-right:-14px;transform:rotate(var(--r));filter:drop-shadow(0 16px 26px rgba(0,0,0,.6))}
+    .gh-board{width:430px;filter:drop-shadow(0 16px 28px rgba(0,0,0,.6))}
+    .gh-hex{width:250px;height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+      background:linear-gradient(160deg,color-mix(in srgb,var(--c) 60%,#061520),#061520);box-shadow:inset 0 0 0 6px var(--c)}
+    .gh-hex b{font:900 italic 190px/.85 'Barlow Condensed';color:#fff;text-shadow:0 0 30px var(--c)}
+    .gh-hex small{font:700 22px Barlow;letter-spacing:.3em;text-transform:uppercase;color:var(--c)}
+    .gh-stars{display:flex;gap:8px;align-items:flex-end}
+    .gh-stars span{font-size:120px;line-height:1;color:#f5b82e;text-shadow:0 0 30px rgba(245,184,46,.7),0 8px 16px rgba(0,0,0,.6)}
+    .gh-stars span:nth-child(2){font-size:150px}
+    .gh-ls{display:flex;gap:12px}
+    .gh-ls span{display:grid;place-items:center;width:80px;height:80px;border-radius:16px;border:3px solid rgba(247,22,110,.8);background:rgba(247,22,110,.2);font:900 italic 46px/1 'Barlow Condensed';color:#ff8fb8;box-shadow:0 0 18px rgba(247,22,110,.45)}
+    .gh-chall{width:320px;height:320px;object-fit:contain;filter:drop-shadow(0 18px 30px rgba(0,0,0,.7)) drop-shadow(0 0 40px rgba(246,215,122,.35))}
+  </style>`;
+  const out = [];
+  // TFT erklärt: Titel je Artikel, Motiv aus Spiel-Icons, Kicker „TFT erklärt“ / „TFT explained“ → assets/og/erklaert/<adresse>[-en].jpg
+  const A = {}; try { new Function('window', fs.readFileSync(path.join(ROOT, 'data', 'articles.js'), 'utf8'))(A); } catch (e) {}
+  const AM = {'ranked-reset':{t:['Ranked-Reset', 'Ranked Reset'], pose:'schockiert', art:z(`<div class="gh-ranks">${['iron', 'gold', 'challenger'].map((r, i) => `<img style="--s:${120 + i * 36}px" src="/assets/img/ranks/${r}.webp" alt="">`).join('<i>›</i>')}</div>`)}};
+  // Magazin-Titelbild wie bei den News: Szene als Hintergrund, Motiv, Pose, Schild unten links – ohne Überschrift (die steht darunter auf der Seite)
+  const AS = {'ranked-reset':{bg:'/assets/img/rank-bg.webp', pose:'schockiert', tag:['TFT erklärt · Ranked-Reset', 'TFT explained · Ranked reset'],
+    art:`<div class="rkglow" style="--c:#f6d77a;left:385px;top:245px"></div><img class="er-emb big" src="/assets/img/ranks/challenger.webp" alt=""><div class="er-arrow">↺</div><img class="er-emb small" src="/assets/img/ranks/iron.webp" alt="">`}};
+  (A.TFT_ARTICLES || []).filter(a => a.body && AS[a.key]).forEach(a => [0, 1].forEach(en => { const m = AS[a.key];
+    out.push({file:`erklaert/${a.slug}${en ? '-en' : ''}`, jpg:true, html:page(`<style>body::after{display:none}
+      .er-bg{position:absolute;inset:0;background:url(${m.bg}) 0 46%/140% auto no-repeat}
+      .er-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,14,22,.25),rgba(4,14,22,.05) 45%,rgba(4,14,22,.35)),linear-gradient(transparent 60%,rgba(4,14,22,.85))}
+      .er-emb{position:absolute;z-index:2;object-fit:contain;filter:drop-shadow(0 20px 34px rgba(0,0,0,.7))}
+      .er-emb.big{left:220px;top:80px;width:330px;height:330px}
+      .er-emb.small{left:52px;top:300px;width:150px;height:150px;opacity:.95}
+      .er-arrow{position:absolute;z-index:2;left:120px;top:150px;font:900 120px/1 Barlow;color:#7ff7ec;text-shadow:0 0 24px rgba(46,230,214,.8),0 6px 14px rgba(0,0,0,.6);transform:rotate(-20deg)}
+      .er-pose{position:absolute;z-index:3;right:24px;bottom:0;height:500px;filter:drop-shadow(0 14px 30px rgba(0,0,0,.6))}
+      .nwtag{z-index:4}
+    </style>
+    <div class="er-bg"></div>${m.art}
+    <img class="er-pose" src="/assets/img/coach/${m.pose}.webp" alt="">
+    <img class="logo nwlogo" src="/assets/brand/logo-tftclimb.webp" alt="">
+    <div class="nwtag">${m.tag[en]}</div>`)}); }));
+  (w.TFT_GUIDE_PLAN || []).filter(p => M[p.key] && slug[p.key]).forEach(p => [0, 1].forEach(en => { const m = M[p.key], t = m.t[en], long = t.length > 11;
+    out.push({file:`guides/${slug[p.key]}${en ? '-en' : ''}`, jpg:true, html:page(`${css}
+      <div class="gh-art">${m.art}</div>
+      <div class="l gh-l" style="--fs:${long ? 84 : 112}px"><img class="logo" src="/assets/brand/logo-tftclimb.webp" alt=""><div class="kick">TFT Guide</div><h1><em>${t}</em></h1>
+        <div class="gh-by"><img src="/assets/img/team-claudio.jpg" alt=""><span>CrazYSlayt <small>· CHALLENGER</small></span></div></div>
+      <img class="gh-pose${m.flip ? ' flip' : ''}" src="/assets/img/coach/${m.pose}.webp" alt="">`)}); }));
+  return out;
+}
+
 // ---------- Rolldown-Rechner ----------
 // Fünf Kosten-Chips in den Kostenfarben des Spiels (fest, ändern sich nicht), keine Prozente
 function rolldownPages(){
@@ -143,6 +243,8 @@ function toolPages(){
       en: {file: 'tft-dps-calculator', a: 'TFT DPS ', b: 'Calculator', sub: 'Which item build wins?', chips: ['Up to 4 builds', 'Shred & sunder', 'Graph']}},
     {img: 'drops', de: {file: 'tft-item-drop-chance', a: 'TFT Item-', b: 'Drop-Chance', sub: 'Welche Komponente kommt?', chips: ['Item-Pool', 'Orbs', 'Stage 1–4']},
       en: {file: 'tft-item-drop-odds', a: 'TFT Item ', b: 'Drop Odds', sub: 'Which component is next?', chips: ['Item pool', 'Orbs', 'Stage 1–4']}},
+    {img: 'streak', mascot: '/assets/img/mascot-heimer-wave.webp', de: {file: 'tft-streak-rechner', a: 'TFT Streak-', b: 'Rechner', sub: 'Was kostet der Bruch?', chips: ['Zinsen', 'Streak-Gold', 'Bis 4-2']},
+      en: {file: 'tft-streak-calculator', a: 'TFT Streak ', b: 'Calculator', sub: 'What does a break cost?', chips: ['Interest', 'Streak gold', 'Until 4-2']}},
     {img: 'tierlist', de: {file: 'tft-tierlist-maker', a: 'TFT Tierlist ', b: 'erstellen', sub: 'Deine eigene Tierlist', chips: ['Champions', 'Items', 'Augments', 'Link teilen']},
       en: {file: 'tft-tier-list-maker', a: 'TFT Tier List ', b: 'Maker', sub: 'Your own tier list', chips: ['Champions', 'Items', 'Augments', 'Share link']}},
     {img: 'simulator', de: {file: 'tft-kampf-simulator', a: 'TFT Kampf-', b: 'Simulator', sub: 'Welches Board gewinnt?', chips: ['Schritt für Schritt', 'Siegchance', 'Items & Sterne']},
@@ -155,7 +257,7 @@ function toolPages(){
       <div class="sub">${x.sub}</div>
       <div class="chips">${x.chips.map(c => `<span>${c}</span>`).join('')}</div>
     </div>
-    <img class="mascot" src="/assets/tools/${t.img}.webp" alt="">`)}; }));
+    <img class="mascot" src="${t.mascot || '/assets/tools/' + t.img + '.webp'}" alt="">`)}; }));
 }
 
 // ---------- Cheatsheets: je Seite und Sprache ein Bild – nur der Inhalt der Tabelle an der wichtigsten Stelle, ohne Titel, Logo, Set oder Patch ----------
@@ -320,7 +422,9 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
   fs.mkdirSync(path.join(OUT, 'champions'), {recursive: true});
   fs.mkdirSync(path.join(OUT, 'ranks'), {recursive: true});
   fs.mkdirSync(path.join(OUT, 'news'), {recursive: true});
-  const jobs = [...augmentPages(), ...rolldownPages(), ...toolPages(), ...nextSetPage(), ...cheatPages(), ...championPages(), ...rankPages(), ...ranksOverviewPages(), ...newsPages()].filter(j => !process.argv[2] || j.file.includes(process.argv[2]));   // optional: nur Dateien mit diesem Namensteil
+  fs.mkdirSync(path.join(OUT, 'guides'), {recursive: true});
+  fs.mkdirSync(path.join(OUT, 'erklaert'), {recursive: true});
+  const jobs = [...augmentPages(), ...rolldownPages(), ...toolPages(), ...nextSetPage(), ...cheatPages(), ...championPages(), ...rankPages(), ...ranksOverviewPages(), ...newsPages(), ...guidePages()].filter(j => !process.argv[2] || j.file.includes(process.argv[2]));   // optional: nur Dateien mit diesem Namensteil
   const srv = await serve(), origin = 'http://127.0.0.1:' + srv.address().port;
   const port = 9300 + Math.floor(Math.random() * 500), prof = path.join(require('os').tmpdir(), 'tftclimb-og-' + port);
   const br = spawn(findBrowser(), ['--headless=new', '--hide-scrollbars', `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`, '--window-size=1200,630', 'about:blank'], {stdio: 'ignore'});
