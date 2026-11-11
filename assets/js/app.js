@@ -7037,6 +7037,23 @@ function nwPollShow(el, counts){
   const op = el.classList.contains('nw-opinion');   // „Deine Meinung“ = abstimmen, sonst raten
   el.querySelector('.nw-poll-n').textContent = counts ? L(`${total} ${total === 1 ? 'Stimme' : 'Stimmen'} bisher – danke fürs ${op ? 'Abstimmen' : 'Mitraten'}!`, `${total} ${total === 1 ? 'vote' : 'votes'} so far – thanks for ${op ? 'voting' : 'guessing'}!`)
     : L('Danke! Das Ergebnis siehst du, sobald die Abstimmung wieder erreichbar ist.', 'Thanks! You will see the result as soon as the poll is reachable again.');
+  // Rückmeldung nach der eigenen Stimme (nur direkt nach dem Klick, siehe nwCheer): wie viele sehen es genauso
+  const thx = el.querySelector('.nw-thx'); if(thx && counts && total){ const pc = Math.round((c[mine] || 0) / total * 100);
+    thx.textContent = pc >= 100 ? L('🎉 Danke! Du bist die erste Stimme.', '🎉 Thanks! You cast the first vote.') : L(`🎉 Danke! ${pc} % sehen es wie du.`, `🎉 Thanks! ${pc}% see it like you.`); }
+}
+// Konfetti und Danke-Hinweis beim Abstimmen (Wunsch 12.11.) – ohne Konfetti, wenn der Browser weniger Bewegung wünscht
+function nwCheer(el, btn){
+  if(!el.querySelector('.nw-thx')){ const t = document.createElement('div'); t.className = 'nw-thx'; t.setAttribute('role', 'status'); t.textContent = L('🎉 Danke für deine Stimme!', '🎉 Thanks for your vote!');
+    const at = el.querySelector('.nw-poll-o') || el.querySelector('.nw-gr'); if(at) at.before(t); else el.appendChild(t); }
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches || !btn) return;
+  const r = btn.getBoundingClientRect(), x0 = r.left + Math.min(r.width / 2, 160), y0 = r.top + r.height / 2, cols = ['#ff4d94', '#c056ff', '#2ee6d6', '#f6d77a', '#ffffff'];
+  for(let i = 0; i < 46; i++){
+    const p = document.createElement('i'), a = Math.random() * Math.PI * 2, d = 70 + Math.random() * 170, s = 5 + Math.random() * 6;
+    p.className = 'nw-conf'; Object.assign(p.style, {left:x0 + 'px', top:y0 + 'px', width:s + 'px', height:s * (Math.random() < .5 ? 1 : 2.2) + 'px', background:cols[i % cols.length], borderRadius:Math.random() < .3 ? '50%' : '2px'});
+    document.body.appendChild(p);
+    p.animate([{transform:'translate(-50%,-50%) rotate(0deg)', opacity:1}, {transform:`translate(calc(-50% + ${Math.cos(a) * d}px), calc(-50% + ${Math.sin(a) * d - 40}px)) rotate(${Math.random() * 540 - 270}deg)`, opacity:1, offset:.6},
+      {transform:`translate(calc(-50% + ${Math.cos(a) * d * 1.15}px), calc(-50% + ${Math.sin(a) * d + 90}px)) rotate(${Math.random() * 720 - 360}deg)`, opacity:0}], {duration:1100 + Math.random() * 500, easing:'cubic-bezier(.2,.7,.3,1)'}).onfinish = () => p.remove();
+  }
 }
 function nwPolls(root){
   const els = [...root.querySelectorAll('.nw-poll')]; if(!els.length) return;
@@ -7044,11 +7061,12 @@ function nwPolls(root){
   // Vorschläge fürs Tipp-Feld: alle League-Champions plus „Ein neuer Champion“
   if(root.querySelector('[data-guess]') && !document.getElementById('nwChamps')){ const dl = document.createElement('datalist'); dl.id = 'nwChamps';
     dl.innerHTML = [NW_NEU(), ...(window.LOL_CHAMPS || [])].map(n=>`<option value="${esc(n)}">`).join(''); document.body.appendChild(dl); }
-  const vote = (el, o)=>{ const id = el.dataset.poll, v = nwVoted(); v[id] = o; try { localStorage.setItem(NW_VKEY, JSON.stringify(v)); } catch(err){}
+  const vote = (el, o, btn)=>{ const id = el.dataset.poll, v = nwVoted(); v[id] = o; try { localStorage.setItem(NW_VKEY, JSON.stringify(v)); } catch(err){}
+    nwCheer(el, btn || el.querySelector(`.nw-poll-o [data-o="${o}"]`) || el.querySelector('.nw-gf button'));
     const c = state[id] ? {...state[id]} : null; if(c) c[o] = (c[o] || 0) + 1; show(el, c);
     fetch(`/api/votes?p=${encodeURIComponent(id)}&o=${encodeURIComponent(o)}`, {method:'POST'}).then(r=>r.json()).then(d=>{ if(d && d.votes && d.votes[id]){ state[id] = d.votes[id]; show(el, d.votes[id]); } }).catch(()=>{}); };
   els.forEach(el=>{
-    el.addEventListener('click', e=>{ const b = e.target.closest('.nw-poll-o button'); if(b && !el.classList.contains('done')) vote(el, b.dataset.o); });
+    el.addEventListener('click', e=>{ const b = e.target.closest('.nw-poll-o button'); if(b && !el.classList.contains('done')) vote(el, b.dataset.o, b); });
     const form = el.querySelector('.nw-gf'); if(form) form.addEventListener('submit', e=>{ e.preventDefault(); if(el.classList.contains('done')) return;
       const inp = form.querySelector('input'), s = nwSlug(inp.value), k = s === nwSlug(NW_NEU()) || s === 'neu' || s === 'new' ? 'neu' : (window.LOL_CHAMPS || []).map(nwSlug).find(x=>x === s);
       if(!k){ inp.classList.add('bad'); el.querySelector('.nw-poll-n').textContent = L('Den Champion kenne ich nicht – wähl einen aus der Liste oder „Ein neuer Champion“.', 'I do not know that champion – pick one from the list or “A new champion”.'); inp.focus(); return; }

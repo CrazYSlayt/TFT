@@ -3900,3 +3900,9 @@ figure.nw-hero.er-hero img{display:block;width:100%;height:auto;border-radius:16
 .nw-opinion .nw-poll-o button.mine .nw-po-l::after{color:#ff7ab3}
 .nw-opinion .nw-po-p{color:#ffd6e8}
 .nw-opinion .nw-poll-n{color:#d8c4ea}
+/* Abstimmen: Danke-Hinweis und Konfetti (nwCheer) */
+.nw-conf{position:fixed;z-index:9999;pointer-events:none;will-change:transform,opacity}
+.nw-thx{display:inline-block;margin:0 0 12px;padding:7px 14px;border-radius:999px;background:linear-gradient(90deg,#ff4d94,#c056ff);color:#fff;font-weight:800;font-size:.9rem;box-shadow:0 8px 22px -10px rgba(255,77,148,.8);animation:nwThx .5s cubic-bezier(.2,1.4,.4,1) both}
+.nw-poll:not(.nw-opinion) .nw-thx{background:linear-gradient(90deg,#2ee6d6,#a78bfa);color:#04141a}
+@keyframes nwThx{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.nw-thx{animation:none}}
