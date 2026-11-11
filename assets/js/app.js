@@ -7427,7 +7427,7 @@ function pageMeta(page, sub){
     case 'gameplans': return ['TFT Gameplans', L(`TFT Gameplans für jeden Patch: wie du die besten Comps von Start bis Late Game spielst – bald hier auf TFTClimb.`, `TFT game plans for every patch: how to play the best comps from start to late game – coming soon to TFTClimb.`), true];   // Platzhalter, noindex
     case 'erklaert': {   // TFT erklärt: Artikel oder Übersicht (indexierbar, sobald ein Artikel erschienen ist)
       const a = sub && ER_BY[sub] && erOpen(sub) && ER_BY[sub].body ? ER_BY[sub] : null;
-      if(a) return [a.title, a.meta];
+      if(a){ const x = EN && a.en ? a.en : a; return [x.title, x.meta]; }   // englische Fassung (a.en) mit eigenem Titel und Meta
       return [L('TFT erklärt – Ranked, Gold & Regeln', 'TFT Explained – Ranked, Gold & Rules'), L('TFT erklärt: Ranked-Reset, LP und MMR, Gold, Zinsen und Serien – die Regeln von Teamfight Tactics einfach erklärt.',
         'TFT explained: ranked reset, LP and MMR, gold, interest and streaks – the rules of Teamfight Tactics explained simply.'), !ER_LIVE];
     }
