@@ -260,6 +260,22 @@ function toolPages(){
     <img class="mascot" src="${t.mascot || '/assets/tools/' + t.img + '.webp'}" alt="">`)}; }));
 }
 
+// ---------- Startseite und Seiten ohne eigenes Bild: Logo, Schlagwort, CrazYSlayt als Cartoon (ersetzt den alten Vi-Chibi, Wunsch 11.11.) ----------
+// Deutsch → assets/og/tftclimb.jpg, Englisch → assets/og/tftclimb-en.jpg (app.js: Standardbild in pageMeta, app.html: og:image). Keine Zahlen, die sich pro Patch ändern
+function homePages(){
+  const X = {de: {file: 'tftclimb', kick: 'Von Challenger-Spielern', a: 'TFT Tierlist, ', b: 'Tools & Coaching', sub: 'Alles für deinen Climb', chips: ['Tierlist', 'Guides', 'Tools', 'Cheatsheets']},
+    en: {file: 'tftclimb-en', kick: 'By Challenger players', a: 'TFT tier list, ', b: 'tools & coaching', sub: 'Everything for your climb', chips: ['Tier list', 'Guides', 'Tools', 'Cheatsheets']}};
+  return Object.values(X).map(x => ({file: x.file, jpg: true, html: page(`
+    <div class="l">
+      <img class="logo" src="/assets/brand/logo-tftclimb.webp" alt="">
+      <div class="kick">${x.kick}</div>
+      <h1>${x.a}<em>${x.b}</em></h1>
+      <div class="sub">${x.sub}</div>
+      <div class="chips">${x.chips.map(c => `<span>${c}</span>`).join('')}</div>
+    </div>
+    <img class="mascot" src="/assets/img/coach/tft-koenig.webp" alt="">`)}));
+}
+
 // ---------- Cheatsheets: je Seite und Sprache ein Bild – nur der Inhalt der Tabelle an der wichtigsten Stelle, ohne Titel, Logo, Set oder Patch ----------
 // (Wunsch des Users: kein eigener Text auf dem Bild). Der Ausschnitt kommt von der echten Seite (CS_SHOT), das Bild ändert sich also nur, wenn sich die Tabelle ändert.
 // Nur von den englischen Cheatsheets – das Bild gilt auch für die deutsche Seite (Wunsch des Users). Als JPG: assets/og/cs/<englische adresse>.jpg (app.js: csOgImg)
@@ -424,7 +440,7 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
   fs.mkdirSync(path.join(OUT, 'news'), {recursive: true});
   fs.mkdirSync(path.join(OUT, 'guides'), {recursive: true});
   fs.mkdirSync(path.join(OUT, 'erklaert'), {recursive: true});
-  const jobs = [...augmentPages(), ...rolldownPages(), ...toolPages(), ...nextSetPage(), ...cheatPages(), ...championPages(), ...rankPages(), ...ranksOverviewPages(), ...newsPages(), ...guidePages()].filter(j => !process.argv[2] || j.file.includes(process.argv[2]));   // optional: nur Dateien mit diesem Namensteil
+  const jobs = [...homePages(), ...augmentPages(), ...rolldownPages(), ...toolPages(), ...nextSetPage(), ...cheatPages(), ...championPages(), ...rankPages(), ...ranksOverviewPages(), ...newsPages(), ...guidePages()].filter(j => !process.argv[2] || j.file.includes(process.argv[2]));   // optional: nur Dateien mit diesem Namensteil
   const srv = await serve(), origin = 'http://127.0.0.1:' + srv.address().port;
   const port = 9300 + Math.floor(Math.random() * 500), prof = path.join(require('os').tmpdir(), 'tftclimb-og-' + port);
   const br = spawn(findBrowser(), ['--headless=new', '--hide-scrollbars', `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`, '--window-size=1200,630', 'about:blank'], {stdio: 'ignore'});

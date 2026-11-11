@@ -7506,8 +7506,9 @@ function setMeta(page, sub){
   const nwOg = page==='setnews' ? nwBy(sub).img : '';   // News-Beitrag: Titelbild (tools/og-bilder.js)
   const erOg = page==='erklaert' && sub && erOpen(sub) ? `assets/og/erklaert/${ER_SLUG[sub]}${EN ? '-en' : ''}.jpg` : '';   // TFT erklärt: Titelbild (tools/og-bilder.js)
   const gdOg = page==='guides' && sub && GD_PLAN_BY[sub] && gdOpen(sub) && (GD_DATA[sub] || sub === 'anfaenger') ? gdHeroImg(sub) : '';   // Guide: Titelbild (tools/og-bilder.js)
-  const wide = chOg || (!chImg && (OG_TOOL[tool] || csOg || nsOg || rkOg || nwOg || gdOg || erOg));
-  const img = chOg ? location.origin + '/' + chOg : chImg || location.origin + '/' + (wide || {tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || (tool ? 'assets/img/mascot-heimer-wave.webp' : 'assets/img/mascot-vi.webp'));
+  const homeOg = 'assets/og/tftclimb' + (EN ? '-en' : '') + '.jpg';   // Standardbild (Startseite und Seiten ohne eigenes Bild): tools/og-bilder.js homePages – ersetzt den alten Vi-Chibi
+  const wide = chOg || (!chImg && (OG_TOOL[tool] || csOg || nsOg || rkOg || nwOg || gdOg || erOg || (!tool && homeOg)));
+  const img = chOg ? location.origin + '/' + chOg : chImg || location.origin + '/' + (wide || {tierlist:'assets/tools/tierlist.webp', drops:'assets/tools/drops.webp', simulator:'assets/tools/simulator.webp'}[tool] || 'assets/img/mascot-heimer-wave.webp');
   const og = (k, v) => { headTag(`meta[property="${k}"]`, ()=>{ const m = document.createElement('meta'); m.setAttribute('property', k); return m; }).content = v; };
   og('og:title', document.title); og('og:description', desc || ''); og('og:url', url); og('og:type', 'website'); og('og:site_name', 'TFTClimb'); og('og:locale', EN ? 'en_GB' : 'de_DE'); og('og:image', img);
   headTag('meta[name="twitter:card"]', ()=>Object.assign(document.createElement('meta'), {name:'twitter:card'})).content = wide ? 'summary_large_image' : 'summary';
