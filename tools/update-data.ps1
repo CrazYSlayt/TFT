@@ -41,6 +41,11 @@ $ser = New-Object System.Web.Script.Serialization.JavaScriptSerializer
 $ser.MaxJsonLength = [int]::MaxValue
 $tmp = Join-Path $env:TEMP 'tftfreaks-update'; New-Item -ItemType Directory -Force $tmp | Out-Null
 $today = Get-Date -Format 'yyyy-MM-dd'
+# Dateien, an denen schon vor dem Lauf gearbeitet wird (ungespeicherte Änderungen), veröffentlicht -Publish nicht mit –
+# sonst landet halbfertige Arbeit (z. B. ein News-Entwurf in data/news.js) automatisch online (passiert am 2026-11-11).
+$preDirty = @()
+if ($Publish) { $g0 = Join-Path $env:LOCALAPPDATA 'PortableGit\cmd\git.exe'
+  if (Test-Path $g0) { Push-Location $root; $preDirty = @(& $g0 status --porcelain -- data index.html app.html | ForEach-Object { $_.Substring(3).Trim('"') }); Pop-Location } }
 
 function Step($msg) { Write-Host "» $msg" -ForegroundColor Cyan }
 function Warn($msg) { Write-Host "  ! $msg" -ForegroundColor Yellow }
@@ -630,9 +635,11 @@ if ($Publish) {
     Push-Location $root
     $ErrorActionPreference = 'Continue'   # Git schreibt auch Hinweise („Created autostash“) nach stderr – mit 'Stop' bricht das Skript sonst vor dem Hochladen ab; Erfolg zeigt $LASTEXITCODE
     & $git add -- data index.html app.html
-    & $git diff --cached --quiet -- data index.html app.html
-    if ($LASTEXITCODE -ne 0) {
-      & $git commit -q -m "Automatisches Daten-Update $today" -- data index.html app.html
+    foreach ($f in $preDirty) { & $git reset -q -- $f }   # Arbeit in Bearbeitung bleibt draußen
+    if ($preDirty.Count) { Warn ("Nicht mit veröffentlicht (war schon vorher in Bearbeitung): " + ($preDirty -join ', ')) }
+    $files = @(& $git diff --cached --name-only -- data index.html app.html)
+    if ($files.Count) {
+      & $git commit -q -m "Automatisches Daten-Update $today" -- $files
       $env:GCM_INTERACTIVE = 'never'
       & $git pull -q --rebase --autostash   # die Redaktion veröffentlicht die Tierlist direkt auf GitHub (api/tierlist.js) – erst deren Stand holen
       if ($LASTEXITCODE -eq 0) { & $git push -q }
