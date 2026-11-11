@@ -3,6 +3,9 @@
     "api/sitemap.js": {
       "includeFiles": "{data/*.js,data/seo-meta.json,tierlist-data-*.js}"
     },
+    "api/votes.js": {
+      "includeFiles": "{data/news.js,data/lol-champions.js}"
+    },
     "api/page.js": {
       "includeFiles": "{app.html,data/seo-meta.json,data/sets.js,assets/js/*.js,assets/css/*.css}"
     }

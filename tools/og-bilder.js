@@ -107,7 +107,7 @@ const RK_SHOT = `(async () => {
 function newsPages(){
   const w = {}; new Function('window', fs.readFileSync(path.join(ROOT, 'data', 'news.js'), 'utf8'))(w);
   return (w.TFT_NEWS || []).map(p => ({file: p.img.replace('assets/og/', '').replace(/\.jpg$/, ''), jpg: true, html: page(`
-    <style>body::after{display:none}</style>   <!-- ohne Rahmen: das Bild steht als Titelbild schon in einem -->
+    <style>body::after{display:none}${p.ogCss || ''}</style>   <!-- ohne Rahmen: das Bild steht als Titelbild schon in einem; ogCss = Sonder-Einstellung je Beitrag (z. B. Logo im Hintergrund nicht abdunkeln) -->
     <div class="nwbg" style="background-image:url(/${p.bg})"></div>
     <img class="nwm" src="/${p.mascot}" alt="">
     <img class="logo nwlogo" src="/assets/brand/logo-tftclimb.webp" alt="">

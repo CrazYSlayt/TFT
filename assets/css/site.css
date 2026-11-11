@@ -3733,3 +3733,122 @@ figure.nw-hero.gd-hero{margin:0 auto 22px;max-width:820px}
 .art-box.has-coach{padding-right:292px;min-height:0;margin-top:70px;overflow:visible}
 .gd-coach{right:18px;bottom:0;height:min(calc(100% + 50px),265px);min-height:170px;max-height:none;filter:drop-shadow(0 10px 18px rgba(0,0,0,.55))}
 @media (max-width:600px){.art-box.has-coach{padding-right:16px;min-height:0;margin-top:78px}.gd-coach{top:-66px;bottom:auto;height:150px;max-height:none;right:0}.art-box.has-coach>.art-tiph,.art-box.has-coach>.art-tiph+p{margin-right:104px}}
+/* News: Hochformat-Standbilder (Reel) schmal neben dem Text */
+.nw-fig.gd-fig.tall{width:250px}
+.nw-art .ts-main h2,.nw-art .ts-main .nw-say{clear:both}
+@media (max-width:760px){.nw-fig.gd-fig.tall{float:none;width:220px;margin:16px auto}}
+/* News: Abstimmung „Wer ist das?“ (nwPolls) – Ausschnitt links, Frage + Antworten rechts, nach der Stimme Balken mit Prozent */
+.nw-poll{clear:both;display:grid;grid-template-columns:200px 1fr;gap:22px;align-items:start;margin:26px 0;padding:18px;border-radius:18px;border:1px solid rgba(167,139,250,.45);background:linear-gradient(135deg,#1c1838 0%,#121a2e 55%,#0d1c26 100%);box-shadow:0 18px 40px -24px rgba(167,139,250,.6)}
+.nw-poll-img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover;border-radius:12px;border:1px solid rgba(167,139,250,.35);cursor:zoom-in}
+.nw-poll-k{display:inline-block;margin-bottom:8px;padding:3px 11px;border-radius:999px;background:linear-gradient(90deg,#a78bfa,#2ee6d6);color:#0a0f1f;font:800 italic .74rem var(--ff-head);letter-spacing:.1em;text-transform:uppercase}
+.ts-main .nw-poll-q{margin:0 0 6px;color:#fff;font:800 italic 1.35rem/1.15 var(--ff-head)}
+.ts-main .nw-poll-tip{margin:0 0 12px;color:#c9d3e6;font-size:.92rem;line-height:1.55}
+.nw-poll-o{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.nw-poll-o button{--w:0%;position:relative;overflow:hidden;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 14px;border-radius:11px;border:1px solid rgba(167,139,250,.4);background:rgba(10,14,30,.6);color:#fff;font:700 .95rem var(--ff-body,inherit);text-align:left;cursor:pointer;transition:border-color .15s,background .15s,transform .1s}
+.nw-poll-o button:hover{border-color:#a78bfa;background:rgba(167,139,250,.14)}
+.nw-poll-o button:active{transform:scale(.98)}
+.nw-poll-o button::before{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);background:linear-gradient(90deg,rgba(167,139,250,.35),rgba(46,230,214,.25));transition:width .6s ease}
+.nw-poll-o button>span{position:relative}
+.nw-po-p{color:#c9d3e6;font-weight:800;font-size:.85rem}
+.nw-poll.done .nw-poll-o button{cursor:default}
+.nw-poll.done .nw-poll-o button:hover{background:rgba(10,14,30,.6);border-color:rgba(167,139,250,.4)}
+.nw-poll-o button.mine{border-color:#2ee6d6!important}
+.nw-poll-o button.mine .nw-po-l::after{content:" ✓";color:#2ee6d6}
+.nw-poll-n{display:block;margin-top:10px;color:var(--muted);font-size:.8rem}
+@media (max-width:640px){.nw-poll{grid-template-columns:1fr;gap:14px}.nw-poll-img{max-width:220px;margin:0 auto}.nw-poll-o{grid-template-columns:1fr}}.nw-art .ts-main .nw-clr{clear:both}
+/* News: Galerie mit Standbildern nebeneinander + Tipp-Feld „Wer ist das?“ (nw-guess) */
+.nw-gal{clear:both;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:20px 0 24px}
+.nw-gal figure{margin:0}
+.nw-gal img{display:block;width:100%;height:auto;aspect-ratio:9/16;object-fit:cover;border-radius:12px;border:1px solid rgba(46,230,214,.3);box-shadow:0 12px 26px -14px rgba(0,0,0,.7);cursor:zoom-in;transition:transform .15s}
+.nw-gal img:hover{transform:translateY(-3px)}
+.nw-gal figcaption{margin-top:6px;text-align:center;color:var(--muted);font-size:.78rem;font-weight:700}
+@media (max-width:640px){.nw-gal{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.nw-gf{display:flex;gap:8px;margin-top:4px}
+.nw-gf input{flex:1;min-width:0;padding:11px 14px;border-radius:11px;border:1px solid rgba(167,139,250,.45);background:rgba(10,14,30,.7);color:#fff;font:600 .95rem inherit;outline:none;animation:nwPulse 2.4s ease-in-out infinite}
+.nw-gf input:focus{border-color:#a78bfa;box-shadow:0 0 0 3px rgba(167,139,250,.25);animation:none}
+.nw-gf input.bad{border-color:#ff5c8a;box-shadow:0 0 0 3px rgba(255,92,138,.2);animation:none}
+.nw-gf button{padding:0 18px;border-radius:11px;border:0;background:linear-gradient(90deg,#a78bfa,#2ee6d6);color:#0a0f1f;font:800 italic .95rem var(--ff-head);text-transform:uppercase;letter-spacing:.04em;cursor:pointer}
+@keyframes nwPulse{0%,100%{box-shadow:0 0 0 0 rgba(167,139,250,0)}50%{box-shadow:0 0 0 4px rgba(167,139,250,.22)}}
+.nw-gr{display:flex;flex-direction:column;gap:6px}
+.nw-gi{--w:0%;position:relative;overflow:hidden;display:flex;justify-content:space-between;padding:9px 14px;border-radius:10px;border:1px solid rgba(167,139,250,.35);background:rgba(10,14,30,.6);color:#fff;font-weight:700;font-size:.92rem}
+.nw-gi::before{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);background:linear-gradient(90deg,rgba(167,139,250,.35),rgba(46,230,214,.25))}
+.nw-gi>*{position:relative}
+.nw-gi b{color:#c9d3e6;font-size:.85rem}
+.nw-gi.mine{border-color:#2ee6d6}
+.nw-gi.mine span::after{content:" ✓";color:#2ee6d6}
+.nw-guesses{clear:both;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0 26px}
+.nw-guesses .nw-poll{margin:0;grid-template-columns:92px 1fr;gap:14px;padding:14px}
+.nw-guesses .ts-main .nw-poll-q,.nw-guesses .nw-poll-q{font-size:1.08rem}
+@media (max-width:900px){.nw-guesses{grid-template-columns:1fr}}.nw-poll-b{min-width:0}
+.nw-gf[hidden]{display:none}
+.nw-guesses .nw-gf button{padding:0 12px}
+@media (max-width:640px){.nw-guesses .nw-poll{grid-template-columns:76px 1fr;gap:12px}}
+/* News: Abstimmung mit Champion-Kacheln (nw-vote) – Silhouette links, Riots Ladebildschirm-Bilder rechts, nach der Stimme Prozent über alle Abstimmenden */
+.nw-poll.nw-vote{grid-template-columns:230px 1fr}
+.nw-vote .nw-poll-img{aspect-ratio:1}
+.nw-vote .nw-poll-o button:not(:has(img)){grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:center;min-height:0;border-style:dashed}
+.nw-vote .nw-poll-o button:not(:has(img))::before{inset:0 auto 0 0;width:var(--w);height:auto;background:linear-gradient(90deg,rgba(167,139,250,.4),rgba(46,230,214,.2))}
+.nw-vote .nw-poll-o button:not(:has(img)) .nw-po-p{padding:8px 12px}
+.nw-vote .nw-poll-o button:not(:has(img)) .nw-po-l{padding:9px 12px}
+.nw-vote .nw-poll-o button.mine .nw-po-l::after{content:none}
+.nw-vote .nw-poll-o button.mine::after{content:"✓";position:absolute;z-index:3;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:#2ee6d6;color:#04141a;font-weight:900;font-size:.8rem;line-height:22px;text-align:center}
+.nw-vote .nw-poll-o{grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px}
+.nw-vote .nw-poll-o button{flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0;padding:0;border-radius:12px}
+.nw-vote .nw-poll-o button img{display:block;width:100%;height:auto;aspect-ratio:308/430;object-fit:cover;object-position:50% 12%;transition:transform .2s,filter .2s}
+.nw-vote .nw-poll-o button:hover img{transform:scale(1.04)}
+.nw-vote .nw-po-l{display:block;padding:8px 8px 2px;font-size:.88rem;line-height:1.15}
+.nw-vote .nw-po-l small{display:block;margin-top:2px;color:var(--muted);font-size:.68rem;font-weight:600}
+.nw-vote .nw-po-p{display:block;padding:2px 8px 8px;font-size:1rem;color:#fff}
+.nw-vote .nw-poll-o button::before{inset:auto 0 0 0;width:auto;height:var(--w);background:linear-gradient(0deg,rgba(167,139,250,.55),rgba(46,230,214,.15));z-index:1;pointer-events:none}
+.nw-vote .nw-poll-o button>*{z-index:2}
+.nw-vote.done .nw-poll-o button img{filter:saturate(.75) brightness(.8)}
+.nw-vote.done .nw-poll-o button.mine img{filter:none}
+.nw-vote .nw-poll-o button.mine{box-shadow:0 0 0 2px #2ee6d6}
+.nw-votes{clear:both;display:flex;flex-direction:column;gap:16px;margin:18px 0 26px}
+.nw-votes .nw-poll{margin:0}
+@media (max-width:760px){.nw-poll.nw-vote{grid-template-columns:1fr}.nw-vote .nw-poll-img{max-width:160px;margin:0 auto}.nw-vote .nw-poll-o{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* News: „Passt das?“-Karten (nw-match) – Silhouette und Riots Skin-Bild nebeneinander, darunter Ja/Nein mit Prozent über alle */
+.nw-matches{clear:both;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:18px 0 26px}
+.nw-poll.nw-match{display:flex;flex-direction:column;gap:14px;margin:0;padding:16px}
+.nw-mt-imgs{display:flex;align-items:center;justify-content:center;gap:10px}
+.nw-mt-imgs figure{margin:0;flex:0 0 auto;text-align:center}
+.nw-mt-imgs img{display:block;height:200px;width:auto;aspect-ratio:308/460;object-fit:cover;object-position:50% 15%;border-radius:12px;border:1px solid rgba(167,139,250,.4);cursor:zoom-in}
+.nw-mt-imgs .nw-mt-sil img{aspect-ratio:1;border-color:rgba(46,230,214,.45)}
+.nw-mt-imgs figcaption{margin-top:6px;max-width:150px;color:var(--muted);font-size:.7rem;font-weight:700;line-height:1.25}
+.nw-mt-vs{color:#a78bfa;font:900 italic 1.6rem var(--ff-head)}
+.nw-match .nw-poll-q{margin-bottom:10px}
+.nw-match .nw-poll-o{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:1100px){.nw-matches{grid-template-columns:1fr}}
+@media (max-width:640px){.nw-mt-imgs img{height:150px}.nw-mt-imgs{gap:6px}.nw-mt-vs{font-size:1.2rem}.nw-match .nw-poll-o{grid-template-columns:1fr}}/* nw-match: eine Karte pro Zeile – links Silhouette + Skin-Bilder nebeneinander, rechts Name und Abstimmung */
+.nw-matches{grid-template-columns:1fr!important}
+.nw-poll.nw-match{flex-direction:row;align-items:center;gap:22px}
+.nw-match .nw-mt-imgs{flex:0 0 auto;justify-content:flex-start}
+.nw-match .nw-poll-b{flex:1}
+.nw-mt-imgs img{height:180px}
+.nw-mt-imgs .nw-mt-sil img{width:180px}
+@media (max-width:760px){.nw-poll.nw-match{flex-direction:column;align-items:stretch;gap:14px}.nw-match .nw-mt-imgs{justify-content:center}.nw-mt-imgs img,.nw-mt-imgs .nw-mt-sil img{height:150px}.nw-mt-imgs .nw-mt-sil img{width:150px}}
+@media (max-width:400px){.nw-mt-imgs img,.nw-mt-imgs .nw-mt-sil img{height:124px}.nw-mt-imgs .nw-mt-sil img{width:124px}}.nw-match .nw-poll-o{grid-template-columns:1fr!important}
+.nw-match .nw-poll-b{min-width:230px}
+.nw-mt-imgs:has(figure:nth-of-type(3)) img{height:150px}
+.nw-mt-imgs:has(figure:nth-of-type(3)) .nw-mt-sil img{width:150px}
+@media (max-width:760px){.nw-match .nw-poll-b{min-width:0}.nw-mt-imgs:has(figure:nth-of-type(3)) img,.nw-mt-imgs:has(figure:nth-of-type(3)) .nw-mt-sil img{height:104px}.nw-mt-imgs:has(figure:nth-of-type(3)) .nw-mt-sil img{width:104px}.nw-mt-imgs figcaption{max-width:110px;font-size:.64rem}}/* nw-match endgültig: Bilder oben (mittig nebeneinander), darunter Name + Abstimmung – passt bei jeder Breite; Bildunterschrift nur so breit wie das Bild */
+.nw-poll.nw-match{flex-direction:column!important;align-items:stretch!important;gap:14px}
+.nw-match .nw-mt-imgs{justify-content:center!important}
+.nw-match .nw-poll-b{min-width:0!important}
+.nw-mt-imgs figure{width:min-content}
+.nw-match .nw-poll-o{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+@media (max-width:640px){.nw-match .nw-poll-o{grid-template-columns:1fr!important}}/* nw-match Bildgrößen über --h (Höhe): Skin-Bild = 2/3 der Höhe breit, Silhouette quadratisch; Bildunterschrift so breit wie das Bild */
+.nw-mt-imgs{--h:190px}
+.nw-mt-imgs:has(figure:nth-of-type(3)){--h:170px}
+.nw-mt-imgs figure{width:auto!important}
+.nw-mt-imgs img{height:var(--h)!important;width:calc(var(--h) * .67)!important;aspect-ratio:auto!important}
+.nw-mt-imgs .nw-mt-sil img{width:var(--h)!important}
+.nw-mt-imgs figcaption{width:0;min-width:100%;max-width:none}
+@media (max-width:760px){.nw-mt-imgs{--h:150px}.nw-mt-imgs:has(figure:nth-of-type(3)){--h:118px}}
+@media (max-width:400px){.nw-mt-imgs{--h:136px}.nw-mt-imgs:has(figure:nth-of-type(3)){--h:104px}}/* nw-match: Silhouette im eigenen Seitenverhältnis (zugeschnitten von CrazYSlayt), Bilder oben bündig – lange Unterschriften schieben nichts mehr nach oben */
+.nw-mt-imgs{align-items:flex-start!important}
+.nw-mt-vs{align-self:flex-start;margin-top:calc(var(--h) / 2 - .6em)}
+.nw-mt-imgs .nw-mt-sil img{width:auto!important;max-width:calc(var(--h) * 1.35)}/* Dashboard, Set-Box: die zwei neuesten News nebeneinander */
+.dsh-sns{flex:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.dsh-sns .dsh-sn b{font-size:.95rem}
+@media (max-width:520px){.dsh-sns{grid-template-columns:1fr}}

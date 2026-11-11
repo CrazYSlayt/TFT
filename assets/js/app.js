@@ -3018,7 +3018,7 @@ function gdPlanHTML(){
    „open“-Blöcke = Fragen aus der Liste, die CrazYSlayt noch beantwortet – nur lokal sichtbar, online fallen sie weg --- */
 const gdCoach = (pose, alt) => `<img class="gd-coach" src="assets/img/coach/${pose}.webp" alt="${alt}" loading="lazy" decoding="async">`;
 const GD_BLOCK = {
-  h:b=>`<h2 id="gdx-${b.id}">${esc(b.t)}</h2>`, h4:b=>`<h4>${esc(b.t)}</h4>`, p:b=>`<p>${b.h}</p>`, box:b=>`<div class="art-box"><p>${b.h}</p></div>`,
+  h:b=>`<h2 id="gdx-${b.id}">${esc(b.t)}</h2>`, h4:b=>`<h4>${esc(b.t)}</h4>`, p:b=>`<p${b.clear ? ' class="nw-clr"' : ''}>${b.h}</p>`, box:b=>`<div class="art-box"><p>${b.h}</p></div>`,
   ul:b=>`<ul class="art-list">${b.l.map(x=>`<li>${x}</li>`).join('')}</ul>`, ol:b=>`<ol class="art-list">${b.l.map(x=>`<li>${x}</li>`).join('')}</ol>`,
   stats:b=>`<div class="art-stats">${b.l.map(([v, t, c])=>`<div class="${c || 'p'}"><b>${esc(v)}</b><span>${esc(t)}</span></div>`).join('')}</div>`,
   table:b=>artTw(b.head, b.rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`)),
@@ -3131,7 +3131,7 @@ const GD_WIDGET = {
     run:(el)=>{ const n = +el.querySelector('[data-k="i"]').value; el.querySelector('[data-o="i"]').textContent = n;
       el.querySelectorAll('.gd-w-mult span').forEach((s, i)=>{ s.classList.toggle('on', i <= n); s.classList.toggle('now', i === n); }); }}
 };
-document.addEventListener('click', e=>{ const im = e.target.closest('.gd-fig img[data-zoom]'); if(!im) return;
+document.addEventListener('click', e=>{ const im = e.target.closest('img[data-zoom]'); if(!im) return;
   const o = document.createElement('div'); o.className = 'gd-zoom'; o.innerHTML = `<img src="${im.src}" alt="${esc(im.alt)}">`;
   const close = () => { o.remove(); document.removeEventListener('keydown', key); }, key = ev => { if(ev.key === 'Escape') close(); };
   o.addEventListener('click', close); document.addEventListener('keydown', key); document.body.appendChild(o); });
@@ -6957,10 +6957,79 @@ function nwListHTML(n){
     <img src="${p.img}" alt="${esc(nwL(p.alt))}" width="1200" height="630" loading="lazy"><span class="nw-cb"><small>${esc(nwDay(p.date))}</small><b>${esc(nwL(p.title))}</b><span>${esc(nwL(p.teaser))}</span></span></a>`).join('')}</div></section>`;
 }
 const NW_BLOCK = {
-  p:b=>`<p>${b.h}</p>`, h:b=>`<h2 id="nwa-${b.id}">${esc(b.t)}</h2>`, ul:b=>`<ul>${b.l.map(x=>`<li>${x}</li>`).join('')}</ul>`,
-  img:b=>`<figure class="nw-fig"><img src="${b.src}" alt="${esc(b.alt)}" width="1200" height="675" loading="lazy"><figcaption>${esc(b.cap)}</figcaption></figure>`,
+  p:b=>`<p${b.clear ? ' class="nw-clr"' : ''}>${b.h}</p>`, h:b=>`<h2 id="nwa-${b.id}">${esc(b.t)}</h2>`, ul:b=>`<ul>${b.l.map(x=>`<li>${x}</li>`).join('')}</ul>`,
+  // pos 'right'/'left': Bild neben dem Text (wie in den Guides), tall: schmales Hochformat (z. B. Standbild aus einem Reel)
+  img:b=>`<figure class="nw-fig${b.pos ? ` gd-fig${b.pos === 'left' ? ' l' : ''}${b.tall ? ' tall' : ''}` : ''}"><img src="${b.src}" alt="${esc(b.alt)}" width="${b.w || 1200}" height="${b.h || 675}" loading="lazy"${b.pos ? ' data-zoom' : ''}><figcaption>${esc(b.cap)}</figcaption></figure>`,
   yt:b=>`<figure class="nw-fig"><button type="button" class="nw-yt" data-yt="${b.id}" aria-label="${L('Video abspielen', 'Play video')}: ${esc(b.alt)}"><img src="${b.src}" alt="${esc(b.alt)}" width="1280" height="720" loading="lazy"><i aria-hidden="true"></i></button><figcaption>${esc(b.cap)}</figcaption></figure>`,
-  say:b=>`<div class="nw-say"><img src="${b.img}" alt="${esc(b.who)}" loading="lazy"><p><b>${esc(b.who)}</b>${esc(b.t)}</p></div>`};
+  say:b=>`<div class="nw-say"><img src="${b.img}" alt="${esc(b.who)}" loading="lazy"><p><b>${esc(b.who)}</b>${esc(b.t)}</p></div>`,
+  // Abstimmung „Wer ist das?“: Ausschnitt, Frage, unser Tipp, Antworten zum Antippen – nach der Stimme die Ergebnisse (api/votes.js, nwPolls)
+  // Antworten mit Bild ([kennung, Name, Bild, Unterzeile]) = Champion-Kacheln mit Riots Ladebildschirm-Bild zum direkten Vergleich mit der Silhouette
+  poll:b=>`<div class="nw-poll${b.o[0][2] ? ' nw-vote' : ''}" data-poll="${b.id}"><img class="nw-poll-img" src="${b.img}" alt="${esc(b.alt)}" width="400" height="400" loading="lazy" data-zoom>
+    <div class="nw-poll-b"><span class="nw-poll-k">${esc(b.tag || L('Rate mit', 'Your guess'))}</span><p class="nw-poll-q">${esc(b.q)}</p>${b.tip ? `<p class="nw-poll-tip">${b.tip}</p>` : ''}
+    <div class="nw-poll-o">${b.o.map(([v, l, im, sub])=>`<button type="button" data-o="${v}">${im ? `<img src="${im}" alt="${esc(sub || l)}" width="308" height="560" loading="lazy">` : ''}<span class="nw-po-l">${esc(l)}${sub ? `<small>${esc(sub)}</small>` : ''}</span><span class="nw-po-p"></span></button>`).join('')}</div>
+    <small class="nw-poll-n">${L('Tipp auf eine Antwort – danach siehst du, wie die anderen getippt haben.', 'Tap an answer – then you see how everyone else guessed.')}</small></div></div>`,
+  // Bildergalerie: mehrere Standbilder nebeneinander (Klick vergrößert)
+  gallery:b=>`<div class="nw-gal">${b.items.map(x=>`<figure><img src="${x.src}" alt="${esc(x.alt)}" width="${x.w || 720}" height="${x.h || 1280}" loading="lazy" data-zoom><figcaption>${esc(x.cap)}</figcaption></figure>`).join('')}</div>`,
+  // Tipp-Feld „Wer ist das?“: Champion eintippen (Vorschläge aus data/lol-champions.js), danach die häufigsten Tipps (api/votes.js, nwPolls)
+  guess:b=>`<div class="nw-poll nw-guess" data-poll="${b.id}" data-guess><img class="nw-poll-img" src="${b.img}" alt="${esc(b.alt || b.q)}" width="400" height="400" loading="lazy" data-zoom>
+    <div class="nw-poll-b"><span class="nw-poll-k">${esc(b.k2 || L('Dein Tipp', 'Your guess'))}</span><p class="nw-poll-q">${esc(b.q)}</p>${b.tip ? `<p class="nw-poll-tip">${b.tip}</p>` : ''}
+    <form class="nw-gf"><input type="text" list="nwChamps" autocomplete="off" placeholder="Champion …" aria-label="${esc(b.q)}"><button type="submit">${L('Tippen', 'Guess')}</button></form>
+    <div class="nw-gr"></div><small class="nw-poll-n">${L('Wähl einen Champion aus der Liste – oder „Ein neuer Champion“.', 'Pick a champion from the list – or “A new champion”.')}</small></div></div>`,
+  guesses:b=>`<div class="nw-guesses">${b.items.map(x=>NW_BLOCK.guess(x)).join('')}</div>`,
+  // „Passt das?“: Silhouette aus dem Teaser neben Riots Ladebildschirm-Bild des erkannten Champions, Abstimmung ja/nein mit Prozent über alle (api/votes.js)
+  match:b=>`<div class="nw-poll nw-match" data-poll="${b.id}"><div class="nw-mt-imgs">
+      <figure class="nw-mt-sil"><img src="${b.sil}" alt="${esc(L('Silhouette aus dem Teaser', 'Silhouette from the teaser') + ': ' + b.where)}" width="${b.silW || 400}" height="${b.silH || 400}" loading="lazy" data-zoom><figcaption>${L('Teaser', 'Teaser')}</figcaption></figure>
+      <span class="nw-mt-vs" aria-hidden="true">=</span>
+      ${b.champs.map(c=>`<figure><img src="${c.img}" alt="${esc(c.skin)}" width="308" height="560" loading="lazy" data-zoom><figcaption>${esc(c.skin)}</figcaption></figure>`).join('')}</div>
+    <div class="nw-poll-b"><span class="nw-poll-k">${esc(b.where)}</span><p class="nw-poll-q">${esc(b.who)}</p>
+    <div class="nw-poll-o"><button type="button" data-o="ja"><span class="nw-po-l">${L('Ja, passt', 'Yes, that fits')}</span><span class="nw-po-p"></span></button><button type="button" data-o="nein"><span class="nw-po-l">${L('Nein, sehe ich anders', 'No, I see it differently')}</span><span class="nw-po-p"></span></button></div>
+    <small class="nw-poll-n">${L('Siehst du das auch so? Stimm ab – danach siehst du, wie alle abgestimmt haben.', 'Do you see it the same way? Vote – then you see how everyone voted.')}</small></div></div>`,
+  matches:b=>`<div class="nw-matches">${b.items.map(x=>NW_BLOCK.match(x)).join('')}</div>`};
+// Tipp-Feld: Name → Kennung wie auf dem Server (api/votes.js: slug), „neu“ = ein neuer Champion
+const NW_NEU = () => L('Ein neuer Champion', 'A new champion');
+const nwSlug = s => String(s).toLowerCase().normalize('NFD').replace(/[^a-z]/g, '');
+const nwChampName = k => k === 'neu' ? NW_NEU() : ((window.LOL_CHAMPS || []).find(n=>nwSlug(n) === k) || k);
+function nwGuessShow(el, counts){
+  const mine = nwVoted()[el.dataset.poll]; if(!mine) return;
+  el.classList.add('done'); el.querySelector('.nw-gf').hidden = true;
+  if(!counts){ el.querySelector('.nw-gr').innerHTML = `<div class="nw-gi mine" style="--w:100%"><span>${esc(nwChampName(mine))}</span><b></b></div>`;
+    el.querySelector('.nw-poll-n').textContent = L('Danke! Das Ergebnis siehst du, sobald die Abstimmung wieder erreichbar ist.', 'Thanks! You will see the result as soon as the poll is reachable again.'); return; }
+  const all = Object.entries(counts).filter(([, n])=>n > 0).sort((a, b)=>b[1] - a[1]), total = all.reduce((s, [, n])=>s + n, 0);
+  const top = all.slice(0, 5); if(!top.some(([k])=>k === mine) && counts[mine]) top.push([mine, counts[mine]]);
+  el.querySelector('.nw-gr').innerHTML = top.map(([k, n])=>{ const pc = total ? Math.round(n / total * 100) : 0; return `<div class="nw-gi${k === mine ? ' mine' : ''}" style="--w:${pc}%"><span>${esc(nwChampName(k))}</span><b>${pc} %</b></div>`; }).join('');
+  el.querySelector('.nw-poll-n').textContent = L(`${total} ${total === 1 ? 'Tipp' : 'Tipps'} bisher – die häufigsten siehst du oben.`, `${total} ${total === 1 ? 'guess' : 'guesses'} so far – the most common ones are above.`);
+}
+// Abstimmungen: Stand vom Server holen, eigene Stimme merkt sich nur der Browser (tftfreaks_votes)
+const NW_VKEY = 'tftfreaks_votes';
+const nwVoted = () => { try { return JSON.parse(localStorage.getItem(NW_VKEY) || '{}') || {}; } catch(e){ return {}; } };
+function nwPollShow(el, counts){
+  const mine = nwVoted()[el.dataset.poll]; if(!mine) return;
+  const c = counts || {}, btns = [...el.querySelectorAll('.nw-poll-o button')], total = btns.reduce((s, b)=>s + (c[b.dataset.o] || 0), 0);
+  el.classList.add('done');
+  btns.forEach(b=>{ const n = c[b.dataset.o] || 0, pc = total ? Math.round(n / total * 100) : 0; b.disabled = true; b.classList.toggle('mine', b.dataset.o === mine);
+    b.style.setProperty('--w', (counts ? pc : b.dataset.o === mine ? 100 : 0) + '%'); b.querySelector('.nw-po-p').textContent = counts ? pc + ' %' : ''; });
+  el.querySelector('.nw-poll-n').textContent = counts ? L(`${total} ${total === 1 ? 'Stimme' : 'Stimmen'} bisher – danke fürs Mitraten!`, `${total} ${total === 1 ? 'vote' : 'votes'} so far – thanks for guessing!`)
+    : L('Danke! Das Ergebnis siehst du, sobald die Abstimmung wieder erreichbar ist.', 'Thanks! You will see the result as soon as the poll is reachable again.');
+}
+function nwPolls(root){
+  const els = [...root.querySelectorAll('.nw-poll')]; if(!els.length) return;
+  const state = {}, show = (el, c)=>(el.hasAttribute('data-guess') ? nwGuessShow : nwPollShow)(el, c);
+  // Vorschläge fürs Tipp-Feld: alle League-Champions plus „Ein neuer Champion“
+  if(root.querySelector('[data-guess]') && !document.getElementById('nwChamps')){ const dl = document.createElement('datalist'); dl.id = 'nwChamps';
+    dl.innerHTML = [NW_NEU(), ...(window.LOL_CHAMPS || [])].map(n=>`<option value="${esc(n)}">`).join(''); document.body.appendChild(dl); }
+  const vote = (el, o)=>{ const id = el.dataset.poll, v = nwVoted(); v[id] = o; try { localStorage.setItem(NW_VKEY, JSON.stringify(v)); } catch(err){}
+    const c = state[id] ? {...state[id]} : null; if(c) c[o] = (c[o] || 0) + 1; show(el, c);
+    fetch(`/api/votes?p=${encodeURIComponent(id)}&o=${encodeURIComponent(o)}`, {method:'POST'}).then(r=>r.json()).then(d=>{ if(d && d.votes && d.votes[id]){ state[id] = d.votes[id]; show(el, d.votes[id]); } }).catch(()=>{}); };
+  els.forEach(el=>{
+    el.addEventListener('click', e=>{ const b = e.target.closest('.nw-poll-o button'); if(b && !el.classList.contains('done')) vote(el, b.dataset.o); });
+    const form = el.querySelector('.nw-gf'); if(form) form.addEventListener('submit', e=>{ e.preventDefault(); if(el.classList.contains('done')) return;
+      const inp = form.querySelector('input'), s = nwSlug(inp.value), k = s === nwSlug(NW_NEU()) || s === 'neu' || s === 'new' ? 'neu' : (window.LOL_CHAMPS || []).map(nwSlug).find(x=>x === s);
+      if(!k){ inp.classList.add('bad'); el.querySelector('.nw-poll-n').textContent = L('Den Champion kenne ich nicht – wähl einen aus der Liste oder „Ein neuer Champion“.', 'I do not know that champion – pick one from the list or “A new champion”.'); inp.focus(); return; }
+      inp.classList.remove('bad'); vote(el, k); });
+  });
+  fetch('/api/votes?p=' + els.map(el=>encodeURIComponent(el.dataset.poll)).join(','), {cache:'no-store'}).then(r=>r.json()).then(d=>{
+    els.forEach(el=>{ const c = d && d.votes ? d.votes[el.dataset.poll] || {} : null; if(c) state[el.dataset.poll] = c; show(el, c); }); }).catch(()=>els.forEach(el=>show(el, null)));
+}
 function nwHTML(p){
   const body = nwL(p.body), heads = body.filter(b=>b.k === 'h');
   return `<article class="nw"><div class="crumb"><a href="/">Home</a> / <a href="/tft-set-${p.set}">Set ${p.set}</a> / News</div>
@@ -6972,7 +7041,7 @@ function nwHTML(p){
       <p class="art-note">${L('Quelle', 'Source')}: <a href="${nwL(p.src.url)}" target="_blank" rel="noopener">Riot Games, „${esc(nwL(p.src.name))}“</a>, ${esc(nwDay(p.src.date))}. ${L('Bilder und Videos: Riot Games.', 'Images and videos: Riot Games.')}</p></div>
       <aside class="ts-side art-side"><nav class="art-toc" aria-label="${L('Inhalt', 'Contents')}"><b>${L('Inhalt', 'Contents')}</b><ol>${heads.map(b=>`<li><a href="#nwa-${b.id}" data-toc="nwa-${b.id}">${esc(b.t)}</a></li>`).join('')}</ol></nav></aside></section></article>`;
 }
-function renderSetNews(slug){ const app = $('#nwApp'), p = nwBy(slug); if(!app || !p) return; app.innerHTML = nwHTML(p); artToc(app.querySelector('.nw-art')); }
+function renderSetNews(slug){ const app = $('#nwApp'), p = nwBy(slug); if(!app || !p) return; app.innerHTML = nwHTML(p); artToc(app.querySelector('.nw-art')); nwPolls(app); }
 document.addEventListener('click', e=>{ const b = e.target.closest && e.target.closest('.nw-yt'); if(!b) return;
   b.outerHTML = `<iframe class="nw-ytf" src="https://www.youtube-nocookie.com/embed/${b.dataset.yt}?autoplay=1&rel=0" title="${esc(b.getAttribute('aria-label'))}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`; });
 
@@ -7830,11 +7899,11 @@ function ndColon(){
 // Dashboard: Profil-Header, Top Comps, aktueller Patch, Tierlist im Kleinformat, Shop-Chancen, Coaching
 // Box zum nächsten Set: Termine aus dem Patch-Plan und der neueste Beitrag (data/news.js)
 function dshSetHTML(){
-  const n = nsNext(), {pbe, live} = nsDates(n), now = new Date(), p = NEWS.find(x=>x.set === n);
+  const n = nsNext(), {pbe, live} = nsDates(n), now = new Date(), ps = NEWS.filter(x=>x.set === n).slice(0, 2);   // die zwei neuesten Beiträge nebeneinander
   const date = (t, x) => `<span class="dsh-sd"><small>${t}</small><b>${x ? esc(cdDay(x.d, {day:'numeric', month:'long'})) : L('Termin folgt', 'Date to follow')}</b>${x ? `<em>${x.d <= now ? L('läuft', 'running') : cdDays(x.d)}</em>` : ''}</span>`;
   return `<section class="dsh-card dsh-set"><div class="dsh-h"><h2>Set ${n}</h2><a href="${nsHref()}">${L('Alle Infos', 'All info')} →</a></div>
     <div class="dsh-sds">${date(L('PBE-Start', 'PBE start'), pbe)}${date('Release', live)}</div>
-    ${p ? `<a class="dsh-sn" href="${nwHref(p)}"><img src="${p.img}" alt="${esc(nwL(p.alt))}" width="1200" height="630" loading="lazy"><span><small>News · ${esc(nwDay(p.date))}</small><b>${esc(nwL(p.title))}</b></span></a>` : ''}</section>`;
+    ${ps.length ? `<div class="dsh-sns">${ps.map(p=>`<a class="dsh-sn" href="${nwHref(p)}"><img src="${p.img}" alt="${esc(nwL(p.alt))}" width="1200" height="630" loading="lazy"><span><small>News · ${esc(nwDay(p.date))}</small><b>${esc(nwL(p.title))}</b></span></a>`).join('')}</div>` : ''}</section>`;
 }
 const dshHex = (n, cls='') => { const c = champBy[n] || CH_DATA[n]; if(!c) return ''; return `<span class="dsh-hx c${c.c} ${cls}" title="${esc(n)}"><i style="background-image:url('${champImg(n) || champFallback(n)}')"></i></span>`; };
 function renderDash(){
