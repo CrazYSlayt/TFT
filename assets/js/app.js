@@ -4101,13 +4101,17 @@ function dpsHover(e){
 // Rechnet von 2-1 bis zum Rolldown auf 4-2: Grundgold, Zinsen, Streak-Gold und Sieg-Gold je Runde – und was ein Streak-Bruch kostet.
 // Regeln aus cheats.econ (data/custom-<Set>.js). Annahme: Bis 4-2 wird nichts ausgegeben. Karussell = keine Runde, Monster = Einkommen ohne Ergebnis
 const SK_ECON = () => Object.assign({base:5, win:1, per:10, cap:5, streak:[[3, 1], [5, 2], [6, 3]]}, (TFT_CUSTOM_SET.cheats || {}).econ || {});
-const SK_ROUNDS = ['2-1', '2-2', '2-3', ['2-4', 'car'], '2-5', '2-6', ['2-7', 'pve'], '3-1', '3-2', '3-3', ['3-4', 'car'], '3-5', '3-6', ['3-7', 'pve'], '4-1', ['4-2', 'end']].map(r=>Array.isArray(r) ? {r:r[0], t:r[1]} : {r, t:'pvp'});
-const SK_PVP = SK_ROUNDS.filter(x=>x.t === 'pvp').map(x=>x.r);
+// Alle Runden von 2-1 bis 5-1 (Karussell = car, Monster = pve). Die Rolldown-Runde wählt der Spieler (sk.end) – bis dahin wird gerechnet
+const SK_ALL = ['2-1', '2-2', '2-3', ['2-4', 'car'], '2-5', '2-6', ['2-7', 'pve'], '3-1', '3-2', '3-3', ['3-4', 'car'], '3-5', '3-6', ['3-7', 'pve'], '4-1', '4-2', '4-3', ['4-4', 'car'], '4-5', '4-6', ['4-7', 'pve'], '5-1', '5-2', '5-3', ['5-4', 'car'], '5-5', '5-6', ['5-7', 'pve']].map(r=>Array.isArray(r) ? {r:r[0], t:r[1]} : {r, t:'pvp'});
+// Comp-Hinweis zur gewählten Rolldown-Runde (wie im Profi-Tipp des Anfänger-Guides); wählbar ist jede Runde außer dem Karussell
+const SK_ENDS = [['2-7', '1-Kosten-Reroll', '1-cost reroll'], ['3-1', '', ''], ['3-2', '2-Kosten-Reroll', '2-cost reroll'], ['3-5', '3-Kosten-Reroll', '3-cost reroll'], ['4-1', 'Fast 8', 'Fast 8'], ['4-2', 'Fast 8', 'Fast 8'], ['4-5', 'Fast 8 mit Tempo', 'Fast 8 with tempo'], ['5-1', 'Fast 9', 'Fast 9']];   // [Runde, Hinweis deutsch, englisch]
+const SK_PVP = SK_ALL.filter(x=>x.t === 'pvp').map(x=>x.r);
+const skRounds = (end = '4-2') => { const i = SK_ALL.findIndex(x=>x.r === end); return SK_ALL.slice(0, i + 1).map((x, j)=>j === i ? {r:x.r, t:'end'} : x); };   // bis zur Rolldown-Runde, die selbst = end
 const skStreakGold = n => SK_ECON().streak.reduce((g, [k, v])=>n >= k ? v : g, 0);
-// eff: Ergebnis je PvP-Runde ('w' | 'l' | null), start: Gold vor 2-1
-function skRun(eff, start){
+// eff: Ergebnis je PvP-Runde ('w' | 'l' | null), start: Gold vor 2-1, end: Rolldown-Runde (Einkommen dieser Runde zählt noch mit)
+function skRun(eff, start, end = '4-2'){
   const E = SK_ECON(); let gold = start, streak = 0, type = '', sum = {base:0, it:0, sg:0, win:0}; const rows = [];
-  SK_ROUNDS.forEach(x=>{
+  skRounds(end).forEach(x=>{
     if(x.t === 'car'){ rows.push({...x, gold}); return; }
     const it = Math.min(E.cap, Math.floor(gold / E.per)), sg = skStreakGold(streak);   // Zinsen vor dem Grundgold, Streak-Gold für die Serie bis hierher
     gold += it + E.base + sg; Object.assign(sum, {base:sum.base + E.base, it:sum.it + it, sg:sum.sg + sg});
@@ -4118,10 +4122,11 @@ function skRun(eff, start){
   });
   return {gold, rows, sum};
 }
-const sk = {start:10, res:Array(SK_PVP.length).fill(null)};
-try { const s = JSON.parse(localStorage.getItem('tftfreaks_streak_v1')); if(s && Array.isArray(s.res) && s.res.length === SK_PVP.length) Object.assign(sk, {start:Math.max(0, Math.min(40, +s.start || 0)), res:s.res}); } catch(e){}
-const skSave = () => { try { localStorage.setItem('tftfreaks_streak_v1', JSON.stringify(sk)); } catch(e){} };
-const skEff = res => { let last = null; return res.map(v=>(last = v || last)); };   // nicht angeklickte Runden setzen die letzte Serie fort
+const sk = {start:10, end:'4-2', res:Array(SK_PVP.length).fill('w')};   // jede Runde ist Sieg oder Niederlage (Wunsch 11.11.: keine leeren Runden)
+try { const s = JSON.parse(localStorage.getItem('tftfreaks_streak_v2')); if(s && Array.isArray(s.res) && s.res.length === SK_PVP.length) Object.assign(sk, {start:Math.max(0, Math.min(40, +s.start || 0)), res:s.res.map(v=>v === 'l' ? 'l' : 'w'), end:SK_ALL.some(x=>x.r === s.end && x.t !== 'car') ? s.end : '4-2'}); } catch(e){}
+const skSave = () => { try { localStorage.setItem('tftfreaks_streak_v2', JSON.stringify(sk)); } catch(e){} };
+const skPvpUntil = end => skRounds(end).filter(x=>x.t === 'pvp').length;   // so viele PvP-Runden liegen vor dem Rolldown
+const skEff = res => res.map(v=>v === 'l' ? 'l' : 'w');
 let skMounted = false, skShown = null;
 function skMount(){
   if(skMounted) return; skMounted = true;
@@ -4129,45 +4134,57 @@ function skMount(){
   const art = document.querySelector('[data-pre="streak"]'), trust = document.querySelector('[data-pre="streak-trust"]');
   if(art){ art.innerHTML = gdTok(skArticle()); enHrefs(art); artToc(art); }
   if(trust) trust.innerHTML = tioTrust(L('Wir halten unsere Tools für euren Climb aktuell: Die Gold-Regeln prüfen wir mit jedem Set – damit eure Econ-Planung stimmt.', 'We keep our tools up to date for your climb: we check the gold rules with every set – so your econ planning is right.'));
-  const stage = s => `<div class="sk-st"><span class="sk-sn">Stage ${s}</span><div class="sk-rr">${SK_ROUNDS.filter(x=>x.r[0] === String(s)).map(x=>x.t === 'pvp'
-      ? `<button type="button" class="sk-r" data-skr="${SK_PVP.indexOf(x.r)}"><b>${x.r}</b><i></i></button>`
-      : `<span class="sk-r sk-${x.t}"><b>${x.r}</b><i>${x.t === 'car' ? L('Karussell', 'Carousel') : x.t === 'pve' ? 'Monster' : 'Rolldown'}</i></span>`).join('')}</div></div>`;
   app.innerHTML = `<div class="sk">
     <section class="card sk-in tio-in" aria-label="${L('Deine Angaben', 'Your input')}">
       ${tioHead(false, tioReset('id="skReset"'), L('Klick deine Runden an – das Ergebnis rechnet sofort mit.', 'Click your rounds – the result updates instantly.'))}
       <section><h3 class="rd-h"><b>1</b> ${L('Dein Gold vor 2-1', 'Your gold before 2-1')}</h3>
         <label class="rd-f"><span>Gold</span><b id="skStartV"></b><input type="range" id="skStart" min="0" max="40" step="1" value="${sk.start}" aria-label="${L('Gold vor 2-1', 'Gold before 2-1')}"></label></section>
-      <section><h3 class="rd-h"><b>2</b> ${L('Deine Runden bis 4-2', 'Your rounds until 4-2')}</h3>
-        <div class="sk-pre"><button type="button" data-skpre="w">${L('Win Streak', 'Win streak')}</button><button type="button" data-skpre="l">${L('Lose Streak', 'Lose streak')}</button><button type="button" data-skpre="">${L('Leeren', 'Clear')}</button></div>
-        ${[2, 3, 4].map(stage).join('')}
-        <p class="rd-hint">${L('Klick auf eine Runde: Sieg → Niederlage → leer. Runden ohne Eintrag setzen deine letzte Serie fort.', 'Click a round: win → loss → empty. Rounds without an entry continue your last streak.')}</p></section>
+      <section><h3 class="rd-h"><b>2</b> ${L('Wann rollst du?', 'When do you roll?')}</h3>
+        <div class="sk-endsel"><label><span>Stage</span><select class="input" id="skEndS" aria-label="${L('Stage deines Rolldowns', 'Stage of your rolldown')}">${[...new Set(SK_ALL.map(x=>x.r[0]))].map(s=>`<option value="${s}">Stage ${s}</option>`).join('')}</select></label>
+          <label><span>${L('Runde', 'Round')}</span><select class="input" id="skEndR" aria-label="${L('Runde deines Rolldowns', 'Round of your rolldown')}"></select></label></div>
+        <p class="sk-endhint" id="skEndHint"></p></section>
+      <section><h3 class="rd-h"><b>3</b> <span id="skRoundsH"></span></h3>
+        <div class="sk-pre"><button type="button" data-skpre="w">${L('Win Streak', 'Win streak')}</button><button type="button" data-skpre="l">${L('Lose Streak', 'Lose streak')}</button></div>
+        <div id="skRounds"></div>
+        <p class="rd-hint">${L('Klick auf eine Runde, um zwischen Sieg und Niederlage zu wechseln.', 'Click a round to switch between win and loss.')}</p></section>
     </section>
     <section class="card sk-res tio-out" aria-label="${L('Dein Ergebnis', 'Your result')}">${tioHead(true)}<div id="skRes" aria-live="polite"></div>
       ${tioSec(`<span class="tio-sic">${ic('gold')}</span>`, L('Runde für Runde', 'Round by round'), L('So setzt sich dein Gold zusammen', 'How your gold adds up'), '<div id="skTable"></div>')}</section>
   </div>`;
   function ic(k){ return `<img src="assets/icons/tft/${k}.png" alt="" width="22" height="22">`; }
   app.addEventListener('click', e=>{
-    const r = e.target.closest('[data-skr]'); if(r){ const i = +r.dataset.skr; sk.res[i] = sk.res[i] === null ? 'w' : sk.res[i] === 'w' ? 'l' : null; skSave(); skUpdate(); return; }
-    const p = e.target.closest('[data-skpre]'); if(p){ const v = p.dataset.skpre || null; sk.res = Array(SK_PVP.length).fill(null); if(v) sk.res[0] = v; skSave(); skUpdate(); return; }
-    if(e.target.closest('#skReset')){ sk.start = 10; sk.res = Array(SK_PVP.length).fill(null); $('#skStart').value = 10; skSave(); skUpdate(); }
+    const r = e.target.closest('[data-skr]'); if(r){ const i = +r.dataset.skr; sk.res[i] = sk.res[i] === 'w' ? 'l' : 'w'; skSave(); skUpdate(); return; }
+    const p = e.target.closest('[data-skpre]'); if(p){ sk.res = Array(SK_PVP.length).fill(p.dataset.skpre); skSave(); skUpdate(); return; }
+    if(e.target.closest('#skReset')){ sk.start = 10; sk.end = '4-2'; sk.res = Array(SK_PVP.length).fill('w'); $('#skStart').value = 10; skSave(); skUpdate(); }
   });
   $('#skStart').addEventListener('input', e=>{ sk.start = +e.target.value; skSave(); skUpdate(); });
+  // Rolldown: Stage wechseln → gleiche Rundennummer, wenn es sie gibt (sonst die erste wählbare)
+  $('#skEndS').addEventListener('change', e=>{ const s = e.target.value, n = sk.end.split('-')[1], ok = SK_ALL.filter(x=>x.r[0] === s && x.t !== 'car').map(x=>x.r); sk.end = ok.includes(s + '-' + n) ? s + '-' + n : ok[0]; skSave(); skUpdate(); });
+  $('#skEndR').addEventListener('change', e=>{ sk.end = e.target.value; skSave(); skUpdate(); });
   skUpdate();
 }
 function skUpdate(){
-  const eff = skEff(sk.res), idle = !eff[0], E = SK_ECON();
+  const eff = skEff(sk.res), idle = !eff[0], E = SK_ECON(), end = sk.end, R = skRounds(end);
   $('#skStartV').textContent = sk.start + ' Gold';
-  document.querySelectorAll('#skApp [data-skr]').forEach(b=>{ const i = +b.dataset.skr, v = eff[i], own = !!sk.res[i];
-    b.className = 'sk-r' + (v ? ' ' + v : '') + (v && !own ? ' ghost' : '') + (idle && i === 0 ? ' pulse' : '');
+  // Rolldown-Runde markieren, Runden nur bis dahin zeigen (je Stage eine Zeile)
+  const es = $('#skEndS'), er = $('#skEndR'), hint = SK_ENDS.find(x=>x[0] === end);
+  es.value = end[0]; er.innerHTML = SK_ALL.filter(x=>x.r[0] === end[0] && x.t !== 'car').map(x=>`<option value="${x.r}">${x.r.split('-')[1]}</option>`).join(''); er.value = end;
+  $('#skEndHint').innerHTML = hint && hint[1] ? L(`Typisch für <b>${hint[1]}</b>`, `Typical for <b>${hint[2]}</b>`) : '';
+  $('#skRoundsH').textContent = L(`Deine Runden bis ${end}`, `Your rounds until ${end}`);
+  $('#skRounds').innerHTML = [...new Set(R.map(x=>x.r[0]))].map(s=>`<div class="sk-st"><span class="sk-sn">Stage ${s}</span><div class="sk-rr">${R.filter(x=>x.r[0] === s).map(x=>x.t === 'pvp'
+      ? `<button type="button" class="sk-r" data-skr="${SK_PVP.indexOf(x.r)}"><b>${x.r}</b><i></i></button>`
+      : `<span class="sk-r sk-${x.t}"><b>${x.r}</b><i>${x.t === 'car' ? L('Karussell', 'Carousel') : x.t === 'pve' ? 'Monster' : 'Rolldown'}</i></span>`).join('')}</div></div>`).join('');
+  document.querySelectorAll('#skApp [data-skr]').forEach(b=>{ const i = +b.dataset.skr, v = eff[i];
+    b.className = 'sk-r ' + v;
     b.querySelector('i').textContent = v === 'w' ? L('Sieg', 'Win') : v === 'l' ? L('Niederl.', 'Loss') : '–'; });
-  const me = skRun(eff, sk.start), W = skRun(Array(SK_PVP.length).fill('w'), sk.start), Lo = skRun(Array(SK_PVP.length).fill('l'), sk.start);
-  const base = eff[0] === 'w' ? W : Lo, brk = eff.some(v=>v !== eff[0]), loss = base.gold - me.gold, max = Math.max(W.gold, Lo.gold, me.gold);
+  const me = skRun(eff, sk.start, end), W = skRun(Array(SK_PVP.length).fill('w'), sk.start, end), Lo = skRun(Array(SK_PVP.length).fill('l'), sk.start, end);
+  const base = eff[0] === 'w' ? W : Lo, brk = eff.slice(0, skPvpUntil(end)).some(v=>v !== eff[0]), loss = base.gold - me.gold, max = Math.max(W.gold, Lo.gold, me.gold);
   const bar = (t, g, c, on) => `<div class="sk-bar${on ? ' on' : ''}"><span>${t}</span><div><i class="${c}" style="width:${Math.round(g / max * 100)}%"></i></div><b>${g}</b></div>`;
   const res = $('#skRes');
-  if(idle){ res.innerHTML = `<div class="sk-idle"><b>${L('Wie viel Gold hast du auf 4-2?', 'How much gold do you have on 4-2?')}</b><span>${L('Klick links deine Runden an oder wähl eine Serie. Zum Vergleich – wenn du nichts ausgibst:', 'Click your rounds on the left or pick a streak. For comparison – if you spend nothing:')}</span>
+  if(idle){ res.innerHTML = `<div class="sk-idle"><b>${L(`Wie viel Gold hast du auf ${end}?`, `How much gold do you have on ${end}?`)}</b><span>${L('Klick links deine Runden an oder wähl eine Serie. Zum Vergleich – wenn du nichts ausgibst:', 'Click your rounds on the left or pick a streak. For comparison – if you spend nothing:')}</span>
       ${bar(L('Win Streak durchgezogen', 'Full win streak'), W.gold, 'w')}${bar(L('Lose Streak durchgezogen', 'Full lose streak'), Lo.gold, 'l')}</div>`;
     $('#skTable').innerHTML = ''; skShown = null; return; }
-  res.innerHTML = `<div class="sk-big"><small>${L('Dein Gold auf 4-2', 'Your gold on 4-2')}</small><b id="skGold">${me.gold}</b><span>${L('vor dem Rolldown, wenn du bis dahin nichts ausgibst', 'before the rolldown, if you spend nothing until then')}</span></div>
+  res.innerHTML = `<div class="sk-big"><small>${L(`Dein Gold auf ${end}`, `Your gold on ${end}`)}</small><b id="skGold">${me.gold}</b><span>${L('vor dem Rolldown, wenn du bis dahin nichts ausgibst', 'before the rolldown, if you spend nothing until then')}</span></div>
     ${brk && loss > 0 ? `<div class="sk-loss"><b>−${loss} Gold</b><span>${L(`kostet dich der Bruch gegenüber der durchgezogenen ${eff[0] === 'w' ? 'Win' : 'Lose'} Streak.`, `is what the break costs you compared to the full ${eff[0] === 'w' ? 'win' : 'lose'} streak.`)}</span></div>` : brk ? `<div class="sk-loss ok"><b>${loss < 0 ? '+' + (-loss) : '±0'} Gold</b><span>${L('gegenüber der durchgezogenen Serie – die Siege holen den Bruch wieder rein.', 'compared to the full streak – the wins make up for the break.')}</span></div>` : ''}
     <div class="sk-bars">${bar(L('Deine Partie', 'Your game'), me.gold, eff[0], true)}${bar(L('Win Streak durchgezogen', 'Full win streak'), W.gold, 'w')}${bar(L('Lose Streak durchgezogen', 'Full lose streak'), Lo.gold, 'l')}</div>
     <div class="sk-sum">${[[L('Grundgold', 'Base income'), me.sum.base], [L('Zinsen', 'Interest'), me.sum.it], ['Streak-Gold', me.sum.sg], [L('Sieg-Gold', 'Win gold'), me.sum.win]].map(([t, v])=>`<span><small>${t}</small><b>+${v}</b></span>`).join('')}</div>
@@ -4181,8 +4198,8 @@ function skUpdate(){
 function skArticle(){
   const E = SK_ECON(), W = skRun(Array(SK_PVP.length).fill('w'), 10), Lo = skRun(Array(SK_PVP.length).fill('l'), 10);
   const st = E.streak.map(([k, v], i)=>[i < E.streak.length - 1 ? `${k}–${E.streak[i + 1][0] - 1}` : `${L('ab', 'from')} ${k}`, '+' + v]);
-  const body = `<p>${L('In TFT entscheidet dein Gold, wie stark du später bist. Neben dem Grundgold bringen dir <b>Zinsen</b> und <b>Serien</b> das meiste Extra-Gold. Der Rechner zeigt dir, wie viel Gold du bis zum Rolldown auf 4-2 hast – und was es dich kostet, wenn deine Win Streak oder Lose Streak bricht.',
-      'In TFT your gold decides how strong you are later. Besides base income, <b>interest</b> and <b>streaks</b> give you the most extra gold. The calculator shows how much gold you have by the rolldown on 4-2 – and what it costs you when your win streak or lose streak breaks.')}</p>
+  const body = `<p>${L('In TFT entscheidet dein Gold, wie stark du später bist. Neben dem Grundgold bringen dir <b>Zinsen</b> und <b>Serien</b> das meiste Extra-Gold. Der Rechner zeigt dir, wie viel Gold du bis zu deinem Rolldown hast – egal ob auf 3-2 beim Reroll oder auf 4-2 bei Fast 8 – und was es dich kostet, wenn deine Win Streak oder Lose Streak bricht.',
+      'In TFT your gold decides how strong you are later. Besides base income, <b>interest</b> and <b>streaks</b> give you the most extra gold. The calculator shows how much gold you have by your rolldown – whether on 3-2 for a reroll or on 4-2 for fast 8 – and what it costs you when your win streak or lose streak breaks.')}</p>
     <h3 id="sk-streak">${L('So viel Streak-Gold gibt es', 'How much streak gold you get')}</h3>
     ${artTw([L('Serie', 'Streak'), L('Bonus pro Runde', 'Bonus per round')], st.map(([a, b])=>`<tr><td>${a} ${L('in Folge', 'in a row')}</td><td><b>${b} Gold</b></td></tr>`))}
     <p>${L('Das gilt für Siege und Niederlagen gleich. Monster-Runden zahlen das Streak-Gold weiter und brechen keine Serie. Das Karussell zählt nicht als Runde – dort gibt es kein Einkommen.', 'This applies to wins and losses alike. Monster rounds keep paying streak gold and don\'t break a streak. The carousel doesn\'t count as a round – there is no income there.')}</p>
@@ -4196,7 +4213,7 @@ function skArticle(){
     [L('Wie viele Zinsen gibt es in TFT?', 'How much interest do you get in TFT?'), L(`1 Gold für je ${E.per} Gold auf dem Konto, höchstens ${E.cap} Gold pro Runde – also ab 50 Gold das Maximum.`, `1 gold for every ${E.per} gold in the bank, at most ${E.cap} gold per round – so the maximum from 50 gold.`)],
     [L('Bricht eine Monster-Runde die Serie?', 'Does a monster round break the streak?'), L('Nein. Monster-Runden zahlen das Streak-Gold weiter, das Karussell bringt gar kein Einkommen.', 'No. Monster rounds keep paying streak gold, the carousel gives no income at all.')],
     [L('Lohnt sich eine Lose Streak?', 'Is a lose streak worth it?'), L(`Gold-mäßig bringt sie fast so viel wie eine Win Streak – dafür verlierst du Leben. Wann sie sich lohnt, steht im Lose-Streak-Guide.`, `Gold-wise it brings almost as much as a win streak – but you lose health. When it pays off is in the lose streak guide.`)]];
-  return artFrame({id:'ts-streak', h2:L('TFT Streak-Gold und Zinsen: So rechnest du bis 4-2', 'TFT streak gold and interest: how to count until 4-2'), og:L('tft-streak-rechner', 'tft-streak-calculator'),
+  return artFrame({id:'ts-streak', h2:L('TFT Streak-Gold und Zinsen: So rechnest du bis zum Rolldown', 'TFT streak gold and interest: how to count until your rolldown'), og:L('tft-streak-rechner', 'tft-streak-calculator'),
     alt:L('TFT Streak-Rechner: Wie viel Gold kostet der Bruch? – kostenloses Tool von TFTClimb', 'TFT streak calculator: what does a broken streak cost? – free tool by TFTClimb'), body, faq, tools:['rolldown', 'augments', 'drops', 'dps'], src:E.src});
 }
 function renderTools(sub, a, b){
@@ -7433,8 +7450,8 @@ function pageMeta(page, sub){
       // Keyword: Rolldown-Rechner, dazu „Odds“ / „Shop Odds“ / „Reroll-Chancen“ (so wird auch gesucht)
       if(sub==='rolldown') return [L(`TFT Rolldown-Rechner ${S} – Shop Odds pro Level`, `TFT Rolldown Calculator ${S} – Shop Odds`), L(`TFT Rolldown-Rechner ${S}: Shop Odds pro Level, Pool-Größen und Reroll-Chancen – wie viel Gold brauchst du für deine Units?`,
         `TFT rolldown calculator ${S}: shop odds per level, pool sizes and reroll odds – how much gold do you need to hit your units?`)];
-      if(sub==='streak') return [L('TFT Streak-Rechner – Zinsen & Streak-Gold bis 4-2', 'TFT Streak Calculator – Interest & Streak Gold'), L('TFT Streak-Rechner: Wie viel Gold bringen Win Streak und Lose Streak bis 4-2 – und was kostet es dich, wenn die Serie bricht?',
-        'TFT streak calculator: how much gold do win and lose streaks bring until 4-2 – and what does it cost you when the streak breaks?')];
+      if(sub==='streak') return [L('TFT Streak-Rechner – Zinsen & Streak-Gold', 'TFT Streak Calculator – Interest & Streak Gold'), L('TFT Streak-Rechner: Wie viel Gold bringen Win und Lose Streak bis zu deinem Rolldown – und was kostet es, wenn die Serie bricht?',
+        'TFT streak calculator: how much gold do win and lose streaks bring until your rolldown – and what does it cost when the streak breaks?')];
       if(sub==='drops') return [L(`TFT Item-Drop-Chance ${S} – nächste Komponente`, `TFT Item Drop Odds ${S} – Next Component`), L(`TFT Item-Drop-Chance für ${S}: Trag deine Drops aus den Creep-Runden ein und sieh, welche Komponente als Nächstes kommt.`,
         `TFT item drop odds for ${S}: enter your drops from the creep rounds and see which component comes next.`)];
       if(sub==='dps') return [L(`TFT DPS-Rechner ${S} – Builds vergleichen`, `TFT DPS Calculator ${S} – Compare Builds`), L(`TFT DPS-Rechner für ${S}: Vergleich bis zu vier Item-Builds eines Champions und sieh, welcher am meisten Schaden macht.`,
