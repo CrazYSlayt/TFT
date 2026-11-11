@@ -209,7 +209,11 @@ function guidePages(){
     <img class="er-pose" src="/assets/img/coach/${m.pose}.webp" alt="">
     <img class="logo nwlogo" src="/assets/brand/logo-tftclimb.webp" alt="">
     <div class="nwtag">${m.tag[en]}</div>`)}); }));
-  (w.TFT_GUIDE_PLAN || []).filter(p => M[p.key] && slug[p.key]).forEach(p => [0, 1].forEach(en => { const m = M[p.key], t = m.t[en], long = t.length > 11;
+  // Guide mit Nano-Banana-Titelbild (Plan-Eintrag hero): Bild füllt alles, dazu Logo und Schild „TFT Guide · …“
+  (w.TFT_GUIDE_PLAN || []).filter(p => p.hero && slug[p.key]).forEach(p => [0, 1].forEach(en => { const t = (M[p.key] || {t:[p.t, p.te]}).t[en];
+    out.push({file:`guides/${slug[p.key]}${en ? '-en' : ''}`, jpg:true, html:page(`<style>body::after{display:none}.er-nb{position:absolute;inset:0;background:url(/${p.hero}) center/cover no-repeat}.er-nb::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 62%,rgba(4,14,22,.75))}.nwtag{z-index:4}</style>
+    <div class="er-nb"></div><img class="logo nwlogo" src="/assets/brand/logo-tftclimb.webp" alt=""><div class="nwtag">TFT Guide · ${t}</div>`)}); }));
+  (w.TFT_GUIDE_PLAN || []).filter(p => M[p.key] && slug[p.key] && !p.hero).forEach(p => [0, 1].forEach(en => { const m = M[p.key], t = m.t[en], long = t.length > 11;
     out.push({file:`guides/${slug[p.key]}${en ? '-en' : ''}`, jpg:true, html:page(`${css}
       <div class="gh-art">${m.art}</div>
       <div class="l gh-l" style="--fs:${long ? 84 : 112}px"><img class="logo" src="/assets/brand/logo-tftclimb.webp" alt=""><div class="kick">TFT Guide</div><h1><em>${t}</em></h1>

@@ -3021,7 +3021,9 @@ function gdPlanHTML(){
    „open“-Blöcke = Fragen aus der Liste, die CrazYSlayt noch beantwortet – nur lokal sichtbar, online fallen sie weg --- */
 const gdCoach = (pose, alt) => `<img class="gd-coach" src="assets/img/coach/${pose}.webp" alt="${alt}" loading="lazy" decoding="async">`;
 const GD_BLOCK = {
-  h:b=>`<h2 id="gdx-${b.id}">${esc(b.t)}</h2>`, h4:b=>`<h4>${esc(b.t)}</h4>`, p:b=>`<p${b.clear ? ' class="nw-clr"' : ''}>${b.h}</p>`, box:b=>`<div class="art-box"><p>${b.h}</p></div>`,
+  h:b=>b.h3 ? `<h3 id="gdx-${b.id}">${esc(b.t)}</h3>` : `<h2 id="gdx-${b.id}">${esc(b.t)}</h2>`, h4:b=>`<h4>${esc(b.t)}</h4>`,
+  // Kapitel-Kopf wie im Anfänger-Guide: Marke „Kapitel N“, große Überschrift (h2), kurzer Einstieg – die Abschnitte darunter werden h3 (gdDataHTML)
+  chap:b=>`<header class="gd-chap" id="gdk-${b.n}" data-n="${String(b.n).padStart(2, '0')}"><span class="gd-chap-n">${L('Kapitel', 'Chapter')} ${b.n}</span><h2>${esc(b.t)}</h2>${b.lead ? `<p>${b.lead}</p>` : ''}</header>`, p:b=>`<p${b.clear ? ' class="nw-clr"' : ''}>${b.h}</p>`, box:b=>`<div class="art-box"><p>${b.h}</p></div>`,
   ul:b=>`<ul class="art-list">${b.l.map(x=>`<li>${x}</li>`).join('')}</ul>`, ol:b=>`<ol class="art-list">${b.l.map(x=>`<li>${x}</li>`).join('')}</ol>`,
   stats:b=>`<div class="art-stats">${b.l.map(([v, t, c])=>`<div class="${c || 'p'}"><b>${esc(v)}</b><span>${esc(t)}</span></div>`).join('')}</div>`,
   table:b=>artTw(b.head, b.rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`)),
@@ -3079,7 +3081,8 @@ const GD_BLOCK = {
   flow:b=>`<ol class="gd-flow">${b.l.map(([w, t])=>`<li><b>${w}</b><span>${t}</span></li>`).join('')}</ol>`};
 // Titelbild eines Guides (tools/og-bilder.js → assets/og/guides/<adresse>[-en].jpg) – zugleich das Vorschaubild beim Teilen
 const gdHeroImg = k => `assets/og/guides/${GUIDE_SLUG[k] || k}${EN ? '-en' : ''}.jpg`;
-const gdHero = (k, alt) => `<figure class="nw-hero gd-hero"><img src="${gdHeroImg(k)}" alt="${esc(alt + ' – ' + L('Guide von CrazYSlayt', 'guide by CrazYSlayt'))}" width="1200" height="630"></figure>`;
+// Titelbild: mit Nano-Banana-Bild (Plan-Eintrag hero, tools/nano-banana.js) das Bild selbst, sonst das Vorschaubild aus tools/og-bilder.js
+const gdHero = (k, alt) => { const hp = (GD_PLAN_BY[k] || {}).hero; return `<figure class="nw-hero gd-hero"><img src="${hp || gdHeroImg(k)}" alt="${esc(alt + ' – ' + L('Guide von CrazYSlayt', 'guide by CrazYSlayt'))}" width="${hp ? 1600 : 1200}" height="${hp ? 893 : 630}"></figure>`; };
 // Item-Icon mit Namen und Tooltip (Spieldaten des Live-Sets); fehlt das Item im Set, bleibt nur der Name
 function gdIt(n, s = 40){ const it = findItem(n); if(!it) return `<b class="gd-it">${esc(n)}</b>`;
   return `<span class="gd-it" data-tti="${it.id}"><img src="${it.img}" alt="" width="${s}" height="${s}" loading="lazy"><small>${esc(L(it.de || it.en, it.en))}</small></span>`; }
@@ -3176,12 +3179,18 @@ function gdBoard(b){
     <figcaption>${b.t ? `<b>${esc(b.t)}</b>` : ''}${b.cap ? `<span>${b.cap}</span>` : ''}<span class="gb-leg">${leg}</span></figcaption></figure>`;
 }
 function gdDataHTML(g){
+  // Mit Kapiteln (k:'chap'): Abschnitte nach dem ersten Kapitel als h3, Inhaltsverzeichnis nach Kapiteln gruppiert
+  const ch1 = g.body.findIndex(b=>b.k === 'chap'); if(ch1 > -1) g = {...g, body:g.body.map((b, i)=>i > ch1 && b.k === 'h' ? {...b, h3:true} : b)};
   const heads = g.body.filter(b=>b.k === 'h');
+  const tocItem = b=>`<li><a href="#gdx-${b.id}" data-toc="gdx-${b.id}">${esc(b.t)}</a></li>`;
+  const toc = ch1 < 0 ? `<ol>${heads.map(tocItem).join('')}</ol>` : `<ol class="gd-toc-ch">${(()=>{ let out = '', open = false; g.body.forEach(b=>{
+      if(b.k === 'chap'){ out += (open ? '</ol></li>' : '') + `<li class="gd-toc-k"><span>${L('Kapitel', 'Chapter')} ${b.n}</span><ol>`; open = true; }
+      else if(b.k === 'h') out += tocItem(b); }); return out + (open ? '</ol></li>' : ''); })()}</ol>`;
   return `<div class="page-head"><div class="crumb"><a href="${(g.home || ['/guides'])[0]}">${(g.home || [0, 'Guides'])[1]}</a> / ${esc(g.crumb)}</div>
       <h1 class="tool-h1"><span class="th-key">${esc(g.h1[0])}</span> ${esc(g.h1[1])}</h1><p data-meta>${esc(g.meta)}</p></div>
     ${gdHero(g.key, g.h1.join(' '))}
     <section class="tool-seo ag-art gd-art nw-art" aria-labelledby="gdx-start"><div class="ts-main">${g.body.map(b=>GD_BLOCK[b.k](b)).join('')}${artAuthor()}</div>
-      <aside class="ts-side art-side"><nav class="art-toc" aria-label="Inhalt"><b>Inhalt</b><ol>${heads.map(b=>`<li><a href="#gdx-${b.id}" data-toc="gdx-${b.id}">${esc(b.t)}</a></li>`).join('')}</ol></nav></aside></section>`;
+      <aside class="ts-side art-side"><nav class="art-toc" aria-label="${L('Inhalt', 'Contents')}"><b>${L('Inhalt', 'Contents')}</b>${toc}</nav></aside></section>`;
 }
 function gdDataMount(g){
   const box = $('#gdData'); if(!box || box.dataset.key === g.key) return;
