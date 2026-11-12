@@ -6169,6 +6169,8 @@ if(CS_META.emblems && itemById.DA_Component_Spatula) Object.assign(CS_META.emble
 // Augment-Tabellen: Name und Icon aus den Riot-Daten
 (CS.augTables ? CS.augTables.list : []).forEach(t=>{ const a = csAugFind(t.aug); if(a) CS_META[t.id] = {s:[a.de, a.en], h:['Augment-Tabelle · Stage ' + t.st, 'Augment table · Stage ' + t.st], d:['Alle Belohnungen und Chancen', 'every reward and its odds'], img:a.img, st:t.st}; });
 (CS.traitTables ? CS.traitTables.list : []).forEach(t=>{ CS_META[t.id] = {s:t.title, h:['Attribut-Tabelle · ' + t.trait, 'Trait table · ' + t.trait], d:['Werte und Belohnungen des Attributs', 'the trait\'s values and rewards'], trait:t.trait}; });
+// Avatar (Lux): Lux-Porträt als Symbol statt Trait-Icon
+if(CS_META['avatar-lux'] && champBy.Lux){ const im = champImg('Lux') || champFallback('Lux'); if(im){ delete CS_META['avatar-lux'].trait; CS_META['avatar-lux'].img = im; } }
 CS_META['patch-schedule'] = {s:['Patch-Plan', 'Patch schedule'], h:['Wann welcher Patch kommt.', 'When each patch lands.'], d:['Termine aller Patches des Sets', 'dates of every patch this set'], img:TI('tft-logo-game'), rio:1, ic:'<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'};
 // Gruppen: [Kurzname DE/EN (Seitenleiste), Überschrift DE/EN und Unterzeile DE/EN (Übersicht)], Tabellen – Reihenfolge wie bei Little Buddy Bot
 const CS_GROUPS = [
