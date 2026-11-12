@@ -675,7 +675,7 @@ a.tab{display:inline-block}
 /* Trait-Symbole im Hex-Rahmen (Stil wie im Spiel) */
 .thx{position:relative;display:inline-flex;align-items:center;justify-content:center;width:var(--s);height:calc(var(--s) * 1.1547);flex-shrink:0;clip-path:var(--hexp);background:#4a4c5e}
 .thx::before{content:"";position:absolute;inset:max(1.5px, calc(var(--s) * .07));clip-path:var(--hexp);background:#16161f}
-.thx img{position:relative;width:60%;height:auto}
+.thx img{position:relative;width:60%;height:auto;aspect-ratio:1}   /* aspect-ratio: Größe steht schon vor dem Laden fest – sonst wachsen die Comp-Karten beim Laden (Dashboard-Sprung) */
 .thx-bronze{background:linear-gradient(160deg,#e0a27a,#8a5232)}.thx-bronze::before{background:linear-gradient(160deg,#7a4a2c,#3b2416)}
 .thx-silver{background:linear-gradient(160deg,#f1f4f8,#8d97a5)}.thx-silver::before{background:linear-gradient(160deg,#78818f,#3d434e)}
 .thx-gold{background:linear-gradient(160deg,#ffe592,#b7862a)}.thx-gold::before{background:linear-gradient(160deg,#ad7f2c,#5c3f11)}

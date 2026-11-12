@@ -317,6 +317,8 @@ const TL2_FOCUS = {Karma:[140, 100], Azir:[126, 100]};
 const TL2_RATIO = 396 / 360;   // Höhe : Breite des Rahmenkörpers (comp-<tier>-3.webp), CSS aspect-ratio passend
 // Comp-Art als Kürzel oben links auf der Karte, Farbe = Kosten der Units, um die es geht (Fast 8 → 4 Kosten, Fast 9 → 5 Kosten)
 const TL2_STYLE = {'1-Cost Reroll':['R1', 'var(--c1)'], '2-Cost Reroll':['R2', 'var(--c2)'], '3-Cost Reroll':['R3', 'var(--c3)'], '4-Cost Fast 8':['F8', 'var(--c4)'], 'Fast 9':['F9', 'var(--c5)'], 'Lose Streak':['LS', '#f7166e']};
+// Tier-Embleme (assets/tierlist/tier-*.webp): echte Bildmaße, damit der Platz schon vor dem Laden stimmt
+const TL2_IMG_W = {s:173, a:155, b:161, c:151, x:149}, tl2W = k => TL2_IMG_W[String(k).toLowerCase()] || 173;
 const tl2Style = (style, title) => { const s = TL2_STYLE[style]; return s ? `<span class="tl2-style" style="--sc:${s[1]}"${title ? ` title="${esc(title)}"` : ''}>${s[0]}</span>` : ''; };
 // Legende über der Tierlist: nur Comp-Arten, die gerade vorkommen
 const tl2Legend = () => `<div class="tl2-legend">${Object.keys(TL2_STYLE).filter(s=>mainComps.some(c=>c.style === s)).map(s=>`<span>${tl2Style(s)}${esc(L(STYLE_DE[s] || s, s))}</span>`).join('')}</div>`;
@@ -335,7 +337,7 @@ function tile2HTML(c, href){   // href: als Link (Dashboard → Comp in der Tier
     <span class="tl2-frame"><span class="tl2-pic" style="background-image:url('${img}')${fo ? `;--ps:${fo[0]}%;--py:${fo[1]}%` : ''}"></span>
       <span class="tl2-items">${items.map(it=>`<img src="${it.img}" alt="" title="${esc(L(it.de || it.en, it.en))}" width="30" height="30" loading="lazy">`).join('')}</span>
       <img class="tl2-fr" src="assets/tierlist/comp-${t}-3.webp" alt="" width="372" height="408" loading="lazy"></span>
-    ${c.tier === 'X' ? (c.sub ? `<img class="tl2-rate r-${c.sub.toLowerCase()}" src="assets/tierlist/tier-${c.sub.toLowerCase()}.webp" alt="${TL2_NAME[c.sub]}" title="${L('Bewertung, wenn die Bedingungen passen', 'Rating when the conditions are met')}: ${TL2_NAME[c.sub]}" width="173" height="160">` : '')
+    ${c.tier === 'X' ? (c.sub ? `<img class="tl2-rate r-${c.sub.toLowerCase()}" src="assets/tierlist/tier-${c.sub.toLowerCase()}.webp" alt="${TL2_NAME[c.sub]}" title="${L('Bewertung, wenn die Bedingungen passen', 'Rating when the conditions are met')}: ${TL2_NAME[c.sub]}" width="${tl2W(c.sub)}" height="160">` : '')
       : st ? `<span class="tl2-trend ${st[0]}" title="${st[2]}">${TL2_TREND[st[0]]}</span>` : ''}
     ${tl2Style(c.style, compStyleName(c))}
     ${tr ? `<span class="tl2-trait">${traitHex(tr.n, traitCls(tr), 34)}</span>` : ''}
@@ -412,7 +414,7 @@ function renderTiers(target, list){
     const rows = list.filter(c=>c.tier===t).sort((a,b)=>t==='X' ? 'SABC'.indexOf(a.sub)-'SABC'.indexOf(b.sub) : 0);
     if(!rows.length && mainComps.some(c=>c.tier===t)) return '';   // nur vom Filter ausgeblendet; wirklich leere Ränge bleiben stehen
     return `<div class="tl-tier tl2-tier tl2-${t.toLowerCase()}" style="--tc:${TIER_COL[t]}">
-      <div class="tl2-row"><div class="tl2-head tl2-f${t.toLowerCase()}"><img src="assets/tierlist/tier-${t.toLowerCase()}.webp" alt="" width="173" height="160"><b>${TL2_NAME[t]}</b></div>
+      <div class="tl2-row"><div class="tl2-head tl2-f${t.toLowerCase()}"><img src="assets/tierlist/tier-${t.toLowerCase()}.webp" alt="" width="${tl2W(t)}" height="160"><b>${TL2_NAME[t]}</b></div>
         <div class="tl2-cards${rows.length ? '' : ' none'}">${rows.length ? rows.map(c=>tile2HTML(c)).join('') : tl2None(t)}${t === 'X' && rows.length ? `<span class="tl2-sit" title="${L('Stark unter bestimmten Bedingungen (Augments, Items, Emblem)', 'Strong under certain conditions (augments, items, emblem)')}"><i>Situational</i></span>` : ''}</div></div>
       <div class="tl-detail" hidden></div>
     </div>`;
@@ -527,12 +529,12 @@ function panel2HTML(c){
       <span class="tl2-frame cp2-carry"><span class="tl2-pic" style="background-image:url('${img}')${fo ? `;--ps:${fo[0]}%;--py:${fo[1]}%` : ''}"></span>
         <img class="tl2-fr" src="assets/tierlist/comp-${t}-3.webp" alt="" width="372" height="408"></span>
       <div class="cp2-ttl">
-        <div class="cp2-l1"><img class="cp2-rk" src="assets/tierlist/tier-${rank}.webp" alt="" width="173" height="160"><span class="cp2-rkn">${c.tier === 'X' ? `${TL2_NAME.X}${c.sub ? ' · ' + TL2_NAME[c.sub] : ''}` : TL2_NAME[c.tier]}</span>${st ? `<em class="cp2-trend ${st[0]}">${TL2_TREND[st[0]]}${esc(st[2])}</em>` : ''}</div>
+        <div class="cp2-l1"><img class="cp2-rk" src="assets/tierlist/tier-${rank}.webp" alt="" width="${tl2W(rank)}" height="160"><span class="cp2-rkn">${c.tier === 'X' ? `${TL2_NAME.X}${c.sub ? ' · ' + TL2_NAME[c.sub] : ''}` : TL2_NAME[c.tier]}</span>${st ? `<em class="cp2-trend ${st[0]}">${TL2_TREND[st[0]]}${esc(st[2])}</em>` : ''}</div>
         <div class="cp2-l2"><h3>${esc(c.name)}</h3><span class="cp2-tag">${esc(c.style.replace('4-Cost ', ''))}</span><span class="cp2-tag dim">${esc(compDiffName(c))}</span></div>
         ${tip ? `<p class="cp2-tip">${esc(tip).replace(/\n/g, ' ')}</p>` : ''}
       </div>
       <div class="cp2-acts">${alts.length ? `<nav class="cp2-alts" aria-label="${L('Alternativen mit demselben Carry', 'Alternatives with the same carry')}"><small>${L('Alternativen', 'Alternatives')}</small>${alts.map(v=>{ const vr = (v.tier === 'X' && v.sub ? v.sub : v.tier).toLowerCase();
-          return `<button class="cp2-alt" data-variant="${v.slug}" title="${esc(v.name)} · ${TL2_NAME[v.tier === 'X' && v.sub ? v.sub : v.tier]}"><img src="assets/tierlist/tier-${vr}.webp" alt="" width="173" height="160">${esc(v.name)}<span></span></button>`; }).join('')}</nav>` : ''}<button class="cp2-btn" type="button" data-planner="${c.slug}" title="${L('Code für den Team-Planer im Spiel kopieren', 'Copy a code for the in-game team planner')}">${csSvg('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>', 2)}${L('Planer-Code', 'Planner code')}<span></span></button>
+          return `<button class="cp2-alt" data-variant="${v.slug}" title="${esc(v.name)} · ${TL2_NAME[v.tier === 'X' && v.sub ? v.sub : v.tier]}"><img src="assets/tierlist/tier-${vr}.webp" alt="" width="${tl2W(vr)}" height="160">${esc(v.name)}<span></span></button>`; }).join('')}</nav>` : ''}<button class="cp2-btn" type="button" data-planner="${c.slug}" title="${L('Code für den Team-Planer im Spiel kopieren', 'Copy a code for the in-game team planner')}">${csSvg('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>', 2)}${L('Planer-Code', 'Planner code')}<span></span></button>
         <button class="cp2-x" data-close-panel aria-label="${L('Schließen', 'Close')}">✕<span></span></button></div>
     </header>
     <div class="cp2-grid">
@@ -7980,7 +7982,7 @@ function renderDash(){
   // Tierlist im Kleinformat: dieselben Reihen (Emblem + Name) und Comp-Karten wie auf /tierlist, kleiner (alle fünf Reihen inkl. Niche;
   // alle Comps je Reihe, Niche nach Bewertung – was nicht in die Zeile passt, blendet dshMtlFit aus und zeigt „+N“), Klick → Comp in der Tierlist aufklappen
   const mtl = ['S', 'A', 'B', 'C', 'X'].map(t=>{ const list = mainComps.filter(c=>c.tier === t).sort((a,b)=>t === 'X' ? 'SABC'.indexOf(a.sub) - 'SABC'.indexOf(b.sub) : 0);
-    return `<div class="tl2-tier tl2-${t.toLowerCase()}"><div class="tl2-row"><div class="tl2-head"><img src="assets/tierlist/tier-${t.toLowerCase()}.webp" alt="" width="173" height="160"><b>${TL2_NAME[t]}</b></div>
+    return `<div class="tl2-tier tl2-${t.toLowerCase()}"><div class="tl2-row"><div class="tl2-head"><img src="assets/tierlist/tier-${t.toLowerCase()}.webp" alt="" width="${tl2W(t)}" height="160"><b>${TL2_NAME[t]}</b></div>
       <div class="tl2-cards${list.length ? '' : ' none'}">${list.length ? list.map(c=>tile2HTML(c, `/tierlist?comp=${encodeURIComponent(c.slug)}`)).join('') : tl2None(t)}</div></div></div>`; }).join('');
   const lpStat = (key, v, tier, label) => `<a class="dsh-lp" href="/ranks/${tier.k}"><img src="${rankImg(tier)}" alt=""><span><b data-dlp="${v || 0}" data-key="${key}">${v ? fmt(v) + ' LP' : '–'}</b><small>${live}${label}</small></span></a>`;
   box.innerHTML = `
