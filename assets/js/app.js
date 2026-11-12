@@ -142,8 +142,8 @@ const AUG_DUP = (()=>{ const by = {}, dup = new Set();
 
 const packages = [
   {n:'Einzelstunde',p:'30 €',u:'/ Stunde',h:'30 € pro Stunde',f:false,l:['1 Stunde 1:1 Coaching auf Discord','10–15 Min. Fundamentals auffrischen','ca. 45 Min. VOD-Review oder dein Thema','Auf Deutsch oder Englisch']},
+  {n:'3er-Paket',p:'80 €',u:'/ 3 Stunden',h:'≈ 27 € pro Stunde',f:false,b:'Spar 10 €',l:['3 × 1 Stunde 1:1 Coaching','Fundamentals + VOD-Review in jeder Stunde','Sessions bauen aufeinander auf','Gültig für das laufende Set']},
   {n:'Set-Pass',p:'200 €',u:'/ 8 Stunden',h:'25 € pro Stunde',f:true,b:'Bester Deal · Spar 40 €',l:['8 × 1 Stunde 1:1 Coaching','Bis zu 2 Stunden pro Woche','Fundamentals + VOD-Review in jeder Stunde','Gültig für das laufende Set']},
-  {n:'Team-Session',p:'20 €',u:'/ Person',h:'für 2–5 Personen',f:false,l:['1 Stunde für 2–5 Personen','Fundamentals für die ganze Gruppe','Gemeinsames VOD-Review','Für dich und deine Freunde']},
 ];
 
 // Stimmen gecoachter Spieler: q = Zitat, r = Fortschritt (z. B. 'Platin → Diamant'). Ohne Zitat erscheint ein Platzhalter.
@@ -1933,7 +1933,7 @@ const BUDDY_LINES = {
       'Du willst höher? Schau mal beim Coaching vorbei!',
     ];
   },
-  coaching(){ return ['Das Kennenlernen ist kostenlos – trau dich!', 'Nimm vorher ein paar Spiele auf, sonst gibt es nichts zum Anschauen!', 'Claudio und Romano sind beide Challenger. Ich bin nur fürs Zuschlagen zuständig.', 'VOD-Review heißt: pausieren, zurückspulen, verstehen. Ganz ohne Stress.', 'Mit dem Set-Pass sparst du 50 €. Ich würde zuschlagen!', 'VIP heißt: ein ganzes Set mit deinem Coach. Nur 4 Plätze – schnell sein lohnt sich!', 'Deutsch oder Englisch? Geht beides!']; },
+  coaching(){ return ['Das Kennenlernen ist kostenlos – trau dich!', 'Nimm vorher ein paar Spiele auf, sonst gibt es nichts zum Anschauen!', 'Claudio und Romano sind beide Challenger. Ich bin nur fürs Zuschlagen zuständig.', 'VOD-Review heißt: pausieren, zurückspulen, verstehen. Ganz ohne Stress.', 'Mit dem 3er-Paket sparst du 10 €, mit dem Set-Pass sogar 40 €. Ich würde zuschlagen!', 'VIP heißt: ein ganzes Set mit deinem Coach. Nur 4 Plätze – schnell sein lohnt sich!', 'Deutsch oder Englisch? Geht beides!']; },
   // Ornn: alles, was noch im Bau ist oder nicht läuft
   news(){ return ['Hmph. Die Neuigkeiten liegen noch auf dem Amboss.', 'Gut Ding will Weile haben. Gute Patch-Notes auch.', 'Ich schmiede hier gerade. Komm später wieder.', 'Erst wenn das Eisen heiß ist, wird geschrieben. Bis dahin: Tierlist.']; },
   tools(){
