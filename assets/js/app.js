@@ -146,13 +146,14 @@ const packages = [
   {n:'Set-Pass',p:'200 €',u:'/ 8 Stunden',h:'25 € pro Stunde',f:true,b:'Bester Deal · Spar 40 €',l:['8 × 1 Stunde 1:1 Coaching','Bis zu 2 Stunden pro Woche','Fundamentals + VOD-Review in jeder Stunde','Gültig für das laufende Set']},
 ];
 
-// Stimmen gecoachter Spieler: q = Zitat, r = Fortschritt (z. B. 'Platin → Diamant'). Ohne Zitat erscheint ein Platzhalter.
+// Stimmen gecoachter Spieler: q = Zitat, r = Fortschritt (z. B. 'Platin → Diamant · 2 Sessions'), av = Maskottchen-Avatar
+// aus assets/img/students (frei: schnabeltier, schaf, pinguin-ritter, yak). Ohne Zitat erscheint ein Platzhalter.
 const testimonials = [
-  {n:'Janny', r:'Smaragd → Meister · 5 Sessions', q:'Ich konnte im Coaching richtig viel lernen – vor allem bei Holds und Openern, wie man zu einem starken Board kommt und welche Augments man wann priorisieren sollte. Claudio ist sehr geduldig und erklärt alles gut und ausführlich. Manchmal muss man ihn sogar bremsen, weil er so viel zu einem Thema erzählen will.'},
-  {n:'Doki', r:'Meister → Großmeister · 3 Sessions', q:'Habe das erste Mal Grandmaster erreicht. Augments und Opener waren am hilfreichsten.'},
-  {n:'FreezeBomb', r:'Platin → Smaragd · 2 Sessions', q:'Eigenes Wissen mit den erklärten Konzepten vergleichen und im VOD-Review die eigenen Entscheidungen daran hinterfragen zu können – und Grundkonzepte zu lernen, die man vorher vielleicht gar nicht auf dem Schirm hatte.'},
-  {n:'AgentZero', r:'Gold I → Platin I · 2 Sessions', q:'Am meisten hat mir gebracht, wie ich mein Early Game besser spielen kann und wann ich welche Augmente auswählen sollte. Auch dass ich mehr scouten muss, war hilfreich.'},
-  {n:'бессмертный', r:'Diamant II → Meister · 2 Sessions', q:'Ich treffe jetzt nicht mehr so voreilige Entscheidungen, spiele generell safer und fühle mich mehr comfortable.'},
+  {n:'Janny', av:'hase', r:'Smaragd → Meister · 5 Sessions', q:'Ich konnte im Coaching richtig viel lernen – vor allem bei Holds und Openern, wie man zu einem starken Board kommt und welche Augments man wann priorisieren sollte. Claudio ist sehr geduldig und erklärt alles gut und ausführlich. Manchmal muss man ihn sogar bremsen, weil er so viel zu einem Thema erzählen will.'},
+  {n:'Doki', av:'drache', r:'Meister → Großmeister · 3 Sessions', q:'Habe das erste Mal Grandmaster erreicht. Augments und Opener waren am hilfreichsten.'},
+  {n:'FreezeBomb', av:'greif', r:'Platin → Smaragd · 2 Sessions', q:'Eigenes Wissen mit den erklärten Konzepten vergleichen und im VOD-Review die eigenen Entscheidungen daran hinterfragen zu können – und Grundkonzepte zu lernen, die man vorher vielleicht gar nicht auf dem Schirm hatte.'},
+  {n:'AgentZero', av:'maulwurf', r:'Gold I → Platin I · 2 Sessions', q:'Am meisten hat mir gebracht, wie ich mein Early Game besser spielen kann und wann ich welche Augmente auswählen sollte. Auch dass ich mehr scouten muss, war hilfreich.'},
+  {n:'бессмертный', av:'golem', r:'Diamant II → Meister · 2 Sessions', q:'Ich treffe jetzt nicht mehr so voreilige Entscheidungen, spiele generell safer und fühle mich mehr comfortable.'},
 ];
 
 const guides = [
@@ -2937,7 +2938,11 @@ function pkgHTML(p){
 }
 function testimonialHTML(t){
   if(!t.q) return `<div class="card co-quote soon"><span class="co-qm" aria-hidden="true">“</span><p>Feedback folgt</p><figcaption><b>${esc(t.n)}</b>${t.r?`<span>${esc(t.r)}</span>`:''}</figcaption></div>`;
-  return `<figure class="card co-quote"><span class="co-qm" aria-hidden="true">“</span><blockquote>${esc(t.q)}</blockquote><figcaption><b>${esc(t.n)}</b>${t.r?`<span>${esc(t.r)}</span>`:''}</figcaption></figure>`;
+  // Profil-Kopf wie im Dashboard: Maskottchen im Ring, Name + Sessions, darunter der Rang-Sprung mit Emblemen
+  const j = tstRank(t), side = (r, div) => `<span class="co-qr"><img src="${rankImg(r, 1)}" alt="" width="54" height="54" loading="lazy"><b>${esc(r.n)}${div ? ' ' + div : ''}</b></span>`;
+  return `<figure class="card co-quote co-qp"><span class="co-qm" aria-hidden="true">“</span><div class="co-qh">${t.av ? `<span class="co-qav"><img src="assets/img/students/${t.av}.webp" alt="" width="256" height="256" loading="lazy"></span>` : ''}<b>${esc(t.n)}</b>${j && j.s ? `<small>${j.s} Sessions</small>` : ''}</div>`
+    + (j ? `<div class="co-qj" aria-label="${esc(t.r)}">${side(j.a, j.da)}<i class="co-qarr" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i>${side(j.b, j.db)}</div>` : t.r ? `<span class="co-qrt">${esc(t.r)}</span>` : '')
+    + `<blockquote>${esc(t.q)}</blockquote></figure>`;
 }
 // Guides: Übersicht oder ein einzelner Guide (/guides/encounters, /guides/tft-anfaenger-guide)
 // Guides erscheinen nach Plan (data/guides.js → TFT_GUIDE_PLAN): ein Guide ist online, sobald er freigegeben ist (frei:true),
@@ -7003,6 +7008,10 @@ const NW_BLOCK = {
     <div class="nw-poll-b"><span class="nw-poll-k">${esc(b.tag || L('Rate mit', 'Your guess'))}</span><p class="nw-poll-q">${esc(b.q)}</p>${b.tip ? `<p class="nw-poll-tip">${b.tip}</p>` : ''}
     <div class="nw-poll-o">${b.o.map(([v, l, im, sub])=>`<button type="button" data-o="${v}">${im ? `<img src="${im}" alt="${esc(sub || l)}" width="308" height="560" loading="lazy">` : ''}<span class="nw-po-l">${esc(l)}${sub ? `<small>${esc(sub)}</small>` : ''}</span><span class="nw-po-p"></span></button>`).join('')}</div>
     <small class="nw-poll-n">${L('Tipp auf eine Antwort – danach siehst du, wie die anderen getippt haben.', 'Tap an answer – then you see how everyone else guessed.')}</small></div></div>`,
+  // Besetzung: quadratische Ausschnitte der Champions mit Name, Band (solo: true = keine Band, gedämpft) und Notiz; ok: true/false/sonst färbt die Notiz
+  cast:b=>`<div class="nw-cast">${b.items.map(x=>`<figure class="nw-cc"><img src="${x.img}" alt="${esc(x.alt || x.n)}" width="480" height="480" loading="lazy" data-zoom><figcaption><b>${esc(x.n)}</b>${x.band ? `<span class="nw-cband${x.solo ? ' none' : ''}">${esc(x.band)}</span>` : ''}${x.note ? `<small class="nw-cn ${x.ok === true ? 'yes' : x.ok === false ? 'no' : 'open'}">${x.note}</small>` : ''}</figcaption></figure>`).join('')}</div>`,
+  // Weitere Skins einer Reihe klein nebeneinander (ohne Abstimmung), z. B. alle Pool-Party-Skins unter der Prognose
+  skins:b=>`<div class="nw-skins">${b.t ? `<p class="nw-sk-t">${esc(b.t)}</p>` : ''}<div class="nw-sk-g">${b.items.map(x=>`<figure><img src="${x.img}" alt="${esc(x.skin || x.n)}" width="154" height="280" loading="lazy" data-zoom><figcaption>${esc(x.n)}</figcaption></figure>`).join('')}</div></div>`,
   // Bildergalerie: mehrere Standbilder nebeneinander (Klick vergrößert)
   gallery:b=>`<div class="nw-gal">${b.items.map(x=>`<figure><img src="${x.src}" alt="${esc(x.alt)}" width="${x.w || 720}" height="${x.h || 1280}" loading="lazy" data-zoom><figcaption>${esc(x.cap)}</figcaption></figure>`).join('')}</div>`,
   // Tipp-Feld „Wer ist das?“: Champion eintippen (Vorschläge aus data/lol-champions.js), danach die häufigsten Tipps (api/votes.js, nwPolls)
@@ -8025,9 +8034,15 @@ function renderDash(){
 }
 // Erfolge gecoachter Spieler als Rang-Sprung mit Emblemen (aus testimonials, r = 'Smaragd → Meister · 5 Sessions')
 const DSH_RANK_DE = {eisen:'iron', bronze:'bronze', silber:'silver', gold:'gold', platin:'platinum', smaragd:'emerald', diamant:'diamond', meister:'master', 'großmeister':'grandmaster', challenger:'challenger'};
+// 'Gold I → Platin I · 2 Sessions' → {a, da, b, db, s} (Ränge aus rankBy); null, wenn nicht lesbar
+function tstRank(x){
+  const m = String(x.r || '').match(/^\s*([^\s→]+)\s*([IV]*)\s*→\s*([^\s·]+)\s*([IV]*)\s*(?:·\s*(\d+))?/); if(!m) return null;
+  const a = rankBy[DSH_RANK_DE[m[1].toLowerCase()]], b = rankBy[DSH_RANK_DE[m[3].toLowerCase()]];
+  return a && b ? {a, da:m[2], b, db:m[4], s:m[5]} : null;
+}
 function dshTst(x){
-  const m = String(x.r || '').match(/^\s*([^\s→]+)\s*([IV]*)\s*→\s*([^\s·]+)\s*([IV]*)\s*(?:·\s*(\d+))?/); if(!m) return '';
-  const a = rankBy[DSH_RANK_DE[m[1].toLowerCase()]], b = rankBy[DSH_RANK_DE[m[3].toLowerCase()]]; if(!a || !b) return '';
+  const j = tstRank(x); if(!j) return '';
+  const {a, b} = j, m = [, , j.da, , j.db, j.s];
   const side = (t, div) => `<span class="dsh-tr" title="${esc(t.n)}${div ? ' ' + div : ''}"><img src="${rankImg(t, 1)}" alt="${esc(t.n)}"><b>${esc(t.n)}${div ? ' ' + div : ''}</b></span>`;
   return `<div class="dsh-ts"${m[5] ? ` title="${esc(x.n)} · ${m[5]} Sessions"` : ''}><span class="dsh-tn"><b>${esc(x.n)}</b>${m[5] ? `<small>${m[5]} Sessions</small>` : ''}</span><span class="dsh-tj">${side(a, m[2])}<i class="dsh-tarr" aria-label="${L('nach', 'to')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i>${side(b, m[4])}</span></div>`;
 }

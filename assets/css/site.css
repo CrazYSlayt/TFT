@@ -3906,3 +3906,37 @@ figure.nw-hero.er-hero img{display:block;width:100%;height:auto;border-radius:16
 .nw-poll:not(.nw-opinion) .nw-thx{background:linear-gradient(90deg,#2ee6d6,#a78bfa);color:#04141a}
 @keyframes nwThx{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
 @media (prefers-reduced-motion:reduce){.nw-thx{animation:none}}
+/* Stimmen der Students als Profil: Maskottchen im Ring wie die Coach-Karten im Dashboard, Rang-Sprung mit Emblemen */
+.co-qp .co-qm{position:absolute;top:16px;right:16px;font-size:3.4rem;opacity:.55}
+.co-qh{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1px}
+.co-qav{width:70px;height:70px;border-radius:50%;padding:3px;margin-bottom:7px;background:conic-gradient(from 200deg,var(--cy),#1fb6e8,var(--pink),var(--cy));box-shadow:0 0 18px rgba(46,230,214,.28)}
+.co-qav img{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;border:3px solid #071c28;background:radial-gradient(circle at 50% 38%,#24465c,#0a1822 72%)}
+.co-qh b{max-width:100%;font-family:var(--ff-head);font-style:italic;font-weight:800;font-size:1.15rem;line-height:1.15;color:#fff;padding-right:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.co-qh small{font-size:.72rem;color:var(--faint)}
+.co-qj{display:flex;align-items:center;justify-content:center;gap:4px;margin:4px 0 2px;padding:8px 4px 6px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid var(--line)}
+.co-qr{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
+.co-qr img{width:54px;height:54px;margin:-8px 0 -6px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+.co-qr b{font-size:.72rem;font-weight:700;color:var(--muted);white-space:nowrap}
+.co-qr:last-child b{color:#fff}
+.co-qarr{flex:none;display:flex;width:26px;height:26px;border-radius:50%;align-items:center;justify-content:center;color:#062320;background:linear-gradient(90deg,var(--cy),#1fb6e8);box-shadow:0 0 12px rgba(46,230,214,.4);font-style:normal}
+.co-qarr svg{width:14px;height:14px}
+.co-qrt{font-size:.74rem;color:var(--gold);font-weight:700;text-align:center}
+/* News: Besetzung (Champions aus einem Reveal mit Band und Notiz) */
+.nw-cast{clear:both;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:18px 0 24px}
+.nw-cc{margin:0;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;background:var(--panel);border:1px solid rgba(46,230,214,.22);box-shadow:0 12px 26px -16px rgba(0,0,0,.7)}
+.nw-cc img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover;cursor:zoom-in;transition:transform .2s}
+.nw-cc:hover img{transform:scale(1.03)}
+.nw-cc figcaption{position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:9px 11px 11px;background:var(--panel)}
+.nw-cc b{font-family:var(--ff-head);font-style:italic;font-weight:800;font-size:1.05rem;line-height:1.1;color:#fff;padding-right:3px}
+.nw-cband{align-self:flex-start;font-size:.68rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:999px;color:#04141a;background:linear-gradient(90deg,#2ee6d6,#a78bfa)}
+.nw-cband.none{color:var(--muted);background:rgba(255,255,255,.07)}
+.nw-cn{font-size:.74rem;font-weight:700;line-height:1.3}
+.nw-cn.yes{color:#5ee6a0}.nw-cn.no{color:#ff6f8f}.nw-cn.open{color:var(--gold)}
+@media (max-width:640px){.nw-cast{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}}
+/* News: weitere Skins einer Reihe als kleine Kacheln */
+.nw-skins{clear:both;margin:-4px 0 24px;padding:12px 14px 14px;border-radius:14px;background:rgba(255,255,255,.03);border:1px dashed rgba(167,139,250,.3)}
+.nw-sk-t{margin:0 0 10px;font-size:.8rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.nw-sk-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:8px}
+.nw-sk-g figure{margin:0}
+.nw-sk-g img{display:block;width:100%;height:auto;aspect-ratio:308/400;object-fit:cover;object-position:50% 15%;border-radius:8px;border:1px solid rgba(255,255,255,.1);cursor:zoom-in}
+.nw-sk-g figcaption{margin-top:3px;text-align:center;font-size:.64rem;font-weight:700;color:var(--muted);line-height:1.15}
