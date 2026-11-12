@@ -7763,6 +7763,19 @@ function route(){
   h1Sync(); requestAnimationFrame(()=>requestAnimationFrame(()=>{ h1Sync(); metaLead(META_DESC); }));   // zweiter Lauf für Inhalte, die erst im nächsten Bild entstehen
 }
 window.addEventListener(FILE_MODE ? 'hashchange' : 'popstate', route);
+// Scrollposition beim Neuladen selbst wiederherstellen: Chromes eigene Wiederherstellung landet ein paar Pixel daneben
+// (oben z. B. bei 16 statt 0), weil sie greift, bevor die Seite fertig aufgebaut ist. Gemerkt wird nur die letzte Seite in diesem Tab.
+(()=>{
+  try { history.scrollRestoration = 'manual'; } catch(e){ return; }
+  const KEY = 'tftfreaks_scroll', here = () => location.pathname + location.search;
+  addEventListener('pagehide', ()=>{ try { sessionStorage.setItem(KEY, JSON.stringify({p:here(), y:Math.round(scrollY)})); } catch(e){} });
+  let saved = null; try { saved = JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch(e){}
+  const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0] || {}).type;
+  if(!saved || !saved.y || saved.p !== here() || !['reload', 'back_forward'].includes(nav)) return;
+  let touched = false; ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(ev=>addEventListener(ev, ()=>{ touched = true; }, {once:true, passive:true}));
+  const go = () => { if(!touched && Math.abs(scrollY - saved.y) > 1) scrollTo({top:saved.y, behavior:'instant'}); };
+  requestAnimationFrame(()=>requestAnimationFrame(go)); addEventListener('load', ()=>{ go(); setTimeout(go, 300); }, {once:true});
+})();
 
 /* ================= ÜBERSETZUNG (englische Seite) ================= */
 // Die deutschen Texte bleiben im Code. Auf /en/… ersetzt ein Wörterbuch (assets/js/i18n-en.js) jeden sichtbaren Text:
