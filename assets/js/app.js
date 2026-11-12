@@ -7011,6 +7011,10 @@ const NW_BLOCK = {
   // Besetzung: quadratische Ausschnitte der Champions mit Name, Band (solo: true = keine Band, gedämpft) und Notiz; ok: true/false/sonst färbt die Notiz
   cast:b=>`<div class="nw-cast">${b.items.map(x=>`<figure class="nw-cc"><img src="${x.img}" alt="${esc(x.alt || x.n)}" width="480" height="480" loading="lazy" data-zoom><figcaption><b>${esc(x.n)}</b>${x.band ? `<span class="nw-cband${x.solo ? ' none' : ''}">${esc(x.band)}</span>` : ''}${x.note ? `<small class="nw-cn ${x.ok === true ? 'yes' : x.ok === false ? 'no' : 'open'}">${x.note}</small>` : ''}</figcaption></figure>`).join('')}</div>`,
   // Weitere Skins einer Reihe klein nebeneinander (ohne Abstimmung), z. B. alle Pool-Party-Skins unter der Prognose
+  // Band/Skinreihe im Look der Abstimmung, aber nur zum Ansehen: links der Champion aus dem Teaser, rechts die übrigen Mitglieder mit Skin
+  band:b=>`<div class="nw-poll nw-vote nw-band"><img class="nw-poll-img" src="${b.img}" alt="${esc(b.alt)}" width="400" height="400" loading="lazy" data-zoom>
+    <div class="nw-poll-b"><span class="nw-poll-k">${esc(b.tag)}</span><p class="nw-poll-q">${esc(b.q)}</p>${b.tip ? `<p class="nw-poll-tip">${b.tip}</p>` : ''}
+    <div class="nw-poll-o">${b.o.map(([n, im, sub])=>`<figure class="nw-bo"><img src="${im}" alt="${esc(sub || n)}" width="308" height="560" loading="lazy" data-zoom><figcaption><span class="nw-po-l">${esc(n)}${sub ? `<small>${esc(sub)}</small>` : ''}</span></figcaption></figure>`).join('')}</div></div></div>`,
   // big: größere Kacheln mit Skin-Namen (z. B. die fehlenden Mitglieder einer Band)
   skins:b=>`<div class="nw-skins${b.big ? ' big' : ''}">${b.t ? `<p class="nw-sk-t">${esc(b.t)}</p>` : ''}<div class="nw-sk-g">${b.items.map(x=>`<figure><img src="${x.img}" alt="${esc(x.skin || x.n)}" width="${b.big ? 308 : 154}" height="${b.big ? 560 : 280}" loading="lazy" data-zoom><figcaption>${esc(x.n)}${b.big && x.skin ? `<small>${esc(x.skin)}</small>` : ''}</figcaption></figure>`).join('')}</div></div>`,
   // Bildergalerie: mehrere Standbilder nebeneinander (Klick vergrößert)
@@ -7077,7 +7081,7 @@ function nwCheer(el, btn){
   }
 }
 function nwPolls(root){
-  const els = [...root.querySelectorAll('.nw-poll')]; if(!els.length) return;
+  const els = [...root.querySelectorAll('.nw-poll[data-poll]')]; if(!els.length) return;   // ohne data-poll (z. B. Baustein band) = nur Anzeige
   const state = {}, show = (el, c)=>(el.hasAttribute('data-guess') ? nwGuessShow : nwPollShow)(el, c);
   // Vorschläge fürs Tipp-Feld: alle League-Champions plus „Ein neuer Champion“
   if(root.querySelector('[data-guess]') && !document.getElementById('nwChamps')){ const dl = document.createElement('datalist'); dl.id = 'nwChamps';

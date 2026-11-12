@@ -3947,3 +3947,11 @@ figure.nw-hero.er-hero img{display:block;width:100%;height:auto;border-radius:16
 .nw-skins.big figcaption{margin-top:5px;font-size:.84rem;color:#fff;font-weight:800}
 .nw-skins.big figcaption small{display:block;margin-top:2px;font-size:.64rem;font-weight:600;color:var(--muted)}
 @media (max-width:640px){.nw-skins.big .nw-sk-g{grid-template-columns:repeat(3,minmax(0,1fr))}}
+/* News: Band/Skinreihe im Abstimmungs-Look, nur zum Ansehen */
+.nw-band .nw-bo{margin:0;position:relative;overflow:hidden;display:flex;flex-direction:column;border-radius:12px;border:1px solid rgba(167,139,250,.4);background:rgba(10,14,30,.6)}
+.nw-band .nw-bo img{display:block;width:100%;height:auto;aspect-ratio:308/430;object-fit:cover;object-position:50% 12%;cursor:zoom-in;transition:transform .2s}
+.nw-band .nw-bo:hover img{transform:scale(1.04)}
+.nw-band .nw-bo figcaption{position:relative;z-index:1;background:rgba(10,14,30,.92)}
+.nw-band .nw-po-l{display:block;padding:8px 8px 9px;font-size:.88rem;font-weight:700;line-height:1.15;color:#fff}
+.nw-band .nw-po-l small{display:block;margin-top:2px;color:var(--muted);font-size:.68rem;font-weight:600}
+.nw-band+.nw-band{margin-top:-8px}
