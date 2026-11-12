@@ -8052,19 +8052,23 @@ function dshMtlFit(){
     let n = 0; while(n < cards.length - 1 && row.scrollWidth > row.clientWidth + 1){ cards[cards.length - 1 - n].hidden = true; n++; more.textContent = '+' + n; }
   });
 }
-function dshFit(){
+// keep = beim Nachrechnen (load) den Zoom nur ändern, wenn er sich deutlich unterscheidet – sonst springt das Dashboard um ein paar Pixel,
+// sobald die Bilder fertig geladen sind (Bericht CrazYSlayt 12.11.: Bild mal etwas höher, mal tiefer). Zoom auf ganze Prozent abgerundet.
+function dshFit(keep){
   dshMtlFit();
   const box = $('#dshApp'), ch = box && box.querySelector('.dsh-row3'); if(!box) return;
+  const cur = parseFloat(box.style.zoom) || 1;
   box.style.zoom = '';
   if(!ch || !box.offsetParent || innerWidth < 1300) return;
   // Ziel: Unterkante der Reihe knapp über dem Fensterrand, die Cheatsheets beginnen erst darunter. Bei Fenstern bis 1150 px Höhe darf es dafür
   // auch leicht größer werden (bis 112 %), sonst bliebe bei 1080p ein Streifen der Cheatsheets sichtbar
   const top = docTop(box), need = docTop(ch) + ch.offsetHeight - top, avail = innerHeight - top - 10;
-  const z = Math.min(innerHeight <= 1150 ? 1.12 : 1, Math.max(.85, avail / need));
-  if(Math.abs(z - 1) > .005) box.style.zoom = z.toFixed(3);
+  let z = Math.floor(Math.min(innerHeight <= 1150 ? 1.12 : 1, Math.max(.85, avail / need)) * 100) / 100;
+  if(keep === true && Math.abs(z - cur) < .025) z = cur;
+  if(Math.abs(z - 1) > .005) box.style.zoom = z.toFixed(2);
 }
 let dshFitT = 0; addEventListener('resize', ()=>{ clearTimeout(dshFitT); dshFitT = setTimeout(dshFit, 120); });
-addEventListener('load', dshFit);
+addEventListener('load', ()=>dshFit(true));
 let dshIntroDone = false;
 function dshIntro(){
   const box = $('#dshApp'); if(!box || dshIntroDone) return; dshIntroDone = true;
