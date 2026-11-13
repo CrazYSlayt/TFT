@@ -7988,7 +7988,7 @@ function ndColon(){
 // Dashboard: Profil-Header, Top Comps, aktueller Patch, Tierlist im Kleinformat, Shop-Chancen, Coaching
 // Box zum nächsten Set: Termine aus dem Patch-Plan und der neueste Beitrag (data/news.js)
 function dshSetHTML(){
-  const n = nsNext(), {pbe, live} = nsDates(n), now = new Date(), ps = NEWS.filter(x=>x.set === n).slice(0, 2);   // die zwei neuesten Beiträge nebeneinander
+  const n = nsNext(), {pbe, live} = nsDates(n), now = new Date(), ps = NEWS.filter(x=>x.set === n).slice(0, 3);   // die drei neuesten Beiträge nebeneinander (Wunsch CrazYSlayt 13.11., Box bleibt gleich groß)
   const date = (t, x) => `<span class="dsh-sd"><small>${t}</small><b>${x ? esc(cdDay(x.d, {day:'numeric', month:'long'})) : L('Termin folgt', 'Date to follow')}</b>${x ? `<em>${x.d <= now ? L('läuft', 'running') : cdDays(x.d)}</em>` : ''}</span>`;
   return `<section class="dsh-card dsh-set"><div class="dsh-h"><h2>Set ${n}</h2><a href="${nsHref()}">${L('Alle Infos', 'All info')} →</a></div>
     <div class="dsh-sds">${date(L('PBE-Start', 'PBE start'), pbe)}${date('Release', live)}</div>
