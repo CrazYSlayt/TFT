@@ -19,7 +19,7 @@
   var wantEn = pref === 'en' || (!pref && !bot && !langs.some(function(l){ return /^de/i.test(l); }));
   if(!en && wantEn && !file){ location.replace('/en' + p + location.search); return; }
   window.TFT_LANG = en ? 'en' : 'de';
-  if(en){ document.documentElement.lang = 'en'; document.write('<script src="assets/js/i18n-en.js?v=f141226b8e"><\/script>'); }
+  if(en){ document.documentElement.lang = 'en'; document.write('<script src="assets/js/i18n-en.js?v=2e539c6231"><\/script>'); }
 })();
 </script>
 <!-- Google Analytics (G-BTL7VP5CTK): misst jeden Besuch ab dem Aufruf, nicht erst nach Bestätigung im Hinweis-Banner (bewusste Entscheidung).
@@ -77,7 +77,7 @@
 <link rel="preconnect" href="https://ddragon.leagueoflegends.com">
 <!-- app.js und sim.js stehen am Ende von <body>: hier schon anmelden, damit sie am Handy vor den Bildern geladen werden -->
 <link rel="preload" href="assets/js/sim.js?v=416a7d3541" as="script">
-<link rel="preload" href="assets/js/app.js?v=428091a4e1" as="script">
+<link rel="preload" href="assets/js/app.js?v=bef32dfd58" as="script">
 <!-- Schriften vorladen: sonst tauscht der Browser nach ~0,6 s von der Ersatzschrift auf die Webschrift und Boxen springen um ein paar Pixel (Dashboard, 12.11.) -->
 <link rel="preload" href="assets/fonts/Barlow-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/Barlow-600-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -87,7 +87,7 @@
 <link rel="preload" href="assets/fonts/BarlowCondensed-800i-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/BarlowCondensed-900i-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/css/fonts.css?v=56685235ed">
-<link rel="stylesheet" href="assets/css/site.css?v=e34ddd240a">
+<link rel="stylesheet" href="assets/css/site.css?v=57ef422399">
 <script>
 // Design: das neue TFTClimb-Design gilt für alle. Nur zum Vergleich lässt sich mit ?design=alt das alte Design ansehen
 // (der Browser merkt sich die Wahl), ?design=neu schaltet zurück.
@@ -100,7 +100,7 @@
     alt = localStorage.getItem('tftfreaks_design') === 'alt';
   } catch(e){}
   if(!alt){
-    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=8db78aafb4">');
+    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=e236e5076a">');
     // Topleiste und Seitenleiste stehen sofort (assets/js/shell.js), den Inhalt baut app.js: bis alle Skripte gelaufen sind, bleibt er verborgen und oben läuft ein Ladebalken
     document.addEventListener('DOMContentLoaded', function(){ document.documentElement.classList.add('nd-ready'); });
   }
@@ -211,7 +211,7 @@
 
 <!-- ================= DASHBOARD (nur neues Design, Inhalt aus app.js: renderDash) ================= -->
 <div class="page" id="page-dash"><div class="dsh" id="dshApp" data-noi18n><h1>TFT Tierlist, Comps <em>&amp; Coaching</em></h1><p data-meta>TFT Tierlist für Set 18 von Challenger-Spielern: die besten Comps mit Items, Augments und Aufstellung – dazu Tools und Coaching.</p></div>
-  <div class="dsh-seo"><section class="tool-seo ag-art" aria-labelledby="ts-home" data-pre="home" data-noi18n><div class="ts-main">
+  <div class="dsh-seo"><details class="dsh-about"><summary>Mehr über TFTClimb</summary><section class="tool-seo ag-art" aria-labelledby="ts-home" data-pre="home" data-noi18n><div class="ts-main">
     <h2 id="ts-home">TFTClimb: TFT Tierlist, Tools und Cheatsheets für Set 18</h2>
     
     <p>TFTClimb ist die TFT-Seite von Challenger-Spieler Claudio „CrazYSlayt“. Hier findest du alles für deinen Climb in Teamfight Tactics: eine Tierlist mit den stärksten Comps von Patch 18.6, kostenlose Rechner, Cheatsheets mit allen Zahlen des Sets, eine Bibliothek mit allen Champions, Items und Traits – und Coaching, wenn du schneller aufsteigen willst.</p>
@@ -227,7 +227,7 @@
   <aside class="ts-side art-side">
     <nav class="art-toc" aria-label="Inhalt"><b>Inhalt</b>
       <ol><li><a href="#homea-tierlist" data-toc="homea-tierlist">Die TFT Tierlist für Patch 18.6</a></li><li><a href="#homea-tools" data-toc="homea-tools">Kostenlose TFT-Tools</a></li><li><a href="#homea-cheatsheets" data-toc="homea-cheatsheets">Cheatsheets: alle Zahlen des Sets</a></li><li><a href="#homea-bibliothek" data-toc="homea-bibliothek">Bibliothek und Patch Notes</a></li><li><a href="#homea-nextset" data-toc="homea-nextset">Das nächste Set: Set 19</a></li><li><a href="#homea-coaching" data-toc="homea-coaching">Coaching von TFTClimb</a></li><li><a href="#homea-faq" data-toc="homea-faq">Häufige Fragen</a></li></ol></nav>
-  </aside></section></div></div>
+  </aside></section></details></div></div>
 
 <!-- ================= TIERLIST ================= -->
 <div class="page" id="page-tierlist"><template class="pg-tpl">
@@ -1391,6 +1391,6 @@ document.write('<script src="data/rollen-' + pick.set + '.js"><\/script>');  // 
 })();
 </script>
 <script src="assets/js/sim.js?v=416a7d3541"></script>
-<script src="assets/js/app.js?v=428091a4e1"></script>
+<script src="assets/js/app.js?v=bef32dfd58"></script>
 </body>
 </html>

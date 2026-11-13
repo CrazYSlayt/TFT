@@ -4499,7 +4499,7 @@ function agArticle(){
 }
 // Vertrauens-Box zwischen Tool und Artikel: nur Symbol und ein lockerer Satz in den Farben der Seite (für alle Tools nutzbar).
 // Symbol: Heimerdinger bei den Tools, sonst Vi aus dem Logo
-const TT_FACE = {heimer:['assets/img/heimer-head.webp?v=2', 220, 203], vi:['assets/brand/logo-symbol-512.png', 512, 512]};
+const TT_FACE = {heimer:['assets/img/heimer-head.webp?v=2', 220, 203], vi:['assets/brand/logo-symbol-512.png', 512, 512], claudio:['assets/img/coach/selbstbewusst.webp', 346, 440]};   // claudio = Cartoon mit verschränkten Armen (Dashboard)
 const tioTrust = (txt, face = 'heimer') => { const [src, w, h] = TT_FACE[face] || TT_FACE.vi;
   return `<div class="tio-trust"><img class="tt-face ${face}" src="${src}" alt="" width="${w}" height="${h}" loading="lazy"><p>${txt}</p></div>`; };
 const agTrust = () => tioTrust(L('Wir halten unsere Tools für euren Climb aktuell: Nach jedem Patch prüfen wir die Zahlen und passen die Augment-Chancen an – damit ihr euch auf das konzentrieren könnt, was zählt.',
@@ -6818,12 +6818,16 @@ const SEO_ART = {
         `The ${artA('/tierlist', 'tier list')} rates ${mainComps.length} comps from S to C, plus situational comps for special spots. Every comp shows its board, items, augments and game plan.${sc.length ? ` Currently in S tier: ${csJoin(sc)}.` : ''} There are also tier lists for items, augments and the champions worth holding in stage 1.`))],
       ['tools', L('Kostenlose TFT-Tools', 'Free TFT tools'), csPs(L('Alle Tools laufen im Browser, ohne Anmeldung und mit den Daten des aktuellen Patches:', 'Every tool runs in your browser, without sign-up and with the data of the current patch:'))
         + csUl(tools.map(t=>`${artA(t[0], t[2])} – ${t[3]}`))],
-      ['cheatsheets', L('Cheatsheets: alle Zahlen des Sets', 'Cheatsheets: every number of the set'), csPs(L(`${n} ${artA('/cheatsheet', 'Cheatsheets')} zum schnellen Nachschlagen neben dem Spiel: Shop Odds und XP, Augment-Stufen, Encounter, Loot-Orbs, Spielerschaden, Embleme sowie Tabellen zu einzelnen Augments und Traits. Jede Tabelle kannst du als Bild ausschneiden und teilen.`,
+      ['cheatsheets', L('TFT Cheatsheets: alle Zahlen des Sets', 'TFT cheatsheets: every number of the set'), csPs(L(`${n} ${artA('/cheatsheet', 'Cheatsheets')} zum schnellen Nachschlagen neben dem Spiel: Shop Odds und XP, Augment-Stufen, Encounter, Loot-Orbs, Spielerschaden, Embleme sowie Tabellen zu einzelnen Augments und Traits. Jede Tabelle kannst du als Bild ausschneiden und teilen.`,
         `${n} ${artA('/cheatsheet', 'cheatsheets')} for a quick look next to the game: shop odds and XP, augment tiers, encounters, loot orbs, player damage, emblems plus tables for single augments and traits. You can cut out every table as an image and share it.`))],
-      ['bibliothek', L('Bibliothek und Patch Notes', 'Library and patch notes'), csPs(L(`In der ${artA('/bibliothek', 'Bibliothek')} findest du alle ${champions.length} Champions, ${traits.length} Traits sowie alle Items und Augments von Set ${S} mit den offiziellen Werten. Die ${artA('/patches', 'Patch Notes')} bereiten wir nach jedem Patch übersichtlich auf – sortiert nach Champions, Traits, Items und Augments.`,
+      ['bibliothek', L('TFT Bibliothek und Patch Notes', 'TFT library and patch notes'), csPs(L(`In der ${artA('/bibliothek', 'Bibliothek')} findest du alle ${champions.length} Champions, ${traits.length} Traits sowie alle Items und Augments von Set ${S} mit den offiziellen Werten. Die ${artA('/patches', 'Patch Notes')} bereiten wir nach jedem Patch übersichtlich auf – sortiert nach Champions, Traits, Items und Augments.`,
         `The ${artA('/bibliothek', 'library')} holds all ${champions.length} champions, ${traits.length} traits and every item and augment of Set ${S} with the official values. We prepare the ${artA('/patches', 'patch notes')} after every patch – sorted by champions, traits, items and augments.`))],
-      ['nextset', L(`Das nächste Set: Set ${nsNext()}`, `The next set: Set ${nsNext()}`), csPs(L(`Wann der PBE startet, wann Set ${nsNext()} live geht und ab dem PBE alle neuen Champions, Traits und Augments: ${artA(nsHref(), `TFT Set ${nsNext()}`)}.`, `When the PBE starts, when Set ${nsNext()} goes live and, from the PBE on, every new champion, trait and augment: ${artA(nsHref(), `TFT Set ${nsNext()}`)}.`))],
-      ['coaching', L('Coaching von TFTClimb', 'Coaching by TFTClimb'), csPs(L(`Du willst gezielt besser werden? Im ${artA('/coaching', 'Coaching')} schauen wir uns deine Partien an und arbeiten an den Entscheidungen, die dich LP kosten – von der Econ über den Rolldown bis zur Positionierung.`,
+      ...(GUIDES_LIVE ? [['guides', L('TFT Guides vom Challenger', 'TFT guides by a Challenger'), csPs(L(`In den ${artA('/guides', 'TFT Guides')} erklärt Challenger CrazYSlayt Schritt für Schritt, wie du besser wirst: ${csJoin(GD_PLAN.filter(p=>gdOn(p.key)).map(p=>artA('/guides/' + gdSlug(p.key), p.t || (GD_DATA[p.key] ? GD_DATA[p.key].h1.join(' ') : p.key))))}. Alle zwei Tage erscheint ein neuer Guide.`,
+        `In the ${artA('/guides', 'TFT guides')} Challenger CrazYSlayt explains step by step how to improve: ${csJoin(GD_PLAN.filter(p=>gdOn(p.key)).map(p=>artA('/guides/' + gdSlug(p.key), p.te || p.key)))}. A new guide comes out every two days.`))]] : []),
+      ['erklaert', L('TFT erklärt: Regeln, Ränge und Patches', 'TFT explained: rules, ranks and patches'), csPs(L(`Unter ${artA('/tft-erklaert', 'TFT erklärt')} beantworten wir die häufigsten Fragen zum Spiel, zum Beispiel wann der Ranked-Reset kommt. Wie viele LP du für welchen Rang brauchst, zeigen die ${artA('/ranks', 'TFT Ränge')} mit den aktuellen LP-Grenzen von EUW.`,
+        `Under ${artA('/tft-erklaert', 'TFT explained')} we answer the most common questions about the game, for example when the ranked reset comes. How many LP you need for each rank is shown on ${artA('/ranks', 'TFT ranks')} with the current LP cutoffs from EUW.`))],
+      ['nextset', L(`TFT Set ${nsNext()}: das nächste Set`, `TFT Set ${nsNext()}: the next set`), csPs(L(`Wann der PBE startet, wann Set ${nsNext()} live geht und ab dem PBE alle neuen Champions, Traits und Augments: ${artA(nsHref(), `TFT Set ${nsNext()}`)}.`, `When the PBE starts, when Set ${nsNext()} goes live and, from the PBE on, every new champion, trait and augment: ${artA(nsHref(), `TFT Set ${nsNext()}`)}.`))],
+      ['coaching', L('TFT Coaching von TFTClimb', 'TFT coaching by TFTClimb'), csPs(L(`Du willst gezielt besser werden? Im ${artA('/coaching', 'Coaching')} schauen wir uns deine Partien an und arbeiten an den Entscheidungen, die dich LP kosten – von der Econ über den Rolldown bis zur Positionierung.`,
         `Want to improve with purpose? In ${artA('/coaching', 'coaching')} we look at your games and work on the decisions that cost you LP – from econ and rolldowns to positioning.`))]],
     q:[[L('Ist TFTClimb kostenlos?', 'Is TFTClimb free?'), L('Ja. Tierlist, Tools, Cheatsheets, Bibliothek und Patch Notes sind kostenlos und ohne Anmeldung nutzbar. Coaching ist ein eigenes Angebot.', 'Yes. Tier list, tools, cheatsheets, library and patch notes are free and need no sign-up. Coaching is a separate offer.')],
       [L('Wie oft wird die Tierlist aktualisiert?', 'How often is the tier list updated?'), L('Mit jedem Patch, also etwa alle zwei Wochen. Neue, steigende und fallende Comps sind in der Tierlist markiert.', 'With every patch, so about every two weeks. New, rising and falling comps are marked in the tier list.')],
@@ -7994,6 +7998,52 @@ function dshSetHTML(){
     <div class="dsh-sds">${date(L('PBE-Start', 'PBE start'), pbe)}${date('Release', live)}</div>
     ${ps.length ? `<div class="dsh-sns">${ps.map(p=>`<a class="dsh-sn" href="${nwHref(p)}"><img src="${p.img}" alt="${esc(nwL(p.alt))}" width="1200" height="630" loading="lazy"><span><small>News · ${esc(nwDay(p.date))}</small><b>${esc(nwL(p.title))}</b></span></a>`).join('')}</div>` : ''}</section>`;
 }
+// Unter den Boxen (Wunsch CrazYSlayt 13.11., Vorbild dota2news „Dota 2 explained“): Trust-Box als Trenner, darunter Patch-Box und Cheatsheets
+// nebeneinander, dann Guides und „TFT erklärt“ als Bildkarten wie die News-Kacheln (Titelbild, darauf Frage und Zahl aus den Live-Daten).
+// Beim Runterscrollen schweben die Abschnitte herein (dshReveal)
+const dshDay = s => new Date(s + 'T12:00:00').toLocaleDateString(LOC, {day:'numeric', month:'long'});
+// eine Karte: x = {href, tag?, q, d?, v?, vl?, art?, pic?, cap, side?, cls?}
+const dshX = x => `<a class="dsh-x${x.cls ? ' ' + x.cls : ''}" href="${x.href}"><span class="dsh-xc${x.pic ? ' pic' : ''}">${x.pic ? `<img class="dsh-xbg" src="${x.pic}" alt="" loading="lazy">` : ''}
+    <span class="dsh-xt">${x.tag ? `<em class="dsh-xtag">${esc(x.tag)}</em>` : ''}<b class="dsh-xq">${esc(x.q)}</b>${x.d ? `<span class="dsh-xd">${esc(x.d)}</span>` : ''}
+      ${x.v ? `<span class="dsh-xv"><strong>${esc(x.v)}</strong><small>${esc(x.vl || '')}</small></span>` : ''}</span>
+    ${x.art || ''}</span>
+  <span class="dsh-xcap"><span>${esc(x.cap)}</span>${x.side ? `<span>${esc(x.side)}</span>` : ''}</span></a>`;
+// Patch-Box rechts neben den Cheatsheets: nur der aktuelle Patch als Bild zum Draufklicken (Einzelheiten auf der Patch-Seite)
+function dshPatchHTML(P){
+  if(!P) return '';
+  const href = '/patches/' + patchSlug(P.id);
+  return `<section class="dsh-card dsh-patch"><div class="dsh-h"><h2>Patch Notes</h2><a href="/patches">${L('Alle', 'All')} →</a></div>
+    <a class="dsh-ptop" href="${href}">${P.img ? `<img src="${P.img}" alt="Patch ${esc(P.id)}" loading="lazy">` : ''}<span><b>Patch ${esc(P.id)}</b>${P.date ? `<small>${esc(dshDay(P.date))}</small>` : ''}</span></a></section>`;
+}
+function dshMoreHTML(){
+  const trust = `<div class="dsh-trust dsh-rv">${tioTrust(L('Bei TFTClimb kommt alles von Challenger-Spielern: Tierlist, Guides und Zahlen prüfen wir nach jedem Patch selbst – damit ihr euch aufs Climben konzentrieren könnt.',
+    'Everything on TFTClimb comes from Challenger players: we check the tier list, guides and numbers ourselves after every patch – so you can focus on climbing.'), 'claudio')}</div>`;
+  // Guides in der Reihenfolge des Plans (Anfänger zuerst): erschienene mit ihrem Titelbild, die nächsten mit dem fertigen Vorschaubild und Datum
+  const info = p => { const g = GD_DATA[p.key]; return EN ? p.te || p.t || p.key : p.t || (g && g.h1.join(' ')) || p.key; };
+  const gds = GD_PLAN.filter(p=>p.pub && (!EN || p.en || !p.frei)).slice(0, 4).map(p=>{ const t = info(p), live = gdOn(p.key);
+    return dshX({href:live ? '/guides/' + gdSlug(p.key) : '/guides', q:t, pic:live && p.hero ? p.hero : gdHeroImg(p.key), cls:live ? '' : 'soon',
+      cap:'TFT Guide · ' + t.replace(/^TFT\s+/, ''), side:live ? dshDay(p.pub) : L('Ab ', 'Out ') + new Date(p.pub + 'T12:00:00').toLocaleDateString(LOC, {day:'numeric', month:'short'})}); });
+  // TFT erklärt: erschienene Artikel und Ränge – jeweils mit einer Zahl aus den Daten
+  const ers = ER_LIST.filter(a=>erOn(a.key)).map(a=>{ const x = EN && a.en ? {...a, ...a.en} : a, {live} = nsDates(nsNext());
+    return dshX({href:'/tft-erklaert/' + a.slug, tag:'Ranked', q:L('Wann ist der TFT Ranked-Reset?', 'When is the TFT ranked reset?'),
+      v:live ? cdDay(live.d, {day:'numeric', month:'long'}) : '', vl:L(`Reset mit Set ${nsNext()}`, `reset with Set ${nsNext()}`), pic:a.hero || `assets/og/erklaert/${a.slug}${EN ? '-en' : ''}.jpg`,
+      cap:L('TFT erklärt · ', 'TFT explained · ') + (x.crumb || a.crumb), side:a.date ? dshDay(a.date) : ''}); });
+  const cut = stCut('euw') || {}, ch = rankBy.challenger;
+  // Challenger-Emblem vorerst mittig über dem Text – hier kommt bald der Artikel dazu
+  if(cut.ch && ch) ers.push(dshX({href:'/ranks/challenger', tag:L('Ränge', 'Ranks'), q:L('Wie viele LP brauchst du für Challenger?', 'How many LP do you need for Challenger?'),
+    v:Number(cut.ch).toLocaleString(LOC) + ' LP', vl:L('für Challenger auf EUW', 'for Challenger on EUW'),
+    pic:'assets/img/rank-bg.webp', art:`<span class="dsh-xa emb" aria-hidden="true"><img src="${rankImg(ch, 1)}" alt="" loading="lazy"></span>`, cap:L('TFT erklärt · Ränge', 'TFT explained · Ranks'), side:ST_CUT_LIVE ? L('Live-Daten', 'Live data') : 'EUW'}));
+  const sec = (id, t, href, more, cards) => cards.length ? `<section class="dsh-sec dsh-rv" aria-labelledby="dsh-${id}"><div class="dsh-sec-h"><h2 id="dsh-${id}">${t}</h2><a href="${href}">${more} →</a></div><div class="dsh-xg">${cards.map((c, i)=>c.replace('class="dsh-x', `style="--i:${i}" class="dsh-x`)).join('')}</div></section>` : '';
+  return { trust, patch:dshPatchHTML(CURRENT_PATCH || PATCHES[0]), rest:sec('guides', L('TFT Guides vom Challenger', 'TFT guides by a Challenger'), '/guides', L('Alle Guides', 'All guides'), gds)
+    + sec('erklaert', L('TFT erklärt', 'TFT explained'), '/tft-erklaert', L('Alle Fragen', 'All questions'), ers) };
+}
+// Abschnitte unter den Boxen schweben beim Runterscrollen herein (einmal je Abschnitt; ohne IntersectionObserver oder bei „weniger Bewegung“ sofort sichtbar)
+function dshReveal(box){
+  const els = [...box.querySelectorAll('.dsh-rv')];
+  if(!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches){ els.forEach(e=>e.classList.add('in')); return; }
+  const io = new IntersectionObserver(es=>es.forEach(x=>{ if(x.isIntersecting){ x.target.classList.add('in'); io.unobserve(x.target); } }), {rootMargin:'0px 0px -12% 0px', threshold:.08});
+  els.forEach(e=>io.observe(e));
+}
 const dshHex = (n, cls='') => { const c = champBy[n] || CH_DATA[n]; if(!c) return ''; return `<span class="dsh-hx c${c.c} ${cls}" title="${esc(n)}"><i style="background-image:url('${champImg(n) || champFallback(n)}')"></i></span>`; };
 function renderDash(){
   const box = $('#dshApp'); if(!box || box.dataset.done) return;
@@ -8016,6 +8066,7 @@ function renderDash(){
   const mtl = ['S', 'A', 'B', 'C', 'X'].map(t=>{ const list = mainComps.filter(c=>c.tier === t).sort((a,b)=>t === 'X' ? 'SABC'.indexOf(a.sub) - 'SABC'.indexOf(b.sub) : 0);
     return `<div class="tl2-tier tl2-${t.toLowerCase()}"><div class="tl2-row"><div class="tl2-head"><img src="assets/tierlist/tier-${t.toLowerCase()}.webp" alt="" width="${tl2W(t)}" height="160"><b>${TL2_NAME[t]}</b></div>
       <div class="tl2-cards${list.length ? '' : ' none'}">${list.length ? list.map(c=>tile2HTML(c, `/tierlist?comp=${encodeURIComponent(c.slug)}`)).join('') : tl2None(t)}</div></div></div>`; }).join('');
+  const MORE = dshMoreHTML();
   const lpStat = (key, v, tier, label) => `<a class="dsh-lp" href="/ranks/${tier.k}"><img src="${rankImg(tier)}" alt=""><span><b data-dlp="${v || 0}" data-key="${key}">${v ? fmt(v) + ' LP' : '–'}</b><small>${live}${label}</small></span></a>`;
   box.innerHTML = `
     <div class="dsh-title"><h1>${L('TFT Tierlist, Comps', 'TFT Tier List, Comps')} <em>&amp; Coaching</em></h1></div>
@@ -8047,12 +8098,16 @@ function renderDash(){
           ['/tft-team-builder', 'teambuilder', 'Team Builder', L('Board planen & teilen', 'Plan & share boards')]
         ].map(([h, img, t, d])=>`<a href="${h}"><img src="${toolArtSrc(img, true)}" alt="" width="34" height="34" loading="lazy"><span><b>${t}</b><small>${d}</small></span></a>`).join('')}</div></section>
     </div>
-    <section class="dsh-card dsh-cheats">
+    ${MORE.trust}
+    <div class="dsh-row4 dsh-rv"><section class="dsh-card dsh-cheats">
       <div class="dsh-h"><h2>Cheatsheets</h2><a href="/cheatsheet">${L('Alle', 'All')} →</a></div>
       <div class="dsh-tlist dsh-clist">${(()=>{ const has = new Set(csList().map(s=>s[0]));   // unsere wichtigsten Tabellen (wie „TFTClimb Priority“ auf der Cheatsheet-Seite)
-        return CS_PRIO[1].filter(id=>has.has(id)).map(id=>{ const m = CS_META[id] || {};
-          return `<a href="${csHref(id)}"><span class="dsh-cic">${csIco(id)}</span><span><b>${esc(csName(id))}</b>${m.d ? `<small>${L(m.d[0], m.d[1])}</small>` : ''}</span></a>`; }).join(''); })()}</div></section>`;
+        const ids = [...CS_PRIO[1].filter(id=>has.has(id)), ...csList().map(s=>s[0]).filter(id=>!CS_PRIO[1].includes(id))].slice(0, 12);   // Priority zuerst, dann auffüllen – gleich hoch wie die Patch-Box daneben
+        return ids.map(id=>{ const m = CS_META[id] || {};
+          return `<a href="${csHref(id)}"><span class="dsh-cic">${csIco(id)}</span><span><b>${esc(csName(id))}</b>${m.d ? `<small>${L(m.d[0], m.d[1])}</small>` : ''}</span></a>`; }).join(''); })()}</div></section>${MORE.patch}</div>
+    ${MORE.rest}`;
   const f = box.querySelector('.dsh-ts'); if(f) f.classList.add('on');
+  dshReveal(box);
   box.dataset.done = '1';
 }
 // Erfolge gecoachter Spieler als Rang-Sprung mit Emblemen (aus testimonials, r = 'Smaragd → Meister · 5 Sessions')
@@ -8101,15 +8156,15 @@ function dshFit(keep){
 }
 function dshZoom(keep){
   const box = $('#dshApp'), ch = box && box.querySelector('.dsh-row3'); if(!box) return;
-  const cur = parseFloat(box.style.zoom) || 1;
-  box.style.zoom = '';
+  const cur = parseFloat(box.style.zoom) || 1, seo = document.querySelector('#page-dash .dsh-seo');   // der SEO-Kasten darunter bekommt denselben Zoom (sonst schmaler als die Karten)
+  box.style.zoom = ''; if(seo) seo.style.zoom = '';
   if(!ch || !box.offsetParent || innerWidth < 1300) return;
   // Ziel: Unterkante der Reihe knapp über dem Fensterrand, die Cheatsheets beginnen erst darunter. Bei Fenstern bis 1150 px Höhe darf es dafür
   // auch leicht größer werden (bis 112 %), sonst bliebe bei 1080p ein Streifen der Cheatsheets sichtbar
   const top = docTop(box), need = docTop(ch) + ch.offsetHeight - top, avail = innerHeight - top - 10;
   let z = Math.floor(Math.min(innerHeight <= 1150 ? 1.12 : 1, Math.max(.85, avail / need)) * 100) / 100;
   if(keep === true && Math.abs(z - cur) < .025) z = cur;
-  if(Math.abs(z - 1) > .005) box.style.zoom = z.toFixed(2);
+  if(Math.abs(z - 1) > .005){ box.style.zoom = z.toFixed(2); if(seo) seo.style.zoom = z.toFixed(2); }
 }
 let dshFitT = 0; addEventListener('resize', ()=>{ clearTimeout(dshFitT); dshFitT = setTimeout(dshFit, 120); });
 addEventListener('load', ()=>dshFit(true));let dshIntroDone = false;

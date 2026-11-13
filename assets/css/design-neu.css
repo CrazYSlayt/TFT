@@ -2062,3 +2062,83 @@ body.nd-mini .nds-fly .nds-soon{display:inline-block}
 .nds-sub-a>svg{width:20px;height:20px;margin:0 2px;flex:none;color:var(--cy)}
 .nds-sub-a:hover .nds-sub-ic{transform:scale(1.1);filter:drop-shadow(0 0 5px rgba(46,230,214,.8)) saturate(1.2) brightness(1.15)}
 .nds-sub-a.on::before{left:-16px}
+/* Dashboard unten (13.11.): Trust-Box als Trenner, dann Guides und „TFT erklärt“ als große Karten wie bei dota2news – Schild, Frage, Zahl, Figur rechts */
+#page-dash .dsh-trust .tio-trust{margin:6px auto 4px}
+#page-dash .dsh-trust .tt-face.claudio{width:96px;align-self:flex-end;margin-bottom:-16px}
+.dsh-sec{display:grid;gap:14px;margin-top:6px}
+.dsh-sec-h{display:flex;align-items:baseline;gap:18px}
+.dsh-sec-h h2{margin:0;padding-left:12px;border-left:3px solid var(--gold,#f2c14e);font:800 1.02rem/1.2 var(--ff-head);letter-spacing:.06em;text-transform:uppercase;color:#fff}
+.dsh-sec-h a{font-size:.84rem;font-weight:700;color:var(--cy);text-decoration:underline;text-underline-offset:3px}
+.dsh-xg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 20px}
+.dsh-x{display:flex;flex-direction:column;gap:7px;color:inherit;text-decoration:none;min-width:0}
+.dsh-xc{position:relative;display:block;flex:1;min-height:226px;padding:20px 22px;border-radius:18px;border:1px solid rgba(46,230,214,.28);
+  background:radial-gradient(420px 260px at 100% 100%,rgba(167,139,250,.18),transparent 70%),linear-gradient(150deg,#0d3a45,#072530 70%);box-shadow:0 18px 40px rgba(0,0,0,.32);transition:border-color .18s,transform .18s}
+.dsh-x:hover .dsh-xc{border-color:rgba(46,230,214,.7);transform:translateY(-2px)}
+/* mit Titelbild wie die News-Kacheln oben: Bild voll sichtbar, Schild oben links, Frage und Zahl unten auf dunklem Verlauf */
+.dsh-xc.pic{overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:0;min-height:0;aspect-ratio:16/9;background:#072530}
+.dsh-xbg{position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;transition:transform .3s}
+.dsh-x:hover .dsh-xbg{transform:scale(1.04)}
+.dsh-xc.pic .dsh-xt{z-index:2;max-width:none;width:100%;padding:44px 18px 14px;gap:5px;background:linear-gradient(transparent,rgba(3,12,19,.9) 48%)}
+.dsh-xc.pic .dsh-xd{display:none}
+.dsh-xc.pic .dsh-xq{font-size:1.15rem}
+.dsh-xc.pic .dsh-xv{margin-top:2px;flex-direction:row;align-items:baseline;gap:8px}
+.dsh-xc.pic .dsh-xv strong{font-size:1.4rem}
+.dsh-xc.pic .dsh-xv small{margin:0}
+.dsh-xt{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:7px;max-width:54%}
+.dsh-xtag{font-style:normal;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:7px;background:var(--gold,#f2c14e);color:#1d1400}
+.dsh-xq{font:900 italic 1.22rem/1.15 var(--ff-head);color:#fff;padding-right:.1em}
+.dsh-xd{font-size:.86rem;line-height:1.4;color:#c8d6e2;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.dsh-xv{display:flex;flex-direction:column;margin-top:10px}
+.dsh-xv strong{font:900 italic 1.85rem/1 var(--ff-head);color:#fff;padding-right:.1em}
+.dsh-xv small{margin-top:4px;font-size:.74rem;font-weight:700;color:#9fb0c8}
+.dsh-xa{position:absolute;right:4px;bottom:0;z-index:1;height:116%;max-width:46%;justify-content:flex-end;display:flex;align-items:flex-end;pointer-events:none}
+.dsh-xa img{height:100%;width:auto;max-width:100%;object-fit:contain;object-position:right bottom;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
+.dsh-xa .dsh-xemb{position:absolute;left:-30px;bottom:18px;z-index:2;height:42%;width:auto;filter:drop-shadow(0 6px 12px rgba(0,0,0,.5))}
+.dsh-xa.emb{right:7%;bottom:10%;height:78%;max-width:42%;align-items:center}
+.dsh-xa.emb img{filter:drop-shadow(0 0 26px rgba(90,200,255,.5))}
+.dsh-xcap{display:flex;justify-content:space-between;gap:10px;padding:0 4px;min-width:0;width:100%;max-width:100%;box-sizing:border-box;overflow:hidden;font-size:.76rem;color:var(--muted,#8ea0b5)}
+.dsh-xcap span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsh-xcap span+span{flex:none}
+/* SEO-Text eingeklappt: „Mehr über TFTClimb“ (Google wertet eingeklappten Text wie sichtbaren) */
+.dsh-about{margin-top:10px;border-radius:16px;border:1px solid var(--line-2,rgba(46,230,214,.2));background:rgba(9,36,50,.45)}
+.dsh-about>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 22px;font:800 1rem/1.2 var(--ff-head);color:#fff}
+.dsh-about>summary::-webkit-details-marker{display:none}
+.dsh-about>summary::after{content:"+";font-size:1.4rem;line-height:1;color:var(--cy)}
+.dsh-about[open]>summary::after{content:"–"}
+.dsh-about>summary:hover{color:var(--cy)}
+.nd #page-dash .dsh-about .tool-seo{margin-top:0;border:0;background:none;box-shadow:none}
+@media (max-width:1100px){.dsh-xg{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.dsh-xg{grid-template-columns:minmax(0,1fr);gap:18px}.dsh-xc{min-height:200px;padding:16px 18px}.dsh-xt{max-width:60%}.dsh-xa{max-width:40%;height:110%}.dsh-xq{font-size:1.1rem}.dsh-xv strong{font-size:1.55rem}.dsh-sec-h{flex-wrap:wrap;gap:6px 14px}}
+/* Dashboard unten, Runde 2 (13.11.): vier Karten je Reihe, größere Titel ohne Schild bei den Guides, Emblem mittig, Patch-Box neben den Cheatsheets, Einblenden beim Scrollen */
+.dsh-sec-h h2{font-size:1.25rem}
+.dsh-xg{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px 16px}
+.dsh-xc.pic .dsh-xq{font-size:1.28rem;line-height:1.1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.dsh-xc.pic .dsh-xt{padding:52px 16px 13px}
+.dsh-xc.pic .dsh-xa.emb{left:50%;right:auto;top:7%;bottom:auto;height:50%;max-width:none;transform:translateX(-50%)}
+.dsh-row4{display:grid;grid-template-columns:minmax(0,2.4fr) minmax(0,1fr);gap:18px;align-items:stretch}
+.dsh-row4 .dsh-clist{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px 10px}
+.dsh-patch{display:flex;flex-direction:column}
+.dsh-ptop{position:relative;display:block;flex:1;min-height:150px;border-radius:12px;overflow:hidden;border:1px solid rgba(46,230,214,.22)}
+.dsh-ptop img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;transition:transform .3s}
+.dsh-ptop:hover img{transform:scale(1.04)}
+.dsh-ptop span{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:baseline;gap:10px;padding:26px 12px 9px;background:linear-gradient(transparent,rgba(3,12,19,.92) 55%)}
+.dsh-ptop b{font:900 italic 1.5rem/1 var(--ff-head);color:#fff;padding-right:.1em}
+.dsh-ptop small{font-size:.74rem;font-weight:700;color:#7ff7ec}
+.dsh-pch{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:2px}
+.dsh-pch li,.dsh-pch a{min-width:0}
+.dsh-pch a{display:flex;align-items:center;gap:10px;padding:5px 8px;border-radius:10px;border:1px solid transparent;transition:background .15s,border-color .15s}
+.dsh-pch a:hover{background:rgba(46,230,214,.07);border-color:rgba(46,230,214,.25)}
+.dsh-pchav{flex:none;width:30px;height:30px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.14)}
+.dsh-pchav img{width:100%;height:100%;object-fit:cover;display:block}
+.dsh-pch span{min-width:0;flex:1}
+.dsh-pch b{display:block;font-size:.86rem;line-height:1.15;color:#fff}
+.dsh-pch small{display:block;font-size:.72rem;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Einblenden beim Runterscrollen: Abschnitt gleitet hoch, die Karten folgen leicht versetzt (dshReveal) */
+.dsh-rv{opacity:0;transform:translateY(34px);transition:opacity .7s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+.dsh-rv.in{opacity:1;transform:none}
+.dsh-rv .dsh-x{opacity:0;transform:translateY(24px);transition:opacity .6s ease calc(.12s + var(--i,0) * .09s),transform .7s cubic-bezier(.2,.7,.2,1) calc(.12s + var(--i,0) * .09s)}
+.dsh-rv.in .dsh-x{opacity:1;transform:none}
+@media (max-width:1300px){.dsh-xg{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1300px){.dsh-row4 .dsh-clist{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){.dsh-row4{grid-template-columns:minmax(0,1fr)}.dsh-ptop{min-height:0;aspect-ratio:16/8}}
+@media (max-width:640px){.dsh-xg{grid-template-columns:minmax(0,1fr)}.dsh-row4 .dsh-clist{grid-template-columns:minmax(0,1fr)}.dsh-xc.pic .dsh-xq{font-size:1.15rem}}

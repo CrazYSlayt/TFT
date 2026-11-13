@@ -227,6 +227,7 @@ window.I18N_EN = {
   "Auf unserem Discord-Server – per Sprachchat und Bildschirmübertragung.": "On our Discord server – via voice chat and screen sharing.",
   "Was kostet das Kennenlernen?": "How much is the intro call?",
   "Nichts. Im Kennenlernen stimmen wir deine Ziele ab, schauen, ob Coaching für dich Sinn macht, und welcher Coach zu dir passt.": "Nothing. In the intro call we talk through your goals, check whether coaching makes sense for you and which coach fits you.",
+  "Mehr über TFTClimb": "More about TFTClimb",
   "Wie bezahle ich?": "How do I pay?",
   "Per PayPal, nach dem kostenlosen Kennenlernen.": "Via PayPal, after the free intro call.",
   "Kann ich absagen oder verschieben?": "Can I cancel or reschedule?",
