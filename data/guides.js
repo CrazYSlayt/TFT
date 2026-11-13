@@ -11,7 +11,7 @@
 window.TFT_GUIDE_PLAN = [
   {key:'anfaenger', pub:'2026-11-11', frei:true, en:true, se:'tft-beginner-guide', hero:'assets/img/guides/titel-anfaenger.webp', t:'TFT Anfänger Guide', d:'Alle Grundlagen für deine ersten Partien: Gold und Zinsen, Leveln oder Rollen, Traits, Items und Aufstellung.',
     te:'TFT Beginner Guide', dEn:'Every basic for your first games: gold and interest, leveling or rolling, traits, items and positioning.'},
-  {key:'fortgeschritten', pub:'2026-11-13', en:true, se:'tft-advanced-guide', hero:'assets/img/guides/titel-fortgeschritten.webp', te:'TFT Advanced Guide: How to keep climbing', dEn:'Strongest board, tempo or econ, scouting, preparing highrolls and when to pivot your comp.'},
+  {key:'fortgeschritten', pub:'2026-11-13', frei:true, en:true, se:'tft-advanced-guide', hero:'assets/img/guides/titel-fortgeschritten.webp', te:'TFT Advanced Guide: How to keep climbing', dEn:'Strongest board, tempo or econ, scouting, preparing highrolls and when to pivot your comp.'},
   {key:'rolldown', pub:'2026-11-15', en:true, te:'TFT Rolldown Guide: When to roll – and when not', dEn:'When to roll, how much gold to keep and when to stop – with the 32 gold rule.'},
   {key:'items', pub:'2026-11-17', te:'TFT Items Guide: When to slam and who gets what', dEn:'When to slam, priority slams, item holders, carousel picks and how to split items in the late game.'},
   {key:'augments', pub:'2026-11-19', te:'TFT Augments Guide: Item, econ or combat?', dEn:'What to take on 2-1, 3-2 and 4-2, how to use rerolls and which augments are over- or underrated.'},
