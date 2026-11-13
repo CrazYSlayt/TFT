@@ -48,8 +48,8 @@ window.TFT_NEWS = [
       {k: "h",id: "traits",t: "Welche Traits sind in TFT Set 19 bestätigt?"},
       {k: "p",h: "Bestätigt sind <b>Heartsteel</b> mit den Stufen 3, 5 und 7, <b>Pentakill</b> und <b>K/DA</b>. Aus dem letzten Reveal wissen wir schon, dass <b>True Damage</b> ein Trait ist. In der Trait-Leiste sind außerdem drei weitere Traits mit Stufe 2 angeschnitten: „…dyguard“, „…core“ und „…ntman“. Das dürften Bodyguard und Frontman sein – den dritten kann man nicht sicher lesen."},
       {k: "img",src: "assets/img/news/set19/unlocks/traits.webp",w: 500,h: 440,pos: "right",alt: "Trait-Leiste von TFT Set 19 mit Heartsteel 3, 5 und 7",cap: "Heartsteel mit 3, 5 und 7 – darunter drei angeschnittene Traits. Bild: Riot Games"},
-      {k: "img",src: "assets/img/news/set19/unlocks/quest.webp",w: 420,h: 420,pos: "right",alt: "Zähler 947 von 950 in TFT Set 19, vermutlich ein Cashout-Trait",cap: "Der Zähler 947 / 950 sieht nach einem Cashout aus. Bild: Riot Games"},
       {k: "p",h: "Spannend ist auch der Zähler <b>947 / 950</b> im Reel. Mit den Unlocks hat er nichts zu tun – es macht eher den Anschein, dass die Trait-Reihe um <b>Kobuko, Ziggs, Lulu und Teemo</b> ein Cashout-Trait sein könnte."},
+      {k: "img",src: "assets/img/news/set19/unlocks/quest.webp",w: 420,h: 420,pos: "left",tall: true,alt: "Zähler 947 von 950 in TFT Set 19, vermutlich ein Cashout-Trait",cap: "Der Zähler 947 / 950 sieht nach einem Cashout aus. Bild: Riot Games"},
       {k: "h",id: "weiter",t: "Wann kommen die Unlocks in TFT Set 19?"},
       {k: "p",h: "Die Unlocks kommen mit Set 19 – laut Riot <b>live ab dem 2. Dezember</b>. Vorher gibt es das Set voraussichtlich ab dem 17. November auf dem PBE. Morgen läuft bei Worlds die Cinematic der Prismatic Tour. Alles, was bisher bekannt ist, findest du auf der <a class=\"art-a\" href=\"/tft-set-19\">Set-19-Seite</a>."},
       {k: "say",who: "CrazYSlayt",img: "assets/img/coach/tft-koenig.webp",t: "Wen schaltet ihr zuerst frei? Ich tippe auf Baron 👑"}
@@ -85,8 +85,8 @@ window.TFT_NEWS = [
       {k: "h",id: "traits",t: "Which traits are confirmed for TFT Set 19?"},
       {k: "p",h: "Confirmed are <b>Heartsteel</b> with breakpoints 3, 5 and 7, <b>Pentakill</b> and <b>K/DA</b>. From the last reveal we already know that <b>True Damage</b> is a trait. The trait bar also shows three more traits at level 2, cut off: “…dyguard”, “…core” and “…ntman”. Those are probably Bodyguard and Frontman – the third one can't be read for sure."},
       {k: "img",src: "assets/img/news/set19/unlocks/traits.webp",w: 500,h: 440,pos: "right",alt: "TFT Set 19 trait bar with Heartsteel 3, 5 and 7",cap: "Heartsteel with 3, 5 and 7 – below three cut-off traits. Image: Riot Games"},
-      {k: "img",src: "assets/img/news/set19/unlocks/quest.webp",w: 420,h: 420,pos: "right",alt: "Counter 947 of 950 in TFT Set 19, probably a cashout trait",cap: "The 947 / 950 counter looks like a cashout. Image: Riot Games"},
       {k: "p",h: "The <b>947 / 950</b> counter in the reel is interesting too. It has nothing to do with the unlocks – it rather looks like the trait line around <b>Kobuko, Ziggs, Lulu and Teemo</b> could be a cashout trait."},
+      {k: "img",src: "assets/img/news/set19/unlocks/quest.webp",w: 420,h: 420,pos: "left",tall: true,alt: "Counter 947 of 950 in TFT Set 19, probably a cashout trait",cap: "The 947 / 950 counter looks like a cashout. Image: Riot Games"},
       {k: "h",id: "next",t: "When do the unlocks come to TFT Set 19?"},
       {k: "p",h: "The unlocks come with Set 19 – according to Riot <b>live from December 2</b>. Before that, the set is expected on the PBE from November 17. Tomorrow the Prismatic Tour cinematic premieres at Worlds. Everything known so far is on the <a class=\"art-a\" href=\"/tft-set-19\">Set 19 page</a>."},
       {k: "say",who: "CrazYSlayt",img: "assets/img/coach/tft-koenig.webp",t: "Who do you unlock first? My bet is Baron 👑"}
