@@ -8025,13 +8025,12 @@ function dshMoreHTML(){
       cap:'TFT Guide · ' + t.replace(/^TFT\s+/, ''), side:live ? dshDay(p.pub) : L('Ab ', 'Out ') + new Date(p.pub + 'T12:00:00').toLocaleDateString(LOC, {day:'numeric', month:'short'})}); });
   // TFT erklärt: erschienene Artikel und Ränge – jeweils mit einer Zahl aus den Daten
   const ers = ER_LIST.filter(a=>erOn(a.key)).map(a=>{ const x = EN && a.en ? {...a, ...a.en} : a, {live} = nsDates(nsNext());
-    return dshX({href:'/tft-erklaert/' + a.slug, tag:'Ranked', q:L('Wann ist der TFT Ranked-Reset?', 'When is the TFT ranked reset?'),
-      v:live ? cdDay(live.d, {day:'numeric', month:'long'}) : '', vl:L(`Reset mit Set ${nsNext()}`, `reset with Set ${nsNext()}`), pic:a.hero || `assets/og/erklaert/${a.slug}${EN ? '-en' : ''}.jpg`,
+    return dshX({href:'/tft-erklaert/' + a.slug, q:(x.h1 || a.h1).join(' '),   // Überschrift des Artikels, kein Schild (Wunsch CrazYSlayt 14.11.)
+      pic:a.hero || `assets/og/erklaert/${a.slug}${EN ? '-en' : ''}.jpg`,
       cap:L('TFT erklärt · ', 'TFT explained · ') + (x.crumb || a.crumb), side:a.date ? dshDay(a.date) : ''}); });
   const cut = stCut('euw') || {}, ch = rankBy.challenger;
   // Challenger-Emblem vorerst mittig über dem Text – hier kommt bald der Artikel dazu
-  if(cut.ch && ch) ers.push(dshX({href:'/ranks/challenger', tag:L('Ränge', 'Ranks'), q:L('Wie viele LP brauchst du für Challenger?', 'How many LP do you need for Challenger?'),
-    v:Number(cut.ch).toLocaleString(LOC) + ' LP', vl:L('für Challenger auf EUW', 'for Challenger on EUW'),
+  if(cut.ch && ch) ers.push(dshX({href:'/ranks', q:L('TFT Ränge & Spielerverteilung', 'TFT Ranks & Player Distribution'),
     pic:'assets/img/rank-bg.webp', art:`<span class="dsh-xa emb" aria-hidden="true"><img src="${rankImg(ch, 1)}" alt="" loading="lazy"></span>`, cap:L('TFT erklärt · Ränge', 'TFT explained · Ranks'), side:ST_CUT_LIVE ? L('Live-Daten', 'Live data') : 'EUW'}));
   const sec = (id, t, href, more, cards) => cards.length ? `<section class="dsh-sec dsh-rv" aria-labelledby="dsh-${id}"><div class="dsh-sec-h"><h2 id="dsh-${id}">${t}</h2><a href="${href}">${more} →</a></div><div class="dsh-xg">${cards.map((c, i)=>c.replace('class="dsh-x', `style="--i:${i}" class="dsh-x`)).join('')}</div></section>` : '';
   return { trust, patch:dshPatchHTML(CURRENT_PATCH || PATCHES[0]), rest:sec('guides', L('TFT Guides vom Challenger', 'TFT guides by a Challenger'), '/guides', L('Alle Guides', 'All guides'), gds)
