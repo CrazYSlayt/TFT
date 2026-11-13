@@ -8091,8 +8091,12 @@ function dshMtlFit(){
 }
 // keep = beim Nachrechnen (load) den Zoom nur ändern, wenn er sich deutlich unterscheidet – sonst springt das Dashboard um ein paar Pixel,
 // sobald die Bilder fertig geladen sind (Bericht CrazYSlayt 12.11.: Bild mal etwas höher, mal tiefer). Zoom auf ganze Prozent abgerundet.
+// Die Mini-Tierlist erst NACH dem Zoom einpassen: Mit anderem Zoom passen mehr oder weniger Comps in eine Reihe. Beim direkten Aufruf
+// rechnet 'load' ein zweites Mal nach, beim Wechsel von einer anderen Seite (Tools → Dashboard) gibt es nur diesen einen Durchgang (Bericht CrazYSlayt 13.11.)
 function dshFit(keep){
-  dshMtlFit();
+  dshZoom(keep); dshMtlFit();
+}
+function dshZoom(keep){
   const box = $('#dshApp'), ch = box && box.querySelector('.dsh-row3'); if(!box) return;
   const cur = parseFloat(box.style.zoom) || 1;
   box.style.zoom = '';
