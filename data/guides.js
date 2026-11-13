@@ -2,7 +2,7 @@
 // Ein Guide = Kopf (Adresse, Titel, H1, Meta) + Blöcke. Blöcke: h (Abschnitt, im Inhaltsverzeichnis), h4, p, ul, ol, box, tip (Profi-Tipp mit Cartoon, kurz und in seinen Worten),
 // stats (große Zahlen oben), table, open (noch offene Frage aus der Liste – nur lokal sichtbar), faq. Text darf einfache HTML-Tags enthalten.
 // Faustregeln des Coaches sind im Text als seine Regeln gekennzeichnet, nicht als allgemeine Wahrheit.
-// Veröffentlichungsplan: ab 11.11.2026 alle zwei Tage ein Guide, Ranked als letzter vor dem Set-19-Start (1.12.).
+// Veröffentlichungsplan: ab 11.11.2026 alle zwei Tage ein Guide, Ranked als letzter vor dem Set-19-Start (2.12.).
 // Jeden Morgen liest CrazYSlayt den Guide des Tages, wir verbessern ihn und schalten ihn frei: frei:true setzen und veröffentlichen.
 // en:true, sobald die englische Fassung steht – vorher bleibt der Guide auf /en/ in der Übersicht als „bald“.
 // Die Übersicht /guides zeigt alle Termine (Teaser); ohne Datum = noch kein fester Termin.

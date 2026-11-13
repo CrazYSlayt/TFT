@@ -11,7 +11,7 @@ window.TFT_ARTICLES = [
   h1:['TFT Ranked-Reset:', 'So startest du ins neue Set'],
   meta:'TFT Ranked-Reset zum neuen Set: Soft Reset der MMR, 5 Platzierungsspiele ab Eisen II, kein LP-Verlust – und wie du am besten startest.',
   body:[
-    {k:'lead', h:'Mit jedem neuen Set beginnt in TFT eine neue Ranked-Saison – und dein Rang fängt von vorn an. Für Set 19 ist das laut Riots Patch-Plan der <b>1. Dezember 2026</b> mit Patch 19.1. Hier steht, was dabei zurückgesetzt wird, wie die Platzierungsspiele laufen und welche Regeln danach gelten.'},
+    {k:'lead', h:'Mit jedem neuen Set beginnt in TFT eine neue Ranked-Saison – und dein Rang fängt von vorn an. Für Set 19 ist das laut Riots Patch-Plan der <b>2. Dezember 2026</b> mit Patch 19.1. Hier steht, was dabei zurückgesetzt wird, wie die Platzierungsspiele laufen und welche Regeln danach gelten.'},
     {k:'h', id:'start', t:'TFT Ranked-Reset: das Wichtigste in Kürze'},
     {k:'stats', l:[['5', 'Platzierungsspiele zum Start', 'p'], ['Eisen II', 'dein Rang nach dem ersten Spiel', 'g'], ['bis 100 LP', 'pro Platzierungsspiel', 'p'], ['0 LP', 'Verlust in den Platzierungen', 'g']]},
     {k:'vote', id:'er-ranked-start', q:'Wann startest du nach dem Reset in Ranked?', o:[['sofort', '🚀', 'Sofort zum Release – keine Zeit verlieren'], ['spaeter', '⏰', 'Ein paar Stunden später, wie Claudio'], ['normals', '🧪', 'Erst nach ein paar normalen Partien'], ['meta', '😴', 'Erst, wenn die Meta steht']]},
@@ -45,7 +45,7 @@ window.TFT_ARTICLES = [
     {k:'box', h:'<b>Stand:</b> Riots offizielle Ranked-FAQ (März 2026) und der Patch-Plan von Set 18. Riot kann einzelne Regeln mit einem neuen Set ändern – dann passen wir den Artikel an.'},
     {k:'h', id:'faq', t:'Häufige Fragen zum TFT Ranked-Reset'},
     {k:'faq', l:[
-      ['Wann ist der Ranked-Reset in TFT?', 'Mit dem Start eines neuen Sets. Für Set 19 ist das laut Riots Patch-Plan der 1. Dezember 2026 mit Patch 19.1.'],
+      ['Wann ist der Ranked-Reset in TFT?', 'Mit dem Start eines neuen Sets. Für Set 19 ist das laut Riots Patch-Plan der 2. Dezember 2026 mit Patch 19.1.'],
       ['Wie viele Platzierungsspiele gibt es in TFT?', 'Fünf. Nach dem ersten Spiel stehst du provisorisch auf Eisen II, nach dem fünften bist du fest eingestuft.'],
       ['Verliert man in TFT-Platzierungsspielen LP?', 'Nein. In den Platzierungsspielen gibt es nur LP dazu, bis zu 100 pro Spiel – auch Platz 8 kostet nichts.'],
       ['Wird die MMR in TFT komplett zurückgesetzt?', 'Nein. Die MMR bekommt einen Soft Reset: Sie wird in Richtung Mitte gezogen, aber nicht ganz zurückgesetzt.'],
@@ -57,7 +57,7 @@ window.TFT_ARTICLES = [
     h1:['TFT Ranked Reset:', 'How to Start the New Set'],
     meta:'TFT ranked reset for the new set: soft MMR reset, 5 placement games from Iron II, no LP loss – and how to start best.',
     body:[
-      {k:'lead', h:'Every new set starts a new ranked season in TFT – and your rank starts over. For Set 19 that is <b>December 1, 2026</b> with patch 19.1, according to Riot\'s patch schedule. Here is what gets reset, how placement games work and which rules apply after that.'},
+      {k:'lead', h:'Every new set starts a new ranked season in TFT – and your rank starts over. For Set 19 that is <b>December 2, 2026</b> with patch 19.1, according to Riot\'s patch schedule. Here is what gets reset, how placement games work and which rules apply after that.'},
       {k:'h', id:'start', t:'TFT ranked reset: the key points'},
       {k:'stats', l:[['5', 'placement games at the start', 'p'], ['Iron II', 'your rank after the first game', 'g'], ['up to 100 LP', 'per placement game', 'p'], ['0 LP', 'lost in placements', 'g']]},
       {k:'vote', id:'er-ranked-start', q:'When do you start ranked after the reset?', o:[['sofort', '🚀', 'Right at release – no time to lose'], ['spaeter', '⏰', 'A few hours later, like Claudio'], ['normals', '🧪', 'Only after a few normal games'], ['meta', '😴', 'Only once the meta is settled']]},
@@ -91,7 +91,7 @@ window.TFT_ARTICLES = [
       {k:'box', h:'<b>As of:</b> Riot\'s official ranked FAQ (March 2026) and the Set 18 patch schedule. Riot can change single rules with a new set – then we update this article.'},
       {k:'h', id:'faq', t:'Frequently asked questions about the TFT ranked reset'},
       {k:'faq', l:[
-        ['When is the ranked reset in TFT?', 'With the start of a new set. For Set 19 that is December 1, 2026 with patch 19.1, according to Riot\'s patch schedule.'],
+        ['When is the ranked reset in TFT?', 'With the start of a new set. For Set 19 that is December 2, 2026 with patch 19.1, according to Riot\'s patch schedule.'],
         ['How many placement games are there in TFT?', 'Five. After the first game you are provisionally Iron II, after the fifth your rank is set.'],
         ['Do you lose LP in TFT placement games?', 'No. Placement games only add LP, up to 100 per game – even 8th place costs nothing.'],
         ['Is MMR fully reset in TFT?', 'No. MMR gets a soft reset: it is pulled towards the middle, but not fully reset.'],
