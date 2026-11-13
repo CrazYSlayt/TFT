@@ -451,9 +451,9 @@ window.TFT_CUSTOM = {
     // 17.11.2026: Riot hat noch kein Datum genannt; üblich ist der Dienstag zwei Wochen vor dem Release (Stand 10.11.)
     setDates: {19:{pbe:'2026-11-17', est:true}},
     // Gold-Regeln für den Streak- & Zins-Rechner (app.js: skRun). Bestätigt von CrazYSlayt am 10.11.2026:
-    // ab 2-1 jede Runde 5 Gold, Sieg +1, Zinsen 1 je 10 Gold (höchstens 5, vor dem Grundgold gerechnet), Streak 3–4 = +1, 5 = +2, ab 6 = +3 (Sieg wie Niederlage).
+    // ab 2-1 jede Runde 5 Gold, Sieg +1, Zinsen 1 je 10 Gold (höchstens 5, vor dem Grundgold gerechnet), Streak 2–4 = +1, 5 = +2, ab 6 = +3 (Sieg wie Niederlage; korrigiert von CrazYSlayt am 13.11.2026).
     // Monster-Runden zahlen alles und brechen keine Serie, das Karussell zählt nicht als Runde (kein Einkommen)
-    econ: {base:5, win:1, per:10, cap:5, streak:[[3, 1], [5, 2], [6, 3]], src:'CrazYSlayt · LoL Wiki'}
+    econ: {base:5, win:1, per:10, cap:5, streak:[[2, 1], [5, 2], [6, 3]], src:'CrazYSlayt · LoL Wiki'}
   },
   // Elderwood-Pflanzen (platzierbare Einheiten ohne Champion-Daten). Reihenfolge nicht ändern – Builder-Links hängen davon ab.
   plants: {
