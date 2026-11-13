@@ -7970,7 +7970,9 @@ document.addEventListener('keydown', e=>{ if((e.ctrlKey || e.metaKey) && e.key.t
 function ndRoute(page, navKey){
   ndMark();   // shell.js: aktiver Punkt nach Adresse, seine Gruppe klappt auf
   document.body.classList.remove('nd-drawer');
-  if(page==='home'){ renderDash(); seoMount('home'); dshFit(); dshIntro(); requestAnimationFrame(()=>dshCount(true)); }
+  // h1Sync vor dshFit: Beim Verlassen wird die Dashboard-H1 zu <div data-h1> (kleiner) – ohne Rücktausch misst dshFit einen 13 px zu
+  // niedrigen Titel, zoomt zu groß und die Boxen rutschen danach auf den Fensterrand (Bericht CrazYSlayt 13.11.: Tierlist → Dashboard)
+  if(page==='home'){ renderDash(); seoMount('home'); h1Sync(); dshFit(); dshIntro(); requestAnimationFrame(()=>dshCount(true)); }
   setTimeout(ndColon, 0);   // erst nach der Übersetzung (läuft vorher als Microtask)
 }
 // Tool-Überschriften „TFT Rolldown-Rechner: Odds …“: der Doppelpunkt am Ende des großen Titels wird nur ausgeblendet (für Google bleibt er)
@@ -8109,8 +8111,7 @@ function dshZoom(keep){
   if(Math.abs(z - 1) > .005) box.style.zoom = z.toFixed(2);
 }
 let dshFitT = 0; addEventListener('resize', ()=>{ clearTimeout(dshFitT); dshFitT = setTimeout(dshFit, 120); });
-addEventListener('load', ()=>dshFit(true));
-let dshIntroDone = false;
+addEventListener('load', ()=>dshFit(true));let dshIntroDone = false;
 function dshIntro(){
   const box = $('#dshApp'); if(!box || dshIntroDone) return; dshIntroDone = true;
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
