@@ -3966,3 +3966,14 @@ figure.nw-hero.er-hero img{display:block;width:100%;height:auto;border-radius:16
 .nw-band .nw-po-l{display:block;padding:8px 8px 9px;font-size:.88rem;font-weight:700;line-height:1.15;color:#fff}
 .nw-band .nw-po-l small{display:block;margin-top:2px;color:var(--muted);font-size:.68rem;font-weight:600}
 .nw-band+.nw-band{margin-top:-8px}
+/* News: Übersicht als Gruppen mit Schildern (NW_BLOCK.tags) – Traits nach Art, Champions nach Kosten */
+.nw-tags{clear:both;display:grid;gap:10px;margin:14px 0 22px}
+.nw-tg{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;align-items:start;padding:12px 14px;border-radius:12px;border:1px solid rgba(46,230,214,.2);background:rgba(9,36,50,.45)}
+.nw-tg>b{font:800 italic .95rem/1.25 var(--ff-head);color:#fff;padding-top:4px}
+.nw-tg>div{display:flex;flex-wrap:wrap;gap:6px}
+.nw-tg span{display:inline-flex;align-items:baseline;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(46,230,214,.08);border:1px solid rgba(46,230,214,.25);font-size:.86rem;font-weight:700;color:#e8f4fb}
+.nw-tg small{font-size:.72rem;font-weight:600;color:var(--muted,#8ea0b5)}
+.nw-tg.c1 span{border-color:rgba(160,170,180,.5)}.nw-tg.c2 span{border-color:rgba(46,204,113,.55)}.nw-tg.c3 span{border-color:rgba(52,152,219,.6)}
+.nw-tg.c4 span{border-color:rgba(192,100,230,.6)}.nw-tg.c5 span{border-color:rgba(242,193,78,.65)}.nw-tg.c7 span{border-color:rgba(255,110,190,.7);background:rgba(255,110,190,.1)}
+.nw-tg.c1>b{color:#c3ccd5}.nw-tg.c2>b{color:#5ee6a0}.nw-tg.c3>b{color:#6ab8ff}.nw-tg.c4>b{color:#d59bff}.nw-tg.c5>b{color:#f2c14e}.nw-tg.c7>b{color:#ff8fcf}
+@media (max-width:640px){.nw-tg{grid-template-columns:minmax(0,1fr);gap:8px}}

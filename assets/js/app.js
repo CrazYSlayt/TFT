@@ -7005,7 +7005,7 @@ function nwListHTML(n){
 const NW_BLOCK = {
   p:b=>`<p${b.clear ? ' class="nw-clr"' : ''}>${b.h}</p>`, h:b=>`<h2 id="nwa-${b.id}">${esc(b.t)}</h2>`, ul:b=>`<ul>${b.l.map(x=>`<li>${x}</li>`).join('')}</ul>`,
   // pos 'right'/'left': Bild neben dem Text (wie in den Guides), tall: schmales Hochformat (z. B. Standbild aus einem Reel)
-  img:b=>`<figure class="nw-fig${b.pos ? ` gd-fig${b.pos === 'left' ? ' l' : ''}${b.tall ? ' tall' : ''}` : ''}"><img src="${b.src}" alt="${esc(b.alt)}" width="${b.w || 1200}" height="${b.h || 675}" loading="lazy"${b.pos ? ' data-zoom' : ''}><figcaption>${esc(b.cap)}</figcaption></figure>`,
+  img:b=>`<figure class="nw-fig${b.pos ? ` gd-fig${b.pos === 'left' ? ' l' : b.pos === 'wide' ? ' wide' : b.pos === 'center' ? ' c' : ''}${b.tall ? ' tall' : ''}` : ''}"><img src="${b.src}" alt="${esc(b.alt)}" width="${b.w || 1200}" height="${b.h || 675}" loading="lazy"${b.pos ? ' data-zoom' : ''}><figcaption>${esc(b.cap)}</figcaption></figure>`,
   yt:b=>`<figure class="nw-fig"><button type="button" class="nw-yt" data-yt="${b.id}" aria-label="${L('Video abspielen', 'Play video')}: ${esc(b.alt)}"><img src="${b.src}" alt="${esc(b.alt)}" width="1280" height="720" loading="lazy"><i aria-hidden="true"></i></button><figcaption>${esc(b.cap)}</figcaption></figure>`,
   say:b=>`<div class="nw-say"><img src="${b.img}" alt="${esc(b.who)}" loading="lazy"><p><b>${esc(b.who)}</b>${esc(b.t)}</p></div>`,
   // Abstimmung „Wer ist das?“: Ausschnitt, Frage, unser Tipp, Antworten zum Antippen – nach der Stimme die Ergebnisse (api/votes.js, nwPolls)
@@ -7022,6 +7022,8 @@ const NW_BLOCK = {
     <div class="nw-poll-b"><span class="nw-poll-k">${esc(b.tag)}</span><p class="nw-poll-q">${esc(b.q)}</p>${b.tip ? `<p class="nw-poll-tip">${b.tip}</p>` : ''}
     <div class="nw-poll-o">${b.o.map(([n, im, sub])=>`<figure class="nw-bo"><img src="${im}" alt="${esc(sub || n)}" width="308" height="560" loading="lazy" data-zoom><figcaption><span class="nw-po-l">${esc(n)}${sub ? `<small>${esc(sub)}</small>` : ''}</span></figcaption></figure>`).join('')}</div></div></div>`,
   // big: größere Kacheln mit Skin-Namen (z. B. die fehlenden Mitglieder einer Band)
+  // Übersicht als Gruppen mit Schildern (z. B. Traits nach Art, Champions nach Kosten): {g:[{t, c?, l:[[Name, Zusatz?], …]}]} – c = Farbe der Gruppe (Kosten 1–5, 7)
+  tags:b=>`<div class="nw-tags">${b.g.map(g=>`<div class="nw-tg${g.c ? ' c' + g.c : ''}"><b>${esc(g.t)}</b><div>${g.l.map(x=>`<span>${esc(x[0])}${x[1] ? `<small>${esc(x[1])}</small>` : ''}</span>`).join('')}</div></div>`).join('')}</div>`,
   // sq: quadratische Ausschnitte (z. B. Champions aus einem Reel), etwas größer als die kleinen Kacheln
   skins:b=>`<div class="nw-skins${b.big ? ' big' : ''}${b.sq ? ' sq' : ''}">${b.t ? `<p class="nw-sk-t">${esc(b.t)}</p>` : ''}<div class="nw-sk-g">${b.items.map(x=>`<figure><img src="${x.img}" alt="${esc(x.alt || x.skin || x.n)}" width="${b.big ? 308 : b.sq ? 240 : 154}" height="${b.big ? 560 : b.sq ? 240 : 280}" loading="lazy" data-zoom><figcaption>${esc(x.n)}${b.big && x.skin ? `<small>${esc(x.skin)}</small>` : ''}</figcaption></figure>`).join('')}</div></div>`,
   // Bildergalerie: mehrere Standbilder nebeneinander (Klick vergrößert)
