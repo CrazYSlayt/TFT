@@ -3123,7 +3123,8 @@ const GD_WIDGET = {
       const r = el.querySelector('.gd-w-res'); r.className = 'gd-w-res ' + (n >= 13 ? 'g' : n >= 9 ? 'y' : 'x');
       r.innerHTML = n >= 13 ? `<b>${L('13 Siege', '13 wins')}</b><span>${L('Damit kommst du meistens in die Top 4.', 'That usually gets you top 4.')}</span>` : `<b>${L('Noch ', '')}${13 - n} ${L(13 - n === 1 ? 'Sieg' : 'Siege', 13 - n === 1 ? 'win to go' : 'wins to go')}</b><span>${n >= 11 ? L('Die kommen nicht von allein – in Stage 5 ist jeder stark. Dein Board muss die Runden noch gewinnen können.', 'They will not come by themselves – in Stage 5 everyone is strong. Your board has to be able to still win those rounds.') : L('Je früher die Siege kommen, desto entspannter entscheidest du später.', 'The earlier the wins come, the calmer you decide later.')}</span>`; }},
   // Wie tief darf ich rollen? – die Goldgrenzen aus dem Rolldown-Guide
-  floor:{html:()=>{ const s = [[L('2-Kosten-Reroll auf 3-2', '2-cost reroll on 3-2'), '32', L('So bist du auch ohne Sieg nach zwei Runden wieder bei 50 Gold und kannst slowrollen.', 'That way you are back at 50 gold after two rounds even without a win.')],
+  floor:{html:()=>{ const s = [[L('1-Kosten-Reroll auf 3-1', '1-cost reroll on 3-1'), '~32', L('Der zweite Rolldown nach 2-7 – danach wieder Gold aufbauen.', 'The second rolldown after 2-7 – then rebuild your gold.')],
+        [L('2-Kosten-Reroll auf 3-2', '2-cost reroll on 3-2'), '32', L('So bist du auch ohne Sieg nach zwei Runden wieder bei 50 Gold und kannst slowrollen.', 'That way you are back at 50 gold after two rounds even without a win.')],
         [L('Fast 8 auf 4-2', 'Fast 8 on 4-2'), '~10', L('Darunter kommen keine Zinsen mehr. Fehlt noch was: auf 4-5 weiterrollen.', 'Below that you get no interest. Still missing something: roll again on 4-5.')],
         [L('Nur noch zwei Leben', 'Only two lives left'), '0', L('All-in, bis das Board stabil ist.', 'All-in until your board is stable.')],
         [L('Es geht um Platz 4 oder 5', 'It is about 4th or 5th'), '0', L('Auf 4-2 auf 0 rollen – sonst auf 4-5 noch mal all-in.', 'Roll to 0 on 4-2 – otherwise all-in again on 4-5.')]];
@@ -7553,7 +7554,8 @@ function setMeta(page, sub){
   title = tr(title); if(desc) desc = tr(desc);   // englische Seite: über das Wörterbuch
   document.title = page==='home' ? title : title + ' | TFTClimb';
   if(desc) headTag('meta[name="description"]', ()=>Object.assign(document.createElement('meta'), {name:'description'})).content = desc;
-  headTag('meta[name="robots"]', ()=>Object.assign(document.createElement('meta'), {name:'robots'})).content = noindex ? 'noindex' : 'index, follow';
+  // max-image-preview:large: Google darf große Vorschaubilder zeigen (Discover, Bildvorschau neben dem Treffer)
+  headTag('meta[name="robots"]', ()=>Object.assign(document.createElement('meta'), {name:'robots'})).content = noindex ? 'noindex' : 'index, follow, max-image-preview:large';
   META_DESC = noindex ? '' : desc || ''; metaLead(META_DESC);
   if(FILE_MODE) return;
   if(noindex){ const c = document.head.querySelector('link[rel="canonical"]'); if(c) c.remove(); return; }
@@ -7594,6 +7596,11 @@ function setMeta(page, sub){
   setLd(page, sub, tool, title, desc, url, path, wide ? img : '');
 }
 // Strukturierte Daten für Google: Brotkrumen, bei Tools zusätzlich Web-App und die Fragen aus dem Textblock
+// Bildformate für Google (Wunsch 16.11.): News, Guides und „TFT erklärt“ haben neben dem Titelbild Ausschnitte in 16:9, 4:3 und 1:1
+// (tools/og-bilder.js → assets/og/formate/…, Fokuspunkt je Bild). Sie stehen nur hier in den strukturierten Daten – so empfiehlt es Google für Artikel
+// Tools: Vorschaubild (PNG) + 1:1 mit Heimer und Motiv (assets/og/formate/tools/<datei>-1x1.jpg)
+const ogFormate = img => { const m = String(img || '').match(/\/assets\/og\/((?:news|guides|erklaert)\/[\w-]+)\.jpg$/), t = String(img || '').match(/\/assets\/og\/(tft-[\w-]+)\.png$/);
+  return m ? ['16x9', '4x3', '1x1'].map(n=>`${location.origin}/assets/og/formate/${m[1]}-${n}.jpg`) : t ? [img, `${location.origin}/assets/og/formate/tools/${t[1]}-1x1.jpg`] : img ? [img] : []; };
 const LD_SECTION = {cheatsheet:'Cheatsheet', guides:'Guides', tierlist:'Tierlist', tools:'Tools', bibliothek:'Bibliothek', ranks:'Ranks', patches:'Patches', about:'Meet the Team', builder:'Team Builder', coaching:'Coaching', apply:'Coaching', impressum:'Impressum', datenschutz:'Datenschutz'};
 function setLd(page, sub, tool, title, desc, url, path, ogImg){
   const org = {'@type':'Organization', name:'TFTClimb', url:location.origin + withLang('/'), logo:location.origin + '/assets/brand/logo-symbol-512.png', email:'info@tftclimb.com'};
@@ -7613,9 +7620,9 @@ function setLd(page, sub, tool, title, desc, url, path, ogImg){
   if(tool){
     // Vorschaubild und Datenstand (Datum der Spieldaten) – Google kann das Bild neben dem Suchergebnis zeigen
     graph.push({'@type':'WebApplication', name:title.split(' – ')[0], url, description:desc, applicationCategory:'GameApplication', operatingSystem:'Web', browserRequirements:'JavaScript', inLanguage:EN ? 'en' : 'de', isAccessibleForFree:true, offers:{'@type':'Offer', price:'0', priceCurrency:'EUR'}, publisher:org,
-      ...(ogImg ? {image:ogImg, screenshot:ogImg, dateModified:TFT_DATA.generated} : {})});
+      ...(ogImg ? {image:ogFormate(ogImg), screenshot:ogImg, dateModified:TFT_DATA.generated} : {})});
     // Seite mit Artikel: Hauptbild, Datenstand und wer die Inhalte prüft (Autor-Kasten im Artikel)
-    if(ogImg) graph.push({'@type':'WebPage', url, name:title.split(' | ')[0], primaryImageOfPage:{'@type':'ImageObject', url:ogImg, width:1200, height:630}, dateModified:TFT_DATA.generated, inLanguage:EN ? 'en' : 'de',
+    if(ogImg) graph.push({'@type':'WebPage', url, name:title.split(' | ')[0], primaryImageOfPage:{'@type':'ImageObject', url:ogImg, width:1200, height:630}, image:ogFormate(ogImg), dateModified:TFT_DATA.generated, inLanguage:EN ? 'en' : 'de',
       author:{'@type':'Person', name:'Claudio "CrazYSlayt"', alternateName:'CrazYSlayt', jobTitle:'TFT Challenger & TFTClimb Coach', url:location.origin + withLang(PATCH_AUTHOR.href)}, publisher:org});
     const box = tool==='builder' ? $('#page-builder .tool-seo.b-only') : tool==='simulator' ? $('#page-builder .tool-seo.b-simonly') : $(`#page-tools .tool-view[data-tool="${tool==='overview' ? '' : tool}"] .tool-seo`);
     const qa = box ? [...box.querySelectorAll('details')].map(d=>({'@type':'Question', name:d.querySelector('summary').textContent.trim(), acceptedAnswer:{'@type':'Answer', text:d.querySelector('p').textContent.trim()}})) : [];
@@ -7632,7 +7639,11 @@ function setLd(page, sub, tool, title, desc, url, path, ogImg){
   if(pt) graph.push({'@type':'Article', headline:title.split(' | ')[0], description:desc, datePublished:pt.date, inLanguage:EN ? 'en' : 'de', mainEntityOfPage:url, publisher:org,
     ...(pt.img ? {image:pt.img} : {}), author:{'@type':'Person', name:'Claudio "CrazYSlayt"', alternateName:'CrazYSlayt', jobTitle:'TFT Challenger & TFTClimb Coach', url:location.origin + withLang(PATCH_AUTHOR.href)}});
   const nw = page==='setnews' && nwBy(sub);   // News-Beitrag: Nachrichtenartikel von CrazYSlayt
-  if(nw) graph.push({'@type':'NewsArticle', headline:nwL(nw.title), description:desc, datePublished:nw.date, inLanguage:EN ? 'en' : 'de', mainEntityOfPage:url, publisher:org, ...(ogImg ? {image:ogImg} : {}),
+  if(nw) graph.push({'@type':'NewsArticle', headline:nwL(nw.title), description:desc, datePublished:nw.date, inLanguage:EN ? 'en' : 'de', mainEntityOfPage:url, publisher:org, ...(ogImg ? {image:ogFormate(ogImg)} : {}),
+    author:{'@type':'Person', name:'Claudio "CrazYSlayt"', alternateName:'CrazYSlayt', jobTitle:'TFT Challenger & TFTClimb Coach', url:location.origin + withLang(PATCH_AUTHOR.href)}});
+  // Guide und „TFT erklärt“: Artikel mit Erscheinungsdatum, Autor und den Bildformaten
+  const art = page==='guides' && sub && ogImg ? (GD_PLAN_BY[sub] || {}).pub : page==='erklaert' && sub && ogImg ? (ER_BY[sub] || {}).date : '';
+  if(art) graph.push({'@type':'Article', headline:title.split(' | ')[0], description:desc, datePublished:art, inLanguage:EN ? 'en' : 'de', mainEntityOfPage:url, publisher:org, image:ogFormate(ogImg),
     author:{'@type':'Person', name:'Claudio "CrazYSlayt"', alternateName:'CrazYSlayt', jobTitle:'TFT Challenger & TFTClimb Coach', url:location.origin + withLang(PATCH_AUTHOR.href)}});
   let el = document.getElementById('ldPage');
   if(!el){ el = document.createElement('script'); el.type = 'application/ld+json'; el.id = 'ldPage'; document.head.appendChild(el); }

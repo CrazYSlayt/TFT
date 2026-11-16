@@ -114,6 +114,14 @@ function newsPages(){
     <div class="nwtag">TFT Set ${p.set} News</div>`)}));
 }
 
+// ---------- Fokuspunkt der Google-Formate (1:1, 4:3, 16:9): x-Mitte in px im Titelbild (1200 breit), Schlüssel ohne -en ----------
+// Ohne Eintrag 885 = ganz rechts, wo meist CrazYSlayt steht. Neues Titelbild: kurz ansehen und den Punkt aufs Wichtigste setzen (Gesicht, Motiv)
+const FOKUS = {
+  'news/tft-set-19-prismatic-tour': 780, 'news/tft-set-19-prismatic-tour-dev-drop': 870, 'news/tft-set-19-prismatic-tour-cinematic': 860,
+  'news/tft-set-19-prismatic-tour-champions': 860, 'news/tft-set-19-true-damage-client': 860, 'news/tft-set-19-unlocks': 950,
+  'guides/tft-anfaenger-guide': 900, 'guides/tft-fortgeschrittene-guide': 690, 'erklaert/tft-ranked-reset': 770
+};
+
 // ---------- Guides (data/guides.js): Titelbild und Vorschau zugleich – je Guide eigenes Motiv aus Spiel-Icons und eine Pose von CrazYSlayt ----------
 // Deutsch → assets/og/guides/<adresse>.jpg, Englisch → assets/og/guides/<adresse>-en.jpg (app.js: gdHeroImg). Keine Zahlen, die sich pro Set ändern
 function guidePages(){
@@ -192,7 +200,7 @@ function guidePages(){
     art:`<div class="rkglow" style="--c:#f6d77a;left:385px;top:245px"></div><img class="er-emb big" src="/assets/img/ranks/challenger.webp" alt=""><div class="er-arrow">↺</div><img class="er-emb small" src="/assets/img/ranks/iron.webp" alt="">`}};
   // Titelbild aus Nano Banana (a.hero, tools/nano-banana.js): Bild füllt alles, dazu nur Logo und Schild
   (A.TFT_ARTICLES || []).filter(a => a.body && a.hero).forEach(a => [0, 1].forEach(en => { const tag = (AS[a.key] || {}).tag || ['TFT erklärt', 'TFT explained'];
-    out.push({file:`erklaert/${a.slug}${en ? '-en' : ''}`, jpg:true, html:page(`<style>body::after{display:none}.er-nb{position:absolute;inset:0;background:url(/${a.hero}) center/cover no-repeat}.er-nb::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 62%,rgba(4,14,22,.75))}.nwtag{z-index:4}</style>
+    out.push({file:`erklaert/${a.slug}${en ? '-en' : ''}`, jpg:true, hero:a.hero, html:page(`<style>body::after{display:none}.er-nb{position:absolute;inset:0;background:url(/${a.hero}) center/cover no-repeat}.er-nb::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 62%,rgba(4,14,22,.75))}.nwtag{z-index:4}</style>
     <div class="er-nb"></div><img class="logo nwlogo" src="/assets/brand/logo-tftclimb.webp" alt=""><div class="nwtag">${tag[en]}</div>`)}); }));
   (A.TFT_ARTICLES || []).filter(a => a.body && AS[a.key] && !a.hero).forEach(a => [0, 1].forEach(en => { const m = AS[a.key];
     out.push({file:`erklaert/${a.slug}${en ? '-en' : ''}`, jpg:true, html:page(`<style>body::after{display:none}
@@ -211,7 +219,7 @@ function guidePages(){
     <div class="nwtag">${m.tag[en]}</div>`)}); }));
   // Guide mit Nano-Banana-Titelbild (Plan-Eintrag hero): Bild füllt alles, dazu Logo und Schild „TFT Guide · …“
   (w.TFT_GUIDE_PLAN || []).filter(p => p.hero && slug[p.key]).forEach(p => [0, 1].forEach(en => { const t = (M[p.key] || {t:[p.t, p.te]}).t[en];
-    out.push({file:`guides/${slug[p.key]}${en ? '-en' : ''}`, jpg:true, html:page(`<style>body::after{display:none}.er-nb{position:absolute;inset:0;background:url(/${p.hero}) center/cover no-repeat}.er-nb::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 62%,rgba(4,14,22,.75))}.nwtag{z-index:4}</style>
+    out.push({file:`guides/${slug[p.key]}${en ? '-en' : ''}`, jpg:true, hero:p.hero, html:page(`<style>body::after{display:none}.er-nb{position:absolute;inset:0;background:url(/${p.hero}) center/cover no-repeat}.er-nb::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 62%,rgba(4,14,22,.75))}.nwtag{z-index:4}</style>
     <div class="er-nb"></div><img class="logo nwlogo" src="/assets/brand/logo-tftclimb.webp" alt=""><div class="nwtag">TFT Guide · ${t}</div>`)}); }));
   (w.TFT_GUIDE_PLAN || []).filter(p => M[p.key] && slug[p.key] && !p.hero).forEach(p => [0, 1].forEach(en => { const m = M[p.key], t = m.t[en], long = t.length > 11;
     out.push({file:`guides/${slug[p.key]}${en ? '-en' : ''}`, jpg:true, html:page(`${css}
@@ -509,6 +517,40 @@ function findBrowser(){ return [path.join(process.env['ProgramFiles(x86)'] || ''
         if (fs.existsSync(f) && fs.readFileSync(f).equals(buf)) { console.log(`  unverändert: assets\\og\\${j.file}.${ext}`); continue; }
         fs.writeFileSync(f, buf); console.log(`  geschrieben: assets\\og\\${j.file}.${ext}`);
       }
+    }
+    // 3) Formate für Google (Wunsch 16.11.): aus dem Titelbild von News, Guides und „TFT erklärt“ (1200 × 630) Ausschnitte in 16:9, 4:3 und 1:1
+    //    → assets/og/formate/<ordner>/<name>-16x9.jpg usw. Sie stehen nur in den strukturierten Daten (app.js: ogFormate), nicht auf der Seite –
+    //    so empfiehlt es Google für Artikel. Der Ausschnitt sitzt am Fokuspunkt (FOKUS, x-Mitte in px), nicht stur in der Bildmitte.
+    //    Mit Nano-Banana-Bild (j.hero) wird aus dem Originalbild geschnitten – ohne Schild (sonst halb abgeschnitten) und in höherer Auflösung
+    for (const j of jobs.filter(j => j.jpg && /^(news|guides|erklaert)\//.test(j.file))) {
+      const src = j.hero ? path.join(ROOT, j.hero) : path.join(OUT, `${j.file}.jpg`); if (!fs.existsSync(src)) continue;
+      const fx = FOKUS[j.file.replace(/-en$/, '')] ?? 885, url = j.hero ? '/' + j.hero : `/assets/og/${j.file}.jpg`;
+      current = page(`<style>body::after,body::before{display:none}</style><img id="src" src="${url}?${fs.statSync(src).mtimeMs}" alt="">`);
+      await send('Page.navigate', {url: origin + '/__og?f=' + j.file}); await sleep(300);
+      for (const [n, w] of [['16x9', 1120], ['4x3', 840], ['1x1', 630]]) {
+        // k: Maßstab Quelle ↔ Titelbild (1200 × 630, „cover“ wie im Titelbild) – Ausschnitt in Titelbild-Koordinaten, gelesen in Quell-Pixeln
+        const b64 = await ev(`new Promise(ok => { const i = document.getElementById('src'), go = () => { const W = i.naturalWidth, H = i.naturalHeight, k = Math.min(W / 1200, H / 630);
+          const ox = (W - 1200 * k) / 2, oy = (H - 630 * k) / 2, x = Math.max(0, Math.min(1200 - ${w}, ${fx} - ${w} / 2));
+          const c = document.createElement('canvas'); c.width = Math.round(${w} * k); c.height = Math.round(630 * k);
+          c.getContext('2d').drawImage(i, ox + x * k, oy, ${w} * k, 630 * k, 0, 0, c.width, c.height); ok(c.toDataURL('image/jpeg', .86).split(',')[1]); };
+          i.complete ? go() : (i.onload = go); })`);
+        const out = path.join(OUT, 'formate', `${j.file}-${n}.jpg`), buf = Buffer.from(b64, 'base64');
+        fs.mkdirSync(path.dirname(out), {recursive: true});
+        if (fs.existsSync(out) && fs.readFileSync(out).equals(buf)) continue;
+        fs.writeFileSync(out, buf); console.log(`  geschrieben: assets\\og\\formate\\${j.file.replace(/\//g, '\\')}-${n}.jpg`);
+      }
+    }
+    // 3b) Tools (Wunsch 16.11.): 1:1 für Google – Ausschnitt rechts mit Heimer und Motiv, ohne Rahmen (sonst halb angeschnitten).
+    //     Der Titel links wäre im kleinen Bild neben dem Treffer ohnehin nicht lesbar → assets/og/formate/tools/<datei>-1x1.jpg
+    for (const j of jobs.filter(j => j.html && !j.jpg && !j.file.includes('/'))) {
+      current = j.html.replace('</head>', '<style>body::after,.l{display:none}</style></head>');   // .l = Textblock links (ragt sonst angeschnitten hinein)
+      await send('Page.navigate', {url: origin + '/__og?q=' + j.file}); await sleep(600);
+      await send('Runtime.evaluate', {expression: 'document.fonts.ready.then(()=>Promise.all([...document.images].map(i=>i.decode().catch(()=>{}))))', awaitPromise: true});
+      const fx = FOKUS[j.file] ?? 885, x = Math.max(0, Math.min(570, fx - 315));
+      const buf = Buffer.from((await send('Page.captureScreenshot', {format: 'jpeg', quality: 86, clip: {x, y: 0, width: 630, height: 630, scale: 1}})).result.data, 'base64');
+      const out = path.join(OUT, 'formate', 'tools', `${j.file}-1x1.jpg`); fs.mkdirSync(path.dirname(out), {recursive: true});
+      if (fs.existsSync(out) && fs.readFileSync(out).equals(buf)) continue;
+      fs.writeFileSync(out, buf); console.log(`  geschrieben: assets\\og\\formate\\tools\\${j.file}-1x1.jpg`);
     }
     // alte Cheatsheet-Bilder ohne Seite (z. B. frühere deutsche Fassungen) entfernen – nur bei einem vollständigen Lauf
     if (!process.argv[2]) { const keep = new Set(jobs.filter(j => j.site).map(j => path.basename(j.file) + '.jpg'));

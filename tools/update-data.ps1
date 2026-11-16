@@ -89,19 +89,37 @@ function J($x) {
 function Load($base, $tag, $lang) {
   $f = Join-Path $tmp "$tag-$lang.json"
   Step "Lade $tag $lang.json (ca. 25 MB) …"
-  Invoke-WebRequest "$base/cdragon/tft/$lang.json" -UseBasicParsing -OutFile $f
-  return $ser.DeserializeObject([IO.File]::ReadAllText($f, [Text.Encoding]::UTF8))
+  # Der Download bricht ab und zu mittendrin ab (12.11.: PBE-Datei nach 1,2 MB zu Ende → PBE-Prüfung fiel aus) – dann bis zu 4 Versuche
+  for ($try = 1; ; $try++) {
+    try {
+      Invoke-WebRequest "$base/cdragon/tft/$lang.json" -UseBasicParsing -OutFile $f -TimeoutSec 300
+      return $ser.DeserializeObject([IO.File]::ReadAllText($f, [Text.Encoding]::UTF8))
+    } catch {
+      $msg = ([string]$_.Exception.Message); if ($msg.Length -gt 140) { $msg = $msg.Substring(0, 140) + ' …' }   # nicht die halbe Datei ins Log schreiben
+      if ($try -ge 4) { throw "$tag $lang.json nach $try Versuchen nicht lesbar: $msg" }
+      Warn "Versuch ${try}: $lang.json unvollständig oder nicht erreichbar ($msg) – neuer Versuch in 30 s."
+      Start-Sleep -Seconds 30
+    }
+  }
 }
 function NewestSet($EN) {
-  return (@($EN['setData']) | Where-Object { $_['mutator'] -match '^TFTSet(\d+)$' } | ForEach-Object { [int]($_['mutator'] -replace '\D','') } | Measure-Object -Maximum).Maximum
+  # normal heißt ein Set "TFTSet18"; falls Riot ein neues Set mit Zusatz anlegt ("TFTSet19_…"), zählt es trotzdem – aber nur mit echten Champions
+  return (@($EN['setData']) | Where-Object { $_['mutator'] -match '^TFTSet(\d+)(_\w+)?$' -and @($_['champions']).Count -ge 20 } | ForEach-Object { [int]([regex]::Match([string]$_['mutator'], '^TFTSet(\d+)').Groups[1].Value) } | Measure-Object -Maximum).Maximum
+}
+# Eintrag eines Sets: zuerst genau "TFTSet<N>", sonst der Eintrag "TFTSet<N>_…" mit den meisten Champions
+function SetEntry($D, [int]$SetNo) {
+  $x = @($D['setData']) | Where-Object { $_['mutator'] -eq "TFTSet$SetNo" } | Select-Object -First 1
+  if ($x) { return $x }
+  return @($D['setData']) | Where-Object { $_['mutator'] -match "^TFTSet${SetNo}_" } | Sort-Object { @($_['champions']).Count } -Descending | Select-Object -First 1
 }
 
 # ======================= Ein Set aufbereiten und schreiben =======================
 function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$Base, [string]$Prefix) {
-  $sdEN = @($EN['setData']) | Where-Object { $_['mutator'] -eq "TFTSet$SetNo" } | Select-Object -First 1
-  $sdDE = @($DE['setData']) | Where-Object { $_['mutator'] -eq "TFTSet$SetNo" } | Select-Object -First 1
+  $sdEN = SetEntry $EN $SetNo
+  $sdDE = SetEntry $DE $SetNo
   if (-not $sdEN) { throw "Set $SetNo nicht in den Daten gefunden." }
-  Write-Host "  Set $SetNo · $Channel · Version $Ver"
+  if (-not $sdDE) { $sdDE = $sdEN; Warn "Set $SetNo gibt es noch nicht auf Deutsch – vorerst englische Texte." }
+  Write-Host "  Set $SetNo · $Channel · Version $Ver · $($sdEN['mutator'])"
   $enItem = @{}; foreach ($i in $EN['items']) { $enItem[$i['apiName']] = $i }
   $deItem = @{}; foreach ($i in $DE['items']) { $deItem[$i['apiName']] = $i }
 
@@ -112,6 +130,7 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
   $enChamps = NewObj; $enTraits = NewObj; $enItems = NewObj; $enAugs = NewObj
   foreach ($c in $sdEN['champions']) {
     $tr = @($c['traits']); $cost = [int]$c['cost']
+    if ($tr.Count -and $cost -gt 5 -and ([string]$c['name']) -notmatch '\(') { Warn "Champion $($c['name']) mit Kosten $cost übersprungen – Seite kennt nur 1–5." }
     if ($tr.Count -eq 0 -or $cost -lt 1 -or $cost -gt 5 -or ([string]$c['name']) -match '\(') { continue }
     $o = NewObj
     $o['api'] = [string]$c['apiName']; $o['n'] = [string]$c['name']; $o['c'] = $cost
