@@ -243,11 +243,13 @@ function rebuildComps(list){
   compByKey = {};
   comps.forEach(c=>{ const base = compNameSlug(c.name) || 'comp'; let k = base, n = 2; while(compByKey[k]) k = base + '-' + n++; c.key = k; compByKey[k] = c; });
 }
-// Eigene Seite pro Comp: /comps/<name>
+// Key pro Comp aus dem Namen (frühere Adresse /comps/<key>) – für alte Links und Weiterleitungen
 let compByKey = {};
 const compNameSlug = n => String(n || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/['’.]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const compKey = c => c.key;
-const compHref = c => '/comps/' + compKey(c);
+// Keine eigenen Comp-Seiten mehr (16.11.: Google hat sie nicht indexiert, Inhalt = Tierlist): Comp-Links öffnen die Comp aufgeklappt in der Tierlist.
+// Alte Adressen /comps/<key> leitet vercel.json dauerhaft auf /tierlist?comp=<key> um (tlOpenComp nimmt Key oder Slug)
+const compHref = c => '/tierlist?comp=' + c.slug;
 rebuildComps(tierSource.data.comps);
 const traitBy = Object.fromEntries(traits.map(t=>[t.n,t]));
 const costOf = u => (champBy[u]||{c:0}).c;
@@ -460,7 +462,7 @@ function panelHTML(c, page){   // page: auf der eigenen Comp-Seite (Varianten al
         ${card('Aufstellung', `<div class="cp-board">${boardHTML(c)}</div>`)}
         ${card('Alt Builds', c.alt.length?`<div class="cp-units cp-col">${c.alt.map(b=>unitHex(b,{sm:true})).join('')}</div>`:'<p class="note" style="text-align:center;margin:0">–</p>')}
       </div>
-      <div class="cp-actions">${page ? '' : `<a class="cp-names cp-page" href="${compHref(c)}">${L('Ganze Comp-Seite', 'Full comp page')} →</a>`}<button class="cp-names" type="button" data-builder="${c.slug}">⬡ ${L('Im Team Builder öffnen', 'Open in Team Builder')}<span></span></button><label class="cp-names"><input type="checkbox" data-names> ${L('Namen anzeigen', 'Show names')}</label></div>
+      <div class="cp-actions"><button class="cp-names" type="button" data-builder="${c.slug}">⬡ ${L('Im Team Builder öffnen', 'Open in Team Builder')}<span></span></button><label class="cp-names"><input type="checkbox" data-names> ${L('Namen anzeigen', 'Show names')}</label></div>
     </div>
   </div>`;
 }
@@ -616,6 +618,7 @@ function filterComps(){
 }
 // Aus dem Dashboard (/tierlist?comp=<slug>): in der Tierlist die Comp aufklappen statt eine eigene Seite zu öffnen
 function tlOpenComp(slug){
+  if(!compBySlug[slug] && compByKey[slug]) slug = compByKey[slug].slug;   // alte Comp-Adresse (/comps/<key>)
   let tile = $(`#tierRows .ct[data-slug="${slug}"]`);
   if(!tile && compBySlug[slug]){   // Filter oder Suche verstecken sie: zurücksetzen
     $('#compSearch').value = ''; setCompStyle('all');
@@ -624,7 +627,7 @@ function tlOpenComp(slug){
   if(!tile) return;
   if(!tile.classList.contains('sel')) openPanel(tile); else tlReveal(tile.closest('.tl-tier'));
 }
-function openComp(slug){   // Comp-Links (Suche, Champion-Seiten, Fenster) führen auf die eigene Comp-Seite
+function openComp(slug){   // Comp-Links (Suche, Champion-Seiten, Fenster) öffnen die Comp in der Tierlist
   const c = compBySlug[slug]; if(c) go(compHref(c));
 }
 // Comp-Seite (/comps/<key>): Kopf mit Carry, Tier und Spielstil, darunter dasselbe Panel wie in der Tierlist,
@@ -7714,8 +7717,8 @@ function route(){
   if(page==='tft-erklaert'){ page = 'erklaert'; if(sub) sub = unslug(ER_SLUG, sub); }   // TFT erklärt: Übersicht und Artikel
   // Champion-Seiten: /champions/<name>
   if(page==='champions' && sub){ page = 'champion'; }
-  // Comp-Seiten: /comps/<name>, /comps allein = Tierlist
-  if(page==='comps'){ page = sub ? 'comp' : 'tierlist'; }
+  // Comp-Seiten gibt es nicht mehr: /comps/<key> → Tierlist mit aufgeklappter Comp (online leitet schon vercel.json um, das hier gilt lokal und für alte interne Links)
+  if(page==='comps'){ if(sub && !FILE_MODE) history.replaceState(history.state, '', withLang('/tierlist') + '?comp=' + encodeURIComponent(sub)); page = 'tierlist'; sub = ''; }
   // alte Adressen weiter unterstützen
   if(['champions','items','traits'].includes(page)){ sub = page; page = 'bibliothek'; }
   if(page==='augments'){ sub = 'augments'; page = 'tierlist'; }

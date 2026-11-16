@@ -140,7 +140,8 @@ module.exports = (req, res) => {
   const base = (req.headers['x-forwarded-proto'] || 'https') + '://' + host;
   // Guides: Übersicht ab dem ersten erschienenen Guide, jeder Guide ab Freigabe – englisch nur mit fertiger Übersetzung
   const gOn = guidesOn(), aOn = articlesOn(), deOnly = new Set([...gOn.filter(g => !g.enOk).map(g => '/guides/' + g.de), ...aOn.filter(a => !a.en).map(a => a.p)]);
-  const paths = [...PAGES, ...nextSet(), ...news(), ...compPages(), ...champions(), ...patches(), ...(gOn.length ? ['/guides', ...gOn.map(g => '/guides/' + g.de)] : []), ...(aOn.length ? ['/tft-erklaert', ...aOn.map(a => a.p)] : [])];
+  // ohne Comp-Seiten (seit 16.11. nur noch in der Tierlist, /comps/… leitet dorthin um – compPages() bleibt für einen möglichen Neustart)
+  const paths = [...PAGES, ...nextSet(), ...news(), ...champions(), ...patches(), ...(gOn.length ? ['/guides', ...gOn.map(g => '/guides/' + g.de)] : []), ...(aOn.length ? ['/tft-erklaert', ...aOn.map(a => a.p)] : [])];
   const alt = p => (deOnly.has(p) ? ['de', p, 'x-default', p] : ['de', p, 'en', enPath(p), 'x-default', p]).reduce((s, v, i, a) => i % 2 ? s : s + `\n    <xhtml:link rel="alternate" hreflang="${v}" href="${esc(base + a[i + 1])}"/>`, '');
   const lm = lastmods(), img = ogImages();
   const entry = (loc, p) => { const d = modOf(p, lm), im = img[loc];
