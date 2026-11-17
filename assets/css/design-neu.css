@@ -2142,3 +2142,8 @@ body.nd-mini .nds-fly .nds-soon{display:inline-block}
 @media (max-width:1300px){.dsh-row4 .dsh-clist{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:900px){.dsh-row4{grid-template-columns:minmax(0,1fr)}.dsh-ptop{min-height:0;aspect-ratio:16/8}}
 @media (max-width:640px){.dsh-xg{grid-template-columns:minmax(0,1fr)}.dsh-row4 .dsh-clist{grid-template-columns:minmax(0,1fr)}.dsh-xc.pic .dsh-xq{font-size:1.15rem}}
+
+/* 7-Kosten-Champions (ab Set 19) – Kopien der .c5-Regeln mit --c7 */
+.dsh-hx.c7{--cc:var(--c7)}.dsh-cb.c7{--cc:var(--c7)}.cp2-sq .c7{border-color:var(--c7)}.gt-ic.c7{border-color:var(--c7)}.chp2-pic.c7{border-color:var(--c7)}
+.c7 .chp2-stage{--cc:var(--c7)}.chp2-strip .c7{border-color:var(--c7)}.chp2-strip a.on.c7{--g:var(--c7)}.chp2-sep.c7{--tc:var(--c7)}.chp2-stt.c7{--tc:var(--c7)}
+.chp2-trm .c7{border-color:var(--c7)}.chp2-mates .c7{border-color:var(--c7)}.chp2-pt .c7 i{border-color:var(--c7)}.chp2-units .c7{border-color:var(--c7)}

@@ -2117,7 +2117,7 @@ function renderChampV2(){
       </div>
       <div class="cv-filters">
         <button type="button" class="cv-chip on" data-cvcost="all">${L('Alle', 'All')}<span></span></button>
-        ${[1,2,3,4,5].map(c=>`<button type="button" class="cv-chip cv-cost c${c}" data-cvcost="${c}" title="${c} Gold"><i></i>${c}<span></span></button>`).join('')}
+        ${[1,2,3,4,5, ...(champions.some(x=>x.c===7) ? [7] : [])].map(c=>`<button type="button" class="cv-chip cv-cost c${c}" data-cvcost="${c}" title="${c} Gold"><i></i>${c}<span></span></button>`).join('')}
         ${CV_TRAITS().map(cvDropdown).join('')}
         <input class="cv-search" id="cvSearch" type="search" placeholder="${L('Champion oder Trait …', 'Champion or trait …')}" aria-label="${L('Champion oder Trait suchen', 'Search champion or trait')}" autocomplete="off">
       </div>
@@ -6929,12 +6929,12 @@ function nsDates(n){
   const pbe = all.find(x=>new RegExp(`Set ${n} PBE`).test(ev(x))) || (m ? {id:'pbe', d:berlinTime(+m[1], +m[2], +m[3], 20, 0), est:!!sd.est} : undefined);
   return {pbe, live:all.find(x=>x.id === n + '.1')};
 }
-const NS_COST = ['#9aa4b2', '#2bb673', '#2f8cf0', '#b066f3', '#f2a516'];
+const NS_COST = {1:'#9aa4b2', 2:'#2bb673', 3:'#2f8cf0', 4:'#b066f3', 5:'#f2a516', 7:'#ff6ebe'};   // 7: Set 19 (Baron Nashor, Rakan, Smeech, Sona)
 function nsHTML(n, D){
   const now = new Date(), {pbe, live} = nsDates(n), day = d => cdDay(d, {weekday:'long', day:'numeric', month:'long', year:'numeric'});
   const phase = live && live.d <= now ? 'live' : pbe && pbe.d <= now ? 'pbe' : 'soon';
   const isNew = D && D.set !== TFT_DATA.set, old = new Set(isNew ? champions.map(c=>c.n) : []);
-  const ch = D ? (D.champions || []).filter(c=>c.c >= 1 && c.c <= 5) : [], tr = D ? (D.traits || []).filter(t=>t.bp && t.bp.length) : [], au = D ? (D.augments || []).length : 0;
+  const ch = D ? (D.champions || []).filter(c=>NS_COST[c.c]) : [], tr = D ? (D.traits || []).filter(t=>t.bp && t.bp.length) : [], au = D ? (D.augments || []).length : 0;
   const img = p => p ? (/^https?:/.test(p) ? p : (D.cdn || '') + p) : '';
   const back = ch.filter(c=>old.has(c.n)).length;
   const card = (k, t, d, sub) => `<div class="ns-date${k === phase || (k === 'pbe' && phase === 'soon') ? ' on' : ''}"><small>${t}${d && d.est ? ' · ' + L('voraussichtlich', 'expected') : ''}</small><b>${d ? esc(day(d.d)) : L('Termin folgt', 'Date to follow')}</b>${d ? `<span>${d.d <= now ? sub[1] : cdDays(d.d)}</span>` : ''}</div>`;
@@ -6950,7 +6950,7 @@ function nsHTML(n, D){
     ${D && ch.length ? `<section class="ns-box"><div class="ns-hd"><h2>${L(`Alle ${ch.length} Champions von Set ${n}`, `All ${ch.length} champions of Set ${n}`)}</h2>
         ${isNew ? `<button type="button" class="btn btn-ghost" data-set-pick="${n}">${L(`Seite auf Set ${n} umschalten`, `Switch the site to Set ${n}`)}</button>` : ''}</div>
         ${phase !== 'live' ? `<p class="ns-note">${L('PBE-Daten: Champions, Werte und Traits können sich bis zum Release noch ändern.', 'PBE data: champions, stats and traits can still change until release.')}</p>` : ''}
-        ${[1, 2, 3, 4, 5].map(k=>{ const l = ch.filter(c=>c.c === k).sort((a, b)=>a.n.localeCompare(b.n)); return l.length ? `<div class="ns-cost" style="--c:${NS_COST[k - 1]}"><h3>${k} Gold <small>${l.length} Champions</small></h3><div class="ns-chs">${l.map(c=>`<div class="ns-ch">
+        ${[1, 2, 3, 4, 5, 7].map(k=>{ const l = ch.filter(c=>c.c === k).sort((a, b)=>a.n.localeCompare(b.n)); return l.length ? `<div class="ns-cost" style="--c:${NS_COST[k]}"><h3>${k} Gold <small>${l.length} Champions</small></h3><div class="ns-chs">${l.map(c=>`<div class="ns-ch">
           <img src="${esc(img(c.tile || c.sq))}" alt="${esc(c.n)}" width="64" height="64" loading="lazy"><b>${esc(c.n)}</b>${isNew ? `<em class="${old.has(c.n) ? 'back' : 'new'}">${old.has(c.n) ? L('zurück', 'returning') : L('neu', 'new')}</em>` : ''}<small>${(c.t || []).map(esc).join(' · ')}</small></div>`).join('')}</div></div>` : ''; }).join('')}</section>
       ${tr.length ? `<section class="ns-box"><h2>${L(`Alle ${tr.length} Traits von Set ${n}`, `All ${tr.length} traits of Set ${n}`)}</h2><div class="ns-trs">${[...tr].sort((a, b)=>L(a.de || a.n, a.n).localeCompare(L(b.de || b.n, b.n))).map(t=>`<div class="ns-tr">${t.icon ? `<img src="${esc(img(t.icon))}" alt="" width="32" height="32" loading="lazy">` : ''}<b>${esc(L(t.de || t.n, t.n))}</b><small>${t.bp.join(' / ')}</small></div>`).join('')}</div>
         ${au ? `<p class="ns-note">${L(`Dazu ${au} Augments in den Spieldaten von Set ${n}.`, `Plus ${au} augments in the Set ${n} game data.`)}</p>` : ''}</section>` : ''}`
@@ -7115,11 +7115,13 @@ function nwPolls(root){
 }
 function nwHTML(p){
   const body = nwL(p.body), heads = body.filter(b=>b.k === 'h');
+  // Aufbau wie bei den Erklär-Artikeln (Wunsch 17.11.): Überschrift, Meta-Text, Autor, darunter das Titelbild – ohne Rahmen
   return `<article class="nw"><div class="crumb"><a href="/">Home</a> / <a href="/tft-set-${p.set}">Set ${p.set}</a> / News</div>
-    <figure class="nw-hero"><img src="${p.img}" alt="${esc(nwL(p.alt))}" width="1200" height="630"></figure>
+    <header class="er-head">
     <h1 class="nw-h1">${esc(nwL(p.title))}</h1>
     <p class="nw-lead" data-meta>${esc(nwL(p.meta))}</p>
-    <div class="nw-by"><a href="${PATCH_AUTHOR.href}"><img src="${PATCH_AUTHOR.img}" alt="Claudio „CrazYSlayt“" width="44" height="44"></a><span><a href="${PATCH_AUTHOR.href}">Claudio „CrazYSlayt“</a><small>${esc(nwDay(p.date))} · TFT Challenger</small></span></div>
+    <div class="nw-by"><a href="${PATCH_AUTHOR.href}"><img src="${PATCH_AUTHOR.img}" alt="Claudio „CrazYSlayt“" width="44" height="44"></a><span><span class="nw-by-n">${L('Von', 'By')} <a href="${PATCH_AUTHOR.href}">Claudio „CrazYSlayt“</a> · TFT Challenger · Coach</span><small>${esc(nwDay(p.date))}</small></span></div>
+    <figure class="nw-hero er-hero"><img src="${p.img}" alt="${esc(nwL(p.alt))}" width="1200" height="630"></figure></header>
     <section class="tool-seo ag-art nw-art" aria-label="${esc(nwL(p.title))}"><div class="ts-main">${body.map(b=>NW_BLOCK[b.k](b)).join('')}
       <p class="art-note">${L('Quelle', 'Source')}: <a href="${nwL(p.src.url)}" target="_blank" rel="noopener">Riot Games, „${esc(nwL(p.src.name))}“</a>, ${esc(nwDay(p.src.date))}. ${L('Bilder und Videos: Riot Games.', 'Images and videos: Riot Games.')}</p></div>
       <aside class="ts-side art-side"><nav class="art-toc" aria-label="${L('Inhalt', 'Contents')}"><b>${L('Inhalt', 'Contents')}</b><ol>${heads.map(b=>`<li><a href="#nwa-${b.id}" data-toc="nwa-${b.id}">${esc(b.t)}</a></li>`).join('')}</ol></nav></aside></section></article>`;

@@ -8,7 +8,7 @@
   --accent:#3b82f6; --accent-2:#6aa8ff; --accent-soft:rgba(59,130,246,.18);
   --gold:#f2c14e; --gold-soft:rgba(242,193,78,.16);
   --up:#4ade80; --down:#f87171;
-  --c1:#8a94a8; --c2:#22a35a; --c3:#2f80ed; --c4:#a855f7; --c5:#f2c14e;
+  --c1:#8a94a8; --c2:#22a35a; --c3:#2f80ed; --c4:#a855f7; --c5:#f2c14e; --c7:#ff6ebe;
   --radius:12px; --maxw:1320px;
 }
 *{box-sizing:border-box}
@@ -3977,3 +3977,9 @@ figure.nw-hero.er-hero img{display:block;width:100%;height:auto;border-radius:16
 .nw-tg.c4 span{border-color:rgba(192,100,230,.6)}.nw-tg.c5 span{border-color:rgba(242,193,78,.65)}.nw-tg.c7 span{border-color:rgba(255,110,190,.7);background:rgba(255,110,190,.1)}
 .nw-tg.c1>b{color:#c3ccd5}.nw-tg.c2>b{color:#5ee6a0}.nw-tg.c3>b{color:#6ab8ff}.nw-tg.c4>b{color:#d59bff}.nw-tg.c5>b{color:#f2c14e}.nw-tg.c7>b{color:#ff8fcf}
 @media (max-width:640px){.nw-tg{grid-template-columns:minmax(0,1fr);gap:8px}}
+
+/* 7-Kosten-Champions (ab Set 19: Baron Nashor, Rakan, Smeech, Sona) – Kopien der .c5-Regeln mit --c7 */
+.av.c7{border-color:var(--c7)}.hex.c7 .hex-bg{background:var(--c7)}.hx.c7{background:var(--c7)}.cdot.c7{background:var(--c7)}
+.rd-odds span.c7{background:var(--c7);color:#1a1405}.gd-cost .c7{border-color:var(--c7)}.chp-hero.c7{--cc:var(--c7)}.cb.c7{--cc:var(--c7)}
+.cv-cost.c7,.cv-tile.c7{--cc:var(--c7)}.css-c img.c7{border-color:var(--c7)}.csx-ic.chu.c7 img{border-color:var(--c7)}
+.csp-p.c7{--cc:#ff6ebe;box-shadow:0 0 20px rgba(255,110,190,.45),inset 0 1px 0 rgba(255,255,255,.12)}.hm.c7{--hc:255,110,190}

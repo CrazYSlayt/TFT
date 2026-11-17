@@ -130,8 +130,10 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
   $enChamps = NewObj; $enTraits = NewObj; $enItems = NewObj; $enAugs = NewObj
   foreach ($c in $sdEN['champions']) {
     $tr = @($c['traits']); $cost = [int]$c['cost']
-    if ($tr.Count -and $cost -gt 5 -and ([string]$c['name']) -notmatch '\(') { Warn "Champion $($c['name']) mit Kosten $cost übersprungen – Seite kennt nur 1–5." }
-    if ($tr.Count -eq 0 -or $cost -lt 1 -or $cost -gt 5 -or ([string]$c['name']) -match '\(') { continue }
+    # Kosten 1–5 plus 7 (Set 19: Baron Nashor, Rakan, Smeech, Sona); alles andere sind Beschwörungen/Platzhalter
+    $costOk = ($cost -ge 1 -and $cost -le 5) -or $cost -eq 7
+    if ($tr.Count -and -not $costOk -and $cost -gt 5 -and ([string]$c['name']) -notmatch '\(') { Warn "Champion $($c['name']) mit Kosten $cost übersprungen – Seite kennt nur 1–5 und 7." }
+    if ($tr.Count -eq 0 -or -not $costOk -or ([string]$c['name']) -match '\(') { continue }
     $o = NewObj
     $o['api'] = [string]$c['apiName']; $o['n'] = [string]$c['name']; $o['c'] = $cost
     $o['t'] = [string[]]@($tr | ForEach-Object { [string]$_ })
