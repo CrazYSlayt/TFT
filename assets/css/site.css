@@ -3983,3 +3983,9 @@ figure.nw-hero.er-hero img{display:block;width:100%;height:auto;border-radius:16
 .rd-odds span.c7{background:var(--c7);color:#1a1405}.gd-cost .c7{border-color:var(--c7)}.chp-hero.c7{--cc:var(--c7)}.cb.c7{--cc:var(--c7)}
 .cv-cost.c7,.cv-tile.c7{--cc:var(--c7)}.css-c img.c7{border-color:var(--c7)}.csx-ic.chu.c7 img{border-color:var(--c7)}
 .csp-p.c7{--cc:#ff6ebe;box-shadow:0 0 20px rgba(255,110,190,.45),inset 0 1px 0 rgba(255,255,255,.12)}.hm.c7{--hc:255,110,190}
+
+/* News: Titelbild bündig mit dem Rahmen (Wunsch 17.11.) – volle Rahmenbreite, Ecken oben wie der Rahmen */
+.nw .er-frame figure.nw-hero.er-hero{margin:22px -33px 26px}
+.nw .er-frame figure.nw-hero.er-hero img{border-radius:0;border-left:0;border-right:0}
+@media (max-width:900px){.nw .er-frame figure.nw-hero.er-hero{margin:18px -19px 22px}}
+.ab-si{display:inline-block;width:1.05em;height:1.05em;margin:0 2px 0 1px;vertical-align:-.17em}   /* Riots Werte-Symbol in Fähigkeitstexten (Wunsch 18.11.) */

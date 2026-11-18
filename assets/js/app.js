@@ -1864,7 +1864,7 @@ function renderSetSwitcher(){
     <div class="set-menu" id="setMenu" hidden><small class="set-menu-h">Set wählen</small>${sets.map(s=>`<button type="button" class="${s.set===cur?'on':''}" data-set-pick="${s.set}"><b>Set ${s.set}</b><span class="set-st ${s.status}">${SET_LABEL[s.status]||esc(s.status)}</span><span></span></button>`).join('')}${setSoonHTML(sets, cur)}</div>`;
   document.querySelectorAll('[data-setno]').forEach(e=>{ e.textContent = cur; });
   const live = sets.find(s=>s.status==='live'), ban = $('#setBanner');
-  if(st!=='live' && live && live.set!==cur){
+  if(st==='archiv' && live && live.set!==cur){   // PBE: kein Hinweis-Banner mehr (Wunsch 17.11.), das Set-Schild oben zeigt „PBE“
     ban.className = 'set-banner ' + st; ban.hidden = false;
     ban.innerHTML = (st==='pbe'
       ? `<b>PBE-Vorschau:</b> Set ${cur} ist noch nicht live – Champions, Items und Werte können sich bis zum Release ändern.`
@@ -2123,7 +2123,7 @@ function renderChampV2(){
       </div>
       <div class="cv-count" id="cvCount"></div>
       <div class="cv-grid" id="cvGrid">${list.map(c=>`<a class="cv-tile c${c.c}" href="${champHref(c.n)}" data-n="${esc(c.n)}" data-c="${c.c}" data-t="${esc(c.t.join('|'))}" aria-label="${esc(c.n)}">
-        <span class="cv-hx"><span class="cv-in" style="background-image:url('${champImg(c.n) || champFallback(c.n)}')"></span></span>
+        <span class="cv-hx"><span class="cv-in" style="background-image:url('${champImg(c.n) || champFallback(c.n)}')"></span></span>${(CH_DATA[c.n] || {}).unlock ? '<i class="ch-lock cv-lock" title="' + esc(L('Freischaltbar', 'Unlockable')) + '"></i>' : ''}
         ${c.t[0] ? `<span class="cv-tr">${traitHex(c.t[0], 'base', 26)}</span>` : ''}
         <span class="cv-label"><b>${esc(c.n)}</b><small><i class="cdot c${c.c}"></i>${c.c} Gold · ${c.t.map(esc).join(' · ')}</small></span>
       </a>`).join('')}</div>
@@ -2251,6 +2251,7 @@ const champRange = n => (CH_DATA[n] && CH_DATA[n].st && CH_DATA[n].st.range) || 
 const isMelee = n => { const r = champRange(n); return r > 0 && r <= 2; };
 const rangeLabel = n => { const r = champRange(n); return r ? `${r <= 2 ? 'Nahkampf' : 'Fernkampf'} · ${r} ${r===1 ? 'Feld' : 'Felder'}` : ''; };
 const SCALE_LBL = {AP:'AP', AD:'AD', Health:'Leben', Armor:'Rüstung', MR:'MR', AS:'Angriffstempo', Mana:'Mana', Crit:'Krit'};
+const SCALE_ICON = {ap:'ap', ad:'ad', health:'hp', hp:'hp', armor:'armor', mr:'mr', magicresist:'mr', as:'as', attackspeed:'as', mana:'mana', crit:'crit', critchance:'crit'};
 // Fähigkeitstext mit Werten pro Stern (1★ / 2★ / 3★). Werte aus den Riot-Daten oder von Hand in data/custom-<Set>.js (abilities)
 function abilityHTML(n){
   const ab = (CH_DATA[n] || {}).ab; if(!ab || !ab.d) return '';
@@ -2264,7 +2265,8 @@ function abilityHTML(n){
       return '\u0004' + (arr.every(x=>x===arr[0]) ? [arr[0]] : arr).map(fmtNum).join(' / ') + (mul ? ' %' : '') + '\u0005';
     });
   return fmtDesc(s, {})
-    .replace(/\u0002([A-Za-z]+)\u0003/g, (m,k)=>`<span class="ab-sc">${esc(SCALE_LBL[k] || k)}</span>`)
+    // Skalierung als Riots Werte-Symbol (AD, AP, Leben …) wie im Spiel; unbekannte Werte weiter als Text-Schild
+    .replace(/\u0002([A-Za-z]+)\u0003/g, (m,k)=>{ const ic = SCALE_ICON[k.toLowerCase()]; return ic ? `<img class="ab-si" src="assets/icons/tft/stat-${ic}.png" alt="${esc(SCALE_LBL[k] || k)}" title="${esc(SCALE_LBL[k] || k)}" width="16" height="16">` : `<span class="ab-sc">${esc(SCALE_LBL[k] || k)}</span>`; })
     .replace(/\u0004([^\u0005]*)\u0005/g, '<b class="ab-val">$1</b>')
     .replace(/\u0006/g, '<span class="ab-q" title="Diesen Wert liefert Riot in den offiziellen Set-Daten nicht mit">?</span>')
     .replace(/\s*\u0007\s*/g, '<br>');
@@ -2427,6 +2429,11 @@ const champCompsOf = n => comps.filter(x=>!x.hidden && (x.board||[]).some(b=>b.u
    auf der Mitte der Scheibe, auch wenn ein Fuß in der Luft ist –, s = Maßstab, damit alle Champions gleich groß wirken. --- */
 const CHP_V2 = true;   // neue Champion-Seite für alle Champions mit Posen (data/champions3d-<Set>.js); ohne Posen bleibt die alte Seite
 const CH_RENDER = window.CH_RENDER_DATA || {};
+// Set ohne 3D-Renders (Set 19 von Hand, tools/set19/bauen.js): neue Seite trotzdem, auf dem Podest das 512er Bild aus dem Client (Wunsch 17.11.)
+const chpArt = n => !!(TFT_DATA.manual && !CH_RENDER[n] && champImg(n));
+const chpOn = n => CHP_V2 && !!(CH_RENDER[n] || chpArt(n));
+// Kleines Quadrat für Leiste und Trait-Partner: eigene Icons (tools/modelle/icons.js), im Set von Hand gleich das Set-Bild (spart 404-Anfragen)
+const chSqUrl = n => TFT_DATA.manual && champImg(n) ? champImg(n) : 'assets/img/champions-square/' + champSlug(n) + '.webp';
 const CHP_COST_SCALE = [0, .8, .86, .92, .98, 1.05];
 const CHP_POSE = {idle:['Idle', 'Idle'], attack:['Angriff', 'Attack'], spell:['Fähigkeit', 'Ability'], spider:['Spinne', 'Spider']};
 // Größe begrenzen: die Figur darf über dem Podest höchstens CHP_MAX_H px hoch sein (Bühne 780, Podestfläche bei ~172 von unten, darüber der Posen-Schalter) –
@@ -2457,8 +2464,11 @@ function chpRole(n){
   return {icon: (TR.roles[rk] || {}).icon, name: rk ? rk.replace(/_.*$/, '').replace(/([a-z])([A-Z])/g, '$1 $2') : gtRole(n),
     line: st ? (st.range <= 2 && (TFT_CUSTOM_SET.combatRoles || {})[n] !== 'assassin' ? 'Frontline' : 'Backline') : ''};
 }
+// Erster Satz der Fähigkeit als Kurzfassung (ohne Werte und Symbole), für Sets ohne eigene Kurztexte
+function abShortAuto(n){ const t = plainDesc(String((CH_DATA[n] || {}).ab.d).replace(/\\n/g, ' ').replace(/%i:[^%]*%/g, '').replace(/@[^@]*@%?/g, '')).replace(/\s+([,.])/g, '$1').replace(/\s{2,}/g, ' ');
+  const m = t.match(/^.{20,180}?[.!](?=\s|$)/); return m ? m[0] : t.slice(0, 160); }
 function chp2HTML(c, x){
-  const n = c.n, d = CH_DATA[n] || {}, st = d.st, ab = d.ab, r = CH_RENDER[n], S = TFT_DATA.set;
+  const n = c.n, d = CH_DATA[n] || {}, st = d.st, ab = d.ab, r = CH_RENDER[n] || [], S = TFT_DATA.set;
   const stat = (ic, l, v) => `<div class="chp2-st">${ic}<small>${l}</small><b>${v}</b></div>`, si = k => `<img src="assets/icons/tft/stat-${k}.png" alt="" width="20" height="20">`;
   const stars = (v, m) => [v, v * m, v * m * m].map(y=>fmtNum(Math.round(y))).join(' / ');
   const stats = st ? [stat(si('hp'), L('Leben', 'Health'), stars(st.hp, 1.8)), stat(si('ad'), L('Angriffsschaden', 'Attack damage'), stars(st.ad, 1.5)), stat(si('as'), L('Angriffstempo', 'Attack speed'), fmtNum(st.as)),
@@ -2477,7 +2487,7 @@ function chp2HTML(c, x){
   const traitsHTML = c.t.map(tn=>{ const t = traitBy[tn]; if(!t) return ''; const mates = champions.filter(m=>m.n !== n && m.t.includes(tn)).sort((a, b)=>a.c - b.c || a.n.localeCompare(b.n));
     return `<div class="chp2-tf" data-ttt="${esc(tn)}" tabindex="0">${traitHex(tn, t.bp.length === 1 ? 'unique' : 'base', 54)}<span class="chp2-tfn">
       <span class="chp2-tft"><b>${esc(tn)}</b><small>${t.cat === 'class' ? L('Klasse', 'Class') : L('Ursprung', 'Origin')}</small></span><span class="bp">${bpHTML(t)}</span>
-      ${mates.length ? `<span class="chp2-trm">${mates.map(m=>`<a href="${champHref(m.n)}" class="c${m.c}" data-champ="${esc(m.n)}" aria-label="${esc(m.n)}" style="background-image:url('assets/img/champions-square/${champSlug(m.n)}.webp'),${champBg(m.n)}"></a>`).join('')}</span>` : ''}</span></div>`; }).join('');
+      ${mates.length ? `<span class="chp2-trm">${mates.map(m=>`<a href="${champHref(m.n)}" class="c${m.c}" data-champ="${esc(m.n)}" aria-label="${esc(m.n)}" style="background-image:url('${chSqUrl(m.n)}'),${champBg(m.n)}"></a>`).join('')}</span>` : ''}</span></div>`; }).join('');
   const {name: rname, line} = chpRole(n);
   // Comp: Name über die ganze Breite, darunter Spielweise und die teuersten Units
   const comp = k => `<button class="chp2-comp" data-comp="${k.slug}" style="--tc:${TIER_COL[k.tier]}"><b class="chp2-tier">${k.tier}</b><span><b>${esc(k.name)}</b>
@@ -2487,17 +2497,17 @@ function chp2HTML(c, x){
   const partners = cnt(x.cs.flatMap(k=>[...new Set(k.board.map(b=>b.u))].filter(u=>u !== n && !PLANTS[u] && champBy[u])), u=>u).slice(0, 8);
   const augs = cnt(x.cs.flatMap(k=>k.augs || []).filter(id=>augById[id]), id=>id).slice(0, 6);
   const trend = champPatchTrend(n), TREND = {buff:['Buff', 'Buff'], nerf:['Nerf', 'Nerf'], mix:['Angepasst', 'Adjusted']};
-  const short = ((TFT_CUSTOM_SET.abilityShort || {})[n] || {})[EN ? 'en' : 'de'];
+  const short = ((TFT_CUSTOM_SET.abilityShort || {})[n] || {})[EN ? 'en' : 'de'] || (TFT_DATA.manual && ab && ab.d ? abShortAuto(n) : '');
   const box = (cls, title, body) => `<section class="chp2-box chp2-b-${cls}">${title ? `<h2>${title}</h2>` : ''}${body}</section>`;
-  const fo = TL2_FOCUS[n], sq = `assets/img/champions-square/${champSlug(n)}.webp`;
+  const fo = TL2_FOCUS[n], sq = `${chSqUrl(n)}`;
   return `
     <div class="crumb"><a href="/">Home</a> / <a href="/bibliothek">${L('Bibliothek', 'Library')}</a> / ${esc(n)}</div>
     <section class="chp2-hero c${c.c}">
       <div class="chp2-left">
         <section class="chp2-box chp2-id"><span class="chp2-pic c${c.c}" style="background-image:url('${champImg(n) || champFallback(n)}')${fo ? `;background-position:${fo[0]}% ${fo[1]}%` : ''}"></span>
-          <div><h1 class="chp2-h1"><span class="chp2-hn${n.length > 9 ? ' long' : ''}">${esc(n)}</span> <span class="chp2-sub">TFT Set ${S} Build</span></h1>
+          <div><h1 class="chp2-h1"><span class="chp2-hn${n.length > 9 ? ' long' : ''}">${esc(n)}</span></h1>
             <div class="chp2-meta"><span class="chp2-cost"><span class="coin"></span>${c.c} Gold</span>${trend ? `<a class="chp2-trend ${trend.dir}" href="/patches/${patchSlug(trend.id)}" title="${L('Zu den Patch Notes', 'Open the patch notes')}">${L(...TREND[trend.dir])} · ${esc(trend.id)}</a>` : ''}</div>
-            <div class="chp2-tags">${c.t.map(t=>`<span class="chp2-tag" data-ttt="${esc(t)}">${traitHex(t, 'base', 18)}${esc(t)}</span>`).join('')}</div>
+            <div class="chp2-tags">${c.t.map(t=>`<span class="chp2-tag" data-ttt="${esc(t)}">${traitHex(t, 'base', 21)}${esc(t)}</span>`).join('')}</div>
             ${line || rname ? `<small class="chp2-role">${rr.icon ? `<img src="${rr.icon}" alt="" width="16" height="16">` : ''}${[rname, line].filter(Boolean).map(esc).join(' · ')}</small>` : ''}</div></section>
         ${ab || stats ? `<section class="chp2-box chp2-b-ab">
           ${ab ? `<div class="chp2-abh">${d.api ? `<img src="assets/img/abilities/${d.api}.png" alt="" width="44" height="44" onerror="this.remove()">` : ''}<span><small>${L('Fähigkeit', 'Ability')}</small><b>${esc(ab.n)}</b></span>${st ? `<span class="chp2-mana">${GT_MANA}${st.mana0} / ${st.mana}</span>` : ''}</div>
@@ -2506,12 +2516,14 @@ function chp2HTML(c, x){
           <button type="button" class="chp2-abx" aria-expanded="false"><span>${L('Ganze Fähigkeit', 'Full ability')}</span><i class="chp2-chev" aria-hidden="true"></i></button>` : ''}
           ${stats ? `<h2>${L('Werte', 'Stats')} <small>1★ / 2★ / 3★</small></h2><div class="chp2-stats">${stats}</div>` : ''}</section>` : ''}
       </div>
-      <div class="chp2-stage intro">
+      <div class="chp2-stage intro${d.unlock ? ' has-unlock' : ''}">
+        ${d.unlock ? `<div class="chp2-unlock"><span class="chp2-ul-ic" aria-hidden="true"><img src="assets/img/set19/unlock.png" alt="" width="40" height="40"></span><span><small>${L('Freischaltbar', 'Unlockable')}</small><b>${esc(L(d.unlock.de, d.unlock.en))}</b></span></div>` : ''}
         ${r.length > 1 ? `<div class="chp2-pose" role="group" aria-label="${L('Pose', 'Pose')}">${r.map((p, i)=>`<button type="button" data-pose="${i}" aria-pressed="${!i}">${L(...(CHP_POSE[p.k] || [p.k, p.k]))}</button>`).join('')}</div>` : ''}
         <div class="chp2-unit">
-          <img class="chp2-pod" src="assets/img/podest-${c.c}.webp" alt="" width="1000" height="260">
+          <img class="chp2-pod" src="assets/img/podest-${Math.min(c.c, 5)}.webp" alt="" width="1000" height="260">
           <span class="chp2-shadow" aria-hidden="true"></span>
           ${r.map((p, i)=>`<div class="chp2-fig${i ? '' : ' on'}" style="--fx:${p.fx};--fb:${p.fb};--s:${chp2Scale(c, p).toFixed(3)}"><img src="assets/img/champions3d/${champSlug(n)}${p.f || ''}.webp" alt="${i ? '' : `${esc(n)} – ${L(`TFT Set ${S} Modell`, `TFT Set ${S} model`)}`}" width="900" height="900"${i ? ' loading="lazy"' : ''}></div>`).join('')}
+          ${r.length ? '' : `<div class="chp2-fig chp2-art on"><img src="${champImg(n)}" alt="${esc(n)} – TFT Set ${S}" width="512" height="512"></div>`}
         </div>
       </div>
       <div class="chp2-right">
@@ -2523,7 +2535,7 @@ function chp2HTML(c, x){
         // dreimal hintereinander für endloses Scrollen (chp2Strip springt unbemerkt in die mittlere Runde zurück); nur die mittlere ist für Screenreader/Tab sichtbar.
         // Vor jeder Kosten-Gruppe ein Trenner mit Münze und Zahl, damit man in der endlosen Leiste weiß, wo man ist. Bild: kleines Icon aus den Spieldateien (tools/modelle/icons.js), sonst Splash
         return `<nav class="chp2-strip" aria-label="${L('Alle Champions', 'All champions')}"><div class="chp2-strip-in">${[0, 1, 2].map(k=>list.map((m, i)=>{
-          return `${!i || list[i - 1].c !== m.c ? `<span class="chp2-sep c${m.c}" aria-hidden="true"><span class="coin"></span>${m.c}</span>` : ''}<a href="${champHref(m.n)}" class="c${m.c}${m.n === n ? ' on' : ''}" draggable="false" data-n="${esc(m.n)}" data-c="${m.c}" data-t="${esc(m.t.join(' · '))}" aria-label="${esc(m.n)}"${k === 1 ? (m.n === n ? ' aria-current="page"' : '') : ' aria-hidden="true" tabindex="-1"'} style="background-image:url('assets/img/champions-square/${champSlug(m.n)}.webp'),${champBg(m.n)}"></a>`; }).join('')).join('')}</div></nav>`; })()}
+          return `${!i || list[i - 1].c !== m.c ? `<span class="chp2-sep c${m.c}" aria-hidden="true"><span class="coin"></span>${m.c}</span>` : ''}<a href="${champHref(m.n)}" class="c${m.c}${m.n === n ? ' on' : ''}" draggable="false" data-n="${esc(m.n)}" data-c="${m.c}" data-t="${esc(m.t.join(' · '))}" aria-label="${esc(m.n)}"${k === 1 ? (m.n === n ? ' aria-current="page"' : '') : ' aria-hidden="true" tabindex="-1"'} style="background-image:url('${chSqUrl(m.n)}'),${champBg(m.n)}">${(CH_DATA[m.n] || {}).unlock ? '<i class="ch-lock" aria-hidden="true"></i>' : ''}</a>`; }).join('')).join('')}</div></nav>`; })()}
         <button type="button" class="chp2-arr l" aria-label="${L('Champions nach links scrollen', 'Scroll champions left')}"></button><button type="button" class="chp2-arr r" aria-label="${L('Champions nach rechts scrollen', 'Scroll champions right')}"></button>
         <div class="chp2-stt" aria-hidden="true"></div></div>
     </section>
@@ -2531,7 +2543,7 @@ function chp2HTML(c, x){
       ${(()=>{ const m = pageMeta('champion', champSlug(n)); return m && m[1] ? `<p class="chp2-lead" data-meta>${esc(tr(m[1]))}</p>` : ''; })()}
       <div class="chp2-more-g">
         ${partners.length ? box('partners', L('Gute Partner', 'Best partners'), `<div class="chp2-pt">${partners.map(([u, k])=>{ const m = champBy[u];
-          return `<a href="${champHref(u)}" class="c${m.c}" data-champ="${esc(u)}"><i style="background-image:url('assets/img/champions-square/${champSlug(u)}.webp'),${champBg(u)}"></i><span>${esc(u)}</span><small>${L(`in ${k} ${k === 1 ? 'Comp' : 'Comps'}`, `in ${k} ${k === 1 ? 'comp' : 'comps'}`)}</small></a>`; }).join('')}</div>`) : ''}
+          return `<a href="${champHref(u)}" class="c${m.c}" data-champ="${esc(u)}"><i style="background-image:url('${chSqUrl(u)}'),${champBg(u)}"></i><span>${esc(u)}</span><small>${L(`in ${k} ${k === 1 ? 'Comp' : 'Comps'}`, `in ${k} ${k === 1 ? 'comp' : 'comps'}`)}</small></a>`; }).join('')}</div>`) : ''}
         ${augs.length ? box('augs', L('Beste Augments', 'Best augments'), `<div class="chp2-ag">${augs.map(([id, k])=>{ const a = augById[id];
           return `<button class="chp2-agi" data-aug="${a.id}"><img src="${augImg(a)}" alt="" loading="lazy"><span><b>${esc(L(a.de || a.en, a.en))}</b><small>${L(`in ${k} ${k === 1 ? 'Comp' : 'Comps'}`, `in ${k} ${k === 1 ? 'comp' : 'comps'}`)}</small></span></button>`; }).join('')}</div>`) : ''}
         ${riot.length ? box('riot', `${L('Riot-Empfehlung', 'Riot recommendation')} <small>${rr.icon ? `<img src="${rr.icon}" alt="" width="14" height="14">` : ''}${esc(rname || '')}</small>`,
@@ -2555,7 +2567,7 @@ let chpStripFrom = null;
 function chp2TipHTML(n){
   const c = champBy[n], fo = TL2_FOCUS[n], ro = chpRole(n), cs = champCompsOf(n), carry = cs.some(x=>x.carry === n);
   const best = cs.map(x=>x.tier).sort((a, b)=>TIER_ORDER.indexOf(a) - TIER_ORDER.indexOf(b))[0];
-  const img = [champImg(n), `assets/img/champions-square/${champSlug(n)}.webp`].filter(Boolean).map(u=>`url('${u}')`).join(',');
+  const img = [champImg(n), `${chSqUrl(n)}`].filter(Boolean).map(u=>`url('${u}')`).join(',');
   return `<span class="chp2-stt-img" style="background-image:${img}${fo ? `;background-position:${fo[0]}% ${fo[1]}%` : ''}"><span class="chp2-stt-c"><span class="coin"></span>${c.c}</span><b>${esc(n)}</b></span>
     <span class="chp2-stt-bd"><span class="chp2-stt-tr">${c.t.map(t=>`<span>${traitHex(t, 'base', 18)}${esc(t)}</span>`).join('')}</span>
       ${ro.name || ro.line ? `<small class="chp2-stt-ro">${ro.icon ? `<img src="${ro.icon}" alt="" width="14" height="14">` : ''}${[ro.name, ro.line].filter(Boolean).map(esc).join(' · ')}</small>` : ''}
@@ -2745,7 +2757,7 @@ function renderChampPage(slug){
       </aside>
     </section>`;
   // Version 2 (Prototyp, nur lokal und mit Render): neuer Kopf und Reiter, der Textblock für Google bleibt derselbe
-  if(CHP_V2 && CH_RENDER[n]){
+  if(chpOn(n)){
     const seo = box.querySelector('section.tool-seo');
     box.innerHTML = chp2HTML(c, {abHTML, top, best, cs, patch, prev, next});
     if(seo) box.append(seo);
@@ -2777,7 +2789,7 @@ function renderChampPage(slug){
     // Traits: der aufgeklappte Text liegt als Feld über dem Inhalt darunter; immer nur einer offen
     box.querySelectorAll('.chp2-tr').forEach(dt=>dt.addEventListener('toggle', ()=>{ if(dt.open) chp2Close(dt); }));
   }
-  box.classList.toggle('chp2-on', !!(CHP_V2 && CH_RENDER[n]));
+  box.classList.toggle('chp2-on', chpOn(n));
 }
 
 /* ================= RENDER: TRAITS ================= */
@@ -5534,8 +5546,25 @@ const nameKey = s => String(s||'').toLowerCase().replace(/[’‘`´]/g, "'");  
 // Englische Patchnotes schreiben „Camille Ability Damage: …“ ohne Trennstrich – den Namen vorne abtrennen
 if(EN) (()=>{ const names = Object.keys(NAME_IDX).sort((a,b)=>b.length - a.length);
   PATCHES.forEach(p=>(p.notes||[]).forEach(s=>(s.ch||[]).forEach(r=>{ if(r[0] || !r[1]) return; const l = nameKey(r[1]), n = names.find(x=>l.startsWith(x + ' ')); if(n){ r[0] = r[1].slice(0, n.length); r[1] = r[1].slice(n.length).trim(); } }))); })();
+// Symbole immer aus dem Set des Patches (Wunsch 18.11.): ist oben ein anderes Set gewählt, lädt renderPatches dessen Daten (nsData) –
+// dann Bilder direkt aus diesen Daten. Versteckte Traits ohne Stufen (Eclipse) stehen in xtraits.
+let PATCH_D = null; const PATCH_IDX = {};
+function patchIdx(D){
+  if(PATCH_IDX[D.set]) return PATCH_IDX[D.set];
+  const idx = {}, cdn = D.cdn || '', add = (name, v) => { if(name && !idx[nameKey(name)]) idx[nameKey(name)] = v; };
+  (D.champions || []).forEach(c=>{ const v = {ty:'c', c:c.c, img:cdn + (c.tile || c.sq)}; add(c.n, v); add(c.de, v); });
+  [...(D.traits || []), ...(D.xtraits || [])].forEach(t=>{ const v = {ty:'t', img:cdn + t.icon}; add(t.n, v); add(t.de, v); });
+  (D.items || []).forEach(i=>{ const v = {ty:'i', img:/^https?:/.test(i.icon) ? i.icon : cdn + i.icon}; add(i.en, v); add(i.de, v); });
+  (D.augments || []).forEach(a=>{ const v = {ty:'a', img:cdn + a.icon}; add(a.en, v); add(a.de, v); });
+  return PATCH_IDX[D.set] = idx;
+}
 function patchIcon(subject){
-  const m = NAME_IDX[nameKey(subject)]; if(!m) return '';
+  if(PATCH_D){ const m = patchIdx(PATCH_D)[nameKey(subject)]; if(!m) return '';
+    if(m.ty === 'c') return `<span class="pn-ic"><div class="av av-34 c${m.c}"><img src="${m.img}" alt="${esc(subject)}" loading="lazy"></div></span>`;
+    if(m.ty === 't') return `<span class="pn-ic"><span class="thx thx-base" style="--s:30px"><img src="${m.img}" alt="" loading="lazy"></span></span>`;
+    return `<span class="pn-ic"><img src="${m.img}" alt="" loading="lazy"></span>`; }
+  const m = NAME_IDX[nameKey(subject)] || (()=>{ const x = (TFT_DATA.xtraits || []).find(t=>nameKey(t.n) === nameKey(subject) || nameKey(t.de) === nameKey(subject)); return x ? {ty:'x', img:TFT_DATA.cdn + x.icon} : null; })(); if(!m) return '';
+  if(m.ty==='x') return `<span class="pn-ic"><span class="thx thx-base" style="--s:30px"><img src="${m.img}" alt="" loading="lazy"></span></span>`;
   if(m.ty==='c') return `<button class="pn-ic" data-champ="${esc(m.k)}" type="button">${avatar(m.k, 34)}<span></span></button>`;
   if(m.ty==='t') return `<span class="pn-ic">${traitHex(m.k, 'base', 30)}</span>`;
   if(m.ty==='i'){ const it = itemById[m.k]; return it ? `<button class="pn-ic" data-item="${esc(it.id)}" type="button"><img src="${it.img}" alt="" loading="lazy"><span></span></button>` : ''; }
@@ -5605,6 +5634,11 @@ function renderPatches(sub){
     seoMount('pt');
     return;
   }
+  // Patch eines anderen Sets als oben gewählt: erst dessen Daten laden (Symbole), dann zeichnen
+  if(p.set && p.set !== TFT_DATA.set && (!PATCH_D || PATCH_D.set !== p.set)){
+    app.innerHTML = `<div class="page-head"><div class="crumb"><a href="/patches">Patches</a> / ${esc(p.id)}</div></div>`;
+    nsData(p.set).then(D=>{ PATCH_D = D || {set:p.set}; renderPatches(sub); }); return; }
+  if(!p.set || p.set === TFT_DATA.set) PATCH_D = null;
   const i = PATCHES.indexOf(p), newer = PATCHES[i-1], older = PATCHES[i+1];
   const grps = []; (p.notes || []).forEach(s=>{ let g = grps.find(x=>x.g===s.grp); if(!g){ g = {g:s.grp, secs:[]}; grps.push(g); } g.secs.push(s); });
   const note = PATCH_NOTES[p.id];
@@ -7115,16 +7149,16 @@ function nwPolls(root){
 }
 function nwHTML(p){
   const body = nwL(p.body), heads = body.filter(b=>b.k === 'h');
-  // Aufbau wie bei den Erklär-Artikeln (Wunsch 17.11.): Überschrift, Meta-Text, Autor, darunter das Titelbild – ohne Rahmen
+  // Aufbau wie bei den Erklär-Artikeln (Wunsch 17.11.): Überschrift, Meta-Text, Autor, darunter das Titelbild – alles im selben Rahmen wie der Text (.er-frame)
   return `<article class="nw"><div class="crumb"><a href="/">Home</a> / <a href="/tft-set-${p.set}">Set ${p.set}</a> / News</div>
-    <header class="er-head">
+    <div class="er-frame"><header class="er-head">
     <h1 class="nw-h1">${esc(nwL(p.title))}</h1>
     <p class="nw-lead" data-meta>${esc(nwL(p.meta))}</p>
     <div class="nw-by"><a href="${PATCH_AUTHOR.href}"><img src="${PATCH_AUTHOR.img}" alt="Claudio „CrazYSlayt“" width="44" height="44"></a><span><span class="nw-by-n">${L('Von', 'By')} <a href="${PATCH_AUTHOR.href}">Claudio „CrazYSlayt“</a> · TFT Challenger · Coach</span><small>${esc(nwDay(p.date))}</small></span></div>
     <figure class="nw-hero er-hero"><img src="${p.img}" alt="${esc(nwL(p.alt))}" width="1200" height="630"></figure></header>
     <section class="tool-seo ag-art nw-art" aria-label="${esc(nwL(p.title))}"><div class="ts-main">${body.map(b=>NW_BLOCK[b.k](b)).join('')}
       <p class="art-note">${L('Quelle', 'Source')}: <a href="${nwL(p.src.url)}" target="_blank" rel="noopener">Riot Games, „${esc(nwL(p.src.name))}“</a>, ${esc(nwDay(p.src.date))}. ${L('Bilder und Videos: Riot Games.', 'Images and videos: Riot Games.')}</p></div>
-      <aside class="ts-side art-side"><nav class="art-toc" aria-label="${L('Inhalt', 'Contents')}"><b>${L('Inhalt', 'Contents')}</b><ol>${heads.map(b=>`<li><a href="#nwa-${b.id}" data-toc="nwa-${b.id}">${esc(b.t)}</a></li>`).join('')}</ol></nav></aside></section></article>`;
+      <aside class="ts-side art-side"><nav class="art-toc" aria-label="${L('Inhalt', 'Contents')}"><b>${L('Inhalt', 'Contents')}</b><ol>${heads.map(b=>`<li><a href="#nwa-${b.id}" data-toc="nwa-${b.id}">${esc(b.t)}</a></li>`).join('')}</ol></nav></aside></section></div></article>`;
 }
 function renderSetNews(slug){ const app = $('#nwApp'), p = nwBy(slug); if(!app || !p) return; app.innerHTML = nwHTML(p); artToc(app.querySelector('.nw-art')); nwPolls(app); }
 document.addEventListener('click', e=>{ const b = e.target.closest && e.target.closest('.nw-yt'); if(!b) return;

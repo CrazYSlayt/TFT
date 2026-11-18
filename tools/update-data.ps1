@@ -167,10 +167,11 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
 
   # --- Traits ---
   $deTrait = @{}; foreach ($t in $sdDE['traits']) { $deTrait[$t['apiName']] = $t }
-  $traits = New-Object 'System.Collections.Generic.List[object]'
+  $traits = New-Object 'System.Collections.Generic.List[object]'; $xtraits = New-Object 'System.Collections.Generic.List[object]'
   foreach ($t in $sdEN['traits']) {
     $bp = @(@($t['effects']) | Where-Object { $_ } | ForEach-Object { [int]$_['minUnits'] } | Where-Object { $_ -gt 0 } | Sort-Object -Unique)
-    if ($bp.Count -eq 0) { continue }
+    # Versteckte Traits ohne Stufen (z. B. Eclipse in Set 18): nur Name und Icon – für die Symbole in den Patch Notes
+    if ($bp.Count -eq 0) { if ($t['icon'] -and $t['name']) { $x = NewObj; $x['n'] = [string]$t['name']; $dx = $deTrait[$t['apiName']]; if ($dx -and $dx['name'] -ne $t['name']) { $x['de'] = [string]$dx['name'] }; $x['icon'] = Png $t['icon']; $xtraits.Add($x) }; continue }
     $d = $deTrait[$t['apiName']]
     $o = NewObj
     $o['api'] = [string]$t['apiName']; $o['n'] = [string]$t['name']
@@ -289,6 +290,7 @@ function Build($EN, $DE, [int]$SetNo, [string]$Channel, [string]$Ver, [string]$B
   [void]$sb.AppendLine("set:$SetNo, channel:$(J $Channel), version:$(J $Ver), generated:$(J $today), cdn:$(J "$Base/game/"),")
   [void]$sb.AppendLine("champions:[`n" + (($champs | ForEach-Object { J $_ }) -join ",`n") + "],")
   [void]$sb.AppendLine("traits:[`n" + (($traits | ForEach-Object { J $_ }) -join ",`n") + "],")
+  [void]$sb.AppendLine("xtraits:[" + (($xtraits | ForEach-Object { J $_ }) -join ",") + "],")
   [void]$sb.AppendLine("items:[`n" + (($items | ForEach-Object { J $_ }) -join ",`n") + "],")
   [void]$sb.AppendLine("augments:[`n" + (($augs | ForEach-Object { J $_ }) -join ",`n") + "]")
   [void]$sb.AppendLine("};")
@@ -480,6 +482,16 @@ function PatchChanges([string]$url) {
     $line = $(if ($it.lead) { $it.lead } else { CleanTxt $it.t.ToString() })
     if (-not $cur) { continue }
     if ($line -notmatch '⇒') {
+      # Änderung ohne Pfeil unter einem Namen ("Kruggs" > "Now a Summoner", "Teemo" > "Shrooms are now larger!") – als Textzeile übernehmen (18.7)
+      $anc0 = @($stack | ForEach-Object { ($_.lead -replace '\s*[–:].*$', '').Trim() } | Where-Object { $_ })
+      $skipSec = [string]$cur['sec'] -match '(?i)BUG|FEHLER|PERFORMANCE|LEISTUNG|COSMETIC|KOSMETIK|FOLLOW THE FIX'
+      if (-not $skipSec -and $line) {
+        # Name = oberster Punkt; ein Oberpunkt mit Unterliste zählt nur als Text, wenn er ein Satz ist ("Now a Summoner"), nicht bei Namen wie "Phoenix"
+        if ($anc0.Count -and (-not $it.lead -or @($line -split '\s+').Count -ge 3)) { $cur['ch'].Add([object[]]@($anc0[0], '', '', $line)); continue }
+        # oberste Ebene "Name: Text" ohne Pfeil ("Expected Unexpectedness: Shortened delay between dice rolls")
+        $tm = [regex]::Match($line, '^(?<s>[^:]{2,40}):\s+(?<t>.+)$')
+        if (-not $anc0.Count -and -not $it.lead -and $tm.Success) { $cur['ch'].Add([object[]]@($tm.Groups['s'].Value.Trim(), '', '', $tm.Groups['t'].Value.Trim())); continue }
+      }
       # kurzer Punkt ohne Wert und ohne eigene Unterliste = Name für die folgenden Wertezeilen
       if (-not $it.lead -and $line -and $line.Length -le 40 -and $line -notmatch '[:.!?]') { $bare = $line; $bareDepth = $stack.Count }
       continue

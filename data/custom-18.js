@@ -449,7 +449,7 @@ window.TFT_CUSTOM = {
       ['18.5','2026-10-21',['Regionals'],['Regionals']],['18.6','2026-11-04',['Patch für 1 Woche','4v4 Superbrawl'],['1 week patch','4v4 Superbrawl']],['18.6B','2026-11-11',['Worlds'],['Worlds']],['19.1','2026-12-02',['Set 19 startet'],['Set 19 launches']]]},   // 19.1: Riot-Reel vom 13.11.2026 „Live on December 2nd“ (vorher 1.12. laut Little Buddy Bot)
     // PBE-Start des nächsten Sets, solange Riot ihn nicht im Patch-Plan nennt (est = noch nicht bestätigt, Seite schreibt „voraussichtlich“).
     // 17.11.2026: Riot hat noch kein Datum genannt; üblich ist der Dienstag zwei Wochen vor dem Release (Stand 10.11.)
-    setDates: {19:{pbe:'2026-11-17', est:true}},
+    setDates: {19:{pbe:'2026-11-17'}},   // PBE seit 17.11.2026 abends bestätigt (est entfernt)
     // Gold-Regeln für den Streak- & Zins-Rechner (app.js: skRun). Bestätigt von CrazYSlayt am 10.11.2026:
     // ab 2-1 jede Runde 5 Gold, Sieg +1, Zinsen 1 je 10 Gold (höchstens 5, vor dem Grundgold gerechnet), Streak 2–4 = +1, 5 = +2, ab 6 = +3 (Sieg wie Niederlage; korrigiert von CrazYSlayt am 13.11.2026).
     // Monster-Runden zahlen alles und brechen keine Serie, das Karussell zählt nicht als Runde (kein Einkommen)
