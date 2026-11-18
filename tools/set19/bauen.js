@@ -55,6 +55,8 @@ function readCT(f) {
 }
 const BLITZ = fs.existsSync(path.join(__dirname, 'blitz-daten.json')) ? require('./blitz-daten.json') : {champions: {de: {}, en: {}}, traits: {de: {}, en: {}}};
 const EN_CH = {}, EN_TR = {};
+// Eigene deutsche Übersetzungen, wo Blitz auf Deutsch noch den englischen Text hat (tools/set19/uebersetzungen-de.json)
+const UE = fs.existsSync(path.join(__dirname, 'uebersetzungen-de.json')) ? JSON.parse(fs.readFileSync(path.join(__dirname, 'uebersetzungen-de.json'), 'utf8')) : {champions: {}, traits: {}};
 // Trait-Text wie in Riots Daten: Beschreibung, Leerzeile, je Stufe „(n) …“
 const trText = t => t ? [t.d, ...(t.rows || []).map(r => `(${r.n}) ${r.t}`)].filter(Boolean).join('\\n') : '';
 const pickImg = (f, re) => { const d = path.join(CH_PNG, f); if (!fs.existsSync(d)) return null; const l = fs.readdirSync(d).filter(x => re.test(x)).sort((a, b) => /Base|F1|^T_19_/.test(b) - /Base|F1|^T_19_/.test(a)); return l[0] ? path.join(d, l[0]) : null; };
@@ -102,14 +104,20 @@ async function toWebp(jobs) {
     // Nahkämpfer haben im Paket keine AttackRange (Standard 1); ohne Angriffsschaden (keine Curve Table) lieber keine Werte als falsche
     const ad = cv.AutoAttackDamage ? cv.AutoAttackDamage[0] : null;
     if (sv && sv.HealthMax && ad != null) o.st = {hp: sv.HealthMax, mana: sv.ManaMax ?? 0, mana0: sv.Mana ?? 0, ad, as: sv.AttackSpeed, ar: sv.Armor, mr: sv.MagicResist, crit: 0.25, range: sv.AttackRange ?? 1};
-    else warn.push(c.n + ': keine Grundwerte');
+    else {
+      // Ersatz: Grundwerte von blitz.gg (tools/set19/blitz-werte.js), Leben aus Riots Video, wo Blitz keins zeigt (Locke, Shyvana)
+      const BW = fs.existsSync(path.join(__dirname, 'blitz-werte.json')) ? require('./blitz-werte.json') : {}, VIDEO_HP = {'Locke': 1000, 'Shyvana': 1000};
+      const w = BW[c.n.toLowerCase().replace(/['.]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')], hp = w && (w.hp || VIDEO_HP[c.n]);
+      if (w && hp && w.ad != null) o.st = {hp, mana: 0, mana0: 0, ad: w.ad, as: w.as, ar: w.ar, mr: w.mr, crit: 0.25, range: w.range || 1};
+      else warn.push(c.n + ': keine Grundwerte');
+    }
     const abv = Object.fromEntries(Object.entries(cv).filter(([k]) => k !== 'AutoAttackDamage'));
     if (Object.keys(abv).length) o.abv = abv;
     // Fähigkeit (Name, Text mit Werten pro Stern, Mana) und Unlock-Bedingung von blitz.gg (tools/set19/blitz.js) – deutscher Text, sonst englischer
     const bd = BLITZ.champions.de[o.api], be = BLITZ.champions.en[o.api];
     if (bd || be) {
-      const x = bd && bd.d ? bd : be;
-      o.ab = {n: (bd && bd.ab) || be.ab, d: x.d, v: {...(be ? be.v : {}), ...(bd ? bd.v : {})}};
+      const x = bd && bd.d ? bd : be, deGleich = bd && be && bd.d === be.d;
+      o.ab = {n: (bd && bd.ab) || be.ab, d: deGleich && UE.champions[o.api] ? UE.champions[o.api] : x.d, v: {...(be ? be.v : {}), ...(bd ? bd.v : {})}};
       if (be && be.d) EN_CH[o.api] = {n: be.ab, d: be.d};
       const mana = (bd || be).mana; if (o.st && mana && mana.length === 2) { o.st.mana0 = mana[0]; o.st.mana = mana[1]; }
       if ((bd && bd.unlock) || (be && be.unlock)) o.unlock = {de: bd && bd.unlock || be.unlock, en: be && be.unlock || bd.unlock};
@@ -127,12 +135,20 @@ async function toWebp(jobs) {
   const traits = traitNames.map(n => {
     const m = CUSTOM.traits[n], o = {api: 'TFT19_' + n.replace(/[^A-Za-z0-9]/g, ''), n};
     // Stufen und Texte von blitz.gg (auch für Klassen); Stil je Stufe wie in Riots Daten (1 Bronze, 3 Silber, 5 Gold, 6 Prismatisch, 4 einzigartig)
-    const tde = BLITZ.traits.de[n], ten = BLITZ.traits.en[n], rows = (ten || tde || {}).rows || [];
+    const ten = BLITZ.traits.en[n], ue = UE.traits[n]; let tde = BLITZ.traits.de[n];
+    // deutsche Fassung: wo Blitz noch englisch ist, die eigene Übersetzung (Beschreibung und einzelne Stufen)
+    const TT = UE.traitTexte || {}, tr = x => TT[x] || x;
+    if (tde) tde = {...tde, d: tr(tde.d), rows: tde.rows.map(r => ({...r, t: tr(r.t)}))};
+    if (tde && ten && ue) tde = {...tde, d: tde.d === ten.d && ue.d ? ue.d : tde.d, rows: tde.rows.map(r => ue.rows && ue.rows[r.n] && r.t === (ten.rows.find(e => e.n === r.n) || {}).t ? {...r, t: ue.rows[r.n]} : r)};
+    if (tde && tde.name && tde.name !== n && tde.name.toUpperCase() !== n.toUpperCase()) o.de = tde.name;
+    const rows = (ten || tde || {}).rows || [];
     const STYLE = {bronze: 1, silver: 3, gold: 5, prismatic: 6};
-    if (rows.length) { o.bp = rows.map(r => r.n); o.bs = rows.length === 1 && o.bp[0] === 1 ? [4] : rows.map(r => STYLE[r.s] || 1); }
+    if (rows.length) { const uq = rows.filter((r, i) => rows.findIndex(x => x.n === r.n) === i); o.bp = uq.map(r => r.n); o.bs = uq.length === 1 && o.bp[0] === 1 ? [4] : uq.map(r => STYLE[r.s] || 1); }
     else o.bp = BP[n] || (m.group === 'solo' ? [1] : []);
-    const row = (t) => t ? [t.d, ...(t.rows || []).map(r => `<row>(${r.n}) ${r.t}</row>`)].filter(Boolean).join('\\n') : '';
-    if (tde || ten) { o.desc = row(tde && tde.d ? tde : ten); o.fx = o.bp.map(b => ({min: b, v: {}})); if (ten) EN_TR[o.api] = row(ten); }
+    // wie in Riots Trait-Texten: Zeilen mit <br> getrennt (nicht \n), jede Stufe als <row>(n) …</row>
+    const br = x => String(x || '').replace(/\\n/g, '<br>');
+    const row = (t) => t ? [br(t.d), ...(t.rows || []).map(r => `<row>(${r.n}) ${br(r.t)}</row>`)].filter(Boolean).join('<br>') : '';
+    if (tde || ten) { o.desc = row(tde && tde.d ? tde : ten); o.fx = (rows.length ? rows.map(r => r.n) : o.bp).map(b => ({min: b, v: {}})); /* je Zeile eine Stufe (A-/B-Seite, Prismatisch haben dieselbe Zahl) */ if (ten) EN_TR[o.api] = row(ten); }
     const ic = iconFile(n); if (ic) { const s = n.toLowerCase().replace(/&/g, 'n').replace(/[^a-z0-9]+/g, '-'); jobs.push({src: ic, out: path.join(OUT_IMG, 'traits', s + '.webp'), w: 64, h: 64, q: 0.92}); o.icon = `assets/img/set19/traits/${s}.webp`; }
     else { warn.push('Trait ohne Icon: ' + n); o.icon = 'assets/img/set19/traits/leer.svg'; }
     if (!o.bp.length) o.bpOffen = 1;
@@ -144,7 +160,7 @@ async function toWebp(jobs) {
     'Heartsteel': "Kayn, Sett, Ezreal, K'Sante, Alune, Yone, Aphelios", 'Hyperpop': 'Kobuko, Ziggs, Lulu, Tristana, Teemo', 'Illbeats': 'Illaoi, Braum, Draven, Yuumi', 'Ionic Spark': 'Elise, Yunara, Annie, Lux, Briar, Tibbers, Aurora, Jinx, Shyvana, Gwen',
     'Jazz': 'Lucian, Bard, Galio, Smeech', 'K/DA': "Lillia, Neeko, Gragas, Evelynn, Kai'Sa, Ahri, Leona, Akali", 'Pentakill': 'Gnar, Olaf, Karthus, Viego, Kayle, Yorick, Mordekaiser', 'R&B': 'Mel, Rell',
     'Rock': 'Olaf, Varus, Camille, Swain, Locke, Vayne, Pyke', 'True Damage': 'Kennen, Qiyana, Ekko, Senna, Yasuo, Akali'};
-  for (const [t, l] of Object.entries(RIOT)) { const a = l.split(', ').sort().join(','), b = out.filter(c => c.t.includes(t)).map(c => c.n).sort().join(','); if (a !== b) warn.push(`${t}: Riot ${a} ≠ Liste ${b}`); }
+  for (const [t, l] of Object.entries(RIOT)) { const a = l.split(', ').sort().join(','), b = out.filter(c => c.t.includes(t)).map(c => c.n.replace(/ \(.*\)$/, '')).sort().join(','); if (a !== b) warn.push(`${t}: Riot ${a} ≠ Liste ${b}`); }
 
   await toWebp(jobs);
   const J = x => JSON.stringify(x);
@@ -153,9 +169,29 @@ async function toWebp(jobs) {
   // verweisen genau auf diese IDs. Icons mit voller Adresse (cdn ist hier leer). Änderungen aus dem Video kommen später dazu (bp: „am PBE prüfen“)
   global.window = {}; require(path.join(ROOT, 'data', 'tft-data-18.js')); const D18 = window.TFT_DATA;
   const items = D18.items.filter(i => ['component', 'craft', 'radiant'].includes(i.cat)).map(i => ({...i, icon: /^https?:/.test(i.icon) ? i.icon : D18.cdn + i.icon, aus18: 1}));
-  const body = `champions:[\n${out.map(J).join(',\n')}\n],\ntraits:[\n${traits.map(J).join(',\n')}\n],\nitems:[\n${items.map(J).join(',\n')}\n],\naugments:[]\n};\n`;
+  // Augments von blitz.gg (Name, Stufe, Text DE/EN); Symbol: wie in Set 18 (gleiche ID/Name), sonst aus dem PBE-Client (tools/set19/augment-icons.js → C:\t19augpng),
+  // sonst das Symbol eines verwandten Augments (Pyramid Scheme Level 2 → Pyramid Scheme, …_II → …_I)
+  const A18 = D18.augments, a18id = new Map(A18.map(x => [x.id, x])), a18n = new Map(A18.map(x => [x.en.toLowerCase(), x]));
+  const vals = (d, v) => String(d || '').replace(/@(v_[A-Za-z0-9_]+)@/g, (m, k) => v && v[k] ? v[k].join('/') : '?');
+  const AE = (BLITZ.augments || {}).en || {}, AD = (BLITZ.augments || {}).de || {}, augs = [], EN_AUG = {};
+  fs.mkdirSync(path.join(OUT_IMG, 'augments'), {recursive: true});
+  const pngOf = id => { const p = path.join('C:/t19augpng', id + '.png'); return fs.existsSync(p) ? p : null; };
+  const stem = id => id.replace(/_Level\d+$|(?:_?(?:I{1,3}|Gold|Silver|Prismatic|Plus|\d))$/i, '');
+  for (const [id, e] of Object.entries(AE)) {
+    const d = AD[id] || e, old = a18id.get(id) || a18n.get(e.name.toLowerCase());
+    const deTxt = AD[id] && AD[id].d === e.d && (UE.augments || {})[id] ? UE.augments[id] : d.d;   // eigene Übersetzung, wo Blitz noch englisch ist
+    const o = {id, en: e.name, de: d.name || e.name, desc: vals(deTxt, d.v), fx: {}, lv: e.lv || (old && old.lv) || 1};
+    if (old) o.icon = /^https?:/.test(old.icon) ? old.icon : D18.cdn + old.icon;
+    else { let p = pngOf(id), sid = id; while (!p && stem(sid) !== sid) { sid = stem(sid); p = pngOf(sid) || Object.keys(AE).filter(k => k !== id && k.startsWith(sid)).map(pngOf).find(Boolean); }
+      if (p) { const fn = path.basename(p, '.png').toLowerCase() + '.webp'; if (!jobs.some(j => j.out.endsWith(fn))) jobs.push({src: p, out: path.join(OUT_IMG, 'augments', fn), q: 0.9}); o.icon = 'assets/img/set19/augments/' + fn; }
+      else { o.icon = D18.cdn + 'assets/maps/tft/icons/augments/hexcore/missing-t' + o.lv + '.png'; warn.push('Augment ohne Symbol: ' + e.name); } }
+    if (e.rounds && e.rounds.length) o.r = e.rounds;
+    augs.push(o); EN_AUG[id] = vals(e.d, e.v);
+  }
+  await toWebp(jobs.filter(j => j.out.includes(path.sep + 'augments' + path.sep)));
+  const body = `champions:[\n${out.map(J).join(',\n')}\n],\ntraits:[\n${traits.map(J).join(',\n')}\n],\nitems:[\n${items.map(J).join(',\n')}\n],\naugments:[\n${augs.map(J).join(',\n')}\n]\n};\n`;
   fs.writeFileSync(path.join(ROOT, 'data', 'tft-data-19.js'), head + body);
-  fs.writeFileSync(path.join(ROOT, 'data', 'tft-data-19-en.js'), '// TFTClimb – englische Texte zu Set 19 (noch keine – Set 19 wird von Hand gebaut, tools/set19/bauen.js)\nwindow.TFT_DATA_EN = ' + JSON.stringify({champions: EN_CH, traits: EN_TR, items: {}, augments: {}}) + ';\n');
+  fs.writeFileSync(path.join(ROOT, 'data', 'tft-data-19-en.js'), '// TFTClimb – englische Texte zu Set 19 (noch keine – Set 19 wird von Hand gebaut, tools/set19/bauen.js)\nwindow.TFT_DATA_EN = ' + JSON.stringify({champions: EN_CH, traits: EN_TR, items: {}, augments: EN_AUG}) + ';\n');
   console.log(`Champions: ${out.length} (7 Gold: ${out.filter(c => c.c === 7).length}) · Traits: ${traits.length} · Bilder: ${jobs.length}`);
   console.log(warn.length ? 'Hinweise:\n  ' + warn.join('\n  ') : 'keine Hinweise');
   process.exit(0);

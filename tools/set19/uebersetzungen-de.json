@@ -1,0 +1,210 @@
+{
+ "_info": "Eigene deutsche Übersetzungen für Set-19-Texte, die blitz.gg auf Deutsch noch nicht hat (Begriffe wie in Riots deutschen Texten). bauen.js nimmt sie, solange der deutsche Text bei Blitz dem englischen gleicht.",
+ "champions": {
+  "DA_BaronNashor19": "Beschwört ein 8-köpfiges Orchester und einen Riff-Herold, die alle Gegner 1 Sekunde lang hochschleudern. Verursacht %i:scaleAD% @v_550_825_2475@ normalen Schaden und %i:scaleAP% @v_650_1000_3000@ magischen Schaden, aufgeteilt auf alle Gegner.\\nJeder Diener greift 4-mal an, jeder Angriff verursacht %i:scaleAD% @v_33_50_250@ normalen Schaden.",
+  "DA_Sona19": "Passiv: Kann nicht angreifen. Stattdessen erhält sie alle 3 Sekunden @v_31_31_101@ Mana, fügt den 3 nächsten Gegnern %i:scaleAP% @v_120_180_1000@ magischen Schaden zu und 2 Verbündete erhalten 3 Sekunden lang einen Schild in Höhe von %i:scaleAP% @v_40_65_9999@. Sona ist unaufhaltsam.\\nAktiv: Entfesselt eine Schallwelle über das ganze Feld, die %i:scaleAP% @v_1400_2200_9999999@ magischen Schaden aufgeteilt auf alle Gegner verursacht und sie 2 Sekunden lang betäubt. Verbündete erhalten 5 Sekunden lang einen Schild in Höhe von %i:scaleAP% @v_250_450_99999@, aufgeteilt auf alle Verbündeten.",
+  "DA_Akali_TrueDamage19": "B-Seite – Passiv: Nach je 4 Kills erhältst du 1 Spielerleben. (0/4)\\nAktiv: Schlitzt blitzschnell durch das aktuelle Ziel und fügt ihm %i:scaleAP% @v_550_825_9999@ magischen Schaden zu, gegen Tanks um 50 % erhöht. Während der Aktivierung erhält sie 25 % Haltbarkeit und kann nicht von Angriffen anvisiert werden.\\nDanach springt sie über das Ziel und wirft eine Bombe, die %i:scaleAP% @v_620_930_9999@ magischen Schaden verursacht, aufgeteilt auf alle Gegner im Umkreis von 2 Feldern.",
+  "DA_Rell19": "Rhythmus-Blaster: Erhält 4 Sekunden lang einen Schild in Höhe von %i:scaleAP% @v_600_725_2000@ und beschwört 3 Lautsprecher. Jede Sekunde senden sie eine Schallwelle aus, die getroffenen Gegnern %i:scaleArmor% %i:scaleMR% @v_104_156_1950@ magischen Schaden zufügt.\\nMetal-Pony-Club: Kracht in eine Gruppe von Gegnern und fügt dem Gegner in der Mitte %i:scaleArmor% %i:scaleMR% @v_124p8_187p2_39000@ magischen Schaden sowie %i:scaleArmor% %i:scaleMR% @v_156_234_39000@ Schaden zu, aufgeteilt auf Gegner im Umkreis von 2 Feldern.\\nOhne Reittier wirkt sie Rhythmus-Blaster, beritten Metal-Pony-Club.",
+  "DA_TwistedFate19": "Passiv: Zieht bei Kampfbeginn eine Karte für jeden Champion im Shop. Wurde dein Shop in dieser Runde neu gerollt, erhältst du Beute je nach gezogenen Karten!\\n1 oder 2 gleiche: 1 Gold\\n3 gleiche: zufälliger Champion\\n4 gleiche: Item-Komponente\\n5 gleiche: Mystery Box!\\nAktiv: Die nächsten 5 Angriffe erhalten 100 % Angriffstempo und werden durch Karten ersetzt, die dem Ziel %i:scaleAP% @v_100_150_2000@ magischen Schaden und 2 Gegnern in der Nähe %i:scaleAP% @v_30_45_1000@ magischen Schaden zufügen.",
+  "DA_Vladimir19": "Passiv: Erhält 30 % Omnivampir. Geschwächte Gegner werden gefesselt.\\nAktiv: Fügt den 3 nächsten Gegnern %i:scaleAP% @v_100_150_999@ magischen Schaden zu und fesselt sie 3 Sekunden lang.\\nBei jeder 5. Aktivierung lässt er einen Kronleuchter auf das Feld fallen. Er fügt allen Gegnern %i:scaleAP% @v_380_600_9999@ magischen Schaden zu, um 10 % pro Feld Abstand zum Einschlag verringert.\\nSchwächungen: Verbrennung, Verwundung, Zerfetzen, Zersplittern, Manaraub, Schwächung, Verlangsamung, Verwundbarkeit",
+  "DA_Ahri19": "Passiv: Beginnt den Kampf mit 6 Fuchsfeuern und erhält nach jeder Aktivierung 2 weitere, bis zu 14. Danach gerät sie in einen Flow, bewegt sich schneller und verstärkt ihre folgenden Aktivierungen.\\nAktiv: Schießt alle Fuchsfeuer auf das Ziel, jedes verursacht %i:scaleAP% @v_28_42_400@ magischen Schaden. Im Flow schießt sie stattdessen ein Herz auf das Ziel, das %i:scaleAP% @v_235_350_2000@ magischen Schaden verursacht, und verteilt die Fuchsfeuer auf alle Gegner im Umkreis von 2 Feldern.",
+  "DA_Jhin19": "Passiv: Wandelt 1 % zusätzliches Angriffstempo in 0,8 % Angriffsschaden um.\\nAngriffe beschwören Geigen, die gemeinsam angreifen, %i:scaleAD% @v_25_38_124@ normalen Schaden verursachen und das Ziel 4 Sekunden lang fesseln. Jeder 4. Angriff ist verstärkt, verursacht %i:scaleAD% %i:scaleAP% @v_94_141_848@ normalen Schaden und setzt die Geigen zurück.\\nAb der 4. Folge bleiben alle Geigen draußen, Jhin erhält unendliche Reichweite und seine Angriffe durchbohren Gegner, wobei sie pro getroffenem Ziel 60 % weniger Schaden verursachen.",
+  "DA_Jinx19": "Feuert in schneller Folge %i:scaleAS% ? Raketen auf Gegner in der Nähe, jede verursacht %i:scaleAD% %i:scaleAP% @v_49_74_330@ normalen Schaden.",
+  "DA_Kayle19": "Passiv: Angriffe verursachen %i:scaleAP% @v_40_60_500@ zusätzlichen magischen Schaden.\\nAktiv: Erhält 4 Sekunden lang 80 % Angriffstempo und unendliche Reichweite und beschwört mit jedem Angriff ein Schwert. Danach regnen die Schwerter auf das Ziel herab und verursachen %i:scaleAP% @v_180_270_2000@ Schaden an allen Gegnern im Umkreis von 2 Feldern sowie %i:scaleAP% @v_37_55_400@ magischen Schaden am Ziel für jedes Schwert.",
+  "DA_Locke19": "Passiv: Angriffe verursachen %i:scaleAP% @v_45_68_500@ zusätzlichen magischen Schaden. Jeder Schaden, den Locke Gegnern zufügt, ist für jede Markierung, die er ihnen verpasst hat, um 10 % erhöht.\\nAktiv: Schleudert 3 Seelennägel auf den entferntesten Gegner innerhalb von 4 Feldern, jeder verursacht %i:scaleAP% @v_15_22_400@ magischen Schaden und markiert alle getroffenen Gegner. Danach teleportiert er sich zum Gegner und verursacht %i:scaleAP% @v_150_225_2000@ magischen Schaden.",
+  "DA_Shyvana19": "Passiv: Bei 70 % Leben verwandelt sie sich in ihre Drachengestalt. In dieser Gestalt erhält sie 300 max. Leben und 150 % Angriffstempo, und jeder 3. Angriff verursacht %i:scaleAP% @v_150_225_3000@ zusätzlichen magischen Schaden in einem Bereich von 1 Feld.\\nAktiv: Erhält 4 Sekunden lang einen Schild in Höhe von %i:scaleHealth% %i:scaleAP% @v_360_410_1010@.",
+  "DA_Vayne19": "Passiv: Bei Aktivierung oder wenn sie getroffen wird, rollt sie sich ab und erhält 2 Sekunden lang %i:scaleAP% 50 % Haltbarkeit. (4 Sekunden Abklingzeit)\\nAktiv: Erhält dämonische Kraft und verstärkt ihre nächsten 3 Angriffe, die %i:scaleAD% @v_175_265_2000@ + 2 % des max. Lebens des Ziels als normalen Schaden verursachen.",
+  "DA_Braum19": "Erhält 4 Sekunden lang einen Schild in Höhe von %i:scaleAP% %i:scaleHealth% @v_385_435_485@. Schlägt dann auf den Boden, fügt angrenzenden Gegnern %i:scaleAP% @v_120_180_300@ magischen Schaden zu und betäubt sie 1,5 Sekunden lang.",
+  "DA_Draven19": "Wirft eine riesige rotierende Schallplatte auf das Ziel und verursacht %i:scaleAD% @v_140_210_340@ normalen Schaden. Die Platte hinterlässt einen Wirbel, der 3 Sekunden lang besteht und pro Sekunde %i:scaleAD% %i:scaleAP% @v_115_175_285@ normalen Schaden verursacht, aufgeteilt auf Gegner im Umkreis von 1 Feld.",
+  "DA_Ekko19": "Passiv: Spult 30 % des erlittenen Schadens über 4 Sekunden zurück.\\nAktiv: Heilt sofort den gesamten zurückgespulten Schaden + %i:scaleAP% @v_150_180_250@ Leben. Schlägt dann auf das aktuelle Ziel ein und verursacht %i:scaleAP% @v_230_345_675@ magischen Schaden.",
+  "DA_Galio19": "Erhält 4 Sekunden lang einen Schild in Höhe von %i:scaleHealth% %i:scaleAP% @v_435_510_610@. Betäubt den Gegner, der in diesem Kampf den meisten Schaden verursacht hat, 1 Sekunde lang und fügt ihm %i:scaleAP% @v_120_180_300@ magischen Schaden zu.",
+  "DA_KSante19": "Erhält 4 Sekunden lang einen Schild in Höhe von %i:scaleAP% @v_550_650_800@. Stürmt los und schiebt das Ziel weg, wodurch es und andere getroffene Gegner 1,25 Sekunden lang betäubt werden. Schmettert es dann zu Boden und verursacht %i:scaleAD% @v_150_225_360@ normalen Schaden. Nach dem Ansturm verspottet er Gegner in der Nähe.\\nHeartsteel-Upgrade: Erhält 25 Rüstung und Magieresistenz und verursacht bei Angriffen %i:scaleArmor% %i:scaleMR% @v_50_75_120@ zusätzlichen normalen Schaden.",
+  "DA_Syndra19": "Schmettert einen Volleyball auf das Ziel und verursacht %i:scaleAP% @v_300_450_720@ magischen Schaden. Er prallt zum Gegner dahinter mit den wenigsten Items ab und verursacht %i:scaleAP% @v_110_165_265@ magischen Schaden.",
+  "DA_Viego19": "Beschwört 10 Schwerter um das Ziel. Nach kurzer Verzögerung durchbohren sie es und verursachen pro Schwert %i:scaleAD% %i:scaleAP% @v_39_59_93@ normalen Schaden.\\nAlle 8 Kills erhält er dauerhaft ein Schwert. (Aktuelle Kills: 0)",
+  "DA_Camille19": "Passiv: Stirbt das Ziel, zieht sie sich mit ihrem Haken zum nächsten und fügt ihm %i:scaleAD% @v_90_135_210@ normalen Schaden zu.\\nAktiv: Führt einen Rundumtritt aus und verursacht %i:scaleAD% %i:scaleAP% @v_260_390_600@ normalen Schaden in einem Kegel.",
+  "DA_Ezreal19": "Feuert ein Geschoss, das das Ziel markiert, und dann einen zweiten Stoß, der die Markierung zündet. Die Explosion fügt dem Ziel %i:scaleAD% %i:scaleAP% @v_220_330_500@ normalen Schaden und Gegnern im Umkreis von 1 Feld %i:scaleAD% %i:scaleAP% @v_72p6_108p9_165@ normalen Schaden zu.\\nHeartsteel-Upgrade: Die Zündung verursacht 25 % mehr Schaden. Jede 3. Aktivierung trifft stattdessen Gegner im Umkreis von 2 Feldern.",
+  "DA_Gragas19": "Wird 5 Sekunden lang ausgelassen, stellt pro Sekunde %i:scaleHealth% %i:scaleAP% @v_75_80_87@ Leben wieder her und verursacht bei Angriffen %i:scaleHealth% %i:scaleAP% @v_117_137_157@ zusätzlichen magischen Schaden.\\nFür jeden 3-Sterne-K/DA-Verbündeten werden beide Effekte um 15 % stärker. (Gesamte Steigerung: ?)",
+  "DA_Illaoi19": "Aktiv: Heilt %i:scaleAP% @v_275_325_475@ und verursacht %i:scaleAP% @v_120_180_270@ magischen Schaden in einer Linie von 2 Feldern.\\nQuest: Bei Aktivierung in Spielerkämpfen erhält Illaoi 2 Ruhm + 1 weiteren für je 10 Gold, die du hast, bis 70 Gold. Bei 200 Ruhm geht Illaoi Platin, erhält 15 % Haltbarkeit und lässt bei Aktivierung stattdessen 1 Gold fallen.\\n(Aktueller Ruhm: 0/200) Illaoi ist Platin! (Erzeugtes Gold: 0)",
+  "DA_Jax19": "Schlägt auf das aktuelle Ziel ein, verursacht %i:scaleAP% @v_200_300_480@ magischen Schaden und heilt sich um 20 % des verursachten Schadens. Erhält bis zum Ende des Kampfes 15 % Angriffstempo.\\nEDM-Upgrade: Feuert Strahlen auf die 2 nächsten Gegner, die %i:scaleAP% @v_50_75_115@ magischen Schaden verursachen, verringert um ? für jeden durchquerten Gegner.",
+  "DA_Lucian19": "Springt auf ein nahes Feld und feuert dann 2 Schüsse auf das Ziel, jeder verursacht %i:scaleAD% %i:scaleAP% @v_88_132_198@ normalen Schaden.",
+  "DA_Lulu19": "Wechselt zwischen 2 Effekten:\\nLaune!: Gewährt einem Verbündeten 5 Sekunden lang %i:scaleAP% @v_80_90_100@ % abklingendes Angriffstempo und %i:scaleAP% @v_20_30_45@ magischen Schaden bei Treffern.\\nWildwuchs: Erhöht das Leben eines Verbündeten 5 Sekunden lang um %i:scaleAP% @v_175_260_395@. Solange aktiv, erleiden angrenzende Gegner jede Sekunde %i:scaleAP% @v_20_30_45@ magischen Schaden.",
+  "DA_Renekton19": "Wächst und erhält bis zum Ende des Kampfes %i:scaleAP% @v_180_230_325@ max. Leben. Wirbelt dann herum und fügt angrenzenden Gegnern %i:scaleHealth% %i:scaleAD% @v_176_221_316@ normalen Schaden zu.",
+  "DA_SeraphineIndie19": "Indie: Lässt einen Strom aus Noten auf das Ziel los, während sie für die Fans posiert, und verursacht über 2,5 Sekunden %i:scaleAP% @v_600_900_1350@ magischen Schaden.\\nRising Star: Schickt zusätzliche Noten auf Gegner in der Nähe.\\nSuperstar: Wirft hohe Töne auf jeden Gegner.",
+  "DA_Tristana19": "Wirft Bomben auf 3 Gegner in der Nähe und zündet sie, jede verursacht %i:scaleAD% %i:scaleAP% @v_140_210_315@ normalen Schaden. Die letzte Explosion verursacht stattdessen %i:scaleAD% %i:scaleAP% @v_280_420_630@ Schaden.",
+  "DA_Elise19": "Verwandelt sich in ihre Spinnengestalt und erhält %i:scaleAP% @v_280_330_400@ Leben. Schießt dann Netze auf den Gegner, der in dieser Runde den meisten Schaden verursacht hat, betäubt den ersten getroffenen Gegner 1,5 Sekunden lang und fügt ihm %i:scaleAP% @v_90_135_200@ magischen Schaden zu.\\nFolgende Aktivierungen heilen %i:scaleAP% @v_230_300_350@ und schießen dann Netze.",
+  "DA_Gnar19": "Passiv: Jeder 3. Angriff wird durch einen Stein ersetzt, der %i:scaleAD% @v_120_180_270@ normalen Schaden verursacht und Gnar %i:scaleAP% 9 % Angriffstempo gewährt.",
+  "DA_Kayn19": "Springt vor und schlägt zu, wodurch Gegner in einer Linie von 2 Feldern %i:scaleAD% %i:scaleAP% @v_130_200_315@ normalen Schaden erleiden.\\nHeartsteel-Upgrade: Bei 70 % Leben verwandelt er sich in den Schattenassassinen, kann kurz nicht anvisiert werden und verursacht bis zum Ende des Kampfes 35 % zusätzlichen magischen Schaden.",
+  "DA_Kennen19": "Passiv: Verringert jeglichen erlittenen Schaden um %i:scaleAP% @v_12_15_19@. Jede Sekunde schockt er angrenzende Gegner und verursacht %i:scaleAP% @v_12_18_30@ magischen Schaden.",
+  "DA_Lillia19": "Heilt %i:scaleAP% @v_280_350_550@ Leben und schlägt auf das Ziel ein, wodurch Gegner in einem Kreis von 1 Feld %i:scaleAP% @v_120_180_270@ magischen Schaden erleiden und 5 Sekunden lang um 10 % geschwächt werden.\\nSchwächung: Verringert den verursachten Schaden",
+  "DA_Neeko19": "Ruft den K/DA-Fanclub zusammen und wirft 3 Konfetti-Ströme auf das Ziel, die jeweils %i:scaleAP% @v_75_115_175@ magischen Schaden verursachen. Tötet einer davon, erhält sie dauerhaft 1 % Fähigkeitsstärke.\\nAktueller Bonus: 0 Fähigkeitsstärke",
+  "DA_Sett19": "Passiv: Erhält aus allen Quellen 30 % mehr max. Leben.\\nAktiv: Heilt %i:scaleAP% %i:scaleHealth% @v_228_238_248@. Schlägt das Ziel zweimal und verursacht pro Treffer %i:scaleHealth% 49 normalen Schaden.\\nHeartsteel-Upgrade: Heilt alle 4 Sekunden 4 % seines max. Lebens, um bis zu 100 % erhöht je nach fehlendem Leben.",
+  "DA_Varus19": "Feuert einen Pfeilhagel ab, der dem Ziel %i:scaleAD% %i:scaleAP% @v_260_390_590@ normalen Schaden und angrenzenden Gegnern %i:scaleAD% %i:scaleAP% @v_130_195_295@ Schaden zufügt. Verlangsamt sie 4 Sekunden lang um 20 %.\\nVerlangsamung: Verringert das Angriffstempo",
+  "DA_Yunara19": "Bis zum Ende des Kampfes feuern Angriffe eine zusätzliche Kugel ab, die %i:scaleAD% %i:scaleAP% @v_16_25_37@ normalen Schaden verursacht."
+ },
+ "traits": {
+  "Arcanist": {
+   "rows": {
+    "4": "%i:scaleAP% 18 %, %i:scaleAP% 50 % für Arkanisten"
+   }
+  },
+  "Bodyguard": {
+   "d": "Solange mindestens ein Leibwächter lebt, erhält dein Team 15 Rüstung und Magieresistenz. Leibwächter erhalten mehr.",
+   "rows": {
+    "2": "%i:scaleArmor% %i:scaleMR% 22",
+    "4": "%i:scaleArmor% %i:scaleMR% 55",
+    "6": "%i:scaleArmor% %i:scaleMR% 115"
+   }
+  },
+  "Frontman": {
+   "rows": {
+    "4": "%i:scaleHealth% 22 %, erhöht auf %i:scaleHealth% 40 %"
+   }
+  },
+  "Gu Feng": {
+   "rows": {
+    "3": "und 2 % %i:scaleHealth% pro Level."
+   }
+  },
+  "Hitmaker": {
+   "rows": {
+    "2": "1 Big Shot, %i:scaleAD% 20 %",
+    "4": "2 Big Shots, %i:scaleAD% 35 %"
+   }
+  },
+  "Hyperpop": {
+   "rows": {
+    "3": "%i:scaleHealth% 200, %i:scaleAS% 15 %, 1,5-facher Hype",
+    "4": "%i:scaleHealth% 300, %i:scaleAS% 25 %, 3-facher Hype",
+    "5": "%i:scaleHealth% 500, %i:scaleAS% 40 %, 3,5-facher Hype"
+   }
+  },
+  "Illbeats": {
+   "rows": {
+    "2": "10 Dezibel",
+    "3": "14 Dezibel",
+    "4": "18 Dezibel. Der Mix ist 50 % stärker."
+   }
+  },
+  "Ionic Spark": {
+   "rows": {
+    "7": "%i:scaleHealth% 550; alle 2 Spielerkämpfe erhältst du Gold und ein Verbrauchsitem!"
+   }
+  },
+  "K/DA": {
+   "rows": {
+    "5": "DRUM GO DUM: Schild in Höhe von 12 % %i:scaleHealth% für 8 Sekunden."
+   }
+  },
+  "Manager": {
+   "rows": {
+    "4": "UND sie lassen 1 Gold fallen! (Gesamt: ?)"
+   }
+  },
+  "Pentakill": {
+   "rows": {
+    "3": "15 % %i:scaleAD% %i:scaleAP%, 2 Gegner"
+   }
+  },
+  "Rock": {
+   "rows": {
+    "4": "Er heilt sich um 10 % des Schadens, den Rock-Champions verursachen.",
+    "5": "Bei Aktivierung feuert er einen gewaltigen Stoß durch die meisten Gegner!",
+    "7": "Für jede 3 Sekunden, die er lebt, treffen 2 Blitze Gegner in der Nähe und wiederholen 15 % des Schadens von Rock-Champions als magischen Schaden."
+   }
+  },
+  "Trickshot": {
+   "d": "Angriffe und Fähigkeiten von Trickschützen prallen ab. Jeder Abpraller verursacht einen Teil des Schadens des vorherigen Treffers.",
+   "rows": {
+    "2": "1 Abpraller; 22 % des vorherigen Schadens",
+    "3": "1 Abpraller; 33 % des vorherigen Schadens",
+    "4": "2 Abpraller; 33 % des vorherigen Schadens"
+   }
+  },
+  "True Damage": {
+   "rows": {
+    "5": "Nach jedem Kampf heilst du 2 Spielerleben und erhältst 2 EP."
+   }
+  }
+ },
+ "traitTexte": {
+  "While at least one Bodyguard is alive, your team gains 15 Armor and Magic Resist. Bodyguards gain more.": "Solange mindestens ein Leibwächter lebt, erhält dein Team 15 Rüstung und Magieresistenz. Leibwächter erhalten mehr.",
+  "Allies who start in the front 2 rows gain Shield. All other allies gain Damage Amp. Choreographers gain double.": "Verbündete, die in den vorderen 2 Reihen beginnen, erhalten einen Schild. Alle anderen Verbündeten erhalten Schadenssteigerung. Choreografen erhalten das Doppelte.",
+  "and 2% %i:scaleHealth% per level.": "und 2 % %i:scaleHealth% pro Level.",
+  "Heartsteel members grant your team bonuses.": "Heartsteel-Mitglieder gewähren deinem Team Boni.",
+  "Choose a Bias, empowering their Ability.": "Wähle einen Bias, der dessen Fähigkeit verstärkt.",
+  "Heartsteel champions gain an additional 150% of active Heartsteel bonuses.": "Heartsteel-Champions erhalten zusätzlich 150 % der aktiven Heartsteel-Boni.",
+  "Heartsteel champions gain an additional 150% of active Heartsteel bonuses.\\nPrismatic: Buckle up—HEARTSTEEL IS BACK!": "Heartsteel-Champions erhalten zusätzlich 150 % der aktiven Heartsteel-Boni.\\nPrismatisch: Schnall dich an – HEARTSTEEL IS BACK!",
+  "18 Decibels. The mix is 50% stronger.": "18 Dezibel. Der Mix ist 50 % stärker.",
+  "%i:scaleHealth% 550; Every 2 player combats, gain gold and a consumable!": "%i:scaleHealth% 550; alle 2 Spielerkämpfe erhältst du Gold und ein Verbrauchsitem!",
+  "Classical champions Captivate enemies in unique ways. They gain Damage Amp, increased by 1% every 6 seconds an enemy is Captivated.": "Klassik-Champions fesseln Gegner auf ihre eigene Art. Sie erhalten Schadenssteigerung, die alle 6 Sekunden, die ein Gegner gefesselt ist, um 1 % steigt.",
+  "Collab champions become inspired after taking or dealing damage 8 times, gaining Attack Damage and Ability Power.\\nEvery 7 inspirations during player combat, gain copies of Collab champions. (?/7)\\nEach game a different set of champions gain the Collab trait!": "Kollab-Champions werden inspiriert, nachdem sie 8-mal Schaden erlitten oder verursacht haben, und erhalten Angriffsschaden und Fähigkeitsstärke.\\nAlle 7 Inspirationen in Spielerkämpfen erhältst du Kopien von Kollab-Champions. (?/7)\\nIn jeder Partie erhalten andere Champions den Kollab-Trait!",
+  "AND they drop 1 Gold! (Total: ?)": "UND sie lassen 1 Gold fallen! (Gesamt: ?)",
+  "Juggernauts gain Durability, increasing based on their missing Health.": "Molochs erhalten Haltbarkeit, die mit ihrem fehlenden Leben steigt.",
+  "He heals for 10% of damage dealt by Rock champions.": "Er heilt sich um 10 % des Schadens, den Rock-Champions verursachen.",
+  "On cast, he fires a massive blast through the most enemies!": "Bei Aktivierung feuert er einen gewaltigen Stoß durch die meisten Gegner!",
+  "Every 3 seconds he lives, 2 bolts blast nearby enemies, repeating 15% of damage dealt by Rock champions as magic damage.": "Alle 3 Sekunden, die er lebt, treffen 2 Blitze Gegner in der Nähe und wiederholen 15 % des Schadens von Rock-Champions als magischen Schaden.",
+  "Your team gains 10% Attack Speed.\\nSwiftstrikers gain more every 2 seconds, up to 5 times.": "Dein Team erhält 10 % Angriffstempo.\\nSchnellschläger erhalten alle 2 Sekunden mehr, bis zu 5-mal.",
+  "Trickshots' Attacks and Abilities ricochet. Each ricochet deals a percentage of the previous bounce's damage.": "Angriffe und Fähigkeiten von Trickshots prallen ab. Jeder Abpraller verursacht einen Teil des Schadens des vorherigen Treffers.",
+  "1 richochet; 22% of previous damage": "1 Abpraller; 22 % des vorherigen Schadens",
+  "1 richochet; 33% of previous damage": "1 Abpraller; 33 % des vorherigen Schadens",
+  "2 richochets; 33% of previous damage": "2 Abpraller; 33 % des vorherigen Schadens",
+  "Each round after combat, heal 2 player Health and gain 2 XP.": "Nach jedem Kampf heilst du 2 Spielerleben und erhältst 2 EP.",
+  "When Encore champions fire projectiles with their abilities, they fire an extra one with reduced effectiveness.": "Wenn Zugabe-Champions mit ihrer Fähigkeit Geschosse abfeuern, feuern sie ein zusätzliches mit verringerter Wirkung ab.",
+  "Your team takes 6% less damage from abilities.": "Dein Team erleidet 6 % weniger Schaden durch Fähigkeiten.",
+  "Your strongest Mel and Rell are soul-linked. 70% of damage Mel takes is redirected to Rell. Rell heals for 20% of damage dealt by Mel.": "Deine stärkste Mel und deine stärkste Rell sind seelenverbunden. 70 % des Schadens, den Mel erleidet, wird auf Rell umgeleitet. Rell heilt sich um 20 % des Schadens, den Mel verursacht."
+ },
+ "augments": {
+  "DA_19_ArcanistCrown": "Du erhältst ein Arkanist-Emblem, einen Juwelenbesetzten Handschuh und einen Swain.",
+  "DA_19_ChoreographerCirclet": "Du erhältst ein Choreograf-Emblem, einen Gürtel des Riesen und einen Garen.",
+  "DA_19_ChoreographerCrown": "Du erhältst ein Choreograf-Emblem, einen Adaptiven Helm und eine Syndra.",
+  "DA_19_HeartsteelCirclet": "Du erhältst ein Heartsteel-Emblem, Kampfhandschuhe und einen K'Sante.",
+  "DA_19_HeartsteelPrismaticTour": "Du erhältst die prismatische Heartsteel-Quest, 3 Heartsteel-Champions, eine Glückstruhe mit Items und 7 Gold.\\nLass Heartsteel-Verbündete mit 7 aktiven Heartsteel Schaden verursachen, Schaden blocken und Leben heilen!",
+  "DA_19_HeartsteelPrismaticTourPlus": "Du erhältst die prismatische Heartsteel-Quest, 3 Heartsteel-Champions, 3 Komponenten und 2 Gold.\\nLass Heartsteel-Verbündete mit 7 aktiven Heartsteel Schaden verursachen, Schaden blocken und Leben heilen!",
+  "DA_19_HitmakerCirclet": "Du erhältst ein Hitmaker-Emblem, ein Riesenschwert und eine Senna.",
+  "DA_19_IllBeatsCirclet": "Du erhältst ein Illbeats-Emblem, eine Träne der Göttin und einen Draven.",
+  "DA_19_IonicSparkCirclet": "Du erhältst ein Ionic-Spark-Emblem, einen Übergroßen Stab und eine Briar.",
+  "DA_19_IonicSparkPrismaticTour": "Du erhältst die prismatische Ionic-Spark-Quest, 3 Ionic-Spark-Champions, eine Glückstruhe mit Items und 7 Gold.\\nSammle mit 7 aktiven Ionic Spark über 10 Runden Album-Autogramme und stelle dann 10 Ionic Spark auf!",
+  "DA_19_JazzCirclet": "Du erhältst ein Jazz-Emblem, einen Rekursivbogen und einen Bard.",
+  "DA_19_MosherCrown": "Du erhältst ein Schlächter-Emblem, eine Entschlossenheit des Titanen und eine Briar.",
+  "DA_19_PentakillCirclet": "Du erhältst ein Pentakill-Emblem, einen Negatron-Mantel und einen Viego.",
+  "DA_19_PentakillPrismaticTour": "Du erhältst die prismatische Pentakill-Quest, 3 Pentakill-Champions, eine Glückstruhe mit Items und 7 Gold.\\nErreiche Level 10 und lass einen Pentakill-Verbündeten mit 7 aktiven Pentakill Mehrfachkills erzielen!",
+  "DA_19_PyramidScheme": "Nach einem Kampf gegen einen Spieler, der nicht im Pyramidensystem ist, stiehlst du ihm 3 Gold und gibst ihm eine schwächere Kopie dieses Augments.\\nRundenbeginn: Du erhältst 1 Gold pro Spieler im System oder 10 Gold, wenn alle Spieler im System sind.",
+  "DA_19_RenegadeCirclet": "Du erhältst ein Renegaten-Emblem, Kampfhandschuhe und eine 2-Sterne-Qiyana.",
+  "DA_19_RenegadeCrown": "Du erhältst ein Renegaten-Emblem, eine Hand der Gerechtigkeit und eine Qiyana.",
+  "DA_19_SwiftstrikerCrown": "Du erhältst ein Schnellschläger-Emblem, eine Hextech-Gunblade und einen Bard.",
+  "DA_19_TrueDamageCirclet": "Du erhältst ein True-Damage-Emblem, einen Gürtel des Riesen und einen Ekko.",
+  "DA_Augment19_Manager_ManagementTrack": "Du erhältst ein Manager-Emblem und eine Leona. Wenn Champions Boni durch Manager erhalten, erhältst du mit 60 % Chance 1 Gold.\\nNachdem du 20 Gold durch den Manager-Trait gesammelt hast, erhältst du einen Dr. Mundo und eine Warmogs Rüstung.",
+  "DA_DuplicatorDeal": "Du erhältst 3 Champion-Duplikatoren. Du kannst keine Champions mehr auf 3 Sterne bringen.",
+  "DA_Heavenscale19_TheImmortalJourney": "Du erhältst eine Xayah, einen Speer von Shojin und 3 Gold.",
+  "DA_StarOfTheShow": "Du erhältst einen 2-Sterne-1-Kosten-Champion, der kein Tank ist, und ein Emblem für einen seiner Traits. Auf Stage 3-1 erhältst du 6 weitere Kopien dieses Champions.",
+  "DA_19_AimHigh": "Die ersten 2 Male, wenn du einen einzigartigen freischaltbaren 5-Kosten-Champion kaufst, erhältst du ein empfohlenes Item für ihn.",
+  "DA_BattleOfTheBands": "Hast du 2 oder mehr aktive Bands, erhält dein Team 18 % Angriffsschaden und Fähigkeitsstärke.",
+  "DA_BeltSmith2": "Du erhältst jetzt 1 zufälliges fertiges Item aus einem Gürtel des Riesen und ein weiteres in 1 Runde.",
+  "DA_ChaliceOfPowerAugment": "Du erhältst einen Kelch der Macht, ein Item, das dem Träger und Verbündeten innerhalb von 2 Feldern in derselben Reihe 25 % Fähigkeitsstärke und 1 Mana-Regeneration gewährt.",
+  "DA_ChampionAirdrop": "Du erhältst jetzt 3 2-Kosten-Champions und nach 5 Runden 3 weitere. Nach jeder Lieferung steigen die Wartezeit in Runden und die Zahl der Champions um 1.",
+  "DA_Choreographer19_DanceParty": "Wenn du einen Kampf gewinnst, lässt jeder überlebende Champion mit 5 % Chance 1 Gold fallen. Die Chance steigt für jeden aufgestellten Choreografen um 15 %. Du erhältst 2 Choreografen.",
+  "DA_DemonVision19_RockAllNite": "Rock-Champions erhalten 10 % Angriffsschaden und Fähigkeitsstärke. Alle 2 Sekunden, die das Infernal Idol lebt, erhalten sie 1 % mehr. Du erhältst 3 Rock-Champions.",
+  "DA_IonicSpark19_LightUpTheSky": "Alle 3 Sekunden erleiden die 3 Gegner mit dem meisten Leben magischen Schaden in Höhe von 5 % ihres max. Lebens + 1 % für jeden aufgestellten Ionic-Spark-Champion. Du erhältst 3 Ionic-Spark-Champions.",
+  "DA_IonicSpark19_OurHeartsAligned": "Jedes Mal, wenn Ionic-Spark-Champions zusammen 600 Mana ausgeben, erhalten alle 6 Sekunden lang einen Schild in Höhe von 10 % ihres max. Lebens. Du erhältst 3 Ionic-Spark-Champions.",
+  "DA_Jazz19_DigOnThis": "Deine Jazz-Champions erhalten 150 % mehr Leben und Schadenssteigerung durch den Jazz-Trait. Du erhältst einen Lucian und einen Galio.",
+  "DA_KDA19_StarPower": "Wenn du einen K/DA-Champion auf 2 Sterne bringst, erhältst du einen kostenlosen K/DA-Champion. Du erhältst eine Lillia und eine Neeko.",
+  "DA_Pinata": "Du erhältst eine Trainingspuppe mit 3 Gürteln des Riesen. Deine Trainingspuppen lassen für je 700 erlittenen Schaden 1 Gold fallen.",
+  "DA_Renegade19_HighRolling": "Kills von Renegaten können Beute fallen lassen, abhängig von der Krit-Chance. Auch der Wert der Beute kann kritisch treffen und noch mehr Beute bringen. Du erhältst eine Qiyana.",
+  "DA_ReunionShowII": "Du erhältst Champions im Wert von 16 Gold, die alle einen gemeinsamen Trait haben.",
+  "DA_StatsOnStatsII": "Jetzt und nach jeweils 5 Runden erhältst du 4 Verbrauchsitems, die Werte erhöhen.",
+  "DA_Swiftstriker19_DeathByAThousandCuts": "Nach 250 und nach 1000 Angriffen von Schnellschlägern erhältst du einen Amboss für fertige Items und 12 Gold. Du erhältst einen Ziggs und eine Yunara.",
+  "DA_TheDropGold": "Nach 12 Sekunden Kampf heilt sich dein Team um 30 % des max. Lebens und Gegner erleiden absoluten Schaden in Höhe von 12 % ihres max. Lebens.",
+  "DA_ZZRotAugment": "Du erhältst ein Zz'Rot-Portal, ein Item, das eine große Leerenbrut beschwört.",
+  "DA_19_PyramidScheme_Level3": "Kampfbeginn: Ist dein Gegner noch nicht im Pyramidensystem, stiehlst du ihm 1 Gold und gibst ihm eine schwächere Kopie dieses Augments.",
+  "DA_19_PyramidScheme_Level5": "Kampfbeginn: Ist dein Gegner noch nicht im Pyramidensystem, stiehlst du ihm 1 Gold und gibst ihm eine schwächere Kopie dieses Augments.",
+  "DA_19_PyramidScheme_Level8": "Kampfbeginn: Ist dein Gegner noch nicht im Pyramidensystem, stiehlst du ihm 1 Gold und gibst ihm eine schwächere Kopie dieses Augments.",
+  "DA_BlindBox": "Du erhältst ein zufälliges Gold-Augment, verlierst aber 5 Gold.",
+  "DA_CritQuintessence": "Du erhältst 8 Gold. Dein Team erhält 1 % Krit-Chance.",
+  "DA_CritQuintessencePlus": "Du erhältst 14 Gold. Dein Team erhält 1 % Krit-Chance.",
+  "DA_Elise19_HeroAugment": "Du erhältst eine Elise. Deine stärkste Elise wird zur magischen Assassine mit einem Biss, den sie bei Kills erneut auf Gegner mit wenig Leben wirkt.",
+  "DA_FourFourTime": "Du erhältst jetzt 4 Gold, 4 Spielerleben und 4 Rerolls sowie in 4 Runden einen zufälligen 4-Kosten-Champion.",
+  "DA_KnowledgeDownloadI": "Du erhältst 20 EP.",
+  "DA_StaffSmith1": "Du erhältst 1 zufälliges fertiges Item aus einem Übergroßen Stab.",
+  "DA_ThreeFourTime": "Du erhältst jetzt 3 Gold, 3 Spielerleben und 3 Rerolls sowie in 4 Runden einen zufälligen 3-Kosten-Champion."
+ }
+}

@@ -2204,3 +2204,86 @@ body.nd-mini .nds-fly .nds-soon{display:inline-block}
 .chp2-abs.clamp.full.scroll{overflow-y:auto}
 /* Aufklappen: der Text darf nicht zusammengedrückt werden (die ausgeblendeten Werte liegen weiter in der Spalte) */
 .chp2-abs.clamp.full{flex-shrink:0}
+
+/* ---------- Comp-Detail (Tierlist, Set 18 + 19) – Wunsch 18.11. ---------- */
+/* rechts sechs feste Boxen, Höhe teilt sich die Spalte (Comp-Box bleibt gleich groß); ohne Inhalt ein kurzer Hinweis */
+.cp2-side{display:grid;grid-template-rows:1.3fr .62fr .7fr 1.25fr 1.08fr .82fr;gap:6px}
+.cp2-side .cp2-box{min-height:0;overflow:hidden}
+.cp2-none{margin:2px 0 0;font-size:.74rem;color:#5f7686}
+.cp2-it b{display:none}   /* keine Nummern an der Item-Priorität */
+.cp2-unl{display:flex;flex-direction:column;gap:5px}
+.cp2-ul{position:relative;display:flex;align-items:center;gap:7px;min-width:0;cursor:pointer}
+.cp2-ul .ch-lock{left:16px;top:-3px;width:11px;height:14px}
+.cp2-ul small{min-width:0;font-size:.7rem;line-height:1.25;color:#e9d9a8;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* Traits links immer kompakt (wie Draven Dragon): höchstens 10, „+N“ zeigt den Rest */
+.cp2-trs:not(.all) .cp2-tr.more{display:none}
+.cp2-trs.all{overflow:visible;z-index:5}
+.cp2-trmore{flex:none;align-self:flex-start;margin-top:1px;padding:2px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(5,8,20,.8);color:#9fb6c4;font:800 .74rem/1.4 var(--ff-body);cursor:pointer}
+.cp2-trmore:hover{color:#fff;border-color:#2ee6d6}
+/* Stage 4: 5-Koster mit etwas Abstand zu den 4-Kostern */
+.cp2-sq span.gap{margin-left:clamp(6px,1.2cqw,14px)}
+/* Waben einen Tick größer (oben bleibt die Kante, Platz rechts und unten wird genutzt), Items etwas höher auf dem Holder */
+.cp2-arena .board{--hx:7.35cqw;left:53.4%;top:35.4%}
+.cp2-arena .hex-items{top:calc(100% - 4.3cqw)}
+.cp2-side{contain:size}   /* Höhe kommt von der Arena links – die Boxen teilen sich diese Höhe, die Comp-Box wächst nicht */
+/* feste Boxen rechts kompakt, damit alles in die Höhe der Arena passt */
+.cp2-side .cp2-box{padding:6px 9px 7px}
+.cp2-side .cp2-box h4{margin:0 0 4px;font-size:.68rem}
+.cp2-side .cp2-box h5{margin:4px 0 3px}
+.cp2-side .cpb-items .cp2-it{width:27px;height:27px}
+.cp2-side .cpb-items .cp2-builds{flex-wrap:nowrap;overflow:hidden}
+.cp2-side .cpb-items .cp2-carryit .hx{width:24px;height:27.7px}.cp2-side .cpb-items .cp2-carryit .cp2-it{width:22px;height:22px}
+.cp2-side .cp2-augs{margin-top:0}
+.cp2-side .cp2-augs .cp-aug img{width:24px;height:24px}
+.cp2-side .cpb-core .cp2-crow{--cw:min(34px,calc((100cqw - 3px * var(--k)) / (var(--k) + .5)))}
+.cp2-side .cp2-packs{gap:4px 12px}
+.cp2-side .cp2-packs .cp2-u{width:26px}.cp2-side .cp2-packs .cp2-u .hx{width:26px;height:30px}
+.cp2-side .cp2-prio li{height:23px}
+.cp2-ul .hx{flex:none;width:24px;height:27.7px}.cp2-ul{gap:8px}.cp2-ul small{flex:1}   /* Unlock-Box: Champion-Wabe, Schloss, Bedingung */
+.chp2-tf .chp2-trm{height:21px;align-items:flex-start;flex-wrap:nowrap}.chp2-tf .chp2-trm a{width:30px;height:30px;border-radius:6px}   /* Champion-Symbole rechts so hoch wie die Stufen-Waben (30 px); die Zeile behält ihre Höhe, damit nichts verrutscht */
+/* Comp-Detail, Runde 2 (Wunsch 18.11.) */
+.cp2-arena .hex-items{top:calc(100% - clamp(14px,2.5cqw,30px))}   /* Items bündig mit der unteren Spitze der Wabe */
+.cp2-arena .hex .hex-lock{top:6%;right:2%;width:clamp(10px,1.5cqw,16px);height:clamp(13px,1.9cqw,20px);z-index:4}
+.cp2-side{grid-template-rows:.95fr .6fr .88fr 1.35fr 1fr 1.08fr}
+.cp2-side .cpb-items .cp2-it{width:34px;height:34px}
+.cp2-side .cp2-augs{gap:4px}.cp2-side .cp2-augs .cp-aug img{width:31px;height:31px}
+.cp2-side .cpb-core .cp2-crow{--cw:min(41px,calc((100cqw - 3px * var(--k)) / (var(--k) + .5)))}
+.cp2-unl{flex-direction:row;flex-wrap:wrap;gap:6px 8px}
+.cp2-ul .hx{width:36px;height:41.6px}
+.cp2-ul .ch-lock{left:auto;right:-5px;top:-3px;width:13px;height:16px}
+/* Traits links: feste Größe wie bei Draven Dragon (9 Traits), 10 passen untereinander; „+N“ zeigt nur weitere darunter */
+.cp2-trs{--rh:3.8cqw;bottom:auto}
+/* Rahmen ums Carry-Bild im Kopf etwas größer, damit das Bild hineinpasst */
+.cp2-carry{--w:84px}
+/* Champion-Tooltip: Unlock-Bedingung in Gold */
+.gt-unl{position:relative;display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:7px 9px;border-radius:9px;border:1px solid rgba(242,193,78,.6);background:linear-gradient(135deg,rgba(242,193,78,.16),rgba(120,82,10,.12))}
+.gt-unl .ch-lock{position:relative;flex:none;width:14px;height:18px;margin-top:2px}
+.gt-unl span{display:flex;flex-direction:column;gap:2px;font-size:.8rem;line-height:1.35;color:#fff2cf}
+.gt-unl b{font:800 .66rem/1 var(--ff-body);letter-spacing:.14em;text-transform:uppercase;color:#f5c84b}
+/* Höhen der sechs Boxen nach Inhalt verteilt (Item-Reihe, 3 Prio-Pillen, 8 Augments in einer Reihe, 2 Reihen Core, 2 Reihen Flex, Unlock-Waben) */
+.cp2-side{grid-template-rows:62fr 51fr 56fr 101fr 88fr 67fr}
+.cp2-side .cp2-augs .cp-aug img{width:27px;height:27px}
+.cp2-side .cpb-core .cp2-crow{--cw:min(36px,calc((100cqw - 3px * var(--k)) / (var(--k) + .5)))}
+.cp2-side .cp2-packs .cp2-u{width:27px}.cp2-side .cp2-packs .cp2-u .hx{width:27px;height:31.2px}
+.cp2-ul .hx{width:34px;height:39.3px}
+.chp2-tft b{font-size:1.55rem;line-height:1.3rem}.chp2-tf .chp2-trm a{width:33px;height:33px}   /* Champion-Seite rechts: Trait-Name größer und Champion-Symbole einen Tick größer – Zeilenhöhen bleiben, nichts verschiebt sich (Wunsch 18.11.) */
+/* Comp-Detail, Runde 3 (Wunsch 18.11.): Traits größer (9 Zeilen bis knapp über Stage 2), 6 große Augments in einer Reihe, Core nur eine Reihe mit größeren Waben */
+.cp2-trs{--rh:4.25cqw;width:clamp(140px,18.5cqw,220px)}
+.cp2-side{grid-template-rows:62fr 51fr 64fr 76fr 98fr 74fr}
+.cp2-side .cp2-augs{flex-wrap:nowrap;gap:5px}.cp2-side .cp2-augs .cp-aug img{width:min(38px,calc((100cqw - 25px) / 6));height:auto;aspect-ratio:1}
+.cp2-side .cpb-augs{container-type:inline-size}
+.cp2-side .cpb-core .cp2-crow{--cw:min(42px,calc((100cqw - 3px * (var(--k) - 1)) / var(--k)));margin-bottom:0}
+/* Carry-Bild im Kopf: Rahmen sitzt bündig (kein Versatz), Bild liegt innerhalb der Rahmenkante (Rahmen: Kante 1,6 %, Öffnung ab 5,6 %) */
+.cp2-carry .tl2-fr{left:0;top:0}
+.cp2-carry{--w:73px}   /* Unterkante bündig mit der Zeile Comp-Art/Schwierigkeit */
+.cp2-carry .tl2-pic{inset:3.6% 3.8%;clip-path:polygon(7% 0,93% 0,100% 6.5%,100% 93.5%,93% 100%,7% 100%,0 93.5%,0 6.5%)}
+/* Comp-Art und Schwierigkeit in eigener Zeile unter dem Namen */
+.cp2-l3{display:flex;flex-wrap:wrap;gap:6px}
+.cp2-ul .hx{width:39px;height:45px}.cp2-side .cp2-unl{flex-wrap:nowrap;gap:3px}   /* Unlock-Waben so groß wie die Core-Units, bis 6 in einer Reihe */
+.cp2-side{grid-template-rows:62fr 51fr 64fr 76fr 89fr 83fr}
+/* Boxen rechts: Inhalt mittig in der Höhe unter der Überschrift, Überschriften etwas größer */
+.cp2-side .cp2-box{display:flex;flex-direction:column}
+.cp2-side .cp2-box>h4{flex:none;font-size:.8rem;margin-bottom:2px}
+.cp2-side{grid-template-rows:60fr 56fr 68fr 76fr 92fr 78fr}
+.cp2-side .cp2-box{padding:5px 9px}
+.cp2-side .cp2-box>:not(h4){margin-top:auto;margin-bottom:auto}

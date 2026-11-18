@@ -88,7 +88,7 @@ function traitDesc(x){
     manaregen:['Manaregeneration', 'Mana Regen'], mana:['Mana', 'Mana'], crit:['Krit-Chance', 'Crit Chance'], critmult:['Krit-Schaden', 'Crit Damage'], da:['Schadensverstärkung', 'Damage Amp'], dr:['Haltbarkeit', 'Durability'], sv:['Omnivampir', 'Omnivamp'], omnivamp:['Omnivampir', 'Omnivamp']};
   return plainDesc(s.replace(/%i:scale([A-Za-z]+)%/g, (m, k)=>{ const t = ST[k.toLowerCase()]; return t ? L(t[0], t[1]) : k.replace(/([a-z])([A-Z])/g, '$1 $2'); }).replace(/%i:[^%]*%/g, '')).replace(/\(\)\s*/g, '');
 }
-const traits = TFT_DATA.traits.map(x=>{ const m = TRAIT_META[x.n] || {}; return {n:x.n, cat:m.cat||'origin', bp:x.bp.map(String), bs:x.bs || null, d:(!EN && m.d) || traitDesc(x)}; });
+const traits = TFT_DATA.traits.map(x=>{ const m = TRAIT_META[x.n] || {}; return {n:x.n, cat:m.cat||'origin', bp:x.bp.map(String), bs:x.bs || null, d:(!EN && m.d) || (TFT_DATA.manual ? plainDesc(String(x.desc || '').split(/<row>/i)[0]) : traitDesc(x))}; });   // Set von Hand: nur die Einleitung, die Stufen stehen darunter (traitTiersHTML)
 
 
 
@@ -299,7 +299,7 @@ function boardHTML(c){
       if(!b){ cells += '<div class="hex"><div class="hex-bg"></div></div>'; continue; }
       const ch = champBy[b.u], plant = PLANTS[b.u];
       const its = (b.i||[]).map(itemMini).join('');
-      cells += `<div class="hex filled c${ch?ch.c:1}${plant?' plant':''}" title="${esc(b.u)}"${ch?` data-champ="${esc(b.u)}" style="cursor:pointer"`:''}><div class="hex-bg"></div><div class="hex-img" style="background-image:${champBg(b.u)}"></div>${b.s?`<span class="hex-stars">${'★'.repeat(b.s)}</span>`:''}${its?`<div class="hex-items">${its}</div>`:''}<span class="hex-name">${esc(b.u)}</span></div>`;
+      cells += `<div class="hex filled c${ch?ch.c:1}${plant?' plant':''}" title="${esc(b.u)}"${ch?` data-champ="${esc(b.u)}" style="cursor:pointer"`:''}><div class="hex-bg"></div><div class="hex-img" style="background-image:${champBg(b.u)}"></div>${b.s?`<span class="hex-stars">${'★'.repeat(b.s)}</span>`:''}${(CH_DATA[b.u] || {}).unlock ? '<i class="ch-lock hex-lock" aria-hidden="true"></i>' : ''}${its?`<div class="hex-items">${its}</div>`:''}<span class="hex-name">${esc(b.u)}</span></div>`;
     }
     rows += `<div class="board-row${r%2?' odd':''}">${cells}</div>`;
   }
@@ -492,11 +492,10 @@ const STAGE_PLAN = {
 // Units je Stage: Stage 2 die Early-Units; bei Reroll Stage 3 die Reroll-Ziele, Stage 4 der Rest des Boards;
 // sonst Stage 4 die vier teuersten Units, Stage 3 die nächsten vier
 function cp2StageUnits(c){
-  const units = [...new Map(c.board.filter(b=>!PLANTS[b.u]).map(b=>[b.u, b])).values()], rr = /^(\d)-Cost Reroll/.exec(c.style);
-  const desc = units.sort((a, b)=>costOf(b.u) - costOf(a.u) || (b.u === c.carry) - (a.u === c.carry));
-  if(!rr) return [c.early, desc.slice(4, 8), desc.slice(0, 4)];
-  const mid = desc.filter(b=>costOf(b.u) === +rr[1]);
-  return [c.early, mid, desc.filter(b=>!mid.includes(b))].map(l=>l.slice(0, 4));
+  const units = [...new Map([...(c.early || []), ...c.board].filter(b=>!PLANTS[b.u] && champBy[b.u]).map(b=>[b.u, b])).values()];
+  const by = k => units.filter(b=>costOf(b.u) === k), cheap = [...by(1), ...by(2)].slice(0, 5);
+  const mid = [...by(2), ...by(3)].filter(b=>!cheap.includes(b)).slice(0, 2);
+  return [cheap, mid, [...by(4), ...by(5), ...by(7)]];
 }
 // Core und Flex-Packs aus den Comp-Daten: Flex-Units (c.cap) mit „ersetzt X“ bilden je ersetzter Unit ein Pack, „ab Level N“ eine Erweiterung;
 // Core = Units der Aufstellung, die nie ersetzt werden
@@ -507,34 +506,37 @@ function cp2Packs(c){
   const core = units.filter(b=>!out.includes(b.u)).sort((a, b)=>(b.u === c.carry) - (a.u === c.carry) || costOf(b.u) - costOf(a.u));
   return {core, swaps:Object.entries(swap).map(([o, ins])=>[units.find(b=>b.u === o) || {u:o}, ins]), lvls:Object.entries(lvl).sort((a, b)=>a[0] - b[0])};
 }
+const TRS_MAX = 9;   // Traits links im Feld: 9 Zeilen passen über die Stage-Kästen; weitere hinter „+N“ darunter (links neben Stage 2)
 const cp2Unit = (b, cls='') => `<span class="cp2-u ${cls}"${champBy[b.u] ? ` data-champ="${esc(b.u)}"` : ''} title="${esc(b.u)}">${hexHTML(b.u)}<small>${esc(b.u)}</small></span>`;
 function panel2HTML(c){
   const t = c.tier.toLowerCase(), fo = TL2_FOCUS[c.carry], img = champImg(c.carry) || champFallback(c.carry), st = STICKER[c.sticker];
   const variants = comps.filter(x=>x.carry===c.carry).sort((a,b)=>b.main-a.main || 'SABCX'.indexOf(a.tier)-'SABCX'.indexOf(b.tier));
   const rank = c.tier === 'X' && c.sub ? c.sub.toLowerCase() : t;
   const {core, swaps, lvls} = cp2Packs(c);
-  const prioItems = c.carousel.map(findItem).filter(Boolean), augs = c.augs.map(id=>augById[id]).filter(Boolean);
+  const prioItems = c.carousel.map(findItem).filter(Boolean), augs = c.augs.map(id=>augById[id]).filter(Boolean).slice(0, 6);
   const stUnits = cp2StageUnits(c);
   const plan = (STAGE_PLAN[c.style] || STAGE_PLAN['4-Cost Fast 8']).map((p, i)=>{ const own = c['plan' + (i + 2)];
     return [L(p[0], p[1]), own ? own.split('\n').filter(Boolean) : L(p[2], p[3]), stUnits[i]]; });
   const alts = variants.filter(v=>v !== c), trs = compTraits(c);
-  // Core als Wabe wie auf dem Board: zwei versetzte Reihen (ab 5 Units), Carry leuchtet
-  const combRows = core.length > 4 ? [core.slice(0, Math.ceil(core.length / 2)), core.slice(Math.ceil(core.length / 2))] : [core];
-  // Comp-Tipp unter dem Namen: Text der Redaktion, sonst der erste Satz der Standard-Zusammenfassung zur Comp-Art
-  const tip = c.tips || c.plan || (L(PLAN[c.style] || '', PLAN_EN[c.style] || '').match(/^.*?[.!?](?=\s+[A-ZÄÖÜ]|$)/) || [''])[0];
+  // Core-Units: nur die wichtigen – Carrys mit Items und 3-Sterne-Units, eine Reihe, höchstens 6 (Carry zuerst, dann nach Itemzahl)
+  const imp = core.filter(b=>b.u === c.carry || (b.i || []).length || b.s === 3)
+    .sort((a, b)=>(b.u === c.carry) - (a.u === c.carry) || (b.i || []).length - (a.i || []).length || costOf(b.u) - costOf(a.u)).slice(0, 6)
+    .sort((a, b)=>costOf(a.u) - costOf(b.u));   // angezeigt aufsteigend nach Kosten: 1-Cost links … 7-Cost rechts
+  const combRows = [imp.length ? imp : core.slice(0, 1)];
   const itemImg = (it, n) => `<button class="cp2-it" data-item="${it.id}" title="${esc(L(it.de || it.en, it.en))}"><img src="${it.img}" alt="${esc(L(it.de || it.en, it.en))}" loading="lazy">${n ? `<b>${n}</b>` : ''}<span></span></button>`;
-  const box = (title, body, cls='') => body ? `<section class="cp2-box ${cls}"><h4>${title}</h4>${body}</section>` : '';
+  const box = (title, body, cls='') => `<section class="cp2-box ${cls}"><h4>${title}</h4>${body || `<p class="cp2-none">${L('Noch nichts eingetragen', 'Nothing added yet')}</p>`}</section>`;
+  const unl = [...new Set(c.board.map(b=>b.u))].filter(u=>(CH_DATA[u] || {}).unlock).sort((a, b)=>costOf(a) - costOf(b));
   // Traits wie im Spiel links im Feld: Symbol, Anzahl, Name und die Stufen (erreichte hell)
-  const traitsHTML = trs.map(tr=>{ const bp = (traitBy[tr.n] || {bp:[]}).bp.map(Number);
-    return `<div class="cp2-tr ${traitCls(tr)}" data-tk="${tr.k}" data-ttt="${esc(tr.n)}">${traitHex(tr.n, traitCls(tr), 34)}<b>${tr.k}</b><span><i>${esc(tr.n)}</i>${bp.length > 1 ? `<small>${bp.map(x=>`<em${x <= tr.k ? ' class="on"' : ''}>${x}</em>`).join('›')}</small>` : ''}</span></div>`; }).join('');
+  const traitsHTML = trs.map((tr, k)=>{ const bp = (traitBy[tr.n] || {bp:[]}).bp.map(Number);
+    return `<div class="cp2-tr ${traitCls(tr)}${k >= TRS_MAX ? ' more' : ''}" data-tk="${tr.k}" data-ttt="${esc(tr.n)}">${traitHex(tr.n, traitCls(tr), 34)}<b>${tr.k}</b><span><i>${esc(tr.n)}</i>${bp.length > 1 ? `<small>${bp.map(x=>`<em${x <= tr.k ? ' class="on"' : ''}>${x}</em>`).join('›')}</small>` : ''}</span></div>`; }).join('');
   return `<div class="cp2" style="--tc:${TIER_COL[c.tier]}">
     <header class="cp2-hd">
       <span class="tl2-frame cp2-carry"><span class="tl2-pic" style="background-image:url('${img}')${fo ? `;--ps:${fo[0]}%;--py:${fo[1]}%` : ''}"></span>
         <img class="tl2-fr" src="assets/tierlist/comp-${t}-3.webp" alt="" width="372" height="408"></span>
       <div class="cp2-ttl">
         <div class="cp2-l1"><img class="cp2-rk" src="assets/tierlist/tier-${rank}.webp" alt="" width="${tl2W(rank)}" height="160"><span class="cp2-rkn">${c.tier === 'X' ? `${TL2_NAME.X}${c.sub ? ' · ' + TL2_NAME[c.sub] : ''}` : TL2_NAME[c.tier]}</span>${st ? `<em class="cp2-trend ${st[0]}">${TL2_TREND[st[0]]}${esc(st[2])}</em>` : ''}</div>
-        <div class="cp2-l2"><h3>${esc(c.name)}</h3><span class="cp2-tag">${esc(c.style.replace('4-Cost ', ''))}</span><span class="cp2-tag dim">${esc(compDiffName(c))}</span></div>
-        ${tip ? `<p class="cp2-tip">${esc(tip).replace(/\n/g, ' ')}</p>` : ''}
+        <div class="cp2-l2"><h3>${esc(c.name)}</h3></div>
+        <div class="cp2-l3"><span class="cp2-tag">${esc(c.style.replace('4-Cost ', ''))}</span><span class="cp2-tag dim">${esc(compDiffName(c))}</span></div>
       </div>
       <div class="cp2-acts">${alts.length ? `<nav class="cp2-alts" aria-label="${L('Alternativen mit demselben Carry', 'Alternatives with the same carry')}"><small>${L('Alternativen', 'Alternatives')}</small>${alts.map(v=>{ const vr = (v.tier === 'X' && v.sub ? v.sub : v.tier).toLowerCase();
           return `<button class="cp2-alt" data-variant="${v.slug}" title="${esc(v.name)} · ${TL2_NAME[v.tier === 'X' && v.sub ? v.sub : v.tier]}"><img src="assets/tierlist/tier-${vr}.webp" alt="" width="${tl2W(vr)}" height="160">${esc(v.name)}<span></span></button>`; }).join('')}</nav>` : ''}<button class="cp2-btn" type="button" data-planner="${c.slug}" title="${L('Code für den Team-Planer im Spiel kopieren', 'Copy a code for the in-game team planner')}">${csSvg('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>', 2)}${L('Planer-Code', 'Planner code')}<span></span></button>
@@ -542,23 +544,24 @@ function panel2HTML(c){
     </header>
     <div class="cp2-grid">
       <div class="cp2-main">
-        <div class="cp2-arena"><div class="cp2-trs${trs.length > 7 ? ' many' : ''}" style="--n:${Math.max(6, trs.length)}">${traitsHTML}</div><div class="cp2-field">${boardHTML(c)}</div>
+        <div class="cp2-arena"><div class="cp2-trs many">${traitsHTML}${trs.length > TRS_MAX ? `<button type="button" class="cp2-trmore" aria-expanded="false">+${trs.length - TRS_MAX}<span></span></button>` : ''}</div><div class="cp2-field">${boardHTML(c)}</div>
           <div class="cp2-stages">${plan.map(([ttl, pts, us], i)=>`<div class="cp2-stage s${i + 2}"><div class="cp2-sth"><b>${i + 2}</b><i>Stage ${i + 2}</i><em>${esc(ttl)}</em></div>
-            <ul>${pts.map(p=>`<li title="${esc(p)}">${esc(p)}</li>`).join('')}</ul>${us.length ? `<div class="cp2-sq">${us.map(b=>`<span class="c${(champBy[b.u] || {c:1}).c}"${champBy[b.u] ? ` data-champ="${esc(b.u)}"` : ''} title="${esc(b.u)}" style="background-image:${champBg(b.u)}"></span>`).join('')}</div>` : ''}</div>`).join('')}</div></div>
+            <ul>${pts.map(p=>`<li title="${esc(p)}">${esc(p)}</li>`).join('')}</ul>${us.length ? `<div class="cp2-sq">${us.map((b, k)=>`<span class="c${(champBy[b.u] || {c:1}).c}${k && costOf(b.u) >= 5 && costOf(us[k - 1].u) < 5 ? ' gap' : ''}"${champBy[b.u] ? ` data-champ="${esc(b.u)}"` : ''} title="${esc(b.u)}" style="background-image:${champBg(b.u)}"></span>`).join('')}</div>` : ''}</div>`).join('')}</div></div>
       </div>
       <aside class="cp2-side">
         <!-- eine schmale Spalte, drei Kästen: Items (Priorität + alternative Builds), Augments (Priorität + Empfehlungen), Team (Core-Wabe + Flex-Packs) -->
-        ${box(L('Item-Priorität', 'Item priority'), (prioItems.length ? `<div class="cp2-items prio">${prioItems.map((it, i)=>itemImg(it, i + 1)).join('<i class="cp2-arr">›</i>')}</div>` : '')
-          + (c.alt.length ? `<h5>${L('Alternative Builds', 'Alternative builds')}</h5><div class="cp2-builds">${c.alt.map(b=>`<div class="cp2-carryit"${champBy[b.u] ? ` data-champ="${esc(b.u)}"` : ''} title="${esc(b.u)}">${hexHTML(b.u, 'hx-sm')}<div class="cp2-items">${(b.i || []).map(findItem).filter(Boolean).map(it=>itemImg(it)).join('')}</div></div>`).join('')}</div>` : ''))}
-        ${box(L('Augment-Priorität', 'Augment priority'), (c.augTypes.length ? `<ol class="cp2-prio">${c.augTypes.map((a, i)=>`<li class="p${i + 1}"><b>${i + 1}</b><span>${esc(augTypeName(a))}</span></li>`).join('')}</ol>` : '')
-          + (augs.length ? `<div class="cp2-augs">${augs.map(a=>`<button class="cp-aug" data-aug="${a.id}" title="${esc(L(a.de || a.en, a.en))}"><img src="${augImg(a)}" alt="${esc(a.en)}" loading="lazy"><span></span></button>`).join('')}</div>` : ''))}
-        ${box('Core', `<div class="cp2-comb" style="--k:${combRows[0].length}">${combRows.map((r, i)=>`<div class="cp2-crow${i ? ' odd' : ''}">${r.map(b=>`<span class="cp2-ch${b.u === c.carry ? ' carry' : ''}"${champBy[b.u] ? ` data-champ="${esc(b.u)}"` : ''} title="${esc(b.u)}">${hexHTML(b.u)}</span>`).join('')}</div>`).join('')}</div>`
-          + (swaps.length || lvls.length ? `<h5>${L('Flexible Units', 'Flex units')}</h5><div class="cp2-packs">${swaps.map(([o, ins])=>`<div class="cp2-pack">${ins.map(b=>cp2Unit(b)).join('')}<i>⇄</i>${cp2Unit(o, 'out')}</div>`).join('')
-            + lvls.map(([l, ins])=>`<div class="cp2-pack"><span class="cp2-lv">Lv ${l}</span><i>+</i>${ins.map(b=>cp2Unit(b)).join('')}</div>`).join('')}</div>` : ''))}
+        ${box(L('Item-Priorität', 'Item priority'), prioItems.length ? `<div class="cp2-items prio">${prioItems.map(it=>itemImg(it)).join('<i class="cp2-arr">›</i>')}</div>` : '', 'cpb-items')}
+        ${box(L('Augment-Priorität', 'Augment priority'), c.augTypes.length ? `<ol class="cp2-prio">${c.augTypes.map((a, i)=>`<li class="p${i + 1}"><b>${i + 1}</b><span>${esc(augTypeName(a))}</span></li>`).join('')}</ol>` : '', 'cpb-augp')}
+        ${box(L('Augment-Vorschläge', 'Suggested augments'), augs.length ? `<div class="cp2-augs">${augs.map(a=>`<button class="cp-aug" data-aug="${a.id}" title="${esc(L(a.de || a.en, a.en))}"><img src="${augImg(a)}" alt="${esc(a.en)}" loading="lazy"><span></span></button>`).join('')}</div>` : '', 'cpb-augs')}
+        ${box(L('Core-Units', 'Core units'), `<div class="cp2-comb" style="--k:${combRows[0].length}">${combRows.map((r, i)=>`<div class="cp2-crow${i ? ' odd' : ''}">${r.map(b=>`<span class="cp2-ch${b.u === c.carry ? ' carry' : ''}"${champBy[b.u] ? ` data-champ="${esc(b.u)}"` : ''} title="${esc(b.u)}">${hexHTML(b.u)}</span>`).join('')}</div>`).join('')}</div>`, 'cpb-core')}
+        ${box(L('Flexible Units', 'Flex units'), swaps.length || lvls.length ? `<div class="cp2-packs">${swaps.map(([o, ins])=>`<div class="cp2-pack">${ins.map(b=>cp2Unit(b)).join('')}<i>⇄</i>${cp2Unit(o, 'out')}</div>`).join('')
+            + lvls.map(([l, ins])=>`<div class="cp2-pack"><span class="cp2-lv">Lv ${l}</span><i>+</i>${ins.map(b=>cp2Unit(b)).join('')}</div>`).join('')}</div>` : '', 'cpb-flex')}
+        ${box('Unlocks', unl.length ? `<div class="cp2-unl">${unl.map(u=>`<span class="cp2-ul"${champBy[u] ? ` data-champ="${esc(u)}"` : ''}>${hexHTML(u)}<i class="ch-lock" aria-hidden="true"></i></span>`).join('')}</div>` : `<p class="cp2-none">${L('Keine Unlocks nötig', 'No unlocks needed')}</p>`, 'cpb-unl')}
       </aside>
     </div>
   </div>`;
 }
+document.addEventListener('click', e=>{ const b = e.target.closest && e.target.closest('.cp2-trmore'); if(!b) return; const w = b.closest('.cp2-trs'), o = !w.classList.contains('all'); w.classList.toggle('all', o); b.setAttribute('aria-expanded', o); b.firstChild.textContent = o ? '–' : '+' + w.querySelectorAll('.cp2-tr.more').length; });
 // Code für den Team-Planer im Spiel: „02“, je Champion 3 Hex-Ziffern seiner Planer-Nummer (data/planner-<Set>.json, tools/planer-codes.js),
 // 10 Plätze (leer = 000), dahinter das Set (z. B. TFTSet18). Datei wird erst beim ersten Klick geladen
 const PLANNER = {};
@@ -2347,6 +2350,7 @@ function gtChamp(n){
       <ul class="gt-num">${st && st.range ? `<li>${GT_RANGE}${st.range}</li>` : ''}<li><span class="coin"></span>${c.c}</li></ul></div>`
     // Fähigkeitssymbol aus dem Spielclient (assets/img/abilities/<api>.png, tools/unreal) – fehlt es, bleibt nur der Text
     + (abH ? `<div class="gt-ab"><div class="gt-abh">${d.api ? `<img class="gt-abi" src="assets/img/abilities/${d.api}.png" alt="" width="34" height="34" onerror="this.remove()">` : ''}<span><b>${esc(ab.n)}</b>${st && st.mana ? `<span class="gt-mana">${GT_MANA}${st.mana0} / ${st.mana}</span>` : ''}</span></div><p>${abH}</p></div>` : '')
+    + (d.unlock ? `<div class="gt-unl"><i class="ch-lock" aria-hidden="true"></i><span><b>${L('Freischaltbar', 'Unlockable')}</b>${esc(L(d.unlock.de, d.unlock.en))}</span></div>` : '')
     + (best.length ? `<div class="gt-rec"><h6>${L('Empfohlene Items', 'Recommended items')}</h6><div>${best.map(it=>`<img src="${it.img}" alt="">`).join('')}</div></div>` : '');
 }
 function gtItem(it){
@@ -2378,8 +2382,19 @@ function gtShow(el){
   const topH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--topH')) || 64;
   let left = r.right + 10; if(left + w > innerWidth - 8) left = r.left - w - 10;
   if(left < 8) left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2));
+  // Comp-Detail, Spalte rechts (Items, Augments, Core-Units, Unlocks …): Tooltip links vom Symbol, mittig zu ihm;
+  // bleibt in der Comp-Box – höchstens bis zur Oberkante „Planer-Code“, höchstens bis zur Unterkante der Unlock-Box
+  // Rest des Comp-Fensters (Board, Traits, Stages): Position wie gewohnt, aber dieselben Grenzen und innerhalb des Comp-Rahmens
+  const side = el.closest('.cp2-side'), cp = el.closest('.cp2');
+  let top = r.top + r.height / 2 - (side ? h2 / 2 : 40);
+  if(cp){
+    const box = cp.getBoundingClientRect(), lo = (cp.querySelector('.cpb-unl') || cp).getBoundingClientRect().bottom, hi = (cp.querySelector('.cp2-btn') || cp).getBoundingClientRect().top;
+    if(side ? r.left - w - 10 >= box.left : left + w > box.right - 8) left = r.left - w - 10;
+    left = Math.max(box.left + 8, Math.min(box.right - w - 8, left));
+    top = Math.max(hi, Math.min(lo - h2, top));
+  }
   gtEl.style.left = Math.round(left) + 'px';
-  gtEl.style.top = Math.round(Math.max(topH + 6, Math.min(innerHeight - h2 - 8, r.top + r.height / 2 - 40))) + 'px';
+  gtEl.style.top = Math.round(Math.max(topH + 6, Math.min(innerHeight - h2 - 8, top))) + 'px';
   gtEl.classList.add('on');
 }
 function gtHide(){ clearTimeout(gtT); gtCur = null; if(gtEl) gtEl.classList.remove('on'); }
@@ -2821,7 +2836,7 @@ function renderTraits(){
     const col = t.cat==='origin' ? 'var(--accent)' : 'var(--gold)';
     const icon = t.cat==='origin' ? '<path d="M12 3c-3 3-6 6-6 10a6 6 0 0 0 12 0c0-4-3-7-6-10Z"/>' : '<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/>';
     return `<div class="trait"><div class="trait-top">${traitHex(t.n, t.bp.length===1?'unique':'base', 44)}<div><h4>${esc(t.n)}</h4><small style="color:var(--faint);font-size:.72rem">${t.cat==='origin'?'Ursprung':'Klasse'}</small></div></div>
-      <div class="bp">${bpHTML(t)}</div><p>${esc(t.d)}</p>${(h=>h ? `<div class="tt-open">${h}</div>` : '')(traitTiersHTML(t.n))}
+      <div class="bp">${bpHTML(t)}</div>${(h=>(TFT_DATA.manual && h ? '' : `<p>${esc(t.d)}</p>`) + (h ? `<div class="tt-open">${h}</div>` : ''))(traitTiersHTML(t.n))}
       <div class="trait-units">${units.map(u=>`<button data-champ="${esc(u.n)}" style="background:none;border:0;padding:0;cursor:pointer">${avatar(u.n,40)}<span></span></button>`).join('')}</div></div>`;
   }).join('');
 }
