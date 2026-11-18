@@ -19,9 +19,12 @@ Seit 18.6 hat TFT einen eigenen Unreal-Client. CommunityDragon liest nur noch de
 | Champions, Kosten, Traits | Liste im Dev-Drop-Artikel (`data/news.js`) |
 | Band-Trait-Stufen | Riots „Prismatic Tour Overview“ |
 | Bilder | PBE-Client |
-| Klassen-Stufen | fehlen noch (`bpOffen`) |
-| Fähigkeiten, Werte, Items, Augments | fehlen noch |
+| Trait-Stufen auch für Klassen, Fähigkeiten, Unlocks, Augments (Texte) | blitz.gg (`blitz.js` → `blitz-daten.json`) |
+| Grundwerte, Fähigkeitszahlen | PBE-Client (DA/CT), sonst `blitz-werte.json` |
+| Deutsche Texte, die Blitz noch englisch hat | `uebersetzungen-de.json` (`champions`, `traits`, `traitTexte`, `unlocks` – hat immer Vorrang, `ersetzen`, `augments`) |
+| Augment-Symbole | PBE-Client (`augment-icons.js`, Pakete in `C:\t19aug`, nachgeladene in `C:\t19aug2`/`C:\t19aug3`); Set-18-Platzhalter zählen nicht |
+| Items | Standard-Items aus Set 18 (gleiche IDs) |
 
-Fehlende Teile kommen später aus Tooltip-Screenshots oder aus dem Rundown-Video.
+Offen (Stand 18.11.): Leben von Sona und Tibbers (weder Client noch Blitz).
 
 `update-data.ps1` übernimmt die Datei in `data/sets.js` (channel "pbe"). Es überschreibt sie erst, wenn CommunityDragon selbst ein Set 19 liefert.

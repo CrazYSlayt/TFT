@@ -126,6 +126,33 @@
    }
   }
  },
+ "unlocks": {
+  "Rakan": "Gewinne auf Stufe 8+ 4 Kämpfe in Folge oder verliere auf Stufe 8+ 3 Kämpfe in Folge",
+  "Smeech": "Ab Stufe 9: 8 oder mehr nicht-einzigartige Traits aktiv",
+  "Sona": "Ab Stufe 10: Kollab-Champions werden 15-mal inspiriert",
+  "Akali (K/DA)": "12 einzigartige Sternestufen von K/DA, ohne dass True-Damage-Akali freigeschaltet ist",
+  "Akali (True Damage)": "Verdiene 375 True-Damage-Bling, ohne dass K/DA-Akali freigeschaltet ist",
+  "Aphelios": "2-Sterne-Alune oder -Yone",
+  "Gwen": "Fans von Ionic Spark jubeln 250-mal",
+  "Pyke": "Ab Stufe 7: 85 Gold oder mehr am Ende eines Kampfes",
+  "Vladimir": "Ab Stufe 8: Nur 1 Champion in den beiden vorderen Reihen",
+  "Alistar": "Ab Stufe 7: Eine Kettenweste auf einem Caster oder Marksman",
+  "Alune": "Ab Stufe 7: 4 einzigartige Heartsteel- oder Prodigy-Champions",
+  "Jinx": "Ab Stufe 7: 3 Items auf einem Ionic-Spark- oder Hitmaker-Champion",
+  "Kayle": "Ab Stufe 7: 4 einzigartige Pentakill- oder Schnellschläger-Champions",
+  "Yasuo": "Ab Stufe 7: 7 einzigartige Sternestufen von True-Damage- oder Schlächter-Champions",
+  "Zac": "Ab Stufe 7: 5 einzigartige Beach-Pop- oder Moloch-Champions",
+  "Vayne": "Ab Stufe 7: Stelle 3 Kämpfe lang Rock auf",
+  "Evelynn": "3 einzigartige K/DA- oder Renegade-Champions",
+  "Samira": "2 Items auf einem Klassik-, Renegade- oder Trickshot-Champion",
+  "Thresh": "Gegner sind insgesamt 300 Sekunden lang von Klassik gefesselt",
+  "Lulu": "Deine Hyperpop-Champions aktivieren 10-mal ihre Fähigkeit, während der Trait aktiv ist",
+  "Tristana": "Erziele 5 Kills, während Hyperpop aktiv ist",
+  "Seraphine": "Aktualisiere deinen Shop 4-mal vor dem Karussell in Stage 2"
+ },
+ "ersetzen": {
+  "Classic-Champions": "Klassik-Champions"
+ },
  "traitTexte": {
   "While at least one Bodyguard is alive, your team gains 15 Armor and Magic Resist. Bodyguards gain more.": "Solange mindestens ein Leibwächter lebt, erhält dein Team 15 Rüstung und Magieresistenz. Leibwächter erhalten mehr.",
   "Allies who start in the front 2 rows gain Shield. All other allies gain Damage Amp. Choreographers gain double.": "Verbündete, die in den vorderen 2 Reihen beginnen, erhalten einen Schild. Alle anderen Verbündeten erhalten Schadenssteigerung. Choreografen erhalten das Doppelte.",

@@ -78,7 +78,7 @@
 <link rel="preconnect" href="https://ddragon.leagueoflegends.com">
 <!-- app.js und sim.js stehen am Ende von <body>: hier schon anmelden, damit sie am Handy vor den Bildern geladen werden -->
 <link rel="preload" href="assets/js/sim.js?v=416a7d3541" as="script">
-<link rel="preload" href="assets/js/app.js?v=169cc9f5ca" as="script">
+<link rel="preload" href="assets/js/app.js?v=1b6c782fcd" as="script">
 <!-- Schriften vorladen: sonst tauscht der Browser nach ~0,6 s von der Ersatzschrift auf die Webschrift und Boxen springen um ein paar Pixel (Dashboard, 12.11.) -->
 <link rel="preload" href="assets/fonts/Barlow-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/Barlow-600-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -101,7 +101,7 @@
     alt = localStorage.getItem('tftfreaks_design') === 'alt';
   } catch(e){}
   if(!alt){
-    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=b41507556a">');
+    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=110b205945">');
     // Topleiste und Seitenleiste stehen sofort (assets/js/shell.js), den Inhalt baut app.js: bis alle Skripte gelaufen sind, bleibt er verborgen und oben läuft ein Ladebalken
     document.addEventListener('DOMContentLoaded', function(){ document.documentElement.classList.add('nd-ready'); });
   }
@@ -511,7 +511,7 @@
     <div class="page-head">
       <div class="crumb">Home / Redaktion</div>
       <h1>Redaktion <em class="serif">Tierlist bearbeiten</em></h1>
-      <p>Comps per Drag &amp; Drop zwischen den Tiers verschieben und anklicken zum Bearbeiten. Items, Augments und Holds bewertest du in ihren Tabs genauso. Deine Änderungen werden erst mit „Speichern“ live – dann nach etwa einer Minute auf allen Geräten. Jedes Set hat seine eigene Tierlist – das Set wechselst du oben links.</p>
+      <p>Comps per Drag &amp; Drop zwischen den Tiers verschieben und anklicken zum Bearbeiten – darunter erscheint ihr Fenster wie auf der Tierlist, jeder Bereich lässt sich per Klick einstellen. Items, Augments und Holds bewertest du in ihren Tabs genauso. Deine Änderungen werden erst mit „Speichern“ live – dann nach etwa einer Minute auf allen Geräten. Jedes Set hat seine eigene Tierlist – das Set wechselst du oben links.</p>
     </div>
     <div class="card adm-login" id="admLogin" hidden>
       <h2>Anmelden</h2>
@@ -539,7 +539,7 @@
     </div>
     <div class="adm-wrap" id="admCompsView">
       <div id="admRows"></div>
-      <aside class="card adm-edit" id="admEdit"></aside>
+      <section class="adm2" id="admEdit"></section>
     </div>
     <div id="admTL" hidden></div>
     </div>
@@ -1392,6 +1392,6 @@ document.write('<script src="data/rollen-' + pick.set + '.js"><\/script>');  // 
 })();
 </script>
 <script src="assets/js/sim.js?v=416a7d3541"></script>
-<script src="assets/js/app.js?v=169cc9f5ca"></script>
+<script src="assets/js/app.js?v=1b6c782fcd"></script>
 </body>
 </html>

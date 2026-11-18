@@ -24,7 +24,9 @@ const champ = (slug, compName) => {
   if (slug === 'akali') return /true ?damage/i.test(compName) ? 'Akali (True Damage)' : 'Akali (K/DA)';
   const c = champBy.get(norm(slug)) || [...champBy.values()].find(x => norm(x.n).startsWith(norm(slug))); if (!c) miss.push('Champion ' + slug); return c ? c.n : slug;
 };
-const item = slug => { const k = norm(slug.replace(/\d+$/, '')); const it = itemBy.get(k) || itemBy.get(norm(slug)); if (!it) miss.push('Item ' + slug); return it ? it.id : null; };
+// Mobalytics nutzt für zwei Items alte Namen: Steadfast Hammer = Steadfast Heart, Guardbreaker = Striker's Flail
+const ITEM_ALIAS = {'steadfast-hammer': 'steadfast-heart', 'guardbreaker': 'strikers-flail'};
+const item = slug0 => { const slug = ITEM_ALIAS[slug0] || slug0, k = norm(slug.replace(/\d+$/, '')); const it = itemBy.get(k) || itemBy.get(norm(slug)); if (!it) miss.push('Item ' + slug); return it ? it.id : null; };
 const augBy2 = new Map(D.augments.map(a => [norm(a.en), a]));
 // Mobalytics hängt Varianten-Ziffern an (trade-sector2, pandora-s-items1): mit und ohne Ziffer, römische Stufen als Ziffern vergleichen
 const aug = x => { const base = x.replace(/-/g, ' '), cands = [base, base.replace(/\s*\d+$/, ''), base.replace(/(\d)$/, ' $1'), base.replace(/\s+i+$/i, '')];

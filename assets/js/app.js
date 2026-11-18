@@ -1525,35 +1525,147 @@ function renderAdminRows(){
   }).join('');
 }
 const admOpt = (v, cur, label) => `<option value="${esc(v)}"${String(v)===String(cur)?' selected':''}>${esc(label)}</option>`;
+/* --- Comp-Editor (Wunsch 18.11.): Live-Vorschau des echten Comp-Fensters; Klick auf einen Bereich öffnet rechts sein Bearbeitungsfeld mit Symbolen --- */
+let admArea = 'items', admPickQ = '', admPickTab = '', admFlex = null;
+const ADM_AREAS = {
+  board:['⬡', 'Aufstellung & Carry', 'Units, Items auf den Units, Sterne und Early-Units stellst du im Team Builder ein. Den Carry (Bild oben links) wählst du hier.'],
+  st2:['2', 'Stage 2', 'Eine Zeile = ein Stichpunkt. Leer lassen = Standardtext für den Spielstil. Die Champions darunter kommen automatisch aus der Aufstellung.'],
+  st3:['3', 'Stage 3', 'Eine Zeile = ein Stichpunkt. Leer lassen = Standardtext für den Spielstil. Die Champions darunter kommen automatisch aus der Aufstellung.'],
+  st4:['4', 'Stage 4', 'Eine Zeile = ein Stichpunkt. Leer lassen = Standardtext für den Spielstil. Die Champions darunter kommen automatisch aus der Aufstellung.'],
+  items:['⚔', 'Item-Priorität', 'Antippen fügt ein Item hinzu. Reihenfolge mit ‹ › ändern, ✕ entfernt es.'],
+  augp:['★', 'Augment-Priorität', 'Tippe die Arten in der Reihenfolge an, in der man sie nehmen soll (höchstens 3).'],
+  augs:['◆', 'Augment-Vorschläge', 'Antippen fügt ein Augment hinzu. Auf der Seite erscheinen die ersten 6.'],
+  core:['◎', 'Core-Units', 'Automatisch: Carry, Units mit Items und 3★-Units der Aufstellung (höchstens 6). Ändern über Items und Sterne im Team Builder.'],
+  flex:['⇄', 'Flexible Units', 'Tausch: Unit auf dem Board wählen, dann den Ersatz antippen. Level: Level wählen, dann die Units antippen, die dazukommen.'],
+  unl:['🔒', 'Unlocks', 'Automatisch: alle freischaltbaren Champions der Aufstellung, mit ihrer Bedingung im Tooltip.']};
+const ADM_AREA_SEL = [['board', '.cp2-carry'], ['board', '.cp2-field'], ['board', '.cp2-trs'], ['st2', '.cp2-stage.s2'], ['st3', '.cp2-stage.s3'], ['st4', '.cp2-stage.s4'],
+  ['items', '.cpb-items'], ['augp', '.cpb-augp'], ['augs', '.cpb-augs'], ['core', '.cpb-core'], ['flex', '.cpb-flex'], ['unl', '.cpb-unl']];
+const ADM_AUGTYPES = ['ITEMS', 'ECON', 'COMBAT', 'TRAIT'];
+const admItemName = it => it.de || it.en, admAugName = a => a.de || a.en;
+const admHexBtn = (u, attrs, extra='') => `<button type="button" class="adm2-u c${costOf(u)}" ${attrs} title="${esc(u)}">${hexHTML(u)}<small>${esc(u.replace(/\s*\(.*\)$/, ''))}</small>${extra}</button>`;
 function renderAdminEdit(){
   const box = $('#admEdit'), c = admSel && admBySlug(admSel);
-  if(!c){ box.innerHTML = '<h3 style="margin-top:0">Comp bearbeiten</h3><p class="note">Klick links auf eine Comp, um Name, Tier, Texte, Augments und Items zu bearbeiten. Ziehen verschiebt sie zwischen den Tiers. Mit „+ Neue Comp“ legst du eine eigene an.</p>'; return; }
-  const units = [...new Set((c.board||[]).map(b=>b.u).filter(u=>!PLANTS[u]))];
-  const chips = (arr, kind) => (arr||[]).map((id,i)=>{
-    const o = kind==='aug' ? augById[id] : findItem(id), img = o ? (kind==='aug' ? augImg(o) : o.img) : '';
-    return `<span class="adm-chip">${img?`<img src="${img}" alt="">`:''}${esc(o?o.en:id)}<button type="button" data-adm-del="${kind}:${i}" aria-label="Entfernen">✕<span></span></button></span>`;
-  }).join('') || '<span class="note" style="margin:0">–</span>';
+  if(!c){ box.innerHTML = '<div class="adm2-empty"><b>Comp bearbeiten</b><p>Klick oben auf eine Comp – dann siehst du hier ihr Fenster genau wie auf der Tierlist und stellst jeden Bereich mit einem Klick ein. Ziehen verschiebt Comps zwischen den Tiers, „+ Neue Comp“ legt eine eigene an.</p></div>'; return; }
+  ['early', 'alt', 'cap', 'carousel', 'augs', 'augTypes', 'board'].forEach(k=>{ if(!Array.isArray(c[k])) c[k] = []; });
+  const seg = (f, cur, list) => `<div class="adm2-seg">${list.map(([v, l, col, tt])=>`<button type="button" data-a2-set="${f}" data-v="${esc(v)}" class="${String(v) === String(cur) ? 'on' : ''}"${col ? ` style="--sc:${col}"` : ''}${tt ? ` title="${esc(tt)}"` : ''}>${l}</button>`).join('')}</div>`;
   box.innerHTML = `
-    <div class="adm-edhead"><span class="adm-hx big">${hexHTML(c.carry||'')}</span><div><small>Bearbeiten</small><h3 id="admEdTitle">${esc(c.name)}</h3></div></div>
-    <label class="adm-f"><span>Name</span><input class="input" data-f="name" value="${esc(c.name)}"></label>
-    <div class="adm-2">
-      <label class="adm-f"><span>Tier</span><select class="input" data-f="tier">${['S','A','B','C','X'].map(t=>admOpt(t,c.tier,t==='X'?'X (Situational)':t)).join('')}</select></label>
-      <label class="adm-f"${c.tier==='X'?'':' hidden'}><span>Bewertung (X)</span><select class="input" data-f="sub">${['S','A','B','C'].map(t=>admOpt(t,c.sub,`${t} · ${TL2_NAME[t]}`)).join('')}</select></label>
-      <label class="adm-f"><span>Trend</span><select class="input" data-f="sticker">${[[0,'–'],[2,'▲ Steigt'],[3,'▼ Fällt'],[1,'+ Neu']].map(([v,l])=>admOpt(v,c.sticker||0,l)).join('')}</select></label>
-      <label class="adm-f"><span>Spielstil</span><select class="input" data-f="style">${Object.entries(STYLE_DE).map(([v,l])=>admOpt(v,c.style,l)).join('')}</select></label>
-      <label class="adm-f"><span>Schwierigkeit</span><select class="input" data-f="diff">${Object.entries(DIFF_DE).map(([v,l])=>admOpt(v,c.diff,l)).join('')}</select></label>
-      <label class="adm-f"><span>Carry</span><select class="input" data-f="carry">${units.length?units.map(u=>admOpt(u,c.carry,u)).join(''):'<option value="">– erst Units platzieren –</option>'}</select></label>
+    <div class="adm2-top">
+      <label class="adm2-fld adm2-name"><small>Name</small><input class="input" data-f="name" value="${esc(c.name)}"></label>
+      <div class="adm2-fld"><small>Tier</small>${seg('tier', c.tier, ['S', 'A', 'B', 'C', 'X'].map(t=>[t, t, TIER_COL[t], t === 'X' ? 'Situational' : TL2_NAME[t]]))}</div>
+      ${c.tier === 'X' ? `<div class="adm2-fld"><small>Bewertung (X)</small>${seg('sub', c.sub || 'B', ['S', 'A', 'B', 'C'].map(t=>[t, t, TIER_COL[t], TL2_NAME[t]]))}</div>` : ''}
+      <div class="adm2-fld"><small>Trend</small>${seg('sticker', c.sticker || 0, [[0, '–', '', 'Kein Trend'], [2, '▲', '#9be32d', 'Steigt'], [3, '▼', '#ff4655', 'Fällt'], [1, '+', '#ffd23f', 'Neu in der Tierlist']])}</div>
+      <div class="adm2-fld"><small>Spielstil</small>${seg('style', c.style, Object.entries(STYLE_DE))}</div>
+      <div class="adm2-fld"><small>Schwierigkeit</small>${seg('diff', c.diff, Object.entries(DIFF_DE))}</div>
+      <div class="adm2-acts"><button class="btn btn-ghost b-btn" type="button" data-adm-dup>Duplizieren<span></span></button><button class="btn btn-ghost b-btn adm-danger" type="button" data-adm-delete>Löschen<span></span></button></div>
     </div>
-    <label class="adm-f"><span>Spielplan</span><textarea class="input" rows="4" data-f="plan" placeholder="${esc(PLAN[c.style]||'')}">${esc(c.plan||'')}</textarea><small>Leer lassen = Standardtext für den Spielstil.</small></label>
-    <label class="adm-f"><span>Tipps</span><textarea class="input" rows="3" data-f="tips" placeholder="z. B. Worauf man im Early Game achten sollte …">${esc(c.tips||'')}</textarea></label>
-    <div class="adm-f"><span>Augments</span><div class="adm-chips">${chips(c.augs,'aug')}</div><div class="adm-add"><input class="input" list="admAugList" placeholder="Augment hinzufügen…" data-add="aug"><button class="btn btn-ghost b-btn" type="button" data-add-btn="aug">+<span></span></button></div></div>
-    <div class="adm-f"><span>Augment-Fokus</span><div class="adm-checks">${['ITEMS','ECON','COMBAT','TRAIT'].map(k=>`<label><input type="checkbox" data-aug-type="${k}"${(c.augTypes||[]).includes(k)?' checked':''}> ${AUGTYPE_DE[k]}</label>`).join('')}</div></div>
-    <div class="adm-f"><span>Item-Priorität</span><div class="adm-chips">${chips(c.carousel,'item')}</div><div class="adm-add"><input class="input" list="admItemList" placeholder="Item hinzufügen…" data-add="item"><button class="btn btn-ghost b-btn" type="button" data-add-btn="item">+<span></span></button></div></div>
-    <div class="adm-f"><span>Aufstellung</span>${(c.board||[]).length?`<div class="adm-board">${boardHTML(c)}</div>`:'<p class="note" style="margin:0">Noch keine Units platziert.</p>'}<button class="btn btn-primary b-btn" type="button" data-adm-builder style="margin-top:8px;align-self:flex-start">⬡ Im Team Builder bearbeiten<span></span></button></div>
-    <div class="adm-foot"><button class="btn btn-ghost b-btn" type="button" data-adm-dup>Duplizieren<span></span></button><button class="btn btn-ghost b-btn adm-danger" type="button" data-adm-delete>Löschen<span></span></button></div>
-    <datalist id="admAugList">${AUGS.map(a=>`<option value="${esc(a.en)}">`).join('')}</datalist>
-    <datalist id="admItemList">${ITEMS.filter(i=>B_ITEM_CATS.includes(i.cat)).map(i=>`<option value="${esc(i.en)}">`).join('')}</datalist>`;
+    <div class="adm2-main">
+      <div class="adm2-prevwrap"><p class="adm2-hint">So sieht die Comp auf der Tierlist aus – <b>klick auf einen Bereich</b>, um ihn zu bearbeiten.</p><div class="adm2-prev" id="adm2Prev"><div class="adm2-stage">${panel2HTML(c)}</div></div></div>
+      <aside class="adm2-ed" id="adm2Ed">${admAreaHTML(c)}</aside>
+    </div>`;
+  admMarkAreas(); admZoom();
 }
+// Bereiche in der Vorschau markieren (Klickziel, aktiver Bereich leuchtet)
+function admMarkAreas(){
+  const p = $('#adm2Prev'); if(!p) return;
+  ADM_AREA_SEL.forEach(([k, sel])=>p.querySelectorAll(sel).forEach(el=>{ el.dataset.a2Area = k; el.classList.add('a2-area'); el.classList.toggle('a2-on', k === admArea); }));
+}
+// Vorschau in Originalbreite (1120 px) bauen und auf die verfügbare Breite verkleinern – sieht so aus wie auf der Tierlist
+function admZoom(){ const p = $('#adm2Prev'), s = p && p.firstElementChild; if(s) s.style.zoom = Math.min(1, p.clientWidth / 1120).toFixed(4); }
+window.addEventListener('resize', ()=>{ if($('#adm2Prev')) admZoom(); });
+function admRefresh(keepEd){
+  const c = admBySlug(admSel); if(!c) return;
+  const p = $('#adm2Prev'); if(p){ p.firstElementChild.innerHTML = panel2HTML(c); admMarkAreas(); }
+  if(!keepEd){ const ed = $('#adm2Ed'); if(ed) ed.innerHTML = admAreaHTML(c); }
+}
+// Auswahlraster (Items, Augments, Champions) mit Reitern und Suche
+function admPickHTML(kind, c){
+  const q = admPickQ.trim().toLowerCase(), hit = (...n) => !q || n.some(x=>String(x || '').toLowerCase().includes(q));
+  let tabs = [], cells = '';
+  if(kind === 'item'){
+    const CAT = [['craft', 'Fertige Items'], ['radiant', 'Strahlend'], ['artifact', 'Artefakte'], ['emblem', 'Embleme']].filter(([k])=>ITEMS.some(i=>i.cat === k));
+    const tab = CAT.some(([k])=>k === admPickTab) ? admPickTab : 'craft'; tabs = CAT.map(([k, l])=>[k, l, k === tab]);
+    cells = ITEMS.filter(i=>(q ? B_ITEM_CATS.includes(i.cat) && i.cat !== 'component' : i.cat === tab) && hit(i.de, i.en)).map(i=>`<button type="button" class="adm2-pk${c.carousel.includes(i.id) ? ' has' : ''}" data-a2-item="${i.id}" title="${esc(admItemName(i))}"><img src="${i.img}" alt="" loading="lazy"><small>${esc(admItemName(i))}</small></button>`).join('');
+  } else if(kind === 'aug'){
+    const LV = [['1', 'Silber'], ['2', 'Gold'], ['3', 'Prismatisch']], tab = LV.some(([k])=>k === admPickTab) ? admPickTab : '2'; tabs = LV.map(([k, l])=>[k, l, k === tab]);
+    cells = AUGS.filter(a=>(q || String(a.lv) === tab) && hit(a.de, a.en)).sort((a, b)=>admAugName(a).localeCompare(admAugName(b))).map(a=>`<button type="button" class="adm2-pk aug l${a.lv}${c.augs.includes(a.id) ? ' has' : ''}" data-a2-aug="${a.id}" title="${esc(admAugName(a))}"><img src="${augImg(a)}" alt="" loading="lazy"><small>${esc(admAugName(a))}</small></button>`).join('');
+  } else {
+    const CO = [...new Set(TFT_DATA.champions.map(x=>x.c))].sort((a, b)=>a - b), tab = CO.map(String).includes(admPickTab) ? admPickTab : 'alle';
+    tabs = [['alle', 'Alle', tab === 'alle'], ...CO.map(k=>[String(k), k + ' Gold', String(k) === tab])];
+    cells = TFT_DATA.champions.filter(x=>(tab === 'alle' || String(x.c) === tab) && hit(x.n)).sort((a, b)=>a.c - b.c || a.n.localeCompare(b.n)).map(x=>admHexBtn(x.n, `data-a2-champ="${esc(x.n)}"`)).join('');
+  }
+  return `<div class="adm2-pick"><div class="adm2-ptabs">${tabs.map(([k, l, on])=>`<button type="button" data-a2-tab="${k}" class="${on ? 'on' : ''}">${l}</button>`).join('')}</div>
+    <input class="input adm2-q" type="search" placeholder="Suchen …" value="${esc(admPickQ)}" data-a2-q="${kind}">
+    <div class="adm2-grid ${kind}" id="adm2Grid">${cells || '<p class="note">Nichts gefunden.</p>'}</div></div>`;
+}
+// Liste mit Reihenfolge (‹ ›) und Entfernen (✕)
+const admList = (arr, kind, cell, max) => arr.length ? `<ol class="adm2-list">${arr.map((v, i)=>`<li class="${max && i >= max ? 'off' : ''}"${max && i >= max ? ' title="Wird auf der Seite nicht angezeigt (nur die ersten ' + max + ')"' : ''}><span class="adm2-n">${i + 1}</span>${cell(v)}<span class="adm2-mv"><button type="button" data-a2-mv="${kind}:${i}:-1" aria-label="Nach vorn"${i ? '' : ' disabled'}>‹</button><button type="button" data-a2-mv="${kind}:${i}:1" aria-label="Nach hinten"${i < arr.length - 1 ? '' : ' disabled'}>›</button><button type="button" data-a2-del="${kind}:${i}" aria-label="Entfernen">✕</button></span></li>`).join('')}</ol>` : '<p class="adm2-none">Noch nichts eingetragen.</p>';
+function admAreaHTML(c){
+  const [ic, title, help] = ADM_AREAS[admArea] || ADM_AREAS.items;
+  const head = `<div class="adm2-edh"><i>${ic}</i><b>${title}</b></div><p class="adm2-help">${help}</p>`;
+  const units = [...new Set(c.board.map(b=>b.u).filter(u=>!PLANTS[u] && champBy[u]))];
+  if(admArea === 'board') return head + `<h5>Carry</h5><div class="adm2-hexes">${units.length ? units.map(u=>admHexBtn(u, `data-a2-carry="${esc(u)}"`, u === c.carry ? '<i class="adm2-tick">✓</i>' : '')).join('') : '<p class="adm2-none">Noch keine Units – erst im Team Builder platzieren.</p>'}</div>
+    <button class="btn btn-primary b-btn adm2-big" type="button" data-adm-builder>⬡ Aufstellung im Team Builder bearbeiten<span></span></button>`;
+  if(/^st\d$/.test(admArea)){
+    const n = +admArea[2], def = (STAGE_PLAN[c.style] || STAGE_PLAN['4-Cost Fast 8'])[n - 2];
+    return head + `<h5>${esc(def[0])} <small>(Titel kommt vom Spielstil)</small></h5><textarea class="input adm2-ta" rows="5" data-a2-plan="${n}" placeholder="${esc(def[2].join('\n'))}">${esc(c['plan' + n] || '')}</textarea>
+      <button class="btn btn-ghost b-btn" type="button" data-a2-plan-reset="${n}"${c['plan' + n] ? '' : ' disabled'}>Standardtext verwenden<span></span></button>`;
+  }
+  if(admArea === 'items') return head + admList(c.carousel, 'carousel', id=>{ const it = findItem(id); return `<img src="${it ? it.img : ''}" alt=""><span>${esc(it ? admItemName(it) : id)}</span>`; }) + admPickHTML('item', c);
+  if(admArea === 'augp') return head + admList(c.augTypes, 'augTypes', t=>`<b class="adm2-aty t${ADM_AUGTYPES.indexOf(t)}">${esc(augTypeName(t))}</b>`)
+    + `<h5>Art hinzufügen</h5><div class="adm2-atys">${ADM_AUGTYPES.map((t, i)=>`<button type="button" class="adm2-aty t${i}${c.augTypes.includes(t) ? ' has' : ''}" data-a2-aty="${t}"${c.augTypes.length >= 3 && !c.augTypes.includes(t) ? ' disabled' : ''}>${esc(augTypeName(t))}</button>`).join('')}</div>`;
+  if(admArea === 'augs') return head + admList(c.augs, 'augs', id=>{ const a = augById[id]; return `<img src="${a ? augImg(a) : ''}" alt=""><span>${esc(a ? admAugName(a) : id)}</span>`; }, 6) + admPickHTML('aug', c);
+  if(admArea === 'core'){ const {core} = cp2Packs(c), imp = core.filter(b=>b.u === c.carry || (b.i || []).length || b.s === 3);
+    return head + `<div class="adm2-hexes">${imp.map(b=>admHexBtn(b.u, 'disabled')).join('') || '<p class="adm2-none">Noch keine Units mit Items.</p>'}</div><button class="btn btn-ghost b-btn adm2-big" type="button" data-adm-builder>⬡ Im Team Builder ändern<span></span></button>`; }
+  if(admArea === 'unl'){ const unl = units.filter(u=>(CH_DATA[u] || {}).unlock);
+    return head + (unl.length ? `<ul class="adm2-unl">${unl.map(u=>`<li>${hexHTML(u)}<span><b>${esc(u)}</b><small>${esc(CH_DATA[u].unlock.de)}</small></span></li>`).join('')}</ul>` : '<p class="adm2-none">Keine freischaltbaren Champions in der Aufstellung.</p>'); }
+  if(admArea === 'flex'){
+    const packs = c.cap.map((b, i)=>({b, i, l:String((b.lv || [])[0] || '')})).filter(x=>x.l), lv = /^\d+$/;
+    const groups = {}; packs.forEach(x=>{ (groups[x.l] = groups[x.l] || []).push(x); });
+    const list = Object.entries(groups).sort((a, b)=>lv.test(a[0]) - lv.test(b[0]) || a[0].localeCompare(b[0], 'de', {numeric:true})).map(([l, xs])=>`<div class="adm2-pack"><span class="adm2-pl">${lv.test(l) ? `<b class="adm2-lv">Lv ${l}</b><i>+</i>` : `${hexHTML(l)}<i>⇄</i>`}</span>${xs.map(x=>`<span class="adm2-pu" title="${esc(x.b.u)}">${hexHTML(x.b.u)}<button type="button" data-a2-cap-del="${x.i}" aria-label="Entfernen">✕</button></span>`).join('')}</div>`).join('');
+    const mode = admFlex || {};
+    return head + (list || '<p class="adm2-none">Noch keine flexiblen Units.</p>')
+      + `<h5>Neu: Tausch – welche Unit wird ersetzt?</h5><div class="adm2-hexes sm">${units.map(u=>admHexBtn(u, `data-a2-fout="${esc(u)}"`, mode.out === u ? '<i class="adm2-tick">✓</i>' : '')).join('')}</div>
+      <h5>oder: ab Level</h5><div class="adm2-seg">${['6', '7', '8', '9', '10'].map(l=>`<button type="button" data-a2-flv="${l}" class="${mode.l === l ? 'on' : ''}">Lv ${l}</button>`).join('')}</div>`
+      + (mode.out || mode.l ? `<h5>${mode.out ? `Ersatz für ${esc(mode.out)} antippen` : `Units für Level ${mode.l} antippen`}</h5>` + admPickHTML('champ', c) : '');
+  }
+  return head;
+}
+function admRenderGrid(kind){ const c = admBySlug(admSel), g = $('#adm2Grid'); if(!c || !g) return; const tmp = document.createElement('div'); tmp.innerHTML = admPickHTML(kind, c); g.innerHTML = tmp.querySelector('#adm2Grid').innerHTML; }
+// Klicks im Comp-Editor
+document.addEventListener('click', e=>{
+  const ed = e.target.closest && e.target.closest('#admEdit'); if(!ed) return;
+  const c = admBySlug(admSel); if(!c) return;
+  // Vorschau: nur Bereich wählen – keine Aktionen des Fensters (Augment-Fenster, Planer-Code, Champion-Seite …)
+  const prev = e.target.closest('#adm2Prev');
+  if(prev){ e.preventDefault(); e.stopPropagation(); const a = e.target.closest('[data-a2-area]'); if(a && a.dataset.a2Area !== admArea){ admArea = a.dataset.a2Area; admPickQ = ''; admPickTab = ''; admFlex = null; admMarkAreas(); $('#adm2Ed').innerHTML = admAreaHTML(c); } return; }
+  const t = e.target, d = k => { const el = t.closest(`[data-${k}]`); return el && el.getAttribute('data-' + k); };
+  let v;
+  const done = (msg, keepEd) => { admSave(msg); admRefresh(keepEd); };
+  if((v = d('a2-set')) != null){ const f = v, val = t.closest('[data-a2-set]').dataset.v; c[f] = f === 'sticker' ? +val : val;
+    if(f === 'tier'){ if(c.tier !== 'X') c.sub = ''; else if(!c.sub) c.sub = 'B'; }
+    admSave(); renderAdminRows(); renderAdminEdit(); return; }
+  if((v = d('a2-tab')) != null){ admPickTab = v; const ed2 = $('#adm2Ed'); ed2.innerHTML = admAreaHTML(c); return; }
+  if((v = d('a2-carry')) != null){ c.carry = v; done('Carry: ' + v); renderAdminRows(); return; }
+  if((v = d('a2-item')) != null){ const i = c.carousel.indexOf(v); if(i >= 0) c.carousel.splice(i, 1); else c.carousel.push(v); done(); return; }
+  if((v = d('a2-aug')) != null){ const i = c.augs.indexOf(v); if(i >= 0) c.augs.splice(i, 1); else c.augs.push(v); done(); return; }
+  if((v = d('a2-aty')) != null){ const i = c.augTypes.indexOf(v); if(i >= 0) c.augTypes.splice(i, 1); else if(c.augTypes.length < 3) c.augTypes.push(v); done(); return; }
+  if((v = d('a2-mv')) != null){ const [k, i, dir] = v.split(':'), a = c[k], j = +i + +dir; if(j < 0 || j >= a.length) return; [a[+i], a[j]] = [a[j], a[+i]]; done(); return; }
+  if((v = d('a2-del')) != null){ const [k, i] = v.split(':'); c[k].splice(+i, 1); done(); return; }
+  if((v = d('a2-plan-reset')) != null){ delete c['plan' + v]; done(); return; }
+  if((v = d('a2-fout')) != null){ admFlex = admFlex && admFlex.out === v ? null : {out:v}; admPickQ = ''; $('#adm2Ed').innerHTML = admAreaHTML(c); return; }
+  if((v = d('a2-flv')) != null){ admFlex = admFlex && admFlex.l === v ? null : {l:v}; admPickQ = ''; $('#adm2Ed').innerHTML = admAreaHTML(c); return; }
+  if((v = d('a2-champ')) != null && admFlex){ const l = admFlex.out || admFlex.l;
+    const i = c.cap.findIndex(b=>b.u === v && String((b.lv || [])[0]) === l); if(i >= 0) c.cap.splice(i, 1); else c.cap.push({u:v, lv:[l]});
+    done(); return; }
+  if((v = d('a2-cap-del')) != null){ c.cap.splice(+v, 1); done(); return; }
+}, true);
+document.addEventListener('input', e=>{
+  const t = e.target; if(!t.closest || !t.closest('#admEdit')) return;
+  const c = admBySlug(admSel); if(!c) return;
+  if(t.dataset.a2Q){ admPickQ = t.value; admRenderGrid(t.dataset.a2Q); return; }
+  if(t.dataset.a2Plan){ const n = t.dataset.a2Plan; if(t.value.trim()) c['plan' + n] = t.value; else delete c['plan' + n]; admSave(); admRefresh(true); return; }
+  if(t.dataset.f === 'name'){ const h = document.querySelector('#adm2Prev .cp2-l2 h3'); if(h) h.textContent = t.value; }
+});
 function renderAdmin(){
   // ohne Anmeldung nur die Passwort-Maske (der echte Schutz ist das Passwort beim Speichern in api/tierlist.js)
   const authed = !!admPwGet();
@@ -2477,7 +2589,9 @@ function champPatchTrend(name){
 function chpRole(n){
   const TR = window.TFT_ROLES || {roles:{}, champions:{}}, rk = TR.champions[n], st = (CH_DATA[n] || {}).st;
   return {icon: (TR.roles[rk] || {}).icon, name: rk ? rk.replace(/_.*$/, '').replace(/([a-z])([A-Z])/g, '$1 $2') : gtRole(n),
-    line: st ? (st.range <= 2 && (TFT_CUSTOM_SET.combatRoles || {})[n] !== 'assassin' ? 'Frontline' : 'Backline') : ''};
+    // ohne Werte (Sona, Tibbers): Tank und Fighter stehen vorn, alle anderen hinten
+    line: st ? (st.range <= 2 && (TFT_CUSTOM_SET.combatRoles || {})[n] !== 'assassin' ? 'Frontline' : 'Backline')
+      : (TFT_CUSTOM_SET.combatRoles || {})[n] ? (['tank', 'fighter'].includes(TFT_CUSTOM_SET.combatRoles[n]) ? 'Frontline' : 'Backline') : ''};
 }
 // Erster Satz der Fähigkeit als Kurzfassung (ohne Werte und Symbole), für Sets ohne eigene Kurztexte
 function abShortAuto(n){ const t = plainDesc(String((CH_DATA[n] || {}).ab.d).replace(/\\n/g, ' ').replace(/%i:[^%]*%/g, '').replace(/@[^@]*@%?/g, '')).replace(/\s+([,.])/g, '$1').replace(/\s{2,}/g, ' ');

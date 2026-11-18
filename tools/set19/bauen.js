@@ -127,6 +127,9 @@ async function toWebp(jobs) {
         'Thresh': 'Gegner sind insgesamt 300 Sekunden lang von Classical gebannt', 'Samira': '2 Gegenstände auf einem Classical-, Renegade- oder Trickshot-Champion',
         'Kobuko': '2-Sterne-Ziggs mit 1 Gegenstand'};
       if (o.unlock && o.unlock.de === o.unlock.en && UL_DE[c.n]) o.unlock.de = UL_DE[c.n];
+      // eigene Fassung hat Vorrang (Blitz mischt oft „Erf. St. 7 - <englischer Text>“), Trait-Namen wie auf der Seite
+      if (o.unlock && (UE.unlocks || {})[c.n]) o.unlock.de = UE.unlocks[c.n];
+      if (o.ab) for (const [a, b] of Object.entries(UE.ersetzen || {})) o.ab.d = o.ab.d.split(a).join(b);
     } else warn.push(c.n + ': nicht bei Blitz (' + o.api + ')');
     out.push(o);
   }
@@ -138,6 +141,7 @@ async function toWebp(jobs) {
     const ten = BLITZ.traits.en[n], ue = UE.traits[n]; let tde = BLITZ.traits.de[n];
     // deutsche Fassung: wo Blitz noch englisch ist, die eigene Übersetzung (Beschreibung und einzelne Stufen)
     const TT = UE.traitTexte || {}, tr = x => TT[x] || x;
+    if (!tde && ten) tde = {...ten, name: ''};   // Blitz hat den Trait nur auf Englisch (R&B): englische Fassung übersetzen
     if (tde) tde = {...tde, d: tr(tde.d), rows: tde.rows.map(r => ({...r, t: tr(r.t)}))};
     if (tde && ten && ue) tde = {...tde, d: tde.d === ten.d && ue.d ? ue.d : tde.d, rows: tde.rows.map(r => ue.rows && ue.rows[r.n] && r.t === (ten.rows.find(e => e.n === r.n) || {}).t ? {...r, t: ue.rows[r.n]} : r)};
     if (tde && tde.name && tde.name !== n && tde.name.toUpperCase() !== n.toUpperCase()) o.de = tde.name;
@@ -148,7 +152,7 @@ async function toWebp(jobs) {
     // wie in Riots Trait-Texten: Zeilen mit <br> getrennt (nicht \n), jede Stufe als <row>(n) …</row>
     const br = x => String(x || '').replace(/\\n/g, '<br>');
     const row = (t) => t ? [br(t.d), ...(t.rows || []).map(r => `<row>(${r.n}) ${br(r.t)}</row>`)].filter(Boolean).join('<br>') : '';
-    if (tde || ten) { o.desc = row(tde && tde.d ? tde : ten); o.fx = (rows.length ? rows.map(r => r.n) : o.bp).map(b => ({min: b, v: {}})); /* je Zeile eine Stufe (A-/B-Seite, Prismatisch haben dieselbe Zahl) */ if (ten) EN_TR[o.api] = row(ten); }
+    if (tde || ten) { o.desc = row(tde && (tde.d || (tde.rows || []).length) ? tde : ten); o.fx = (rows.length ? rows.map(r => r.n) : o.bp).map(b => ({min: b, v: {}})); /* je Zeile eine Stufe (A-/B-Seite, Prismatisch haben dieselbe Zahl) */ if (ten) EN_TR[o.api] = row(ten); }
     const ic = iconFile(n); if (ic) { const s = n.toLowerCase().replace(/&/g, 'n').replace(/[^a-z0-9]+/g, '-'); jobs.push({src: ic, out: path.join(OUT_IMG, 'traits', s + '.webp'), w: 64, h: 64, q: 0.92}); o.icon = `assets/img/set19/traits/${s}.webp`; }
     else { warn.push('Trait ohne Icon: ' + n); o.icon = 'assets/img/set19/traits/leer.svg'; }
     if (!o.bp.length) o.bpOffen = 1;
@@ -176,11 +180,11 @@ async function toWebp(jobs) {
   const AE = (BLITZ.augments || {}).en || {}, AD = (BLITZ.augments || {}).de || {}, augs = [], EN_AUG = {};
   fs.mkdirSync(path.join(OUT_IMG, 'augments'), {recursive: true});
   const pngOf = id => { const p = path.join('C:/t19augpng', id + '.png'); return fs.existsSync(p) ? p : null; };
-  const stem = id => id.replace(/_Level\d+$|(?:_?(?:I{1,3}|Gold|Silver|Prismatic|Plus|\d))$/i, '');
+  const stem = id => id.replace(/_Level\d+$|(?:_?(?:I{1,3}|Gold|Silver|Prismatic|Plus|Late|\d))$/i, '');   // Late: Stakeholder Management+ = StakeholderMeeting
   for (const [id, e] of Object.entries(AE)) {
-    const d = AD[id] || e, old = a18id.get(id) || a18n.get(e.name.toLowerCase());
+    const d = AD[id] || e, old0 = a18id.get(id) || a18n.get(e.name.toLowerCase()), old = old0 && !/missing-t/.test(old0.icon || '') ? old0 : null;   // Set-18-Platzhalter zählt nicht als Symbol
     const deTxt = AD[id] && AD[id].d === e.d && (UE.augments || {})[id] ? UE.augments[id] : d.d;   // eigene Übersetzung, wo Blitz noch englisch ist
-    const o = {id, en: e.name, de: d.name || e.name, desc: vals(deTxt, d.v), fx: {}, lv: e.lv || (old && old.lv) || 1};
+    const o = {id, en: e.name, de: d.name || e.name, desc: vals(deTxt, d.v), fx: {}, lv: e.lv || (old0 && old0.lv) || 1};
     if (old) o.icon = /^https?:/.test(old.icon) ? old.icon : D18.cdn + old.icon;
     else { let p = pngOf(id), sid = id; while (!p && stem(sid) !== sid) { sid = stem(sid); p = pngOf(sid) || Object.keys(AE).filter(k => k !== id && k.startsWith(sid)).map(pngOf).find(Boolean); }
       if (p) { const fn = path.basename(p, '.png').toLowerCase() + '.webp'; if (!jobs.some(j => j.out.endsWith(fn))) jobs.push({src: p, out: path.join(OUT_IMG, 'augments', fn), q: 0.9}); o.icon = 'assets/img/set19/augments/' + fn; }
