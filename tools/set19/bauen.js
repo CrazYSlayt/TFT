@@ -17,12 +17,15 @@ global.window = {}; require(path.join(ROOT, 'data', 'news.js'));
 const post = window.TFT_NEWS.find(p => p.slug.de === 'prismatic-tour-dev-drop');
 const grp = post.body.en.filter(b => b.k === 'tags').find(b => b.g.some(g => g.c === 7));
 const champs = grp.g.flatMap(g => g.l.map(([n, t]) => ({n: n.replace(/\s*🔒\s*/, '').trim(), lock: /🔒/.test(n), c: g.c, t: t.split(',').map(s => s.trim())})));
+// Zwei Akalis (K/DA und True Damage/Freestyle) brauchen eigene Namen – der Name ist auf der Seite der Schlüssel (Adresse, Builder, Tierlist)
+const AKALI = {'K/DA': 'Akali (K/DA)', 'True Damage': 'Akali (True Damage)'};
+champs.forEach(c => { if (c.n === 'Akali') { c.base = 'Akali'; c.n = AKALI[c.t[0]] || c.n; } });
 // Riot (Übersicht 17.11.): Lux ist Ionic Spark + Trickshot laut Dev Drop, Mobalytics sagte Prodigy – Riots Ionic-Spark-Liste enthält Lux, die Klasse bleibt offen
 
 // ---------- 2. Ordner im Client ----------
-const FOLDER = {'Akali|K/DA': 'Akali_KDA', 'Akali|True Damage': 'Akali_TrueDamage', 'Nunu & Willump': 'Nunu', 'Twisted Fate': 'Twisted_Fate', 'Camille': 'Camille_', "K'Sante": 'KSante', "Kai'Sa": 'Kaisa', 'Dr. Mundo': 'DrMundo'};
+const FOLDER = {'Akali (K/DA)': 'Akali_KDA', 'Akali (True Damage)': 'Akali_TrueDamage', 'Nunu & Willump': 'Nunu', 'Twisted Fate': 'Twisted_Fate', 'Camille': 'Camille_', "K'Sante": 'KSante', "Kai'Sa": 'Kaisa', 'Dr. Mundo': 'DrMundo'};
 const folderOf = c => FOLDER[c.n + '|' + c.t[0]] || FOLDER[c.n] || c.n.replace(/[^A-Za-z]/g, '');
-const slug = c => c.n === 'Akali' ? (c.t[0] === 'K/DA' ? 'akali-kda' : 'akali-true-damage') : c.n.toLowerCase().replace(/&/g, '').replace(/[^a-z]+/g, '-').replace(/^-|-$/g, '');
+const slug = c => c.base === 'Akali' ? (c.t[0] === 'K/DA' ? 'akali-kda' : 'akali-true-damage') : c.n.toLowerCase().replace(/&/g, '').replace(/[^a-z]+/g, '-').replace(/^-|-$/g, '');
 const apiOf = (c, f) => {
   const da = fs.existsSync(path.join(DA_DIR, f)) ? fs.readdirSync(path.join(DA_DIR, f)).filter(x => /^DA_.*\.uasset$/.test(x)).map(x => x.replace('.uasset', '')) : [];
   const base = da.filter(x => !/_(AutoAttack|Unlock|Override|HeroAugment|Tooltip|Recommended|Transformed|Tranformed|Mounted|3Star|Pinball|Violin|Tier5|Empowered|APOverride|AllOut|WinSide)|Role$/.test(x));
@@ -110,6 +113,12 @@ async function toWebp(jobs) {
       if (be && be.d) EN_CH[o.api] = {n: be.ab, d: be.d};
       const mana = (bd || be).mana; if (o.st && mana && mana.length === 2) { o.st.mana0 = mana[0]; o.st.mana = mana[1]; }
       if ((bd && bd.unlock) || (be && be.unlock)) o.unlock = {de: bd && bd.unlock || be.unlock, en: be && be.unlock || bd.unlock};
+      // Blitz hat diese Bedingungen auf Deutsch noch nicht übersetzt – eigene Übersetzung mit Riots Begriffen
+      const UL_DE = {'Akali (True Damage)': 'Verdiene 375 True-Damage-Bling, ohne dass K/DA-Akali freigeschaltet ist', 'Mordekaiser': '10 einzigartige Sternestufen von Pentakill',
+        'Taliyah': 'Je ein Champion jeder Kostenstufe beginnt auf einem Beach-Pop-Feld', 'Teemo': 'Sammle 900 Hyperpop-Hype',
+        'Thresh': 'Gegner sind insgesamt 300 Sekunden lang von Classical gebannt', 'Samira': '2 Gegenstände auf einem Classical-, Renegade- oder Trickshot-Champion',
+        'Kobuko': '2-Sterne-Ziggs mit 1 Gegenstand'};
+      if (o.unlock && o.unlock.de === o.unlock.en && UL_DE[c.n]) o.unlock.de = UL_DE[c.n];
     } else warn.push(c.n + ': nicht bei Blitz (' + o.api + ')');
     out.push(o);
   }

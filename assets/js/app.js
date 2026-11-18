@@ -2497,7 +2497,7 @@ function chp2HTML(c, x){
   const partners = cnt(x.cs.flatMap(k=>[...new Set(k.board.map(b=>b.u))].filter(u=>u !== n && !PLANTS[u] && champBy[u])), u=>u).slice(0, 8);
   const augs = cnt(x.cs.flatMap(k=>k.augs || []).filter(id=>augById[id]), id=>id).slice(0, 6);
   const trend = champPatchTrend(n), TREND = {buff:['Buff', 'Buff'], nerf:['Nerf', 'Nerf'], mix:['Angepasst', 'Adjusted']};
-  const short = ((TFT_CUSTOM_SET.abilityShort || {})[n] || {})[EN ? 'en' : 'de'] || (TFT_DATA.manual && ab && ab.d ? abShortAuto(n) : '');
+  const short = ((TFT_CUSTOM_SET.abilityShort || {})[n] || {})[EN ? 'en' : 'de'];
   const box = (cls, title, body) => `<section class="chp2-box chp2-b-${cls}">${title ? `<h2>${title}</h2>` : ''}${body}</section>`;
   const fo = TL2_FOCUS[n], sq = `${chSqUrl(n)}`;
   return `
@@ -2505,7 +2505,7 @@ function chp2HTML(c, x){
     <section class="chp2-hero c${c.c}">
       <div class="chp2-left">
         <section class="chp2-box chp2-id"><span class="chp2-pic c${c.c}" style="background-image:url('${champImg(n) || champFallback(n)}')${fo ? `;background-position:${fo[0]}% ${fo[1]}%` : ''}"></span>
-          <div><h1 class="chp2-h1"><span class="chp2-hn${n.length > 9 ? ' long' : ''}">${esc(n)}</span></h1>
+          <div><h1 class="chp2-h1"><span class="chp2-hn${n.replace(/\s*\(.*\)$/, '').length > 9 ? ' long' : ''}">${esc(n.replace(/\s*\(.*\)$/, ''))}</span></h1>
             <div class="chp2-meta"><span class="chp2-cost"><span class="coin"></span>${c.c} Gold</span>${trend ? `<a class="chp2-trend ${trend.dir}" href="/patches/${patchSlug(trend.id)}" title="${L('Zu den Patch Notes', 'Open the patch notes')}">${L(...TREND[trend.dir])} · ${esc(trend.id)}</a>` : ''}</div>
             <div class="chp2-tags">${c.t.map(t=>`<span class="chp2-tag" data-ttt="${esc(t)}">${traitHex(t, 'base', 21)}${esc(t)}</span>`).join('')}</div>
             ${line || rname ? `<small class="chp2-role">${rr.icon ? `<img src="${rr.icon}" alt="" width="16" height="16">` : ''}${[rname, line].filter(Boolean).map(esc).join(' · ')}</small>` : ''}</div></section>
@@ -2517,7 +2517,7 @@ function chp2HTML(c, x){
           ${stats ? `<h2>${L('Werte', 'Stats')} <small>1★ / 2★ / 3★</small></h2><div class="chp2-stats">${stats}</div>` : ''}</section>` : ''}
       </div>
       <div class="chp2-stage intro${d.unlock ? ' has-unlock' : ''}">
-        ${d.unlock ? `<div class="chp2-unlock"><span class="chp2-ul-ic" aria-hidden="true"><img src="assets/img/set19/unlock.png" alt="" width="40" height="40"></span><span><small>${L('Freischaltbar', 'Unlockable')}</small><b>${esc(L(d.unlock.de, d.unlock.en))}</b></span></div>` : ''}
+        ${d.unlock ? `<div class="chp2-unlock"><img class="chp2-ul-ic" src="assets/img/set19/schloss.svg" alt="" width="30" height="38"><span><small>${L('Freischaltbar', 'Unlockable')}</small><b>${esc(L(d.unlock.de, d.unlock.en))}</b></span></div>` : ''}
         ${r.length > 1 ? `<div class="chp2-pose" role="group" aria-label="${L('Pose', 'Pose')}">${r.map((p, i)=>`<button type="button" data-pose="${i}" aria-pressed="${!i}">${L(...(CHP_POSE[p.k] || [p.k, p.k]))}</button>`).join('')}</div>` : ''}
         <div class="chp2-unit">
           <img class="chp2-pod" src="assets/img/podest-${Math.min(c.c, 5)}.webp" alt="" width="1000" height="260">
@@ -2527,7 +2527,7 @@ function chp2HTML(c, x){
         </div>
       </div>
       <div class="chp2-right">
-        ${build.length ? box('build', `${L('Empfohlener Build', 'Recommended build')} <small>${tl.length ? L('Tierlist', 'Tier list') : L('Riot-Empfehlung', 'Riot recommendation')}</small>`, `<div class="chp2-build">${build.map(it=>`<button data-item="${it.id}"><img src="${it.img}" alt="" loading="lazy"><span>${iname(it)}</span></button>`).join('')}</div>`) : ''}
+        ${box('build', `${L('Empfohlener Build', 'Recommended build')}${build.length ? ` <small>${tl.length ? L('Tierlist', 'Tier list') : L('Riot-Empfehlung', 'Riot recommendation')}</small>` : ''}`, build.length ? `<div class="chp2-build">${build.map(it=>`<button data-item="${it.id}"><img src="${it.img}" alt="" loading="lazy"><span>${iname(it)}</span></button>`).join('')}</div>` : `<p class="note">${L('Für diesen Champion gibt es noch keine Empfehlung.', 'No recommendation for this champion yet.')}</p>`)}
         <section class="chp2-traits" aria-label="Traits">${traitsHTML}</section>
         ${box('comps', 'Comps', x.cs.length ? x.cs.slice(0, 2).map(comp).join('') : `<p class="note">${L(`${esc(n)} ist gerade in keiner Comp unserer Tierlist.`, `${esc(n)} is not in any comp of our tier list right now.`)}</p>`)}
       </div>
@@ -2639,12 +2639,29 @@ function chp2Strip(nav){
 }
 // Aufklapp-Felder der Champion-Seite (Fähigkeit, Traits) schließen – außer keep; zu per Klick daneben oder Esc
 const chp2AbSet = (abx, abt, o) => { abx.setAttribute('aria-expanded', o); abt.classList.toggle('open', o); abx.firstChild.textContent = o ? L('Weniger anzeigen', 'Show less') : L('Ganze Fähigkeit', 'Full ability'); };
+// Fähigkeit ohne Kurzfassung auf- und zuklappen: Höhe weich von den sichtbaren Zeilen auf den ganzen Text (und zurück), Werte darunter blenden aus
+// Platz für die Fähigkeit ausnutzen: passt der ganze Text bis kurz über „Werte“ (auch dort, wo sonst der Knopf steht), keine Kürzung und kein Knopf;
+// sonst so viele Zeilen, wie mit Knopf Platz haben
+function chp2AbFit(abs, abx){
+  const box = abs.closest('.chp2-b-ab'), h2 = box && box.querySelector(':scope > h2'); if(!abs.clientHeight) return;
+  const lh = parseFloat(getComputedStyle(abs).lineHeight) || 26, btn = abx.offsetHeight + 10;
+  const space = h2 ? h2.offsetTop - abs.offsetTop - 8 : abs.clientHeight + btn;   // bis kurz über „Werte“
+  abs.style.webkitLineClamp = 'unset'; const full = abs.scrollHeight;
+  if(full <= space){ abs.classList.remove('clamp'); abs.style.webkitLineClamp = ''; abx.hidden = true; abx.style.display = 'none'; return; }
+  abs.style.webkitLineClamp = String(Math.max(3, Math.floor((space - btn) / lh))); abx.hidden = false;
+}
+function chp2AbInline(abx, abs, o){
+  const box = abs.closest('.chp2-b-ab'); abx.setAttribute('aria-expanded', o); abx.firstChild.textContent = o ? L('Weniger anzeigen', 'Show less') : L('Ganze Fähigkeit', 'Full ability');
+  clearTimeout(abs._t);
+  if(o){ abs.dataset.h = abs.dataset.h || abs.offsetHeight; abs.style.maxHeight = abs.dataset.h + 'px'; abs.classList.add('full'); box.classList.add('ab-open'); void abs.offsetHeight; const room = box.clientHeight - abs.offsetTop - abx.offsetHeight - 34; abs.classList.toggle('scroll', abs.scrollHeight > room); abs.style.maxHeight = Math.min(abs.scrollHeight, room) + 'px'; }
+  else { abs.style.maxHeight = abs.dataset.h + 'px'; box.classList.remove('ab-open'); abs.scrollTop = 0; abs._t = setTimeout(()=>{ abs.classList.remove('full', 'scroll'); abs.style.maxHeight = ''; }, 300); }
+}
 function chp2Close(keep){
   const pg = document.getElementById('chPage'); if(!pg) return;
   pg.querySelectorAll('.chp2-tr[open]').forEach(d=>{ if(d !== keep) d.open = false; });
-  const abx = pg.querySelector('.chp2-abx[aria-expanded="true"]'); if(abx && keep !== abx) chp2AbSet(abx, pg.querySelector('.chp2-abt'), false);
+  const abx = pg.querySelector('.chp2-abx[aria-expanded="true"]'); if(abx && keep !== abx){ const a = pg.querySelector('.chp2-abs.clamp'); if(a) chp2AbInline(abx, a, false); else chp2AbSet(abx, pg.querySelector('.chp2-abt'), false); }
 }
-document.addEventListener('click', e=>{ if(!e.target.closest('#chPage .chp2-tr, #chPage .chp2-abt, #chPage .chp2-abx')) chp2Close(); });
+document.addEventListener('click', e=>{ if(!e.target.closest('#chPage .chp2-tr, #chPage .chp2-abt, #chPage .chp2-abx, #chPage .chp2-abs')) chp2Close(); });
 document.addEventListener('keydown', e=>{ if(e.key === 'Escape') chp2Close(); });
 // Pfeiltasten links/rechts: einen Champion weiter (Reihenfolge der Champion-Leiste) – mit Übergang wie beim Klick in die Leiste; nicht beim Tippen
 document.addEventListener('keydown', e=>{
@@ -2784,8 +2801,9 @@ function renderChampPage(slug){
     // Fähigkeit: oben die Kurzfassung (oder die ersten Zeilen), „Ganze Fähigkeit“ legt den ganzen Text als Feld darüber – die Seite verschiebt sich nicht.
     // Ohne Kurzfassung gibt es den Knopf nur, wenn die Vorschau wirklich abgeschnitten ist
     const abt = box.querySelector('.chp2-abt'), abx = box.querySelector('.chp2-abx'), abs = box.querySelector('.chp2-abs.clamp');
-    if(abt && abx){ if(abs) requestAnimationFrame(()=>{ abx.hidden = !!abs.clientHeight && abs.scrollHeight <= abs.clientHeight + 2; });
-      abx.addEventListener('click', ()=>{ const o = abx.getAttribute('aria-expanded') !== 'true'; if(o){ chp2Close(); abt.style.top = abx.offsetTop + abx.offsetHeight + 8 + 'px'; } chp2AbSet(abx, abt, o); }); }
+    if(abt && abx){ if(abs) requestAnimationFrame(()=>chp2AbFit(abs, abx));
+      abx.addEventListener('click', ()=>{ const o = abx.getAttribute('aria-expanded') !== 'true'; if(abs){ if(o) chp2Close(abx); chp2AbInline(abx, abs, o); return; }
+        if(o){ chp2Close(); abt.style.top = abx.offsetTop + abx.offsetHeight + 8 + 'px'; } chp2AbSet(abx, abt, o); }); }
     // Traits: der aufgeklappte Text liegt als Feld über dem Inhalt darunter; immer nur einer offen
     box.querySelectorAll('.chp2-tr').forEach(dt=>dt.addEventListener('toggle', ()=>{ if(dt.open) chp2Close(dt); }));
   }

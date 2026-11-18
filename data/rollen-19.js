@@ -286,9 +286,12 @@ window.TFT_ROLES = {
   }
  },
  "champions": {
+  "Baron Nashor": "AttackFighter",
   "Rakan": "MagicAssassin",
   "Smeech": "AttackSpecialist_Time",
-  "Akali": "MagicFighter",
+  "Sona": "MagicSpecialist",
+  "Akali (K/DA)": "AttackAssassin",
+  "Akali (True Damage)": "MagicFighter",
   "Aphelios": "AttackMarksman",
   "Dr. Mundo": "MagicTank",
   "Gwen": "MagicFighter",
@@ -301,6 +304,7 @@ window.TFT_ROLES = {
   "Pyke": "AttackFighter",
   "Rell": "MagicTank",
   "Taliyah": "MagicCaster",
+  "Teemo": "MagicCaster",
   "Twisted Fate": "MagicMarksman",
   "Vi": "AttackFighter",
   "Vladimir": "MagicFighter",

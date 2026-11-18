@@ -2169,14 +2169,10 @@ body.nd-mini .nds-fly .nds-soon{display:inline-block}
 .chp2-comp small{font-size:.84rem}
 .chp2-comp>span>b{font-size:1.02rem}
 .chp2-units i{width:30px;height:30px}
-.chp2-tft b{font-size:1.15rem}
-.chp2-tf .chp2-trm{gap:5px}
-.chp2-tf .chp2-trm a{width:32px;height:32px;border-radius:7px;border-width:2px}
 /* Freischaltbare Units: goldenes Feld unter dem Podest mit Riots Schloss-Symbol und der Bedingung */
-.chp2-unlock{position:absolute;left:50%;bottom:6px;z-index:5;transform:translateX(-50%);width:min(560px,94%);display:flex;align-items:center;gap:14px;padding:12px 18px 12px 12px;border-radius:14px;
+.chp2-unlock{position:absolute;left:50%;top:0;z-index:5;transform:translateX(-50%);width:min(560px,94%);display:flex;align-items:center;gap:14px;padding:12px 18px 12px 12px;border-radius:14px;
   border:1.5px solid #f2c14e;background:linear-gradient(135deg,rgba(242,193,78,.24),rgba(120,82,10,.32)),rgba(8,14,20,.82);box-shadow:0 0 28px rgba(242,193,78,.28),inset 0 1px 0 rgba(255,236,170,.25)}
-.chp2-ul-ic{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe7a1,#d9a12b 60%,#8a5d0c);box-shadow:0 0 14px rgba(242,193,78,.6)}
-.chp2-ul-ic img{width:24px;height:24px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.45))}
+.chp2-ul-ic{flex:none;width:30px;height:38px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.7)) drop-shadow(0 0 8px rgba(242,193,78,.5))}
 .chp2-unlock>span:last-child{display:flex;flex-direction:column;gap:3px;min-width:0}
 .chp2-unlock small{font:800 .72rem/1 var(--ff-body);letter-spacing:.16em;text-transform:uppercase;color:#f5c84b}
 .chp2-unlock b{font:700 1rem/1.4 var(--ff-body);color:#fff4d6}
@@ -2192,3 +2188,19 @@ body.nd-mini .nds-fly .nds-soon{display:inline-block}
 .ch-lock{position:absolute;z-index:3;display:block;width:16px;height:20px;background:url('../img/set19/schloss.svg') center/contain no-repeat;filter:drop-shadow(0 1px 2px rgba(0,0,0,.85)) drop-shadow(0 0 4px rgba(242,193,78,.55));pointer-events:none}   /* goldenes Schloss ohne Kugel (Wunsch 18.11.) */
 .chp2-strip a .ch-lock{top:3px;right:3px}
 .cv-tile .cv-lock{left:12px;top:22px;width:20px;height:25px}
+
+/* Traits rechts fest: immer an derselben Stelle links ausgerichtet, senkrecht mittig zwischen Build- und Comp-Box (Wunsch 18.11.) */
+.chp2-traits{justify-content:start;padding-left:34px}
+.chp2-b-build .note{margin:6px 0 0;font-size:.9rem;color:#7d93a2}
+/* Unlock-Feld mittig zwischen oberem Rand der Bühne und dem Bild (Wunsch 18.11.) */
+.chp2-unlock{top:calc((100% - var(--py) - 10px - min(340px,56cqw) - 66px) / 2)}
+/* Fähigkeit ohne Kurzfassung (Set 19): Text steht direkt da, „Ganze Fähigkeit“ lässt ihn an Ort und Stelle weiterlaufen; Werte blenden aus (Wunsch 18.11.) */
+.chp2-abs.clamp.full{display:block;-webkit-line-clamp:unset;overflow:hidden;transition:max-height .3s ease}
+#chPage .chp2-b-ab>h2,#chPage .chp2-b-ab .chp2-stats{transition:opacity .25s ease,visibility .25s}
+#chPage .chp2-b-ab.ab-open>h2,#chPage .chp2-b-ab.ab-open .chp2-stats{opacity:0;visibility:hidden}
+/* beim Aufklappen darf die Box oben (Name) nicht schrumpfen; die Fähigkeits-Box wächst nicht mit ihrem Inhalt */
+#chPage.chp2-fit .chp2-left>.chp2-id{flex-shrink:0}
+#chPage.chp2-fit .chp2-left>.chp2-b-ab{flex:1 1 0}
+.chp2-abs.clamp.full.scroll{overflow-y:auto}
+/* Aufklappen: der Text darf nicht zusammengedrückt werden (die ausgeblendeten Werte liegen weiter in der Spalte) */
+.chp2-abs.clamp.full{flex-shrink:0}
