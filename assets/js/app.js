@@ -5755,7 +5755,9 @@ function patchHero(p){
   const msg = patchIntro(p)
     + (!bp ? '' : ' ' + (list.length ? joined.charAt(0).toUpperCase() + joined.slice(1) + (list.length > 1 ? L(' sind schon mit drin.', ' are already included.') : L(' ist schon mit drin.', ' is already included.'))
       : L('Die B-Patch-Änderungen sind schon mit drin.', 'The B-patch changes are already included.')));
-  return `<section class="pde"${p.img ? ` style="--img:url('${esc(p.img)}?w=1280&fm=webp');--pos:${esc(patchFocus(p))}"` : ''}>
+  // eigenes Bild (PBE-Seite, „assets/…“) absolut angeben – sonst löst das Stylesheet den Pfad relativ zu assets/css/ auf
+  const img = p.img && !/^(https?:)?\//.test(p.img) ? '/' + p.img : p.img;
+  return `<section class="pde"${img ? ` style="--img:url('${esc(img)}?w=1280&fm=webp');--pos:${esc(patchFocus(p))}"` : ''}>
     <div class="pde-kick"><span>Set ${esc(p.set)}</span>${p===CURRENT_PATCH ? `<span class="live">${L('Aktueller Patch', 'Current patch')}</span>` : ''}</div>
     <h1 class="pde-h1">TFT Patch Notes <span>${esc(p.id)}</span></h1>
     <a class="pde-by" href="${PATCH_AUTHOR.href}">
