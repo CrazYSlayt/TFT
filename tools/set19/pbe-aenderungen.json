@@ -1,0 +1,32 @@
+{
+ "_info": "PBE-Balance-Änderungen, die bauen.js auf die Set-19-Daten anwendet, solange Client und Blitz noch den alten Stand haben. Werte: Fähigkeitswert (Schlüssel aus ab.v) → neue Werte für 1/2/3 Sterne. Texte: [alt, neu] auf Deutsch und Englisch. Quelle je Update in data/patches-pbe.js. Wird harmlos, sobald die Quellen selbst aktualisiert sind (Werte/Texte werden nur ersetzt, wenn sie noch den alten Stand haben).",
+ "updates": [
+  {
+   "tag": "2026-11-19",
+   "quelle": "https://x.com/TheTruexy/status/2123119511285227920",
+   "werte": {
+    "Ziggs": {"v_180_270_405": [155, 235, 355], "v_80_120_180": [70, 105, 160]},
+    "Lux": {"v_330_500_800": [300, 450, 675], "v_170_255_425": [160, 240, 360]},
+    "Seraphine": {"v_600_900_1350": [570, 855, 1280]},
+    "_hinweis": "Kai'Sa und Viego: Blitz zeigt die Werte schon mit AD verrechnet (42/63/100 statt Riots 36/54/85) – darum die Änderung prozentual übertragen (36→33 = −8 % usw.)",
+    "Kai'Sa": {"v_42_63_100": [39, 58, 94]},
+    "Malzahar": {"v_380_570_960": [355, 530, 850]},
+    "Viego": {"v_39_59_93": [37, 56, 89]},
+    "Teemo": {"v_110_165_1337": [90, 135, 1337]},
+    "Sona": {"v_1400_2200_9999999": [1500, 2400, 9999999]}
+   },
+   "texte": {
+    "Smeech": {"de": [["Nach 15 Beats", "Nach 30 Beats"], ["(Entfesselte Beats: 0/15)", "(Entfesselte Beats: 0/30)"]], "en": [["After unleashing 15 Beats", "After unleashing 30 Beats"], ["(Unleashed Beats: 0/15)", "(Unleashed Beats: 0/30)"]]},
+    "Kobuko": {"de": [["100% deines Hyperpop-Hypes", "85% deines Hyperpop-Hypes"]], "en": [["100% of", "85% of"]]},
+    "Renata Glasc": {"de": [["Die Dauer erhöht sich auf 6 Sekunden, wenn ihre Sternenwertung niedriger oder gleich der von Renata ist.", "Die Dauer erhöht sich auf 9 Sekunden, wenn ihre Sternenwertung niedriger als die von Renata ist."]], "en": [["6 seconds", "9 seconds"], ["less than or equal to", "less than"]]}
+   },
+   "unlocks": {
+    "Sona": {"de": "Ab Stufe 10: Kollab-Champions werden in Spielerkämpfen 15-mal inspiriert", "en": "Req. Lvl 10 - Collab Champions are inspired 15 times during player combat"}
+   },
+   "augments": {
+    "DA_Augment19_Manager_ManagementTrack": {"de": [["60 % Chance", "40 % Chance"], ["20 Gold durch", "30 Gold durch"]], "en": [["60%", "40%"], ["20 gold", "30 gold"]]},
+    "DA_TrueDamage19_PainIntoPassion": {"de": [["gesammelten 20 Glitzer", "gesammelten 30 Glitzer"]], "en": [["every 20", "every 30"]]}
+   }
+  }
+ ]
+}

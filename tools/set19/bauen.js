@@ -133,6 +133,17 @@ async function toWebp(jobs) {
     } else warn.push(c.n + ': nicht bei Blitz (' + o.api + ')');
     out.push(o);
   }
+  // PBE-Balance-Änderungen (tools/set19/pbe-aenderungen.json): Riot patcht den PBE fast täglich, Client und Blitz ziehen erst später nach.
+  // Ersetzt nur, solange noch der alte Stand drin ist – sonst Hinweis (dann ist die Quelle schon aktuell oder der Schlüssel falsch)
+  const PBE = fs.existsSync(path.join(__dirname, 'pbe-aenderungen.json')) ? JSON.parse(fs.readFileSync(path.join(__dirname, 'pbe-aenderungen.json'), 'utf8')).updates : [];
+  const repAll = (s, pairs, wo) => (pairs || []).reduce((t, [a, b]) => { if (t.includes(a)) return t.split(a).join(b); if (!t.includes(b)) warn.push(`PBE: „${a.slice(0, 40)}“ nicht gefunden (${wo})`); return t; }, s);
+  for (const u of PBE) {
+    for (const [n, vals] of Object.entries(u.werte || {})) { if (n.startsWith('_')) continue; const o = out.find(c => c.n === n); if (!o || !o.ab) { warn.push('PBE: Champion fehlt ' + n); continue; }
+      for (const [k, v] of Object.entries(vals)) { if (o.ab.v[k]) o.ab.v[k] = v; else warn.push(`PBE: ${n} ohne Wert ${k}`); } }
+    for (const [n, tx] of Object.entries(u.texte || {})) { const o = out.find(c => c.n === n); if (!o || !o.ab) continue;
+      o.ab.d = repAll(o.ab.d, tx.de, n + ' de'); if (EN_CH[o.api]) EN_CH[o.api].d = repAll(EN_CH[o.api].d, tx.en, n + ' en'); }
+    for (const [n, ul] of Object.entries(u.unlocks || {})) { const o = out.find(c => c.n === n); if (o) o.unlock = ul; }
+  }
   const traitNames = Object.keys(CUSTOM.traits);
   const used = new Set(champs.flatMap(c => c.t)); used.forEach(t => { if (!CUSTOM.traits[t]) warn.push('Trait nicht in custom-19: ' + t); });
   const traits = traitNames.map(n => {
@@ -192,6 +203,8 @@ async function toWebp(jobs) {
     if (e.rounds && e.rounds.length) o.r = e.rounds;
     augs.push(o); EN_AUG[id] = vals(e.d, e.v);
   }
+  for (const u of PBE) for (const [id, tx] of Object.entries(u.augments || {})) { const a = augs.find(x => x.id === id); if (!a) { warn.push('PBE: Augment fehlt ' + id); continue; }
+    a.desc = repAll(a.desc, tx.de, id + ' de'); if (EN_AUG[id]) EN_AUG[id] = repAll(EN_AUG[id], tx.en, id + ' en'); }
   await toWebp(jobs.filter(j => j.out.includes(path.sep + 'augments' + path.sep)));
   const body = `champions:[\n${out.map(J).join(',\n')}\n],\ntraits:[\n${traits.map(J).join(',\n')}\n],\nitems:[\n${items.map(J).join(',\n')}\n],\naugments:[\n${augs.map(J).join(',\n')}\n]\n};\n`;
   fs.writeFileSync(path.join(ROOT, 'data', 'tft-data-19.js'), head + body);

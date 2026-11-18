@@ -119,7 +119,7 @@ function newsPages(){
 const FOKUS = {
   'news/tft-set-19-prismatic-tour': 780, 'news/tft-set-19-prismatic-tour-dev-drop': 870, 'news/tft-set-19-prismatic-tour-cinematic': 860,
   'news/tft-set-19-prismatic-tour-champions': 860, 'news/tft-set-19-true-damage-client': 860, 'news/tft-set-19-unlocks': 950,
-  'guides/tft-anfaenger-guide': 900, 'guides/tft-fortgeschrittene-guide': 690, 'guides/tft-items-guide': 760,'erklaert/tft-ranked-reset': 770
+  'guides/tft-anfaenger-guide': 900, 'guides/tft-fortgeschrittene-guide': 690, 'guides/tft-items-guide': 760, 'guides/tft-augments-guide': 900,'erklaert/tft-ranked-reset': 770
 };
 
 // ---------- Guides (data/guides.js): Titelbild und Vorschau zugleich – je Guide eigenes Motiv aus Spiel-Icons und eine Pose von CrazYSlayt ----------

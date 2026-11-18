@@ -3219,6 +3219,8 @@ const GD_BLOCK = {
       return `<span class="gd-item"${it ? ` data-tti="${it.id}"` : ''}>${it ? `<img src="${it.img}" alt="" width="44" height="44" loading="lazy">` : ''}<b>${esc(it ? L(it.de || it.en, it.en) : n)}</b>${x ? `<small>${x}</small>` : ''}</span>`; }).join('')}</div>${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`,
   // Item-Paare, die zusammen auf einen Champion gehören: l: [[a, b], …]
   pair:b=>`<figure class="gd-pairs">${b.l.map(([a, c])=>`<div class="gd-pair">${gdIt(a, 46)}<em>+</em>${gdIt(c, 46)}<span>${L('auf einen Champion', 'on one champion')}</span></div>`).join('')}${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`,
+  // Carry-Build: je Carry-Art drei Item-Arten, die sich multiplizieren: l: [[name, [[art, item], …]], …]
+  build:b=>`<figure class="gd-build">${b.t ? `<b class="gd-chips-t">${b.t}</b>` : ''}${b.l.map(([n, cells])=>`<div class="gd-build-r"><b class="gd-build-n">${n}</b><div class="gd-build-c">${cells.map(([art, it])=>`<span class="gd-build-s"><small>${art}</small>${gdIt(it, 44)}</span>`).join('<em>×</em>')}</div></div>`).join('')}${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`,
   // Rezept: zwei Komponenten ergeben ein Item: l: [item, …]
   recipe:b=>`<figure class="gd-pairs">${b.l.map(n=>{ const it = findItem(n); if(!it) return ''; const [a, c] = it.comp || [];
       return `<div class="gd-pair">${gdIt(a, 40)}<em>+</em>${gdIt(c, 40)}<em>=</em>${gdIt(n, 50)}</div>`; }).join('')}${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`,
@@ -5670,14 +5672,17 @@ document.addEventListener('click', e=>{
 });
 
 /* ================= PATCHES (aus Riots Patchnotes, automatisch vom Update-Skript) ================= */
-const PATCHES = (window.TFT_PATCHES || []).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+// PBE-Updates (data/patches-pbe.js): eine Sammelseite pro Set, nur solange das Set in data/sets.js noch "pbe" ist – mit dem Release verschwindet sie von selbst
+const PBE_PATCHES = (window.TFT_PATCHES_PBE || []).filter(p=>(window.TFT_SETS || []).some(s=>s.set === p.set && s.status === 'pbe'))
+  .map(p=>EN && p.en ? Object.assign({}, p, p.en) : p);
+const PATCHES = [...(window.TFT_PATCHES || []), ...PBE_PATCHES].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
 const PATCH_NOTES = window.TFT_PATCH_NOTES || {};
 const PATCH_FOCUS = window.TFT_PATCH_FOCUS || {};   // Bildausschnitt pro Patch (data/patch-kommentare.js)
 const patchFocus = p => /^\d{1,3}% \d{1,3}%$/.test(PATCH_FOCUS[p.id] || '') ? PATCH_FOCUS[p.id] : '50% 30%';
-const patchSlug = id => String(id).replace('.', '-');
+const patchSlug = id => /\s/.test(String(id)) ? String(id).toLowerCase().replace(/\s+/g, '-') : String(id).replace('.', '-');   // „Set 19 PBE“ → set-19-pbe
 const patchBySlug = Object.fromEntries(PATCHES.map(p=>[patchSlug(p.id), p]));
 const TODAY_ISO = new Date().toISOString().slice(0,10);
-const CURRENT_PATCH = PATCHES.find(p=>p.date <= TODAY_ISO);
+const CURRENT_PATCH = PATCHES.find(p=>p.date <= TODAY_ISO && !p.pbe);
 const fmtDate = d => d ? new Date(d + 'T12:00:00').toLocaleDateString(LOC, {day:'numeric', month:'long', year:'numeric'}) : '';
 const patchCount = p => (p.notes || []).reduce((n,s)=>n + (s.ch||[]).length, 0);
 // Namen aus den (deutschen) Patchnotes den Einträgen der Seite zuordnen
@@ -5741,7 +5746,7 @@ function patchRowHTML(r){
 // Kopf der Patch-Seite: Patch-Nummer groß, rechts eine Nachricht von CrazYSlayt an die Besucher (Foto + Sprechblase, Klick auf Foto/Name → Profil)
 const PATCH_AUTHOR = {img:'assets/img/team-claudio.jpg', href:'/about/crazyslayt'};
 // Anfang der Ansage = Meta-Beschreibung der Patch-Seite (mit Keyword „TFT Patch Notes 18.5“), danach ggf. der Hinweis auf B-Patches
-const patchIntro = p => p===CURRENT_PATCH ? L(`Hey Leute, die TFT Patch Notes ${p.id} sind da! Ich hab sie für euch übersichtlich aufbereitet – alle Änderungen auf einen Blick.`, `Hey everyone, the TFT patch notes ${p.id} are out! I've neatly prepared them for you – every change at a glance.`)
+const patchIntro = p => p.intro ? p.intro : p===CURRENT_PATCH ? L(`Hey Leute, die TFT Patch Notes ${p.id} sind da! Ich hab sie für euch übersichtlich aufbereitet – alle Änderungen auf einen Blick.`, `Hey everyone, the TFT patch notes ${p.id} are out! I've neatly prepared them for you – every change at a glance.`)
   : L(`Hey Leute, hier sind die TFT Patch Notes ${p.id}! Ich hab sie für euch übersichtlich aufbereitet – alle Änderungen auf einen Blick.`, `Hey everyone, here are the TFT patch notes ${p.id}! I've neatly prepared them for you – every change at a glance.`);
 function patchHero(p){
   // Patch-Aktualisierungen in zeitlicher Reihenfolge: „Der B-Patch vom 22. Oktober und der C-Patch vom 27. Oktober sind schon mit drin.“
@@ -5794,17 +5799,23 @@ function renderPatches(sub){
     ${p.lang==='en' && !EN ? '<p class="pd-lang">Riot hat die deutschen Patchnotes noch nicht veröffentlicht – bis dahin siehst du hier die englische Fassung.</p>' : ''}
     ${note ? `<div class="card pd-note"><h3>Einschätzung von TFTClimb</h3>${String(note).split(/\n{2,}/).map(t=>`<p>${esc(t).replace(/\n/g,'<br>')}</p>`).join('')}</div>` : ''}
     ${grps.length ? `<input class="input pd-search" id="pdSearch" placeholder="Champion, Trait, Item oder Augment suchen …" aria-label="Änderungen durchsuchen">
-    <div id="pdList">${grps.map(g=>`<section class="pd-grp">${g.g ? `<h2>${esc(grpLabel(g.g, p))}</h2>` : ''}${g.secs.map(s=>`<div class="card pd-sec">${s.sec ? `<h3>${esc(secLabel(s.sec))}</h3>` : ''}${s.en ? `<p class="pd-en">${L('Riot hat diese Aktualisierung bisher nur auf Englisch veröffentlicht – die deutsche Fassung folgt automatisch.', 'Riot has only published this update in English so far.')}</p>` : ''}<ul>${s.ch.map(patchRowHTML).join('')}</ul></div>`).join('')}</section>`).join('')}</div>`
+    ${p.pbe ? `<div class="pd-tabs" role="tablist" aria-label="${L('PBE-Updates', 'PBE updates')}">${grps.map((g, i)=>`<button type="button" role="tab" data-pbe-tab="${i}" class="${i ? '' : 'on'}" aria-selected="${!i}">${esc(g.g)}${i ? '' : `<em>${L('Neu', 'New')}</em>`}</button>`).join('')}</div>` : ''}
+    <div id="pdList">${grps.map((g, gi)=>`<section class="pd-grp${p.pbe && gi ? ' pd-off' : ''}" data-gi="${gi}">${g.g && !p.pbe ? `<h2>${esc(grpLabel(g.g, p))}</h2>` : ''}${g.secs.map(s=>`<div class="card pd-sec">${s.sec ? `<h3>${esc(secLabel(s.sec))}</h3>` : ''}${s.en ? `<p class="pd-en">${L('Riot hat diese Aktualisierung bisher nur auf Englisch veröffentlicht – die deutsche Fassung folgt automatisch.', 'Riot has only published this update in English so far.')}</p>` : ''}<ul>${s.ch.map(patchRowHTML).join('')}</ul></div>`).join('')}</section>`).join('')}</div>`
       : viSays('Für diesen Patch habe ich keine einzelnen Änderungen gefunden – schau direkt in die Patchnotes bei Riot.')}
     <div class="pd-nav">${older ? `<a class="btn btn-ghost" href="/patches/${patchSlug(older.id)}">← Patch Notes ${esc(older.id)}</a>` : '<span></span>'}${newer ? `<a class="btn btn-ghost" href="/patches/${patchSlug(newer.id)}">Patch Notes ${esc(newer.id)} →</a>` : ''}</div>
-    <p class="note">${L('Quelle: offizielle Patch Notes von Riot Games, für euch übersichtlich aufbereitet. Im Zweifel gilt das', 'Source: official patch notes by Riot Games, neatly prepared for you. If in doubt, the')} <a href="${esc(p.url)}" target="_blank" rel="noopener">${L('Original bei Riot', 'original at Riot applies')}</a>.</p>`;
+    ${p.pbe ? `<p class="note">${L('Quellen: die PBE-Patch-Notes von Riots TFT-Team, für euch übersichtlich aufbereitet und übersetzt.', 'Sources: the PBE patch notes by Riot\'s TFT team, neatly prepared for you.')} ${(p.sources || []).map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.d)}: ${esc(s.t)}</a>`).join(' · ')}</p>`
+      : `<p class="note">${L('Quelle: offizielle Patch Notes von Riot Games, für euch übersichtlich aufbereitet. Im Zweifel gilt das', 'Source: official patch notes by Riot Games, neatly prepared for you. If in doubt, the')} <a href="${esc(p.url)}" target="_blank" rel="noopener">${L('Original bei Riot', 'original at Riot applies')}</a>.</p>`}`;
   const s = $('#pdSearch');
-  if(s) s.addEventListener('input', ()=>{
-    const q = s.value.toLowerCase().trim();
+  // PBE-Seite: je Update ein Knopf, gezeigt wird nur das gewählte (alle stehen im HTML – Google sieht den ganzen Inhalt); beim Suchen alle Updates durchsuchen
+  const tabs = app.querySelector('.pd-tabs');
+  const pdFilter = () => { const q = s ? s.value.toLowerCase().trim() : '', act = tabs ? +(tabs.querySelector('.on') || {dataset:{pbeTab:0}}).dataset.pbeTab : -1;
     app.querySelectorAll('.pn-row').forEach(li=>{ li.hidden = !!q && !li.textContent.toLowerCase().includes(q); });
     app.querySelectorAll('.pd-sec').forEach(sec=>{ sec.hidden = ![...sec.querySelectorAll('.pn-row')].some(li=>!li.hidden); });
-    app.querySelectorAll('.pd-grp').forEach(g=>{ g.hidden = ![...g.querySelectorAll('.pd-sec')].some(x=>!x.hidden); });
-  });
+    app.querySelectorAll('.pd-grp').forEach(g=>{ g.classList.toggle('pd-off', !q && act >= 0 && +g.dataset.gi !== act); g.hidden = ![...g.querySelectorAll('.pd-sec')].some(x=>!x.hidden); });
+    if(tabs) tabs.classList.toggle('all', !!q); };
+  if(tabs) tabs.addEventListener('click', e=>{ const b = e.target.closest('[data-pbe-tab]'); if(!b) return;
+    tabs.querySelectorAll('button').forEach(x=>{ x.classList.toggle('on', x === b); x.setAttribute('aria-selected', x === b); }); pdFilter(); });
+  if(s) s.addEventListener('input', pdFilter);
 }
 // Letzte Änderungen eines Champions (für das Champion-Fenster)
 function champPatchHTML(name){

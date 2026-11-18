@@ -2371,3 +2371,23 @@ button.adm2-aty.has{opacity:.35}button.adm2-aty:disabled{opacity:.25;cursor:defa
 .adm2-unl .hx{flex:none;width:34px;height:39.3px}
 .adm2-unl span{display:flex;flex-direction:column;font-size:.8rem}.adm2-unl small{color:#e9d9a8}
 @media (max-width:1100px){.adm2-main{grid-template-columns:minmax(0,1fr)}.adm2-ed{position:static;max-height:none}}
+
+/* Guide: Carry-Build (drei Item-Arten, die sich multiplizieren) */
+.gd-build{clear:both;display:flex;flex-direction:column;gap:10px;margin:20px 0}
+.gd-build-r{display:grid;grid-template-columns:150px minmax(0,1fr);align-items:center;gap:14px;padding:12px 16px;border-radius:16px;border:1px solid rgba(245,184,46,.35);background:linear-gradient(135deg,rgba(245,184,46,.09),rgba(4,20,30,.55))}
+.gd-build-n{font:900 italic 1.05rem/1.1 var(--ff-head);text-transform:uppercase;color:#fff;padding-right:.12em}
+.gd-build-c{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.gd-build-c em{font-style:normal;font:900 1.4rem/1 var(--ff-head);color:#f5b82e}
+.gd-build-s{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:84px}
+.gd-build-s>small{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#f5c84b}
+.gd-build figcaption{font-size:.84rem;color:var(--muted)}
+@media (max-width:640px){.gd-build-r{grid-template-columns:minmax(0,1fr)}.gd-build-s{min-width:0}}
+
+/* PBE-Sammelseite: je Update ein Knopf, nur das gewählte Update sichtbar (Wunsch 19.11.) */
+.pd-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 6px}
+.pd-tabs button{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:12px;border:1px solid var(--line-2);background:var(--panel-2);color:var(--muted);font:900 italic .92rem var(--ff-head);text-transform:uppercase;letter-spacing:.02em;cursor:pointer;transition:.15s}
+.pd-tabs button:hover{color:#fff;border-color:rgba(46,230,214,.6)}
+.pd-tabs button.on{color:#06131c;background:linear-gradient(90deg,#2ee6d6,#7ff7ec);border-color:#2ee6d6;box-shadow:0 0 16px rgba(46,230,214,.35)}
+.pd-tabs button em{font-style:normal;font:800 .62rem var(--ff-body);letter-spacing:.08em;padding:2px 6px;border-radius:99px;background:#f0abfc;color:#2a0b33}
+.pd-tabs.all button{opacity:.5}
+.pd-grp.pd-off{display:none}
