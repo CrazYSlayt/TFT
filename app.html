@@ -1361,6 +1361,7 @@
 // Set wählen (Builder-Link > gespeicherte Auswahl > Live-Set) und dessen Daten + veröffentlichte Tierlist laden
 (function(){
   var sets = window.TFT_SETS || [], want = 0, m = location.pathname.match(/^\/(?:en\/)?(?:builder|tools\/tierlist|tools\/simulator)\/(\d+)\//) || location.hash.match(/^#\/(?:en\/)?(?:builder|tools\/tierlist|tools\/simulator)\/(\d+)\//);
+  if (!m) m = location.pathname.match(/^\/(?:en\/)?tft-set-(\d+)\/(?:tierlist|tier-list)\/?$/);   // PBE-Tierlist /tft-set-19/tierlist: dieses Set zeigen
   if (m) want = +m[1];
   if (!want) { try { want = +localStorage.getItem('tftfreaks_set') || 0; } catch (e) {} }
   var pick = sets.filter(function (s) { return s.set === want; })[0] || sets.filter(function (s) { return s.status === 'live'; })[0] || sets[0];

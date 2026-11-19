@@ -78,7 +78,7 @@
 <link rel="preconnect" href="https://ddragon.leagueoflegends.com">
 <!-- app.js und sim.js stehen am Ende von <body>: hier schon anmelden, damit sie am Handy vor den Bildern geladen werden -->
 <link rel="preload" href="assets/js/sim.js?v=416a7d3541" as="script">
-<link rel="preload" href="assets/js/app.js?v=ccb8d7bfde" as="script">
+<link rel="preload" href="assets/js/app.js?v=1efb44ed55" as="script">
 <!-- Schriften vorladen: sonst tauscht der Browser nach ~0,6 s von der Ersatzschrift auf die Webschrift und Boxen springen um ein paar Pixel (Dashboard, 12.11.) -->
 <link rel="preload" href="assets/fonts/Barlow-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/Barlow-600-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -101,7 +101,7 @@
     alt = localStorage.getItem('tftfreaks_design') === 'alt';
   } catch(e){}
   if(!alt){
-    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=513ba99fb5">');
+    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=a7df1fa91c">');
     // Topleiste und Seitenleiste stehen sofort (assets/js/shell.js), den Inhalt baut app.js: bis alle Skripte gelaufen sind, bleibt er verborgen und oben läuft ein Ladebalken
     document.addEventListener('DOMContentLoaded', function(){ document.documentElement.classList.add('nd-ready'); });
   }
@@ -1378,6 +1378,7 @@
 // Set wählen (Builder-Link > gespeicherte Auswahl > Live-Set) und dessen Daten + veröffentlichte Tierlist laden
 (function(){
   var sets = window.TFT_SETS || [], want = 0, m = location.pathname.match(/^\/(?:en\/)?(?:builder|tools\/tierlist|tools\/simulator)\/(\d+)\//) || location.hash.match(/^#\/(?:en\/)?(?:builder|tools\/tierlist|tools\/simulator)\/(\d+)\//);
+  if (!m) m = location.pathname.match(/^\/(?:en\/)?tft-set-(\d+)\/(?:tierlist|tier-list)\/?$/);   // PBE-Tierlist /tft-set-19/tierlist: dieses Set zeigen
   if (m) want = +m[1];
   if (!want) { try { want = +localStorage.getItem('tftfreaks_set') || 0; } catch (e) {} }
   var pick = sets.filter(function (s) { return s.set === want; })[0] || sets.filter(function (s) { return s.status === 'live'; })[0] || sets[0];
@@ -1393,6 +1394,6 @@ document.write('<script src="data/rollen-' + pick.set + '.js"><\/script>');  // 
 })();
 </script>
 <script src="assets/js/sim.js?v=416a7d3541"></script>
-<script src="assets/js/app.js?v=ccb8d7bfde"></script>
+<script src="assets/js/app.js?v=1efb44ed55"></script>
 </body>
 </html>

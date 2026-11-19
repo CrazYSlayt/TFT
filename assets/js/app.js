@@ -114,6 +114,8 @@ const TL_PATCH = (()=>{ const set = TFT_DATA.set + '.', now = new Date(), today 
   const plan = stPatchDates().filter(x=>String(x.id).startsWith(set) && x.d <= now).pop(), notes = (window.TFT_PATCHES || []).find(p=>String(p.id).startsWith(set) && p.date <= today);
   return plan ? String(plan.id).replace(/[a-z]$/i, '') : notes ? String(notes.id) : tierSource.data.patch || (TL_FILE && TL_FILE.patch) || ''; })();
 const tlPatchVar = () => { const pt = (window.TFT_PATCHES || []).find(x=>String(x.id) === String(TL_PATCH)); return pt ? patchVariant(pt) : ''; };
+// eigene Adresse der PBE-Tierlist (/tft-set-19/tierlist bzw. /en/tft-set-19/tier-list) – nur solange das Set im PBE ist
+const SET_TL = /^\/(en\/)?tft-set-\d+\/(tierlist|tier-list)\/?$/.test(location.pathname);
 const setStatus = () => (window.TFT_SET && TFT_SET.status) || TFT_DATA.channel || 'live';
 const PLANT_IMG = TFT_CUSTOM_SET.plants || {};
 // Sonderregeln für Units (data/custom-<Set>.js → unitRules): Teamplätze (slots) und Zählwert pro Trait (traits), z. B. Elder Dragon = 2 Plätze, +2 Riftbeast
@@ -7158,6 +7160,7 @@ function nsHTML(n, D){
         : L(`Alles zu TFT Set ${n}: wann der PBE startet, wann das Set live geht und ab dem PBE alle neuen Champions, Traits und Augments.`, `Everything about TFT Set ${n}: when the PBE starts, when the set goes live and, from the PBE on, every new champion, trait and augment.`)}</p></div>
     <div class="ns-dates">${card('pbe', L('PBE-Start', 'PBE start'), pbe, ['', L('läuft auf dem PBE', 'live on the PBE')])}${card('live', L('Release', 'Release'), live, ['', L('ist live', 'is live')])}</div>
     ${nwListHTML(n)}
+    ${phase === 'pbe' && D ? nsTierHTML(n, D) : ''}
     ${D && ch.length ? `<section class="ns-box"><div class="ns-hd"><h2>${L(`Alle ${ch.length} Champions von Set ${n}`, `All ${ch.length} champions of Set ${n}`)}</h2>
         ${isNew ? `<button type="button" class="btn btn-ghost" data-set-pick="${n}">${L(`Seite auf Set ${n} umschalten`, `Switch the site to Set ${n}`)}</button>` : ''}</div>
         ${phase !== 'live' ? `<p class="ns-note">${L('PBE-Daten: Champions, Werte und Traits können sich bis zum Release noch ändern.', 'PBE data: champions, stats and traits can still change until release.')}</p>` : ''}
@@ -7196,6 +7199,19 @@ SEO_ART.ns = (n, D, o)=>{ const S = TFT_DATA.set, {pbe, live, phase} = o, dd = d
   ln:['countdown', 'patch-schedule', 'tierlist', 'patches']};
 };
 let NS_REQ = 0;
+// Tierlist-Vorschau auf der Set-Seite (PBE): S- und A-Comps mit Carry, Link zur eigenen PBE-Tierlist /tft-set-<N>/tierlist.
+// Die Tierlist-Datei des Sets wird als Text geladen (nicht als Skript – sonst überschriebe sie die Tierlist des gewählten Sets)
+const NS_TL = {};
+function nsTierHTML(n, D){
+  if(!(n in NS_TL)){ NS_TL[n] = null; fetch(`tierlist-data-${n}.js`).then(r=>r.ok ? r.text() : '').then(t=>{ try { NS_TL[n] = JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1)); } catch(e){ NS_TL[n] = {comps:[]}; } if(curPath().startsWith('/tft-set-' + n) || /\/en\/tft-set-/.test(curPath())) renderNextSet(String(n)); }).catch(()=>{}); return ''; }
+  const T = NS_TL[n]; if(!T) return '';
+  const cs = (T.comps || []).filter(c=>c.main && !c.hidden && 'SA'.includes(c.tier)); if(!cs.length) return '';
+  const img = u => { const c = (D.champions || []).find(x=>x.n === u); return c ? (D.cdn || '') + (c.sq || c.tile) : ''; };
+  const href = EN ? `/en/tft-set-${n}/tier-list` : `/tft-set-${n}/tierlist`;
+  return `<section class="ns-box ns-tl"><div class="ns-hd"><h2>${L(`TFT Set ${n} Tierlist (PBE)`, `TFT Set ${n} Tier List (PBE)`)}</h2><a class="btn btn-primary" href="${href}">${L('Zur ganzen Tierlist', 'Full tier list')} →</a></div>
+    <p class="ns-note">${L(`Die stärksten Comps auf dem PBE – laufend aktualisiert bis zum Release.`, `The strongest comps on the PBE – updated until release.`)}</p>
+    <div class="ns-tlg">${cs.map(c=>`<a class="ns-tlc" href="${href}" style="--tc:${TIER_COL[c.tier]}"><b>${c.tier}</b>${img(c.carry) ? `<img src="${img(c.carry)}" alt="" width="44" height="44" loading="lazy">` : ''}<span>${esc(c.name)}<small>${esc(L(STYLE_DE[c.style] || c.style, c.style))}</small></span></a>`).join('')}</div></section>`;
+}
 function renderNextSet(sub){
   const app = $('#nsApp'); if(!app) return;
   const n = +sub, req = ++NS_REQ, draw = D => { if(req !== NS_REQ) return; let html = ''; try { html = nsHTML(n, D); } catch(e){ html = ''; } app.innerHTML = html; const a = app.querySelector('.tool-seo'); if(a) artToc(a); };
@@ -7607,6 +7623,8 @@ function pageMeta(page, sub){
     case 'home': return [L('TFTClimb – TFT Tierlist, Comps & Coaching', 'TFTClimb – TFT Tier List, Comps & Coaching'), L(`TFT Tierlist für ${S} von Challenger-Spielern: die besten Comps mit Items, Augments und Aufstellung – dazu Tools und Coaching.`,
       `TFT tier list for ${S} by Challenger players: the best comps with items, augments and positioning – plus tools and coaching.`)];
     case 'tierlist':
+      if(SET_TL) return [L(`TFT Set ${TFT_DATA.set} Tierlist (PBE) – die besten Comps`, `TFT Set ${TFT_DATA.set} Tier List (PBE) – Best Comps`), L(`TFT Set ${TFT_DATA.set} Tierlist vom Challenger: die stärksten Comps auf dem PBE mit Aufstellung, Items und Spielplan – laufend aktualisiert.`,
+        `TFT Set ${TFT_DATA.set} tier list by a Challenger: the strongest comps on the PBE with positioning, items and game plan – updated constantly.`)];
       if(sub==='items') return [L(`TFT Item-Tierlist ${PS}`, `TFT Item Tier List ${PS}`), L(`TFT Item-Tierlist ${S}: die stärksten kombinierten Items, Lichtversionen, Artefakte und Embleme.`,
         `TFT item tier list ${S}: the strongest combined items, radiant items, artifacts and emblems.`)];
       if(sub==='augments') return [L(`TFT Augment-Tierlist ${PS}`, `TFT Augment Tier List ${PS}`), L(`TFT Augment-Tierlist ${S}: die besten Augments in Silber, Gold und Prismatisch für 2-1, 3-2 und 4-2.`,
@@ -7777,7 +7795,7 @@ function setMeta(page, sub){
   if(noindex){ const c = document.head.querySelector('link[rel="canonical"]'); if(c) c.remove(); return; }
   // kanonische Adresse: eine Adresse pro Inhalt (z. B. /bibliothek statt /bibliothek/champions, Builder ohne Team-Code)
   const keep = {cheatsheet:csList().map(s=>s[0]), guides:GD_PLAN.map(p=>p.key).filter(gdOpen), tierlist:['items','augments','holds'], bibliothek:['items','traits','augments'], tools:['rolldown','tierlist','simulator','drops','dps','augments','streak'], patches:Object.keys(patchBySlug), ranks: rankBy[sub] ? [sub] : [], about:['crazyslayt','humbadobo']}[page] || [];
-  const path = page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : page==='comp' ? compHref(compByKey[sub]) : page==='nextset' ? '/tft-set-' + sub : page==='setnews' ? nwHref(nwBy(sub)) : page==='erklaert' ? '/tft-erklaert' + (sub && ER_BY[sub] && erOpen(sub) ? '/' + ER_SLUG[sub] : '') : seoPath('/' + page + (keep.includes(sub) ? '/' + sub : ''));
+  const path = SET_TL && page==='tierlist' ? (EN ? `/tft-set-${TFT_DATA.set}/tier-list` : `/tft-set-${TFT_DATA.set}/tierlist`) : page==='home' ? '/' : page==='champion' ? champHref(champBySlug[sub].n) : page==='comp' ? compHref(compByKey[sub]) : page==='nextset' ? '/tft-set-' + sub : page==='setnews' ? nwHref(nwBy(sub)) : page==='erklaert' ? '/tft-erklaert' + (sub && ER_BY[sub] && erOpen(sub) ? '/' + ER_SLUG[sub] : '') : seoPath('/' + page + (keep.includes(sub) ? '/' + sub : ''));
   headTag('link[rel="canonical"]', ()=>Object.assign(document.createElement('link'), {rel:'canonical'})).href = location.origin + withLang(path);
   // beide Sprachfassungen für Suchmaschinen verknüpfen
   // Guides ohne englische Fassung: kein Verweis auf /en/ (die Adresse leitet dort noch auf die Übersicht)
@@ -7935,7 +7953,7 @@ function route(){
   // alte Adressen weiter unterstützen
   if(['champions','items','traits'].includes(page)){ sub = page; page = 'bibliothek'; }
   if(page==='augments'){ sub = 'augments'; page = 'tierlist'; }
-  { const m = page.match(/^tft-set-(\d+)$/); if(m){ if(sub) page = nwBy(sub) ? 'setnews' : 'notfound'; else { page = 'nextset'; sub = m[1]; } } }   // /tft-set-19: Seite zum nächsten Set, /tft-set-19/<beitrag>: News
+  { const m = page.match(/^tft-set-(\d+)$/); if(m){ if(sub === 'tierlist' || sub === 'tier-list'){ page = 'tierlist'; sub = ''; } else if(sub) page = nwBy(sub) ? 'setnews' : 'notfound'; else { page = 'nextset'; sub = m[1]; } } }   // /tft-set-19/tierlist: Tierlist des PBE-Sets (eigene Adresse für Google)   // /tft-set-19: Seite zum nächsten Set, /tft-set-19/<beitrag>: News
   const valid = ['nextset','setnews','home','tierlist','bibliothek','champion','comp','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','gameplans','about','apply','impressum','datenschutz','patches','countdown','erklaert'];
   if(!valid.includes(page)) page='notfound';
   const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche

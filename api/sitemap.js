@@ -18,7 +18,8 @@ function enPath(p) {
   if (s[1] === 'tools' && s[2]) { const k = keyOf(TOOL_SLUG, s[2]); if (TOOL_SLUG_EN[k]) s[2] = TOOL_SLUG_EN[k]; }
   if (s[1] === 'cheatsheet' && s[2]) { const k = keyOf(CS_SLUG, s[2]); s[2] = CS_SLUG_EN[k] || (k !== s[2] ? 'tft-' + k : s[2]); }
   if (PAGE_EN[s[1]]) s[1] = PAGE_EN[s[1]];
-  if (/^tft-set-\d+$/.test(s[1]) && s[2]) { const n = newsList().find(x => x.slug.de === s[2]); if (n) s[2] = n.slug.en; }
+  if (/^tft-set-\d+$/.test(s[1]) && s[2] === 'tierlist') s[2] = 'tier-list';
+  else if (/^tft-set-\d+$/.test(s[1]) && s[2]) { const n = newsList().find(x => x.slug.de === s[2]); if (n) s[2] = n.slug.en; }
   if (s[1] === 'guides' && s[2]) { const g = guideList().find(x => x.de === s[2]); if (g) s[2] = g.en; }
   return '/en' + s.join('/');
 }
@@ -92,7 +93,9 @@ function nextSet(){
   try {
     const sets = fs.readFileSync(path.join(process.cwd(), 'data', 'sets.js'), 'utf8');
     const list = JSON.parse(sets.slice(sets.indexOf('['), sets.lastIndexOf(']') + 1)), live = list.find(s => s.status === 'live') || list[0];
-    return live ? ['/tft-set-' + (live.set + 1)] : [];
+    // dazu die PBE-Tierlist (/tft-set-19/tierlist), solange das nächste Set im PBE ist – ab Release leitet sie auf /tierlist weiter
+    const pbe = live && list.find(s => s.set === live.set + 1 && s.status === 'pbe');
+    return live ? ['/tft-set-' + (live.set + 1), ...(pbe ? ['/tft-set-' + pbe.set + '/tierlist'] : [])] : [];
   } catch (e) { return []; }
 }
 
