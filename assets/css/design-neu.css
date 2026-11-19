@@ -2391,3 +2391,10 @@ button.adm2-aty.has{opacity:.35}button.adm2-aty:disabled{opacity:.25;cursor:defa
 .pd-tabs button em{font-style:normal;font:800 .62rem var(--ff-body);letter-spacing:.08em;padding:2px 6px;border-radius:99px;background:#f0abfc;color:#2a0b33}
 .pd-tabs.all button{opacity:.5}
 .pd-grp.pd-off{display:none}
+
+/* Dashboard: Guides in zwei Reihen, Rest aufklappbar (Wunsch 19.11.) */
+.dsh-xmore{margin-top:20px}
+.dsh-xmore[hidden]{display:none}
+.dsh-morebtn{display:flex;align-items:center;gap:8px;margin:18px auto 0;padding:10px 20px;border-radius:12px;border:1px solid rgba(46,230,214,.45);background:rgba(46,230,214,.08);color:#7ff7ec;font:800 .86rem var(--ff-body);cursor:pointer;transition:.15s}
+.dsh-morebtn:hover{background:rgba(46,230,214,.16);color:#fff}
+.dsh-morebtn b{padding:1px 8px;border-radius:99px;background:rgba(46,230,214,.2);font-size:.78rem}

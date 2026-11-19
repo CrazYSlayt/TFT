@@ -3175,7 +3175,7 @@ function gdPlanHTML(){
   const next = GD_PLAN.find(p=>!gdOn(p.key) && p.pub);
   const card = p => {
     const on = gdOn(p.key), pre = !on && GD_PREVIEW && (GD_DATA[p.key] || p.key === 'anfaenger'), x = info(p), href = '/guides/' + gdSlug(p.key);
-    const when = on ? L('Jetzt online', 'Out now') : p.pub ? (EN && p.frei ? L('Englische Fassung folgt', 'English version coming soon') : L('Erscheint am ', 'Out on ') + day(p.pub)) : (p.when ? L(p.when, p.whenEn || p.when) : L('Bald', 'Soon'));
+    const when = on ? L('Erschienen am ', 'Out since ') + day(p.pub) : p.pub ? (EN && p.frei ? L('Englische Fassung folgt', 'English version coming soon') : L('Erscheint am ', 'Out on ') + day(p.pub)) : (p.when ? L(p.when, p.whenEn || p.when) : L('Bald', 'Soon'));
     const cls = 'gd-pl' + (on ? ' on' : '') + (p === next ? ' next' : '');
     const pic = GD_DATA[p.key] || p.key === 'anfaenger' ? `<img class="gd-pl-img" src="${gdHeroImg(p.key)}" alt="" width="1200" height="630" loading="lazy">` : '';
     const inner = `${pic}<span class="gd-pl-when">${p === next ? `<em>${L('Als Nächstes', 'Up next')}</em>` : ''}${esc(when)}</span><b>${esc(x.t)}</b><p>${esc(x.d)}</p>
@@ -8231,7 +8231,8 @@ function dshMoreHTML(){
     'Everything on TFTClimb comes from Challenger players: we check the tier list, guides and numbers ourselves after every patch – so you can focus on climbing.'), 'claudio')}</div>`;
   // Guides in der Reihenfolge des Plans (Anfänger zuerst): erschienene mit ihrem Titelbild, die nächsten mit dem fertigen Vorschaubild und Datum
   const info = p => { const g = GD_DATA[p.key]; return EN ? p.te || p.t || p.key : p.t || (g && g.h1.join(' ')) || p.key; };
-  const gds = GD_PLAN.filter(p=>p.pub && (!EN || p.en || !p.frei)).slice(0, 4).map(p=>{ const t = info(p), live = gdOn(p.key);
+  // zwei Reihen (8) sichtbar, alle weiteren aufklappbar (Wunsch 19.11.)
+  const gds = GD_PLAN.filter(p=>p.pub && (!EN || p.en || !p.frei)).map(p=>{ const t = info(p), live = gdOn(p.key);
     return dshX({href:live ? '/guides/' + gdSlug(p.key) : '/guides', q:t, pic:live && p.hero ? p.hero : gdHeroImg(p.key), cls:live ? '' : 'soon',
       cap:'TFT Guide · ' + t.replace(/^TFT\s+/, ''), side:live ? dshDay(p.pub) : L('Ab ', 'Out ') + new Date(p.pub + 'T12:00:00').toLocaleDateString(LOC, {day:'numeric', month:'short'})}); });
   // TFT erklärt: erschienene Artikel und Ränge – jeweils mit einer Zahl aus den Daten
@@ -8243,10 +8244,17 @@ function dshMoreHTML(){
   // Challenger-Emblem vorerst mittig über dem Text – hier kommt bald der Artikel dazu
   if(cut.ch && ch) ers.push(dshX({href:'/ranks', q:L('TFT Ränge & Spielerverteilung', 'TFT Ranks & Player Distribution'),
     pic:'assets/img/rank-bg.webp', art:`<span class="dsh-xa emb" aria-hidden="true"><img src="${rankImg(ch, 1)}" alt="" loading="lazy"></span>`, cap:L('TFT erklärt · Ränge', 'TFT explained · Ranks'), side:ST_CUT_LIVE ? L('Live-Daten', 'Live data') : 'EUW'}));
-  const sec = (id, t, href, more, cards) => cards.length ? `<section class="dsh-sec dsh-rv" aria-labelledby="dsh-${id}"><div class="dsh-sec-h"><h2 id="dsh-${id}">${t}</h2><a href="${href}">${more} →</a></div><div class="dsh-xg">${cards.map((c, i)=>c.replace('class="dsh-x', `style="--i:${i}" class="dsh-x`)).join('')}</div></section>` : '';
-  return { trust, patch:dshPatchHTML(CURRENT_PATCH || PATCHES[0]), rest:sec('guides', L('TFT Guides vom Challenger', 'TFT guides by a Challenger'), '/guides', L('Alle Guides', 'All guides'), gds)
+  const grid = (cards, i0 = 0) => cards.map((c, i)=>c.replace('class="dsh-x', `style="--i:${i0 + i}" class="dsh-x`)).join('');
+  // show: so viele Karten sichtbar, der Rest kommt hinter „Alle weiteren anzeigen“
+  const sec = (id, t, href, more, cards, show) => cards.length ? `<section class="dsh-sec dsh-rv" aria-labelledby="dsh-${id}"><div class="dsh-sec-h"><h2 id="dsh-${id}">${t}</h2><a href="${href}">${more} →</a></div><div class="dsh-xg">${grid(show ? cards.slice(0, show) : cards)}</div>`
+    + (show && cards.length > show ? `<div class="dsh-xg dsh-xmore" id="dsh-${id}-more" hidden>${grid(cards.slice(show))}</div>
+      <button type="button" class="dsh-morebtn" data-dsh-more="dsh-${id}-more" aria-expanded="false"><span>${L('Alle weiteren anzeigen', 'Show all others')}</span> <b>+${cards.length - show}</b></button>` : '') + `</section>` : '';
+  return { trust, patch:dshPatchHTML(CURRENT_PATCH || PATCHES[0]), rest:sec('guides', L('TFT Guides vom Challenger', 'TFT guides by a Challenger'), '/guides', L('Alle Guides', 'All guides'), gds, 8)
     + sec('erklaert', L('TFT erklärt', 'TFT explained'), '/tft-erklaert', L('Alle Fragen', 'All questions'), ers) };
 }
+document.addEventListener('click', e=>{ const b = e.target.closest && e.target.closest('[data-dsh-more]'); if(!b) return;
+  const box = document.getElementById(b.dataset.dshMore); if(!box) return; const open = box.hidden; box.hidden = !open;
+  b.setAttribute('aria-expanded', open); b.querySelector('span').textContent = open ? L('Weniger anzeigen', 'Show less') : L('Alle weiteren anzeigen', 'Show all others'); b.querySelector('b').hidden = open; });
 // Abschnitte unter den Boxen schweben beim Runterscrollen herein (einmal je Abschnitt; ohne IntersectionObserver oder bei „weniger Bewegung“ sofort sichtbar)
 function dshReveal(box){
   const els = [...box.querySelectorAll('.dsh-rv')];
