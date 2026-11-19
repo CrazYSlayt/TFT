@@ -2127,7 +2127,7 @@ document.querySelectorAll('[data-buddy]').forEach(buddyWire);
 // Erst wenn die Seite geöffnet wird (route), damit nicht jeder Aufruf alle Tool-Bilder lädt
 // Maskottchen-Bilder der Tools werden einen Tag zwischengespeichert (vercel.json) – nach einem neuen Bild TOOL_ART_V erhöhen,
 // dann lädt jeder Browser sofort die neue Fassung (gilt für Kacheln, Seitenköpfe und die kleinen Vorschaubilder)
-const TOOL_ART_V = '3';
+const TOOL_ART_V = '4';
 const toolArtSrc = (k, thumb) => `assets/tools/${thumb ? 'thumb/' : ''}${k}.webp?v=${TOOL_ART_V}`;
 // Team Builder und Kampf-Simulator teilen sich einen Kopf: data-art-builder = eigenes Maskottchen für den Team Builder (nur dort sichtbar)
 function toolArtLoad(root){ root.querySelectorAll('[data-tool-art]:not([data-art-done])').forEach(head=>{
