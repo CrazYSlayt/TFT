@@ -8232,7 +8232,8 @@ function dshMoreHTML(){
   // Guides in der Reihenfolge des Plans (Anfänger zuerst): erschienene mit ihrem Titelbild, die nächsten mit dem fertigen Vorschaubild und Datum
   const info = p => { const g = GD_DATA[p.key]; return EN ? p.te || p.t || p.key : p.t || (g && g.h1.join(' ')) || p.key; };
   // zwei Reihen (8) sichtbar, alle weiteren aufklappbar (Wunsch 19.11.)
-  const gds = GD_PLAN.filter(p=>p.pub && (!EN || p.en || !p.frei)).map(p=>{ const t = info(p), live = gdOn(p.key);
+  // nur erschienene Guides (Wunsch 19.11.) – die kommenden stehen auf /guides im Plan
+  const gds = GD_PLAN.filter(p=>p.pub && gdOn(p.key)).map(p=>{ const t = info(p), live = gdOn(p.key);
     return dshX({href:live ? '/guides/' + gdSlug(p.key) : '/guides', q:t, pic:live && p.hero ? p.hero : gdHeroImg(p.key), cls:live ? '' : 'soon',
       cap:'TFT Guide · ' + t.replace(/^TFT\s+/, ''), side:live ? dshDay(p.pub) : L('Ab ', 'Out ') + new Date(p.pub + 'T12:00:00').toLocaleDateString(LOC, {day:'numeric', month:'short'})}); });
   // TFT erklärt: erschienene Artikel und Ränge – jeweils mit einer Zahl aus den Daten
