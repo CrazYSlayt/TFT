@@ -3182,9 +3182,8 @@ function gdPlanHTML(){
       <span class="gd-pl-go">${on ? L('Zum Guide', 'Read the guide') + ' →' : pre ? L('Vorschau (nur lokal)', 'Preview (local only)') + ' →' : ''}</span>`;
     return on || pre ? `<a class="${cls}" href="${href}">${inner}</a>` : `<div class="${cls}">${inner}</div>`;
   };
-  return `<p class="gd-pl-intro">${L('Alle zwei Tage erscheint ein neuer Guide von CrazYSlayt – Challenger seit Set 15 und Coach bei TFTClimb. Hier siehst du, wann welcher kommt.',
-    'A new guide by CrazYSlayt – Challenger since Set 15 and coach at TFTClimb – comes out every two days. Here is when each one arrives.')}</p>
-    <div class="gd-plan">${GD_PLAN.map(card).join('')}</div>`;
+  // kein Einleitungssatz mehr: er wiederholte nur die Meta-Beschreibung (Wunsch 19.11.)
+  return `<div class="gd-plan">${GD_PLAN.map(card).join('')}</div>`;
 }
 /* --- Guides aus data/guides.js: gleicher Aufbau wie der Anfänger-Guide (Kopf, Artikel, Inhaltsverzeichnis, Profi-Tipps mit Cartoon, Autor-Kasten).
    „open“-Blöcke = Fragen aus der Liste, die CrazYSlayt noch beantwortet – nur lokal sichtbar, online fallen sie weg --- */
