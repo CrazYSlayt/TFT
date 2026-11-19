@@ -1598,7 +1598,7 @@ function admPickHTML(kind, c){
     <div class="adm2-grid ${kind}" id="adm2Grid">${cells || '<p class="note">Nichts gefunden.</p>'}</div></div>`;
 }
 // Liste mit Reihenfolge (‹ ›) und Entfernen (✕)
-const admList = (arr, kind, cell, max) => arr.length ? `<ol class="adm2-list">${arr.map((v, i)=>`<li class="${max && i >= max ? 'off' : ''}"${max && i >= max ? ' title="Wird auf der Seite nicht angezeigt (nur die ersten ' + max + ')"' : ''}><span class="adm2-n">${i + 1}</span>${cell(v)}<span class="adm2-mv"><button type="button" data-a2-mv="${kind}:${i}:-1" aria-label="Nach vorn"${i ? '' : ' disabled'}>‹</button><button type="button" data-a2-mv="${kind}:${i}:1" aria-label="Nach hinten"${i < arr.length - 1 ? '' : ' disabled'}>›</button><button type="button" data-a2-del="${kind}:${i}" aria-label="Entfernen">✕</button></span></li>`).join('')}</ol>` : '<p class="adm2-none">Noch nichts eingetragen.</p>';
+const admList = (arr, kind, cell, max) => arr.length ? `<ol class="adm2-list">${arr.map((v, i)=>`<li class="${max && i >= max ? 'off' : ''}"${max && i >= max ? ' title="Wird auf der Seite nicht angezeigt (nur die ersten ' + max + ')"' : ''}>${cell(v)}<span class="adm2-mv"><button type="button" data-a2-mv="${kind}:${i}:-1" aria-label="Nach vorn"${i ? '' : ' disabled'}>‹</button><button type="button" data-a2-mv="${kind}:${i}:1" aria-label="Nach hinten"${i < arr.length - 1 ? '' : ' disabled'}>›</button><button type="button" data-a2-del="${kind}:${i}" aria-label="Entfernen">✕</button></span></li>`).join('')}</ol>` : '<p class="adm2-none">Noch nichts eingetragen.</p>';
 function admAreaHTML(c){
   const [ic, title, help] = ADM_AREAS[admArea] || ADM_AREAS.items;
   const head = `<div class="adm2-edh"><i>${ic}</i><b>${title}</b></div><p class="adm2-help">${help}</p>`;
@@ -2608,7 +2608,9 @@ function chp2HTML(c, x){
   // Build immer: zuerst der häufigste Build aus unserer Tierlist, sonst Riots Empfehlung für die Rolle des Champions (wie im Spiel, data/rollen-<Set>.js)
   const TR = window.TFT_ROLES || {roles:{}, champions:{}}, rk = TR.champions[n], rr = TR.roles[rk] || {};
   const riot = (rr.items || []).map(id=>itemById[id]).filter(Boolean);
-  const tl = (x.best.length ? x.best : x.top.slice(0, 3).map(t=>t.it)).slice(0, 3), build = tl.length ? tl : riot.slice(0, 3);
+  // Item-Vorlage aus data/custom-<Set>.js (itemBuilds, von CrazYSlayt vorgegeben) hat Vorrang vor Tierlist und Riot
+  const tpl = ((TFT_CUSTOM_SET.itemBuilds || {})[n] || []).map(findItem).filter(Boolean);
+  const tl = (x.best.length ? x.best : x.top.slice(0, 3).map(t=>t.it)).slice(0, 3), build = tpl.length ? tpl : tl.length ? tl : riot.slice(0, 3);
   // Alternativen: weitere Items aus unseren Builds, sonst Riots restliche Empfehlungen
   const alts = tl.length ? x.top.filter(t=>!build.some(b=>b.id === t.it.id)) : [];   // weitere Items aus unseren Builds; Riots Liste steht eigene darunter
   // Traits frei ohne Box, wie im Spiel am Brettrand: großes Hexagon, Name, Stufen und die anderen Champions des Traits.
@@ -2656,7 +2658,7 @@ function chp2HTML(c, x){
         </div>
       </div>
       <div class="chp2-right">
-        ${box('build', `${L('Empfohlener Build', 'Recommended build')}${build.length ? ` <small>${tl.length ? L('Tierlist', 'Tier list') : L('Riot-Empfehlung', 'Riot recommendation')}</small>` : ''}`, build.length ? `<div class="chp2-build">${build.map(it=>`<button data-item="${it.id}"><img src="${it.img}" alt="" loading="lazy"><span>${iname(it)}</span></button>`).join('')}</div>` : `<p class="note">${L('Für diesen Champion gibt es noch keine Empfehlung.', 'No recommendation for this champion yet.')}</p>`)}
+        ${box('build', `${L('Empfohlener Build', 'Recommended build')}${build.length ? ` <small>${tpl.length ? L('Beste Items', 'Best items') : tl.length ? L('Tierlist', 'Tier list') : L('Riot-Empfehlung', 'Riot recommendation')}</small>` : ''}`, build.length ? `<div class="chp2-build">${build.map(it=>`<button data-item="${it.id}"><img src="${it.img}" alt="" loading="lazy"><span>${iname(it)}</span></button>`).join('')}</div>` : `<p class="note">${L('Für diesen Champion gibt es noch keine Empfehlung.', 'No recommendation for this champion yet.')}</p>`)}
         <section class="chp2-traits" aria-label="Traits">${traitsHTML}</section>
         ${box('comps', 'Comps', x.cs.length ? x.cs.slice(0, 2).map(comp).join('') : `<p class="note">${L(`${esc(n)} ist gerade in keiner Comp unserer Tierlist.`, `${esc(n)} is not in any comp of our tier list right now.`)}</p>`)}
       </div>
@@ -6166,7 +6168,19 @@ function csSections(){
     out.push(['solo', L('Stage 1 solo schaffen', 'Solo Stage 1'), `<p class="cs-note">${L('1-Kosten-Champions, die die PvE-Runde allein gewinnen.', '1-cost champions that win the PvE round on their own.')}</p><div class="css">${blocks}</div>` + csSrc(CS.solo.src)]);
   }
   out.push(...csAugSections(), ...csTraitSections(), ...csPatchSection());
-  return out;
+  // Item-Builds (data/custom-<Set>.js itemBuilds): je Carry/Tank die Items in Prioritäts-Reihenfolge – Carrys oben, Tanks darunter
+  const IB = TFT_CUSTOM_SET.itemBuilds;
+  if(IB){
+    const CR = TFT_CUSTOM_SET.combatRoles || {}, list = Object.entries(IB).filter(([n])=>champBy[n]);
+    const row = ([n, its]) => `<tr><td class="csb-ch"><a href="${champHref(n)}" data-champ="${esc(n)}">${hexHTML(n)}<span><b>${esc(n)}</b><small>${champBy[n].c} Gold</small></span></a></td>
+      <td class="csb-its">${its.map(findItem).filter(Boolean).map((it, i)=>`${i ? '<i class="csb-arr">›</i>' : ''}<button type="button" class="csb-it" data-item="${it.id}"><img src="${it.img}" alt="" width="40" height="40" loading="lazy"><span>${esc(L(it.de || it.en, it.en))}</span></button>`).join('')}</td></tr>`;
+    const grp = (t, l) => l.length ? `<tr class="csb-g"><th colspan="2">${t}</th></tr>${l.sort((a, b)=>a[0].localeCompare(b[0])).map(row).join('')}` : '';
+    const tanks = list.filter(([n])=>CR[n] === 'tank'), carries = list.filter(([n])=>CR[n] !== 'tank');
+    out.push(['item-builds', L('Item-Builds für Carrys und Tanks', 'Item builds for carries and tanks'), `<p class="cs-note">${L('Die besten Items für die wichtigsten teuren Champions – von links nach rechts in der Reihenfolge, in der du sie baust.', 'The best items for the most important high-cost champions – left to right in the order you build them.')}</p>
+      <div class="cs-wrap"><table class="cs-table csb"><thead><tr><th>Champion</th><th>${L('Items nach Priorität', 'Items by priority')}</th></tr></thead><tbody>${grp('Carrys', carries)}${grp('Tanks', tanks)}</tbody></table></div>`]);
+  }
+  // Set ohne alte Tabellen: nur die Cheatsheets aus cheatsShow (data/custom-<Set>.js), bis klar ist, welche wir für das Set brauchen
+  return TFT_CUSTOM_SET.cheatsShow ? out.filter(s=>TFT_CUSTOM_SET.cheatsShow.includes(s[0])) : out.filter(s=>s[0] !== 'item-builds' || IB);
 }
 // Augment-Tabellen (Little Buddy Bot): Augment aus den Riot-Daten (Set-18-Version bevorzugt), Belohnungen aus Kürzeln (siehe data/custom-<Set>.js)
 const csAugFind = en => { const l = AUGS.filter(a=>a.en===en); const a = l.find(x=>/^DA_/.test(x.id)) || l[0]; if(!a) return null;
@@ -6374,8 +6388,12 @@ const CS_GROUPS = [
   [['System', 'System', 'System-Tabellen', 'System tables', 'Shop-Chancen, Loot, Schaden – die festen Zahlen des Sets.', 'Shop odds, loot, damage – the fixed numbers of the set.'], ['encounters', 'shop', 'power', 'augments', 'orbs', 'loot', 'damage', 'gold-subscription', 'reroll-subscription']],
   [['Augments', 'Augments', 'Augment-Tabellen', 'Augment tables', 'Was einzelne Augments wirklich geben – mit allen Chancen.', 'What single augments really give – with every chance.'], CS.augTables ? CS.augTables.list.map(t=>t.id) : []],
   [['Attribute', 'Traits', 'Attribut-Tabellen', 'Trait tables', 'Was Attribute wirklich geben – Beute, Shop-Chancen und Boni.', 'What traits really give – loot, shop odds and bonuses.'], CS.traitTables ? CS.traitTables.list.map(t=>t.id) : []],
-  [['Sonstiges', 'Other', 'Sonstiges', 'Other', 'Patch-Plan, Embleme bauen und Stage 1 allein schaffen.', 'Patch schedule, building emblems and winning Stage 1 solo.'], ['patch-schedule', 'emblems', 'solo']]
+  [['Sonstiges', 'Other', 'Sonstiges', 'Other', 'Patch-Plan, Embleme bauen und Stage 1 allein schaffen.', 'Patch schedule, building emblems and winning Stage 1 solo.'], ['patch-schedule', 'emblems', 'solo']],
+  [['Items', 'Items', 'Item-Tabellen', 'Item tables', 'Welche Items deine Carrys und Tanks bekommen.', 'Which items your carries and tanks get.'], ['item-builds']]
 ];
+CS_META['item-builds'] = {s:['Item-Builds', 'Item builds'], h1:['TFT Item-Builds: beste Items für Carrys', 'TFT Item Builds: Best Items for Carries'], h:['Welche Items auf deine Carrys und Tanks gehören.', 'Which items belong on your carries and tanks.'],
+  d:['Beste Items je Carry und Tank, nach Priorität', 'Best items per carry and tank, by priority'], img:(findItem('Infinity Edge') || {}).img, rio:1,
+  tip:()=>L('Bau die Items in dieser Reihenfolge – das erste bringt deinem Carry am meisten.', 'Build the items in this order – the first one helps your carry the most.')};
 let CS_LIST = null;
 const csList = () => CS_LIST || (CS_LIST = csSections());
 // Name für H1 und Titel (SEO): fehlt das Keyword der Adresse im deutschen Namen (z. B. „Wir halten zusammen“ ↔ tft-we-stick-together),
@@ -7474,7 +7492,7 @@ function renderCheats(sub){
   if(!box.dataset.done){
     const flat = CS_GROUPS.flatMap(g=>g[1]).filter(id=>secs.some(s=>s[0]===id));
     // Gruppen: Symbol, Name, Anzahl der Tabellen, Pfeil zum Aufklappen
-    const GIC = ['<rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M4 10h16M10 4v16"/>', '<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 8.2l1.1 2.4 2.6.3-1.9 1.8.5 2.6L12 14l-2.3 1.3.5-2.6-1.9-1.8 2.6-.3z"/>', CS_IC_TRAIT, '<circle cx="6" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/>'];
+    const GIC = ['<rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M4 10h16M10 4v16"/>', '<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 8.2l1.1 2.4 2.6.3-1.9 1.8.5 2.6L12 14l-2.3 1.3.5-2.6-1.9-1.8 2.6-.3z"/>', CS_IC_TRAIT, '<circle cx="6" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/>', '<path d="M14.5 3.5l6 6-9 9-3-3z"/><path d="M8.5 15.5L4 20M6 13l5 5"/>'];
     const side = CS_GROUPS.map(([g, ids], gi)=>{
       ids = ids.filter(id=>secs.some(s=>s[0]===id));
       const links = ids.map(id=>`<a class="cs-tile" href="${csHref(id)}" data-cs="${id}"><span class="cs-ti">${csIco(id)}</span><span>${csName(id)}</span></a>`).join('');
