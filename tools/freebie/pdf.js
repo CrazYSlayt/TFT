@@ -15,7 +15,7 @@ srv.listen(0, '127.0.0.1', async () => {
   const ws = new WebSocket(tabs.find(t => t.type === 'page').webSocketDebuggerUrl); await new Promise(r => ws.onopen = r);
   let n = 0; const wait = {}; ws.onmessage = m => { const d = JSON.parse(m.data); if (d.id && wait[d.id]) { wait[d.id](d); delete wait[d.id]; } };
   const send = (method, params = {}) => new Promise(r => { const i = ++n; wait[i] = r; ws.send(JSON.stringify({id: i, method, params})); });
-  await send('Page.navigate', {url: `http://127.0.0.1:${srv.address().port}/tools/freebie/climb-plan.html`}); await sleep(1500);
+  await send('Page.navigate', {url: `http://127.0.0.1:${srv.address().port}/tools/freebie/climb-plan${process.argv[3] === 'en' ? '-en' : ''}.html`}); await sleep(1500);
   // Überlauf je Seite melden (Inhalt darf nicht unter die Fußzeile rutschen)
   const ov = await send('Runtime.evaluate', {returnByValue: true, awaitPromise: true, expression: `(async()=>{await document.fonts.ready; await Promise.all([...document.images].map(i=>i.decode().catch(()=>{})));
     return [...document.querySelectorAll('.page')].map((p,i)=>{ const f=p.querySelector('.foot').getBoundingClientRect().top, last=[...p.children].filter(c=>!c.classList.contains('foot')).pop().getBoundingClientRect().bottom; return 'Seite '+(i+1)+': '+Math.round(f-last)+' px Luft'; }).join(' · ');})()`});

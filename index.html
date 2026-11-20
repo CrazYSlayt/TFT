@@ -78,7 +78,7 @@
 <link rel="preconnect" href="https://ddragon.leagueoflegends.com">
 <!-- app.js und sim.js stehen am Ende von <body>: hier schon anmelden, damit sie am Handy vor den Bildern geladen werden -->
 <link rel="preload" href="assets/js/sim.js?v=416a7d3541" as="script">
-<link rel="preload" href="assets/js/app.js?v=2f7a23c84f" as="script">
+<link rel="preload" href="assets/js/app.js?v=a3f6e426bd" as="script">
 <!-- Schriften vorladen: sonst tauscht der Browser nach ~0,6 s von der Ersatzschrift auf die Webschrift und Boxen springen um ein paar Pixel (Dashboard, 12.11.) -->
 <link rel="preload" href="assets/fonts/Barlow-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/Barlow-600-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -101,7 +101,7 @@
     alt = localStorage.getItem('tftfreaks_design') === 'alt';
   } catch(e){}
   if(!alt){
-    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=1ff854f4f2">');
+    document.documentElement.classList.add('nd'); document.write('<link rel="stylesheet" href="assets/css/design-neu.css?v=63c1fccee6">');
     // Topleiste und Seitenleiste stehen sofort (assets/js/shell.js), den Inhalt baut app.js: bis alle Skripte gelaufen sind, bleibt er verborgen und oben läuft ein Ladebalken
     document.addEventListener('DOMContentLoaded', function(){ document.documentElement.classList.add('nd-ready'); });
   }
@@ -1149,6 +1149,21 @@
   </div>
 </template></div>
 <!-- ================= APPLY ================= -->
+<!-- ================= FREEBIE: Danke-Seite nach der Bestätigung (noindex) ================= -->
+<div class="page" id="page-climbplan"><template class="pg-tpl">
+  <div class="wrap fn-thanks">
+    <img class="fn-th-me" src="assets/img/coach/jubel.webp" alt="" width="260" height="260" loading="lazy">
+    <div>
+      <div class="crumb">Home / Climb-Plan</div>
+      <h1>Dein Climb-Plan ist da!</h1>
+      <p>Danke fürs Bestätigen. Hier ist dein PDF – fang mit dem Plan für die nächsten 5 Partien auf der letzten Seite an.</p>
+      <a class="btn btn-primary fn-dl" href="assets/freebie/tftclimb-climb-plan.pdf" download="TFTClimb-Climb-Plan.pdf">Climb-Plan herunterladen (PDF)</a>
+      <p class="note">Den Link zum PDF bekommst du auch noch per Mail. In den nächsten Tagen schicke ich dir ein paar kurze Tipps – abmelden kannst du dich jederzeit mit einem Klick.</p>
+      <p><a class="art-a" href="/guides">Alle Guides ansehen</a> · <a class="art-a" href="/coaching">Coaching ansehen</a></p>
+    </div>
+  </div>
+</template></div>
+
 <div class="page" id="page-apply"><template class="pg-tpl">
   <div class="wrap">
     <div class="page-head">
@@ -1394,6 +1409,6 @@ document.write('<script src="data/rollen-' + pick.set + '.js"><\/script>');  // 
 })();
 </script>
 <script src="assets/js/sim.js?v=416a7d3541"></script>
-<script src="assets/js/app.js?v=2f7a23c84f"></script>
+<script src="assets/js/app.js?v=a3f6e426bd"></script>
 </body>
 </html>

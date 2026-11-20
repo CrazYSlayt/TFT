@@ -12,14 +12,16 @@ const curPath = () => { const p = rawPath(); return fromEn(EN ? (p.replace(/^\/e
 // Sprechende Adressen für Google: das Keyword steht in der Adresse (/tools/tft-item-drop-chance), intern bleiben die kurzen Schlüssel (drops).
 // Alte Adressen leiten weiter – online per 301 (vercel.json), in der Seite über seoPath(). Gleiche Listen in api/sitemap.js
 const TOOL_SLUG = {rolldown:'tft-rolldown-rechner', drops:'tft-item-drop-chance', tierlist:'tft-tierlist-maker', simulator:'tft-kampf-simulator', dps:'tft-dps-rechner', augments:'tft-augment-chancen', streak:'tft-streak-rechner'};
-const CS_SLUG = {shop:'tft-shop-odds', power:'tft-hierarchy-of-power', augments:'tft-augment-stufen', orbs:'tft-loot-orbs', loot:'tft-loot-verteilung', damage:'tft-spielerschaden', emblems:'tft-embleme', solo:'tft-stage-1-solo', 'patch-schedule':'tft-patch-plan', carousel:'tft-karussell'};   // sonst „tft-“ + Schlüssel
+const CS_SLUG = {shop:'tft-shop-odds', power:'tft-hierarchy-of-power', augments:'tft-augment-stufen', orbs:'tft-loot-orbs', loot:'tft-loot-verteilung', damage:'tft-spielerschaden', emblems:'tft-embleme', solo:'tft-stage-1-solo', 'patch-schedule':'tft-patch-plan', carousel:'tft-karussell',
+  'item-builds-1':'tft-1-cost-bis', 'item-builds-2':'tft-2-cost-bis', 'item-builds-3':'tft-3-cost-bis', 'item-builds-4':'tft-4-cost-bis', 'item-builds-5':'tft-5-cost-bis'};   // sonst „tft-“ + Schlüssel
 const GUIDE_SLUG = {encounters:'tft-encounters', anfaenger:'tft-anfaenger-guide', ...Object.fromEntries((window.TFT_GUIDES || []).map(g=>[g.key, g.slug]))};   // dazu die Guides aus data/guides.js
 const ER_SLUG = Object.fromEntries((window.TFT_ARTICLES || []).map(a=>[a.key, a.slug]));   // TFT erklärt: Artikel-Adressen (data/articles.js), englisch gleich
 const GUIDE_SLUG_EN = {...GUIDE_SLUG, ...Object.fromEntries((window.TFT_GUIDE_PLAN || []).filter(p=>p.se).map(p=>[p.key, p.se]))};   // englische Adresse (se im Plan), sonst wie deutsch
 // Englische Seite: eigene englische Adressen mit englischem Keyword (/en/tools/tft-rolldown-calculator, /en/library …).
 // toEn() macht aus einem internen (deutschen) Pfad den englischen, fromEn() umgekehrt
 const TOOL_SLUG_EN = {rolldown:'tft-rolldown-calculator', drops:'tft-item-drop-odds', tierlist:'tft-tier-list-maker', simulator:'tft-battle-simulator', dps:'tft-dps-calculator', augments:'tft-augment-odds', streak:'tft-streak-calculator'};
-const CS_SLUG_EN = {shop:'tft-shop-odds', power:'tft-hierarchy-of-power', augments:'tft-augment-tiers', orbs:'tft-loot-orbs', loot:'tft-loot-distribution', damage:'tft-player-damage', emblems:'tft-emblems', solo:'tft-solo-stage-1', 'patch-schedule':'tft-patch-schedule', carousel:'tft-carousel'};
+const CS_SLUG_EN = {shop:'tft-shop-odds', power:'tft-hierarchy-of-power', augments:'tft-augment-tiers', orbs:'tft-loot-orbs', loot:'tft-loot-distribution', damage:'tft-player-damage', emblems:'tft-emblems', solo:'tft-solo-stage-1', 'patch-schedule':'tft-patch-schedule', carousel:'tft-carousel',
+  'item-builds-1':'tft-1-cost-bis', 'item-builds-2':'tft-2-cost-bis', 'item-builds-3':'tft-3-cost-bis', 'item-builds-4':'tft-4-cost-bis', 'item-builds-5':'tft-5-cost-bis'};
 const PAGE_EN = {'tft-erklaert':'tft-explained', tierlist:'tier-list', bibliothek:'library', impressum:'legal-notice', datenschutz:'privacy-policy', bedingungen:'terms', 'tft-patch-countdown':'tft-next-patch-countdown'};
 function langPath(p, en){   // en = true: deutsch → englisch, false: englisch → deutsch
   const i = p.search(/[?#]/), rest = i < 0 ? '' : p.slice(i), s = (i < 0 ? p : p.slice(0, i)).split('/');
@@ -6170,16 +6172,22 @@ function csSections(){
     out.push(['solo', L('Stage 1 solo schaffen', 'Solo Stage 1'), `<p class="cs-note">${L('1-Kosten-Champions, die die PvE-Runde allein gewinnen.', '1-cost champions that win the PvE round on their own.')}</p><div class="css">${blocks}</div>` + csSrc(CS.solo.src)]);
   }
   out.push(...csAugSections(), ...csTraitSections(), ...csPatchSection());
-  // Item-Builds (data/custom-<Set>.js itemBuilds): je Carry/Tank die Items in Prioritäts-Reihenfolge – Carrys oben, Tanks darunter
+  // Item-Builds (data/custom-<Set>.js itemBuilds): ein Cheatsheet je Kostenstufe (5 und 7 zusammen), je Champion die Items in Prioritäts-Reihenfolge – Carrys oben, Tanks darunter
   const IB = TFT_CUSTOM_SET.itemBuilds;
   if(IB){
-    const CR = TFT_CUSTOM_SET.combatRoles || {}, list = Object.entries(IB).filter(([n])=>champBy[n]);
-    const row = ([n, its]) => `<tr><td class="csb-ch"><a href="${champHref(n)}" data-champ="${esc(n)}">${hexHTML(n)}<span><b>${esc(n)}</b><small>${champBy[n].c} Gold</small></span></a></td>
-      <td class="csb-its">${its.map(findItem).filter(Boolean).map((it, i)=>`${i ? '<i class="csb-arr">›</i>' : ''}<button type="button" class="csb-it" data-item="${it.id}"><img src="${it.img}" alt="" width="40" height="40" loading="lazy"><span>${esc(L(it.de || it.en, it.en))}</span></button>`).join('')}</td></tr>`;
-    const grp = (t, l) => l.length ? `<tr class="csb-g"><th colspan="2">${t}</th></tr>${l.sort((a, b)=>a[0].localeCompare(b[0])).map(row).join('')}` : '';
-    const tanks = list.filter(([n])=>CR[n] === 'tank'), carries = list.filter(([n])=>CR[n] !== 'tank');
-    out.push(['item-builds', L('Item-Builds für Carrys und Tanks', 'Item builds for carries and tanks'), `<p class="cs-note">${L('Die besten Items für die wichtigsten teuren Champions – von links nach rechts in der Reihenfolge, in der du sie baust.', 'The best items for the most important high-cost champions – left to right in the order you build them.')}</p>
-      <div class="cs-wrap"><table class="cs-table csb"><thead><tr><th>Champion</th><th>${L('Items nach Priorität', 'Items by priority')}</th></tr></thead><tbody>${grp('Carrys', carries)}${grp('Tanks', tanks)}</tbody></table></div>`]);
+    const CR = TFT_CUSTOM_SET.combatRoles || {}, all = Object.entries(IB).filter(([n])=>champBy[n]);
+    // Karte je Champion: großes Porträt mit Kostenrahmen, daneben Name und die Item-Symbole direkt nebeneinander (Name im Tooltip) – 3 Karten pro Reihe
+    const card = ([n, its]) => { const c = champBy[n].c;
+      return `<div class="csbc"><a class="csbc-p" href="${champHref(n)}" data-champ="${esc(n)}"><img class="c${c}" src="${champImg(n) || champFallback(n)}" alt="${esc(n)}" width="76" height="76" loading="lazy"></a>
+        <div class="csbc-r"><a class="csbc-n" href="${champHref(n)}" data-champ="${esc(n)}"><b>${esc(n)}</b><small>${c} Gold</small></a>
+        <div class="csbc-its">${its.map(findItem).filter(Boolean).map(it=>`<button type="button" class="csbc-it" data-item="${it.id}" aria-label="${esc(L(it.de || it.en, it.en))}"><img src="${it.img}" alt="" width="46" height="46" loading="lazy"></button>`).join('')}</div></div></div>`; };
+    const grp = (t, l) => l.length ? `<h3 class="csbc-g">${t}</h3><div class="csbc-grid">${l.sort((a, b)=>champBy[a[0]].c - champBy[b[0]].c || a[0].localeCompare(b[0])).map(card).join('')}</div>` : '';
+    [1, 2, 3, 4, 5].forEach(k=>{
+      const list = all.filter(([n])=>k < 5 ? champBy[n].c === k : champBy[n].c >= 5); if(!list.length) return;
+      const tanks = list.filter(([n])=>CR[n] === 'tank'), carries = list.filter(([n])=>CR[n] !== 'tank'), who = k < 5 ? L(`${k}-Kosten-Champion`, `${k}-cost champion`) : L('5- und 7-Kosten-Champion', '5- and 7-cost champion');
+      out.push(['item-builds-' + k, L(`Beste Items für jeden ${who}`, `Best items for every ${who}`), `<p class="cs-note">${L(`Die besten Items für jeden ${who} – von links nach rechts in der Reihenfolge, in der du sie baust.`, `The best items for every ${who} – left to right in the order you build them.`)}</p>
+        <div class="csbc-wrap">${grp('Carrys', carries)}${grp('Tanks', tanks)}</div>`]);
+    });
   }
   // Unlocks: alle freischaltbaren Champions mit ihrer Bedingung, nach Kosten aufsteigend (1 → 7)
   const UL = TFT_DATA.champions.filter(c=>c.unlock).sort((a, b)=>a.c - b.c || a.n.localeCompare(b.n));
@@ -6189,7 +6197,7 @@ function csSections(){
       <div class="cs-wrap"><table class="cs-table csb csu"><thead><tr><th>Champion</th><th>${L('Bedingung', 'Condition')}</th></tr></thead><tbody>${rows}</tbody></table></div>`]);
   }
   // Set ohne alte Tabellen: nur die Cheatsheets aus cheatsShow (data/custom-<Set>.js), bis klar ist, welche wir für das Set brauchen
-  return TFT_CUSTOM_SET.cheatsShow ? out.filter(s=>TFT_CUSTOM_SET.cheatsShow.includes(s[0])) : out.filter(s=>s[0] !== 'item-builds' || IB);
+  return TFT_CUSTOM_SET.cheatsShow ? out.filter(s=>TFT_CUSTOM_SET.cheatsShow.includes(s[0].replace(/^item-builds-\d$/, 'item-builds'))) : out;
 }
 // Augment-Tabellen (Little Buddy Bot): Augment aus den Riot-Daten (Set-18-Version bevorzugt), Belohnungen aus Kürzeln (siehe data/custom-<Set>.js)
 const csAugFind = en => { const l = AUGS.filter(a=>a.en===en); const a = l.find(x=>/^DA_/.test(x.id)) || l[0]; if(!a) return null;
@@ -6398,15 +6406,17 @@ const CS_GROUPS = [
   [['Augments', 'Augments', 'Augment-Tabellen', 'Augment tables', 'Was einzelne Augments wirklich geben – mit allen Chancen.', 'What single augments really give – with every chance.'], CS.augTables ? CS.augTables.list.map(t=>t.id) : []],
   [['Attribute', 'Traits', 'Attribut-Tabellen', 'Trait tables', 'Was Attribute wirklich geben – Beute, Shop-Chancen und Boni.', 'What traits really give – loot, shop odds and bonuses.'], CS.traitTables ? CS.traitTables.list.map(t=>t.id) : []],
   [['Sonstiges', 'Other', 'Sonstiges', 'Other', 'Patch-Plan, Embleme bauen und Stage 1 allein schaffen.', 'Patch schedule, building emblems and winning Stage 1 solo.'], ['patch-schedule', 'emblems', 'solo']],
-  [['Items', 'Items', 'Item-Tabellen', 'Item tables', 'Welche Items deine Carrys und Tanks bekommen.', 'Which items your carries and tanks get.'], ['item-builds']],
+  [['Items', 'Items', 'Item-Tabellen', 'Item tables', 'Welche Items deine Carrys und Tanks bekommen.', 'Which items your carries and tanks get.'], ['item-builds-1', 'item-builds-2', 'item-builds-3', 'item-builds-4', 'item-builds-5']],
   [['Champions', 'Champions', 'Champion-Tabellen', 'Champion tables', 'Welche Champions du wie freischaltest.', 'Which champions you unlock and how.'], ['unlocks']]
 ];
 CS_META.unlocks = {s:['Unlocks', 'Unlocks'], h1:['TFT Unlocks: alle Champions freischalten', 'TFT Unlocks: How to Unlock Every Champion'], h:['Wie du jeden freischaltbaren Champion bekommst.', 'How to get every unlockable champion.'],
   d:['Alle freischaltbaren Champions mit Bedingung', 'Every unlockable champion and its condition'], img:'assets/img/set19/schloss.svg',
   tip:()=>L('Die Bedingungen gelten pro Partie – sobald du sie erfüllst, taucht der Champion in deinem Shop auf.', 'Conditions count per game – once you meet one, the champion shows up in your shop.')};
-CS_META['item-builds'] = {s:['Item-Builds', 'Item builds'], h1:['TFT Item-Builds: beste Items für Carrys', 'TFT Item Builds: Best Items for Carries'], h:['Welche Items auf deine Carrys und Tanks gehören.', 'Which items belong on your carries and tanks.'],
-  d:['Beste Items je Carry und Tank, nach Priorität', 'Best items per carry and tank, by priority'], img:(findItem('Infinity Edge') || {}).img, rio:1,
-  tip:()=>L('Bau die Items in dieser Reihenfolge – das erste bringt deinem Carry am meisten.', 'Build the items in this order – the first one helps your carry the most.')};
+// Beste Items je Kostenstufe (BIS): ein Cheatsheet pro Stufe, 5 und 7 zusammen
+[1, 2, 3, 4, 5].forEach(k=>{ const w = k < 5 ? [`${k}-Kosten`, `${k}-costs`] : ['5- und 7-Kosten', '5- and 7-costs'], s = k < 5 ? `${k}-Cost BIS` : '5+7-Cost BIS';
+  CS_META['item-builds-' + k] = {s:[s, s], h1:[`TFT ${s}: beste Items für alle ${w[0]}`, `TFT ${s}: Best Items for All ${w[1].replace(/costs$/, 'Costs')}`],
+    h:[`Welche Items auf deine ${w[0]} gehören.`, `Which items belong on your ${w[1]}.`], d:[`Beste Items aller ${w[0]}, nach Priorität`, `Best items for all ${w[1]}, by priority`],
+    img:TI('champ-' + k), rio:1, tip:()=>L('Bau die Items in dieser Reihenfolge – das erste bringt deinem Champion am meisten.', 'Build the items in this order – the first one helps your champion the most.')}; });
 let CS_LIST = null;
 const csList = () => CS_LIST || (CS_LIST = csSections());
 // Name für H1 und Titel (SEO): fehlt das Keyword der Adresse im deutschen Namen (z. B. „Wir halten zusammen“ ↔ tft-we-stick-together),
@@ -7694,6 +7704,7 @@ function pageMeta(page, sub){
         'Romano "humbadobo": TFT Challenger since Set 15 with a peak of 1,447 LP and coach at TFTClimb – profile, ranks and coaching.')];
       return ['Meet the Team', L('Meet the Team: die Challenger-Spieler und Coaches hinter TFTClimb – wer wir sind, was wir spielen und wie wir coachen.',
         'Meet the team: the Challenger players and coaches behind TFTClimb – who we are, what we play and how we coach.')];
+    case 'climbplan': return [L('Dein Climb-Plan', 'Your Climb Plan'), L('Dein Climb-Plan von TFTClimb zum Herunterladen.', 'Your climb plan from TFTClimb.'), true];   // nur für bestätigte Anmeldungen – nicht in Google
     case 'apply': return [L('TFT Coaching anfragen', 'Request TFT Coaching'), L('Bewerbung fürs TFT Coaching bei TFTClimb: Formular ausfüllen und ein kostenloses Kennenlernen mit unseren Coaches anfragen.',
       'Apply for TFT coaching at TFTClimb: fill in the form and request a free intro call with our coaches.')];
     case 'patches': {
@@ -7965,7 +7976,8 @@ function route(){
   if(['champions','items','traits'].includes(page)){ sub = page; page = 'bibliothek'; }
   if(page==='augments'){ sub = 'augments'; page = 'tierlist'; }
   { const m = page.match(/^tft-set-(\d+)$/); if(m){ if(sub === 'tierlist' || sub === 'tier-list'){ page = 'tierlist'; sub = ''; } else if(sub) page = nwBy(sub) ? 'setnews' : 'notfound'; else { page = 'nextset'; sub = m[1]; } } }   // /tft-set-19/tierlist: Tierlist des PBE-Sets (eigene Adresse für Google)   // /tft-set-19: Seite zum nächsten Set, /tft-set-19/<beitrag>: News
-  const valid = ['nextset','setnews','home','tierlist','bibliothek','champion','comp','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','gameplans','about','apply','impressum','datenschutz','patches','countdown','erklaert'];
+  if(page==='climb-plan'){ page = 'climbplan'; sub = ''; }   // Danke-Seite des Freebies (/climb-plan/danke)
+  const valid = ['climbplan','nextset','setnews','home','tierlist','bibliothek','champion','comp','cheatsheet','bedingungen','ranks','builder','admin','news','tools','coaching','guides','gameplans','about','apply','impressum','datenschutz','patches','countdown','erklaert'];
   if(!valid.includes(page)) page='notfound';
   const isSim = page==='tools' && sub==='simulator';   // der Simulator nutzt die Builder-Oberfläche
   const isCv = page==='bibliothek' && !['items','traits','augments'].includes(sub);   // Champions: Wabenansicht (auch alte Adresse /bibliothek/v2)
@@ -8513,3 +8525,54 @@ document.addEventListener('click', e=>{ const b = e.target.closest && e.target.c
 document.addEventListener('click', e=>{ const c = e.target.closest && e.target.closest('[data-ckb]'); if(c){ e.preventDefault(); gaBanner(); } }, true);
 if(!gaGet()) gaBanner();
 gaCtl();
+
+/* ================= Funnel: Exit-Popup für das Freebie „Climb-Plan“ (Konzept 13.11., gebaut 20.11.) =================
+   Zeigt sich höchstens einmal in 30 Tagen, nie mehr nach einer Anmeldung, nicht beim ersten Seitenaufruf und nicht in den ersten 20 Sekunden,
+   nicht auf Coaching/Bewerbung/Rechtlichem/Redaktion und (vorerst) nur auf Deutsch – das PDF gibt es nur deutsch.
+   Auslöser: Desktop = Maus verlässt das Fenster nach oben; Handy = schnell nach oben scrollen (kleine Karte unten, kein Vollbild).
+   Scharf erst mit FUNNEL_ON = true (wenn Brevo eingerichtet ist). Zum Testen vorher: ?funnel=1 an die Adresse hängen. */
+const FUNNEL_ON = false;
+(()=>{
+  const LS = k => { try { return localStorage.getItem(k); } catch(e){ return null; } }, LSset = (k, v) => { try { localStorage.setItem(k, v); } catch(e){} };
+  const test = /[?&]funnel=1\b/.test(location.search);
+  if(EN || (!FUNNEL_ON && !test) || LS('tftfreaks_funnel_done')) return;
+  if(!test && Date.now() - (+LS('tftfreaks_funnel_seen') || 0) < 30 * 864e5) return;
+  let pv = 0; try { pv = +sessionStorage.getItem('tftfreaks_pv') || 0; sessionStorage.setItem('tftfreaks_pv', pv + 1); } catch(e){}
+  const t0 = Date.now(), NO = /^\/(coaching|apply|admin|impressum|datenschutz|bedingungen|climb-plan)/;
+  const ready = () => test || (pv >= 1 && Date.now() - t0 > 20000 && !NO.test(curPath()));
+  let shown = false;
+  function show(){
+    if(shown || !ready()) return; shown = true; LSset('tftfreaks_funnel_seen', String(Date.now()));
+    const el = document.createElement('div'); el.className = 'fn-wrap'; el.innerHTML = `<div class="fn-pop" role="dialog" aria-modal="true" aria-labelledby="fnT">
+      <button type="button" class="fn-x" aria-label="Schließen">✕</button>
+      <img class="fn-me" src="assets/img/coach/selbstbewusst.webp" alt="" width="120" height="120">
+      <div class="fn-body"><small class="fn-kick">Gratis-PDF vom Challenger</small><h2 id="fnT">Dein Climb-Plan</h2>
+        <p class="fn-lead">Die 3 Dinge, die ich bei jedem Coaching-Schüler zuerst prüfe – und die kleinste Änderung, die dir schnell LP bringt.</p>
+        <form class="fn-form" novalidate><input class="input" name="firstName" autocomplete="given-name" placeholder="Vorname" aria-label="Vorname" required>
+          <input class="input" name="email" type="email" autocomplete="email" placeholder="E-Mail" aria-label="E-Mail" required>
+          <input class="fn-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button class="btn btn-primary" type="submit">Climb-Plan schicken</button>
+          <p class="fn-err" role="alert" hidden></p>
+          <p class="fn-legal">Du bekommst eine Bestätigungs-Mail. Danach schicke ich dir ein paar kurze Tipps (Versand über Brevo, mit Öffnungs- und Klickauswertung) – abmelden jederzeit mit einem Klick. <a href="/datenschutz">Datenschutz</a></p></form>
+        <div class="fn-ok" hidden><b>Fast geschafft!</b><p>Schau in dein Postfach und bestätige kurz die Mail – dann kommt dein Climb-Plan.</p></div></div></div>`;
+    document.body.appendChild(el); requestAnimationFrame(()=>el.classList.add('on'));
+    const close = () => { el.classList.remove('on'); setTimeout(()=>el.remove(), 250); document.removeEventListener('keydown', esc); }, esc = e => { if(e.key === 'Escape') close(); };
+    document.addEventListener('keydown', esc);
+    el.addEventListener('click', e=>{ if(e.target === el || e.target.closest('.fn-x')) close(); });
+    const f = el.querySelector('.fn-form'), err = el.querySelector('.fn-err');
+    f.addEventListener('submit', async e=>{ e.preventDefault(); err.hidden = true; const btn = f.querySelector('button'), d = Object.fromEntries(new FormData(f));
+      if(!d.firstName.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email.trim())){ err.textContent = 'Bitte gib deinen Vornamen und eine gültige E-Mail ein.'; err.hidden = false; return; }
+      btn.disabled = true; btn.textContent = 'Wird gesendet …';
+      try { const r = await fetch('/api/subscribe', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d)}), j = await r.json().catch(()=>({}));
+        if(!r.ok || !j.ok) throw new Error(j.error || 'Das hat gerade nicht geklappt – versuch es bitte gleich noch mal.');
+        LSset('tftfreaks_funnel_done', '1'); f.hidden = true; el.querySelector('.fn-ok').hidden = false;
+      } catch(x){ err.textContent = x.message; err.hidden = false; btn.disabled = false; btn.textContent = 'Climb-Plan schicken'; } });
+  }
+  // Desktop: Maus verlässt das Fenster oben (Richtung Tabs/X)
+  document.addEventListener('mouseout', e=>{ if(!e.relatedTarget && e.clientY <= 0) show(); });
+  // Handy: nach mindestens 800 px nach unten schnell 250 px nach oben
+  if(matchMedia('(pointer:coarse)').matches){ let max = 0, last = scrollY, t = Date.now();
+    addEventListener('scroll', ()=>{ const y = scrollY, now = Date.now(); max = Math.max(max, y);
+      if(max > 800 && last - y > 250 && now - t < 400) show(); if(now - t > 400){ last = y; t = now; } }, {passive:true}); }
+  if(test) setTimeout(show, 600);   // Test: direkt zeigen
+})();

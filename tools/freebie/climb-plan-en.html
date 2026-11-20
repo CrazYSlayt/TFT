@@ -1,0 +1,206 @@
+<!doctype html>
+<!-- TFTClimb Freebie „Dein Climb-Plan“ – Vorlage fürs PDF (tools/freebie/pdf.js). Text von CrazYSlayt abgenommen am 12.11.2026. -->
+<html lang="en"><head><meta charset="utf-8"><title>Your Climb Plan – TFTClimb</title>
+<style>
+@font-face{font-family:'BC';font-weight:900;font-style:italic;src:url(/assets/fonts/BarlowCondensed-900i-latin.woff2) format('woff2')}
+@font-face{font-family:'BC';font-weight:700;font-style:italic;src:url(/assets/fonts/BarlowCondensed-700i-latin.woff2) format('woff2')}
+@font-face{font-family:'BC';font-weight:700;font-style:normal;src:url(/assets/fonts/BarlowCondensed-700-latin.woff2) format('woff2')}
+@font-face{font-family:Barlow;font-weight:400;src:url(/assets/fonts/Barlow-400-latin.woff2) format('woff2')}
+@font-face{font-family:Barlow;font-weight:600;src:url(/assets/fonts/Barlow-600-latin.woff2) format('woff2')}
+@font-face{font-family:Barlow;font-weight:700;src:url(/assets/fonts/Barlow-700-latin.woff2) format('woff2')}
+@page{size:A4;margin:0}
+:root{--bg:#06131c;--panel:rgba(255,255,255,.045);--line:rgba(127,247,236,.22);--teal:#2ee6d6;--teal2:#7ff7ec;--violet:#a78bfa;--pink:#f0abfc;--gold:#f5c84b;--text:#e8f1f6;--muted:#9fb6c4}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{font:400 10.4pt/1.5 Barlow,sans-serif;color:var(--text)}
+.page{position:relative;width:210mm;height:297mm;overflow:hidden;padding:15mm 16mm 14mm;page-break-after:always;
+  background:radial-gradient(130mm 110mm at 100% 0%,rgba(167,139,250,.20),transparent 70%),radial-gradient(120mm 100mm at 0% 100%,rgba(46,230,214,.14),transparent 70%),linear-gradient(165deg,#0d2a34,#061520 60%,#070f1d)}
+.page:last-child{page-break-after:auto}
+.page::before{content:"";position:absolute;inset:0;opacity:.06;background:repeating-linear-gradient(60deg,#2ee6d6 0 1px,transparent 1px 30px),repeating-linear-gradient(-60deg,#2ee6d6 0 1px,transparent 1px 30px);pointer-events:none}
+.page::after{content:"";position:absolute;inset:6mm;border:1.2px solid rgba(46,230,214,.28);border-radius:7mm;pointer-events:none}
+.page>*{position:relative;z-index:1}
+.foot{position:absolute;left:16mm;right:16mm;bottom:9mm;display:flex;justify-content:space-between;font-size:7.6pt;color:#5f7686;z-index:1}
+.foot b{color:var(--teal2);font-weight:700}
+h1,h2,h3{font-family:BC;font-weight:900;font-style:italic;text-transform:uppercase;line-height:1;letter-spacing:-.005em}
+em.g{font-style:inherit;background:linear-gradient(90deg,#2ee6d6,#93c5fd,#f0abfc);-webkit-background-clip:text;background-clip:text;color:transparent;padding:0 .14em 0 .04em;margin:0 -.14em 0 -.04em}
+h2{font-size:21pt;margin:0 0 3.2mm;display:flex;align-items:center;gap:3mm}
+h2 .n{flex:none;display:grid;place-items:center;width:10mm;height:10mm;border-radius:2.6mm;background:linear-gradient(135deg,#2ee6d6,#a78bfa);color:#06131c;font-size:15pt;padding-right:.05em}
+h3{font-size:13.5pt;margin:0 0 1.6mm;color:#fff}
+p{margin:0 0 2.4mm}
+b,strong{color:#fff;font-weight:700}
+ul{list-style:none;margin:0 0 2.6mm}
+ul li{position:relative;padding-left:5mm;margin-bottom:1.3mm}
+ul li::before{content:"";position:absolute;left:.6mm;top:2.1mm;width:2mm;height:2mm;transform:rotate(45deg);background:var(--teal);border-radius:.4mm}
+.check{display:flex;gap:3mm;align-items:flex-start;margin:2.4mm 0 0;padding:3mm 4mm;border-radius:3.5mm;border:1px solid rgba(245,200,75,.45);background:linear-gradient(135deg,rgba(245,200,75,.12),rgba(245,200,75,.03))}
+.check i{flex:none;font-style:normal;font:900 italic 9pt BC;letter-spacing:.06em;text-transform:uppercase;color:#06131c;background:var(--gold);border-radius:1.6mm;padding:.8mm 2.2mm .6mm}
+.check span{font-size:9.8pt}
+.card{padding:4.2mm 5mm;border-radius:4mm;background:var(--panel);border:1px solid var(--line);margin-bottom:4mm}
+.sec{margin-bottom:6mm}
+/* Titel */
+.cover-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9mm}
+.cover-top img{height:11mm}
+.tag{font:700 8pt Barlow;letter-spacing:.28em;text-transform:uppercase;color:var(--teal2);border:1px solid var(--line);border-radius:99px;padding:1.3mm 3.5mm}
+.hero{display:grid;grid-template-columns:1fr 54mm;gap:6mm;align-items:end;margin-bottom:7mm}
+.hero h1{font-size:46pt;color:#fff;margin-bottom:4mm}
+.hero .lead{font:600 12.6pt/1.4 Barlow;color:#cfe3ee;margin-bottom:5mm}
+.author{display:flex;align-items:center;gap:3mm;font-size:9pt;color:var(--muted)}
+.author b{display:block;font:900 italic 12pt BC;text-transform:uppercase;color:#fff}
+.author .ch{display:inline-block;margin-top:.6mm;font:700 7.4pt Barlow;letter-spacing:.14em;text-transform:uppercase;color:#06131c;background:linear-gradient(90deg,#f5c84b,#f0abfc);border-radius:99px;padding:.5mm 2.4mm}
+.author img{width:12mm;height:12mm;border-radius:50%;border:1.5px solid var(--teal);background:#0d2a34}
+.hero .me{width:54mm;height:auto;filter:drop-shadow(0 4mm 6mm rgba(0,0,0,.5))}
+.intro{font-size:10.8pt}
+/* Checks */
+.checks .card h3 span{color:var(--teal2);margin-right:2mm}
+/* Ränge */
+.ranks{display:grid;grid-template-columns:1fr 1fr;gap:3.5mm;margin-bottom:5mm}
+.rk{display:grid;grid-template-columns:17mm 1fr;gap:3mm;padding:3.6mm 4mm;border-radius:4mm;background:var(--panel);border:1px solid var(--line)}
+.rk .em{display:flex;flex-direction:column;align-items:center;gap:.5mm}
+.rk .em img{width:15mm;height:15mm;object-fit:contain}
+.rk .em small{font:700 6.4pt Barlow;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;line-height:1.15}
+.rk h3{font-size:11.6pt}
+.rk p{font-size:9.1pt;margin-bottom:1.6mm}
+.rk .mini{font-size:8.7pt;color:#f5dfa0}.rk .mini b{color:var(--gold)}
+/* 5 Partien */
+.plan{list-style:none;counter-reset:n;margin:0 0 5mm}
+.plan li{counter-increment:n;display:flex;align-items:center;gap:3.5mm;padding:2.6mm 4mm;margin-bottom:2mm;border-radius:3mm;background:var(--panel);border:1px solid var(--line);font-weight:600}
+.plan li::before{content:counter(n);flex:none;display:grid;place-items:center;width:7.5mm;height:7.5mm;border-radius:2mm;background:linear-gradient(135deg,#2ee6d6,#a78bfa);color:#06131c;font:900 italic 12pt BC}
+.plan li::after{content:"";margin-left:auto;flex:none;width:6mm;height:6mm;border-radius:1.4mm;border:1.5px solid var(--teal2)}
+.cta{display:grid;grid-template-columns:1fr 40mm;gap:5mm;align-items:center;padding:5mm 6mm;border-radius:5mm;border:1.5px solid rgba(46,230,214,.6);background:linear-gradient(135deg,rgba(46,230,214,.16),rgba(167,139,250,.14))}
+.cta h3{font-size:16pt;margin-bottom:2mm}
+.cta p{font-size:9.8pt;margin-bottom:3mm}
+.cta .btn{display:inline-block;font:900 italic 12pt BC;text-transform:uppercase;letter-spacing:.02em;color:#06131c;background:linear-gradient(90deg,#2ee6d6,#7ff7ec);border-radius:2.6mm;padding:2.2mm 5mm 1.8mm;text-decoration:none}
+.cta img{width:40mm;height:auto;filter:drop-shadow(0 3mm 5mm rgba(0,0,0,.5))}
+.quote{display:flex;gap:4mm;align-items:center;margin:3mm 0 5mm;padding:3.6mm 5mm;border-left:1.2mm solid var(--violet);border-radius:0 3mm 3mm 0;background:rgba(167,139,250,.10);font:700 italic 13pt/1.25 BC;color:#fff}
+.quote img{flex:none;width:11mm;height:11mm;border-radius:50%;border:1.5px solid var(--violet)}
+/* Feinschliff: größere Rang-Embleme, Seite 4 luftiger */
+.rk{grid-template-columns:22mm 1fr}.rk .em img{width:21mm;height:21mm}
+.plan li{padding:3.6mm 4.5mm;margin-bottom:2.6mm;font-size:11.4pt}
+.plan li::before{width:9mm;height:9mm;font-size:14pt}.plan li::after{width:7mm;height:7mm}
+.more{margin:2mm 0 6mm}
+.cta{padding:7mm 7mm;grid-template-columns:1fr 46mm}.cta h3{font-size:20pt}.cta p{font-size:10.8pt}.cta img{width:46mm}
+.sign{margin-top:9mm;text-align:center;font:900 italic 18pt BC;text-transform:uppercase;color:#fff}.sign small{display:block;margin-top:1.5mm;font:600 9.4pt Barlow;text-transform:none;color:var(--muted)}
+</style></head>
+<body>
+
+<!-- Seite 1 -->
+<section class="page">
+  <div class="cover-top"><img src="/assets/brand/logo-tftclimb.webp" alt="TFTClimb"><span class="tag">Free for you</span></div>
+  <div class="hero">
+    <div>
+      <h1>Your <em class="g">Climb Plan</em></h1>
+      <p class="lead">The 3 things I check first with every coaching student – and the smallest change that gets you LP fast.</p>
+      <div class="author"><img src="/assets/img/coach/selbstbewusst.webp" alt=""><span><b>CrazYSlayt</b>Coach at TFTClimb<br><span class="ch">Challenger since Set 15</span></span></div>
+    </div>
+    <img class="me" src="/assets/img/coach/daumen-hoch.webp" alt="">
+  </div>
+  <div class="card sec intro">
+    <h3>Before you start</h3>
+    <p>When someone is stuck in their rank, there is always a reason. Most of the time it is not the one wrong comp but the fundamentals. The better they get, the higher you climb.</p>
+    <p style="margin:0">These are exactly the basics I look at first in coaching – and with this plan you can check them yourself.</p>
+  </div>
+  <div class="sec">
+    <h2><span class="n">1</span>What I look at first in a replay</h2>
+    <p><b>Stage 1 and the augment pick on 2-1.</b> More is decided here than most players think.</p>
+    <ul>
+      <li><b>Are the right units being held?</b> If you buy and sell randomly in Stage 1, you have no clear board on 2-1.</li>
+      <li><b>Is the board judged honestly?</b> How strong am I really – is it enough for a win streak or not?</li>
+      <li><b>Are 4 gold thrown away on 2-1?</b> Leveling for no reason, just to play one more unit, and then losing anyway. I see it all the time.</li>
+      <li><b>Does the augment fit the board?</b> Strong board → tempo. Weak board → econ and lose streak. Not something in between.</li>
+    </ul>
+    <p>Scouting only comes after that for me. It is more for players who are already a bit better – you have to know what you are looking for, otherwise it does not help you.</p>
+    <div class="check"><i>Your check</i><span>Watch only Stage 1 and 2-1 of your last three games. Did you know every time whether you were playing for tempo or econ?</span></div>
+  </div>
+  <div class="foot"><span><b>TFTClimb</b> · Your Climb Plan</span><span>tftclimb.com</span><span>1 / 4</span></div>
+</section>
+
+<!-- Seite 2 -->
+<section class="page">
+  <div class="sec checks">
+    <h2><span class="n">2</span>The three checks when someone is stuck</h2>
+    <div class="card">
+      <h3><span>Check 1</span>Your game plan</h3>
+      <p>What is your plan in the game – and does it fit the lobby?</p>
+      <ul>
+        <li>Do you want to play a comp <b>no matter what</b>?</li>
+        <li>Are you playing a line that is <b>highly contested</b> and does not work right now because you do not get the units early?</li>
+        <li>Or are you playing a semi-optimal line even though there would be something better?</li>
+      </ul>
+      <div class="check"><i>Your check</i><span>After every game, write down in one sentence what your plan was and when you had it. If it says the same comp five times, you are forcing.</span></div>
+    </div>
+    <div class="card">
+      <h3><span>Check 2</span>Your items</h3>
+      <ul>
+        <li><b>Do you slam at all?</b> Many players hold components on the bench without building them – and then simply do not have the power.</li>
+        <li><b>Do you split them right?</b> Carry items on the carry, tank items on the tank, not scattered everywhere.</li>
+        <li><b>When do you slam?</b> Building too late wastes power just like building wrong.</li>
+      </ul>
+      <div class="check"><i>Your check</i><span>Watch a game where you played for tempo: were components sitting on your bench while you lost rounds? Then you wasted power. In a lose streak you may hold them – at your rolldown at the latest (4-2 in Fast 8) you slam everything.</span></div>
+    </div>
+    <div class="card">
+      <h3><span>Check 3</span>The right decisions for your comp type</h3>
+      <p>Every play style has its own rules – reroll, Fast 8 and Fast 9 work completely differently.</p>
+      <ul>
+        <li><b>Augments:</b> do they fit your comp type?</li>
+        <li><b>Roll timings:</b> do you roll when your play style calls for it?</li>
+        <li><b>Level-ups:</b> do you level to win fights – or just because you have gold?</li>
+        <li><b>Tempo:</b> do you even have enough tempo to go Fast 9?</li>
+      </ul>
+      <div class="check"><i>Your check</i><span>Pick one play style for a week and read the matching guide on tftclimb.com. After every game, check: did I roll and level on the timings it says?</span></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>TFTClimb</b> · Your Climb Plan</span><span>tftclimb.com</span><span>2 / 4</span></div>
+</section>
+
+<!-- Seite 3 -->
+<section class="page">
+  <div class="sec">
+    <h2><span class="n">3</span>The smallest change that gets you LP fast</h2>
+    <div class="quote"><img src="/assets/img/coach/selbstbewusst.webp" alt="">Play more for tempo – and do not be afraid to slam items.</div>
+    <p>I very often see players slam only the items that are in a guide. Instead of thinking for themselves: could my unit not carry a different item pair too? That gets you stuck.</p>
+    <p>Especially in Fast 8 you can slam lots of different items early. Spirit Visage or Warmog's Armor, an early Deathblade, Infinity Edge or Giant Slayer – that is not bad in the early game as long as it does not break your item economy. And stay flexible afterwards: just because you slammed a certain item, you do not have to force your way into one line.</p>
+    <div class="check"><i>Your check</i><span>When you play for tempo in your next games, slam your first item as soon as you have a usable pair – even if it is not the perfect item from the guide.</span></div>
+  </div>
+  <div class="sec">
+    <h2><span class="n">4</span>The biggest mistake in your rank</h2>
+    <div class="ranks">
+      <div class="rk"><div class="em"><img src="/assets/img/ranks/silver.webp" alt=""><small>Iron to Silver</small></div><div><h3>You play without a plan</h3><p>You do not understand the game yet, and that is completely fine. Learn the basic mechanics: gold and interest, leveling, items, positioning.</p><p class="mini"><b>Your check:</b> After a game, can you explain why you rolled on which level?</p></div></div>
+      <div class="rk"><div class="em"><img src="/assets/img/ranks/platinum.webp" alt=""><small>Gold and Platinum</small></div><div><h3>You play a comp blindly</h3><p>Comp picked, augments without a plan, zero flexibility. And you often do not know why something else would be better right now.</p><p class="mini"><b>Your check:</b> Ask yourself with every augment: why this one – and what is my board missing?</p></div></div>
+      <div class="rk"><div class="em"><img src="/assets/img/ranks/diamond.webp" alt=""><small>Emerald and Diamond</small></div><div><h3>Items and augments are not clean yet</h3><p>Items are split and slammed badly. An item augment on 2-1 without a good board, or a level you do not need – then you miss the interest later. With three comps you play confidently, you still reach Master.</p><p class="mini"><b>Your check:</b> Did you level on 2-1? Then check whether you really won the two rounds after.</p></div></div>
+      <div class="rk"><div class="em"><img src="/assets/img/ranks/master.webp" alt=""><small>Master and up</small></div><div><h3>You lack full flexibility</h3><p>Reading your spot correctly and deciding which line you can play. From Grandmaster on, every level gets questioned: do I level on 2-5? Do I need level 7 on 3-5?</p><p class="mini"><b>Your check:</b> After every game, write down which two lines you could have played on 3-2.</p></div></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>TFTClimb</b> · Your Climb Plan</span><span>tftclimb.com</span><span>3 / 4</span></div>
+</section>
+<!-- Seite 4 -->
+<section class="page">
+  <div class="sec">
+    <h2><span class="n">5</span>Your plan for the next 5 games</h2>
+    <ol class="plan">
+      <li>Decide on 2-1: tempo or econ – and stick with it.</li>
+      <li>No 4 gold for a level that does not win you a fight.</li>
+      <li>Playing tempo: slam the first item as soon as you have a usable pair.</li>
+      <li>In a lose streak: hold components – and slam everything at your rolldown.</li>
+      <li>One sentence after every game: what was my plan, and since when?</li>
+    </ol>
+  </div>
+  <div class="card more">
+    <h3>More on tftclimb.com</h3>
+    <ul>
+      <li><b>Augments Guide</b> – item, econ or combat: what to take on 2-1, 3-2 and 4-2.</li>
+      <li><b>Items Guide</b> – when to slam and who gets which items.</li>
+      <li><b>Rolldown Guide</b> – when to roll and when to stop.</li>
+    </ul>
+    <p style="margin:0">Find all guides for free at <b>tftclimb.com/en/guides</b>.</p>
+  </div>
+  <div class="cta">
+    <div>
+      <h3>Want me to look at <em class="g">your games myself?</em></h3>
+      <p>In a single session we go through exactly these points in your own replays and find out why you are stuck right now: 10–15 minutes of fundamentals, then around 45 minutes of your games. On Discord, in English or German.</p>
+      <a class="btn" href="https://www.tftclimb.com/en/coaching">Book a session → tftclimb.com/en/coaching</a>
+    </div>
+    <img src="/assets/img/coach/jubel.webp" alt="">
+  </div>
+  <p class="sign">Good luck climbing!<small>CrazYSlayt</small></p>
+  <div class="foot"><span><b>TFTClimb</b> · Your Climb Plan</span><span>tftclimb.com</span><span>4 / 4</span></div>
+</section>
+</body></html>

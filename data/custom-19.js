@@ -86,7 +86,8 @@ window.TFT_CUSTOM = {
     'Taliyah':'caster', 'Teemo':'caster', 'Twisted Fate':'marksman', 'Vi':'fighter', 'Vladimir':'fighter', 'Zeri':'caster', 'Baron Nashor':'fighter', 'Rakan':'assassin', 'Smeech':'specialist', 'Sona':'specialist'
   },
   // Beste Items (Vorlage) für die wichtigsten teuren Carrys und Tanks, in Prioritäts-Reihenfolge – von CrazYSlayt am 19.11.2026 vorgegeben
-  // (Grundlage: tactics.tools, PBE). Nutzt die Champion-Seite (Build-Box) und das Cheatsheet „Item-Builds“. Englische Item-Namen wie in den Spieldaten
+  // (Grundlage: tactics.tools, PBE); alle anderen Kosten von TFT Academy (tools/set19/bis-tfta.js). Nutzt die Champion-Seite (Build-Box) und die Cheatsheets
+  // „N-Cost BIS“ (eins je Kostenstufe, 5 + 7 zusammen). Englische Item-Namen wie in den Spieldaten
   itemBuilds: {
     'Leona': ['Crownguard', "Protector's Vow", 'Steadfast Heart'], 'Alistar': ["Protector's Vow", 'Steadfast Heart', 'Bramble Vest'],
     'Yorick': ['Spirit Visage', 'Gargoyle Stoneplate', "Protector's Vow"], 'Thresh': ['Gargoyle Stoneplate', 'Crownguard', "Protector's Vow"],
@@ -98,7 +99,43 @@ window.TFT_CUSTOM = {
     'Aurora': ['Blue Buff', 'Jeweled Gauntlet', "Striker's Flail"], 'Jinx': ["Guinsoo's Rageblade", "Kraken's Fury", 'Giant Slayer'],
     'Kayle': ["Guinsoo's Rageblade", 'Jeweled Gauntlet', "Striker's Flail"], 'Alune': ['Blue Buff', 'Jeweled Gauntlet', "Striker's Flail"],
     'Jhin': ['Infinity Edge', "Striker's Flail", 'Giant Slayer'], 'Vayne': ["Guinsoo's Rageblade", "Kraken's Fury", "Kraken's Fury"],
-    'Mel': ['Blue Buff', 'Jeweled Gauntlet', "Striker's Flail"], 'Yuumi': ['Blue Buff', "Rabadon's Deathcap", 'Giant Slayer']
+    'Mel': ['Blue Buff', 'Jeweled Gauntlet', "Striker's Flail"], 'Yuumi': ['Blue Buff', "Rabadon's Deathcap", 'Giant Slayer'],
+    // TFT Academy „Every N Cost BIS“ (PBE, 20.11.2026)
+    'Elise': ["Protector's Vow", "Protector's Vow", 'Adaptive Helm'], 'Gnar': ["Guinsoo's Rageblade", "Kraken's Fury", 'Hextech Gunblade'],
+    'Katarina': ['Edge of Night', 'Jeweled Gauntlet', 'Hand Of Justice'], 'Kayn': ['Infinity Edge', 'Hand Of Justice', "Sterak's Gage"],
+    'Kennen': ['Gargoyle Stoneplate', 'Gargoyle Stoneplate', "Warmog's Armor"], 'Kobuko': ['Gargoyle Stoneplate', 'Gargoyle Stoneplate', 'Spirit Visage'],
+    'Lillia': ['Gargoyle Stoneplate', 'Crownguard', "Warmog's Armor"], 'Neeko': ['Blue Buff', 'Jeweled Gauntlet', "Striker's Flail"],
+    'Olaf': ['Gargoyle Stoneplate', "Warmog's Armor", 'Spirit Visage'], 'Sett': ['Gargoyle Stoneplate', 'Crownguard', "Warmog's Armor"],
+    'Taric': ['Gargoyle Stoneplate', 'Crownguard', "Protector's Vow"], 'Varus': ['Spear of Shojin', 'Infinity Edge', 'Last Whisper'],
+    'Yunara': ["Guinsoo's Rageblade", "Kraken's Fury", 'Last Whisper'], 'Ziggs': ["Guinsoo's Rageblade", 'Jeweled Gauntlet', "Striker's Flail"],
+    'Annie': ['Gargoyle Stoneplate', 'Crownguard', 'Spirit Visage'], 'Ashe': ["Guinsoo's Rageblade", "Kraken's Fury", 'Last Whisper'],
+    'Camille': ['Infinity Edge', 'Hand Of Justice', 'Edge of Night'], 'Ezreal': ['Spear of Shojin', 'Infinity Edge', "Striker's Flail"],
+    'Gragas': ['Gargoyle Stoneplate', 'Crownguard', 'Spirit Visage'], 'Illaoi': ['Gargoyle Stoneplate', "Protector's Vow", "Warmog's Armor"],
+    'Jax': ["Titan's Resolve", 'Spear of Shojin', 'Bloodthirster'], 'Karthus': ['Spear of Shojin', "Rabadon's Deathcap", 'Jeweled Gauntlet'],
+    'Lucian': ['Spear of Shojin', 'Infinity Edge', 'Last Whisper'], 'Lulu': ['Blue Buff', "Archangel's Staff", 'Spear of Shojin'],
+    'Lux': ['Spear of Shojin', "Rabadon's Deathcap", 'Jeweled Gauntlet'], 'Nasus': ['Spirit Visage', 'Crownguard', "Warmog's Armor"],
+    'Qiyana': ['Hand Of Justice', "Striker's Flail", 'Edge of Night'], 'Renata Glasc': ['Blue Buff', "Archangel's Staff", 'Hextech Gunblade'],
+    'Renekton': ['Gargoyle Stoneplate', 'Spirit Visage', "Warmog's Armor"], 'Samira': ["Guinsoo's Rageblade", 'Last Whisper', 'Infinity Edge'],
+    'Seraphine': ['Spear of Shojin', 'Jeweled Gauntlet', "Striker's Flail"], 'Tristana': ['Spear of Shojin', 'Infinity Edge', 'Deathblade'],
+    'Amumu': ['Gargoyle Stoneplate', 'Crownguard', "Warmog's Armor"], 'Bard': ["Guinsoo's Rageblade", "Archangel's Staff", 'Jeweled Gauntlet'],
+    'Braum': ['Gargoyle Stoneplate', 'Crownguard', "Warmog's Armor"], 'Briar': ["Sterak's Gage", 'Bloodthirster', "Titan's Resolve"],
+    'Draven': ['Spear of Shojin', 'Deathblade', 'Infinity Edge'], 'Ekko': ['Gargoyle Stoneplate', 'Crownguard', "Warmog's Armor"],
+    'Evelynn': ["Rabadon's Deathcap", 'Jeweled Gauntlet', 'Hand Of Justice'], 'Galio': ['Gargoyle Stoneplate', 'Crownguard', "Warmog's Armor"],
+    "K'Sante": ['Gargoyle Stoneplate', 'Crownguard', "Warmog's Armor"], "Kai'Sa": ["Guinsoo's Rageblade", "Kraken's Fury", 'Giant Slayer'],
+    'Malzahar': ["Rabadon's Deathcap", 'Jeweled Gauntlet', "Striker's Flail"], 'Senna': ['Spear of Shojin', 'Infinity Edge', 'Deathblade'],
+    'Swain': ['Crownguard', 'Spirit Visage', "Protector's Vow"], 'Syndra': ["Nashor's Tooth", 'Jeweled Gauntlet', "Rabadon's Deathcap"],
+    'Tibbers': ['Gargoyle Stoneplate', 'Crownguard', "Warmog's Armor"], 'Viego': ['Infinity Edge', 'Hand Of Justice', 'Edge of Night'],
+    'Akali (K/DA)': ["Sterak's Gage", 'Red Buff', 'Edge of Night'], 'Akali (True Damage)': ['Jeweled Gauntlet', 'Hand Of Justice', 'Edge of Night'],
+    'Aphelios': ["Guinsoo's Rageblade", 'Infinity Edge', "Striker's Flail"], 'Dr. Mundo': ['Spirit Visage', 'Gargoyle Stoneplate', 'Steadfast Heart'],
+    'Gwen': ['Jeweled Gauntlet', 'Hand Of Justice', "Striker's Flail"], 'Janna': ['Blue Buff', 'Morellonomicon', 'Void Staff'],
+    'Lee Sin': ['Edge of Night', "Sterak's Gage"], 'Miss Fortune': ['Blue Buff', 'Deathblade', 'Infinity Edge'],
+    'Mordekaiser': ['Edge of Night', "Guinsoo's Rageblade", 'Bloodthirster'], 'Nidalee': ['Jeweled Gauntlet', 'Hand Of Justice', 'Quicksilver'],
+    'Nunu & Willump': ['Ionic Spark', 'Morellonomicon', 'Adaptive Helm'], 'Pyke': ['Edge of Night', "Sterak's Gage", 'Bloodthirster'],
+    'Rell': ["Protector's Vow", "Protector's Vow", 'Crownguard'], 'Taliyah': ['Spear of Shojin', 'Jeweled Gauntlet', "Striker's Flail"],
+    'Teemo': ['Spear of Shojin', 'Void Staff', 'Morellonomicon'], 'Twisted Fate': ["Guinsoo's Rageblade", 'Void Staff', 'Hextech Gunblade'],
+    'Vi': ["Sterak's Gage", "Titan's Resolve", 'Bloodthirster'], 'Vladimir': ['Adaptive Helm', 'Morellonomicon', 'Void Staff'],
+    'Zeri': ['Spear of Shojin', 'Infinity Edge', "Striker's Flail"], 'Baron Nashor': ['Infinity Edge', 'Hand Of Justice', "Striker's Flail"],
+    'Rakan': ["Protector's Vow", 'Morellonomicon', 'Adaptive Helm'], 'Smeech': ["Sterak's Gage", "Titan's Resolve", 'Deathblade']
   },
   // Cheatsheets dieses Sets: vorerst nur die neuen – die Set-18-Tabellen bleiben bei Set 18, bis klar ist, welche wir für Set 19 brauchen (Wunsch 19.11.)
   cheatsShow: ['item-builds', 'unlocks'],

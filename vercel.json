@@ -101,6 +101,8 @@
     { "source": "/builder/:rest*", "destination": "/tft-team-builder/:rest*", "permanent": true },
     { "source": "/en/builder", "destination": "/en/tft-team-builder", "permanent": true },
     { "source": "/en/builder/:rest*", "destination": "/en/tft-team-builder/:rest*", "permanent": true },
+    { "source": "/cheatsheet/tft-item-builds", "destination": "/cheatsheet/tft-4-cost-bis", "permanent": true },
+    { "source": "/en/cheatsheet/tft-item-builds", "destination": "/en/cheatsheet/tft-4-cost-bis", "permanent": true },
     { "source": "/cheatsheet/shop", "destination": "/cheatsheet/tft-shop-odds", "permanent": true },
     { "source": "/en/cheatsheet/shop", "destination": "/en/cheatsheet/tft-shop-odds", "permanent": true },
     { "source": "/cheatsheet/augments", "destination": "/cheatsheet/tft-augment-stufen", "permanent": true },

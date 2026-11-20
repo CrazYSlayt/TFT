@@ -2415,3 +2415,44 @@ button.adm2-aty.has{opacity:.35}button.adm2-aty:disabled{opacity:.25;cursor:defa
 .csb-its{flex-wrap:nowrap}.csb-it{flex:none;width:262px}.csb-it span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.csb-arr{flex:none;width:10px;text-align:center}   /* Items in festen Spalten untereinander */
 .ns-tlg{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}.ns-tlc{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:12px;border:1px solid color-mix(in srgb,var(--tc) 55%,transparent);background:color-mix(in srgb,var(--tc) 10%,transparent);color:#fff;text-decoration:none}.ns-tlc:hover{border-color:var(--tc)}.ns-tlc>b{flex:none;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--tc);color:#111;font:900 italic 1rem var(--ff-head)}.ns-tlc img{flex:none;width:44px;height:44px;border-radius:8px}.ns-tlc span{display:flex;flex-direction:column;min-width:0;font-weight:800}.ns-tlc small{font-weight:600;color:var(--muted);font-size:.74rem}   /* Set-Seite: Tierlist-Vorschau (PBE) */
 .csu-hx{position:relative;flex:none}.csu-hx .ch-lock{position:absolute;top:-3px;right:-5px;width:13px;height:16px}.csu-txt{font-size:.9rem;line-height:1.45;color:#f3e6bf}   /* Cheatsheet Unlocks */
+
+/* Funnel: Exit-Popup (Desktop mittig, Handy kleine Karte unten – kein Vollbild) und Danke-Seite */
+.fn-wrap{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;padding:16px;background:rgba(3,8,14,.66);backdrop-filter:blur(3px);opacity:0;transition:opacity .25s}
+.fn-wrap.on{opacity:1}
+.fn-pop{position:relative;display:grid;grid-template-columns:120px minmax(0,1fr);gap:18px;align-items:center;width:min(620px,100%);padding:24px 26px;border-radius:20px;border:1px solid rgba(46,230,214,.5);background:linear-gradient(160deg,#0d2a34,#081520 70%);box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 40px rgba(46,230,214,.15);transform:translateY(14px) scale(.98);transition:transform .25s}
+.fn-wrap.on .fn-pop{transform:none}
+.fn-x{position:absolute;top:10px;right:12px;border:0;background:none;color:var(--muted);font-size:1rem;cursor:pointer}.fn-x:hover{color:#fff}
+.fn-me{width:120px;height:auto;align-self:end}
+.fn-kick{font:800 .68rem var(--ff-body);letter-spacing:.14em;text-transform:uppercase;color:#7ff7ec}
+.fn-body h2{margin:4px 0 6px;font:900 italic 2rem/1 var(--ff-head);text-transform:uppercase;color:#fff;padding-right:.1em}
+.fn-lead{margin:0 0 12px;font-size:.9rem;line-height:1.45;color:#cfe3ee}
+.fn-form{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fn-form .btn{grid-column:1 / -1;justify-content:center}
+.fn-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.fn-err{grid-column:1 / -1;margin:0;font-size:.8rem;color:#ff8a8a}
+.fn-legal{grid-column:1 / -1;margin:2px 0 0;font-size:.7rem;line-height:1.4;color:#7f96a5}.fn-legal a{color:#7ff7ec}
+.fn-ok b{display:block;font:900 italic 1.3rem var(--ff-head);text-transform:uppercase;color:#2ee6d6}.fn-ok p{margin:4px 0 0;color:#cfe3ee}
+@media (max-width:640px){.fn-wrap{place-items:end center;padding:10px;background:rgba(3,8,14,.35);backdrop-filter:none}.fn-pop{grid-template-columns:minmax(0,1fr);padding:18px 16px 14px}.fn-me{display:none}.fn-body h2{font-size:1.5rem}.fn-lead{font-size:.82rem}.fn-form{grid-template-columns:minmax(0,1fr)}}
+.fn-thanks{display:grid;grid-template-columns:260px minmax(0,1fr);gap:28px;align-items:center;padding-top:30px;padding-bottom:40px}
+.fn-thanks h1{margin:6px 0 10px;font:900 italic clamp(2rem,4vw,2.8rem)/1 var(--ff-head);text-transform:uppercase;color:#fff;padding-right:.1em}
+.fn-th-me{width:260px;height:auto}.fn-dl{margin:6px 0 14px}
+@media (max-width:760px){.fn-thanks{grid-template-columns:minmax(0,1fr)}.fn-th-me{width:160px;margin:0 auto}}
+
+/* BIS-Cheatsheets: Champion-Karten mit Items direkt daneben, 3 pro Reihe */
+.csbc-wrap{margin-top:6px}
+.csbc-g{margin:18px 0 10px;font:900 italic .95rem var(--ff-head);text-transform:uppercase;letter-spacing:.04em;color:#7ff7ec}
+.csbc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.csbc{display:flex;align-items:center;gap:14px;padding:10px;border:1px solid var(--line-2);border-radius:14px;background:rgba(255,255,255,.03)}
+.csbc:hover{border-color:rgba(46,230,214,.45)}
+.csbc-p{flex:none;display:block;line-height:0}
+.csbc-p img{width:76px;height:76px;border-radius:12px;border:2px solid var(--c1);object-fit:cover}
+.csbc-p img.c2{border-color:var(--c2)}.csbc-p img.c3{border-color:var(--c3)}.csbc-p img.c4{border-color:var(--c4)}.csbc-p img.c5{border-color:var(--c5)}.csbc-p img.c7{border-color:var(--c7)}
+.csbc-r{min-width:0;display:flex;flex-direction:column;gap:7px}
+.csbc-n{display:flex;align-items:baseline;gap:8px;color:#fff;text-decoration:none;min-width:0}
+.csbc-n b{font-weight:800;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.csbc-n small{flex:none;font-size:.74rem;color:var(--muted)}
+.csbc-its{display:flex;gap:6px}
+.csbc-it{flex:none;padding:0;border:1px solid var(--line-2);border-radius:9px;background:none;cursor:pointer;line-height:0}
+.csbc-it:hover{border-color:#2ee6d6}
+.csbc-it img{width:46px;height:46px;border-radius:8px}
+@media (max-width:1100px){.csbc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.csbc-grid{grid-template-columns:1fr}}
