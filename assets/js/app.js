@@ -6181,6 +6181,13 @@ function csSections(){
     out.push(['item-builds', L('Item-Builds für Carrys und Tanks', 'Item builds for carries and tanks'), `<p class="cs-note">${L('Die besten Items für die wichtigsten teuren Champions – von links nach rechts in der Reihenfolge, in der du sie baust.', 'The best items for the most important high-cost champions – left to right in the order you build them.')}</p>
       <div class="cs-wrap"><table class="cs-table csb"><thead><tr><th>Champion</th><th>${L('Items nach Priorität', 'Items by priority')}</th></tr></thead><tbody>${grp('Carrys', carries)}${grp('Tanks', tanks)}</tbody></table></div>`]);
   }
+  // Unlocks: alle freischaltbaren Champions mit ihrer Bedingung, nach Kosten aufsteigend (1 → 7)
+  const UL = TFT_DATA.champions.filter(c=>c.unlock).sort((a, b)=>a.c - b.c || a.n.localeCompare(b.n));
+  if(UL.length){
+    const rows = UL.map(c=>`<tr><td class="csb-ch"><a href="${champHref(c.n)}" data-champ="${esc(c.n)}"><span class="csu-hx">${hexHTML(c.n)}<i class="ch-lock" aria-hidden="true"></i></span><span><b>${esc(c.n)}</b><small>${c.c} Gold</small></span></a></td><td class="csu-txt">${esc(L(c.unlock.de, c.unlock.en))}</td></tr>`).join('');
+    out.push(['unlocks', L('Unlocks: alle Champions freischalten', 'Unlocks: every unlockable champion'), `<p class="cs-note">${L(`Diese ${UL.length} Champions erscheinen erst im Shop, wenn du ihre Bedingung in der Partie erfüllst.`, `These ${UL.length} champions only show up in your shop once you meet their condition in the game.`)}</p>
+      <div class="cs-wrap"><table class="cs-table csb csu"><thead><tr><th>Champion</th><th>${L('Bedingung', 'Condition')}</th></tr></thead><tbody>${rows}</tbody></table></div>`]);
+  }
   // Set ohne alte Tabellen: nur die Cheatsheets aus cheatsShow (data/custom-<Set>.js), bis klar ist, welche wir für das Set brauchen
   return TFT_CUSTOM_SET.cheatsShow ? out.filter(s=>TFT_CUSTOM_SET.cheatsShow.includes(s[0])) : out.filter(s=>s[0] !== 'item-builds' || IB);
 }
@@ -6391,8 +6398,12 @@ const CS_GROUPS = [
   [['Augments', 'Augments', 'Augment-Tabellen', 'Augment tables', 'Was einzelne Augments wirklich geben – mit allen Chancen.', 'What single augments really give – with every chance.'], CS.augTables ? CS.augTables.list.map(t=>t.id) : []],
   [['Attribute', 'Traits', 'Attribut-Tabellen', 'Trait tables', 'Was Attribute wirklich geben – Beute, Shop-Chancen und Boni.', 'What traits really give – loot, shop odds and bonuses.'], CS.traitTables ? CS.traitTables.list.map(t=>t.id) : []],
   [['Sonstiges', 'Other', 'Sonstiges', 'Other', 'Patch-Plan, Embleme bauen und Stage 1 allein schaffen.', 'Patch schedule, building emblems and winning Stage 1 solo.'], ['patch-schedule', 'emblems', 'solo']],
-  [['Items', 'Items', 'Item-Tabellen', 'Item tables', 'Welche Items deine Carrys und Tanks bekommen.', 'Which items your carries and tanks get.'], ['item-builds']]
+  [['Items', 'Items', 'Item-Tabellen', 'Item tables', 'Welche Items deine Carrys und Tanks bekommen.', 'Which items your carries and tanks get.'], ['item-builds']],
+  [['Champions', 'Champions', 'Champion-Tabellen', 'Champion tables', 'Welche Champions du wie freischaltest.', 'Which champions you unlock and how.'], ['unlocks']]
 ];
+CS_META.unlocks = {s:['Unlocks', 'Unlocks'], h1:['TFT Unlocks: alle Champions freischalten', 'TFT Unlocks: How to Unlock Every Champion'], h:['Wie du jeden freischaltbaren Champion bekommst.', 'How to get every unlockable champion.'],
+  d:['Alle freischaltbaren Champions mit Bedingung', 'Every unlockable champion and its condition'], img:'assets/img/set19/schloss.svg',
+  tip:()=>L('Die Bedingungen gelten pro Partie – sobald du sie erfüllst, taucht der Champion in deinem Shop auf.', 'Conditions count per game – once you meet one, the champion shows up in your shop.')};
 CS_META['item-builds'] = {s:['Item-Builds', 'Item builds'], h1:['TFT Item-Builds: beste Items für Carrys', 'TFT Item Builds: Best Items for Carries'], h:['Welche Items auf deine Carrys und Tanks gehören.', 'Which items belong on your carries and tanks.'],
   d:['Beste Items je Carry und Tank, nach Priorität', 'Best items per carry and tank, by priority'], img:(findItem('Infinity Edge') || {}).img, rio:1,
   tip:()=>L('Bau die Items in dieser Reihenfolge – das erste bringt deinem Carry am meisten.', 'Build the items in this order – the first one helps your carry the most.')};
@@ -7508,7 +7519,7 @@ function renderCheats(sub){
   if(!box.dataset.done){
     const flat = CS_GROUPS.flatMap(g=>g[1]).filter(id=>secs.some(s=>s[0]===id));
     // Gruppen: Symbol, Name, Anzahl der Tabellen, Pfeil zum Aufklappen
-    const GIC = ['<rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M4 10h16M10 4v16"/>', '<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 8.2l1.1 2.4 2.6.3-1.9 1.8.5 2.6L12 14l-2.3 1.3.5-2.6-1.9-1.8 2.6-.3z"/>', CS_IC_TRAIT, '<circle cx="6" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/>', '<path d="M14.5 3.5l6 6-9 9-3-3z"/><path d="M8.5 15.5L4 20M6 13l5 5"/>'];
+    const GIC = ['<rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M4 10h16M10 4v16"/>', '<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path d="M12 8.2l1.1 2.4 2.6.3-1.9 1.8.5 2.6L12 14l-2.3 1.3.5-2.6-1.9-1.8 2.6-.3z"/>', CS_IC_TRAIT, '<circle cx="6" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/>', '<path d="M14.5 3.5l6 6-9 9-3-3z"/><path d="M8.5 15.5L4 20M6 13l5 5"/>', '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'];
     const side = CS_GROUPS.map(([g, ids], gi)=>{
       ids = ids.filter(id=>secs.some(s=>s[0]===id));
       const links = ids.map(id=>`<a class="cs-tile" href="${csHref(id)}" data-cs="${id}"><span class="cs-ti">${csIco(id)}</span><span>${csName(id)}</span></a>`).join('');
