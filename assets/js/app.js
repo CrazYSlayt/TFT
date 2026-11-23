@@ -3257,7 +3257,16 @@ const GD_BLOCK = {
   // Vergleich in zwei (oder drei) Karten nebeneinander: {t, c:'p'|'g'|'r', l:[…]}
   cmp:b=>`<div class="gd-cmp">${b.l.map(x=>`<div class="gd-cmp-c ${x.c || 'p'}"><b>${x.t}</b><ul>${x.l.map(y=>`<li>${y}</li>`).join('')}</ul></div>`).join('')}</div>`,
   // Ablauf als Leiste mit Stationen: [Zeitpunkt, was passiert]
-  flow:b=>`<ol class="gd-flow">${b.l.map(([w, t])=>`<li><b>${w}</b><span>${t}</span></li>`).join('')}</ol>`};
+  flow:b=>`<ol class="gd-flow">${b.l.map(([w, t])=>`<li><b>${w}</b><span>${t}</span></li>`).join('')}</ol>`,
+  // Riots Rollen mit den offiziellen Symbolen (assets/icons/tft/roles): l: [[[symbol, …], name, text], …], z. B. ['attack-tank', 'magic-tank']
+  roles:b=>`<figure class="gd-roles">${b.t ? `<b class="gd-chips-t">${b.t}</b>` : ''}<div class="gd-roles-r">${b.l.map(([ic, n, x])=>`<div class="gd-role"><span class="gd-role-ic">${ic.map(i=>`<img src="assets/icons/tft/roles/${i}.png" alt="" width="40" height="40" loading="lazy">`).join('')}</span><b>${n}</b><small>${x}</small></div>`).join('')}</div>${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`,
+  // zwei (oder drei) Aufstellungs-Skizzen nebeneinander: l: [board, …] – gleiche Felder wie board
+  boards:b=>`<div class="gd-boards">${b.l.map(gdBoard).join('')}</div>`,
+  // Tortendiagramm (Ring): l: [[beschriftung, wert, farbe]] – farbe g · p · c · x (grau); c = Text in der Mitte
+  pie:b=>{ const C = {g:'#22c55e', p:'#f7166e', c:'#2ee6d6', x:'#475569', o:'#f59e0b'}, sum = b.l.reduce((a, s)=>a + s[1], 0), r = 52, U = 2 * Math.PI * r; let off = 0;
+    const segs = b.l.map(([, v, c])=>{ const len = v / sum * U, s = `<circle r="${r}" cx="70" cy="70" fill="none" stroke="${C[c] || C.x}" stroke-width="24" stroke-dasharray="${(len - 3).toFixed(1)} ${(U - len + 3).toFixed(1)}" stroke-dashoffset="${(-off).toFixed(1)}" transform="rotate(-90 70 70)"/>`; off += len; return s; }).join('');
+    return `<figure class="gd-pie"><svg viewBox="0 0 140 140" width="150" height="150" role="img" aria-label="${esc(b.t || '')}">${segs}<text x="70" y="78" text-anchor="middle" class="gd-pie-c">${esc(b.c || '')}</text></svg>
+      <div class="gd-pie-t">${b.t ? `<b class="gd-chips-t">${b.t}</b>` : ''}<ul>${b.l.map(([n, , c])=>`<li><i style="background:${C[c] || C.x}"></i>${n}</li>`).join('')}</ul>${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</div></figure>`; }};
 // Titelbild eines Guides (tools/og-bilder.js → assets/og/guides/<adresse>[-en].jpg) – zugleich das Vorschaubild beim Teilen
 const gdHeroImg = k => `assets/og/guides/${GUIDE_SLUG[k] || k}${EN ? '-en' : ''}.jpg`;
 // Titelbild: mit Nano-Banana-Bild (Plan-Eintrag hero, tools/nano-banana.js) das Bild selbst, sonst das Vorschaubild aus tools/og-bilder.js
@@ -3334,8 +3343,9 @@ function gdWidgets(box){
 // Brett-Skizze wie im Team-Planer: dein Brett mit 4 Reihen × 7 Feldern (A = vorne, D = hinten, Spalten 1–7 von links),
 // optional das gegnerische Brett darüber (foe, gleiche Schreibweise aus Sicht des Gegners – wird gespiegelt).
 // u/foe: [[feld, rolle, kürzel], …]; Rollen siehe GD_ROLE. Legende zeigt nur die benutzten Rollen
-const GD_ROLE = {tank:['#2ee6d6', L('Main-Tank', 'Main tank')], tank2:['#60a5fa', L('2. Tank', '2nd tank')], carry:['#f7166e', 'Carry'], util:['#a78bfa', 'Utility'],
-  bait:['#94a3b8', L('Köder', 'Bait')], foe:['#f59e0b', L('Gegner', 'Enemy')], safe:['#22c55e', L('Sichere Ecke', 'Safe corner')], risk:['#ef4444', L('Gefährlich', 'Risky')]};
+const GD_ROLE = {tank:['#2ee6d6', L('Main-Tank', 'Main tank')], tank2:['#60a5fa', L('2. Tank', '2nd tank')], carry:['#f7166e', 'Carry'], util:['#a78bfa', 'Utility'], unit:['#a78bfa', 'Unit'],
+  bait:['#94a3b8', L('Köder', 'Bait')], foe:['#f59e0b', L('Gegner', 'Enemy')], safe:['#22c55e', L('Sichere Ecke', 'Safe corner')], risk:['#ef4444', L('Gefährlich', 'Risky')],
+  assa:['#fb923c', L('Gegnerische Assassine', 'Enemy assassin')], foec:['#f59e0b', L('Gegnerischer Carry', 'Enemy carry')], jump:['#ef4444', L('Erreicht sie mit dem Sprung', 'Reached by the jump')]};
 function gdBoard(b){
   const R = 25, W = Math.sqrt(3) * R, pad = 26, foe = b.foe || [], top = foe.length ? 4 : 0, gap = foe.length ? 16 : 0;
   const cell = {}; (b.u || []).forEach(([f, r, k])=>{ cell['o' + f] = [r, k]; }); foe.forEach(([f, r, k])=>{ cell['f' + f] = [r || 'foe', k]; });
@@ -3400,6 +3410,7 @@ function gdBeginnerHTML(){
   return `<div class="ts-main">
     <h2 id="gda-start">TFT für Anfänger: das Wichtigste in Kürze</h2>
     <div class="art-stats"><div class="p"><b>Top 4</b><span>bringt dir in Ranked LP</span></div><div class="g"><b>5 Gold</b><span>Zinsen pro Runde ab 50 Gold</span></div><div class="p"><b>4 Gold</b><span>für 4 XP zum Leveln</span></div><div class="g"><b>9 Kopien</b><span>für einen 3-Sterne-Champion</span></div></div>
+    <p>Kennst du das? Du startest deine erste Partie: acht Spieler, ein Shop voller Champions, überall Zahlen – und keine Ahnung, was du eigentlich kaufen sollst. Keine Sorge, nach diesem Guide weißt du in jeder Runde, was zu tun ist.</p>
     <header class="gd-chap" id="gdk-1" data-n="01"><span class="gd-chap-n">Kapitel 1</span><h2>TFT Grundlagen: So läuft eine Partie ab</h2><p>Acht Spieler, eine Lobby, ein Ziel: Top 4. Hier lernst du den Ablauf einer Partie und woher dein Gold kommt.</p></header>
     ${h('ziel')}
     <p>Teamfight Tactics ist ein Strategiespiel für acht Spieler. Jeder baut sein eigenes Team aus Champions, und die Teams kämpfen automatisch gegeneinander. Im Kampf selbst steuerst du nichts – gewonnen wird davor: welche Champions du kaufst, wo du sie hinstellst und welche Items sie tragen. Genau da entscheidet sich, wer climbt 😉</p>
@@ -3537,6 +3548,7 @@ function gdBeginnerHTMLEn(){
   return `<div class="ts-main" data-noi18n>
     <h2 id="gda-start">TFT for beginners: the key points</h2>
     <div class="art-stats"><div class="p"><b>Top 4</b><span>gains you LP in ranked</span></div><div class="g"><b>5 gold</b><span>interest per round from 50 gold</span></div><div class="p"><b>4 gold</b><span>for 4 XP to level up</span></div><div class="g"><b>9 copies</b><span>for a 3-star champion</span></div></div>
+    <p>Sound familiar? You start your first game: eight players, a shop full of champions, numbers everywhere – and no idea what you\'re supposed to buy. Don\'t worry, after this guide you\'ll know what to do every round.</p>
     <header class="gd-chap" id="gdk-1" data-n="01"><span class="gd-chap-n">Chapter 1</span><h2>TFT basics: how a game works</h2><p>Eight players, one lobby, one goal: top 4. Here you learn how a game is structured and where your gold comes from.</p></header>
     ${h('ziel')}
     <p>Teamfight Tactics is a strategy game for eight players. Everyone builds their own team of champions, and the teams fight each other automatically. You don't control anything during the fight – the game is won before it: which champions you buy, where you place them and which items they hold. That's exactly where it's decided who climbs 😉</p>
@@ -7264,6 +7276,60 @@ function renderNextSet(sub){
   app.setAttribute('aria-busy', 'true');   // tools/seo-meta.js wartet darauf, dass die nachgeladenen Daten eingesetzt sind
   nsData(n).then(D=>{ draw(D); app.removeAttribute('aria-busy'); });
 }
+/* ================= GAMEPLANS: Item-Holder-Flowchart (Entwurf) =================
+   Früh auf 1–3-Kostern geslammte Items (Guinsoo, Mana-Items) führen zu den 4- und 5-Kostern, die sie später tragen – getrennt nach AD und AP,
+   weil die übrigen Items dazu passen müssen. Je Kostenstufe laufen die Holder in einem Item-Knoten zusammen (Schlüssel-Item + häufigste Begleit-Items),
+   von dort führen Pfeile zu allen Holdern der nächsten Stufe. Grundlage: itemBuilds (BIS) und roles in data/custom-<Set>.js; Linien zeichnet gpDraw als SVG */
+function gpFlows(){
+  const IB = TFT_CUSTOM_SET.itemBuilds; if(!IB) return [];
+  const RL = TFT_CUSTOM_SET.roles || {}, TANKY = /Protector|Gargoyle|Warmog|Crownguard|Spirit Visage|Bramble|Dragon's Claw|Steadfast/;
+  const APX = /Jeweled|Rabadon|Archangel|Void Staff|Morello|Nashor|Gunblade|Blue Buff|Ionic/, ADX = /Infinity|Deathblade|Last Whisper|Giant Slayer|Kraken|Bloodthirster|Sterak|Edge of Night|Titan|Hand Of Justice|Red Buff/i;
+  const side = (n, its) => RL[n] === 'ad' || RL[n] === 'ap' ? RL[n] : its.filter(i=>APX.test(i)).length > its.filter(i=>ADX.test(i)).length ? 'ap' : 'ad';
+  const MANA = /Spear of Shojin|Blue Buff|Adaptive Helm/;
+  return [['guinsoo-ad', 'ad', /Guinsoo/, ["Guinsoo's Rageblade"], ['Guinsoo-Holder', 'Guinsoo holders']], ['guinsoo-ap', 'ap', /Guinsoo/, ["Guinsoo's Rageblade"], ['Guinsoo-Holder', 'Guinsoo holders']],
+    ['mana-ad', 'ad', MANA, ['Spear of Shojin', 'Blue Buff', 'Adaptive Helm'], ['Mana-Item-Holder', 'Mana item holders']], ['mana-ap', 'ap', MANA, ['Spear of Shojin', 'Blue Buff', 'Adaptive Helm'], ['Mana-Item-Holder', 'Mana item holders']]]
+    .map(([id, sd, key, keyIts, t])=>{
+      const l = Object.entries(IB).filter(([n, its])=>champBy[n] && its.some(i=>key.test(i)) && !its.some(i=>TANKY.test(i)) && side(n, its) === sd);
+      const cols = [1, 2, 3, 4, 5].map(k=>({k, l:l.filter(([n])=>k < 5 ? champBy[n].c === k : champBy[n].c >= 5).sort((a, b)=>champBy[a[0]].c - champBy[b[0]].c || a[0].localeCompare(b[0]))})).filter(c=>c.l.length);
+      return {id, sd, key, keyIts, t, cols};
+    }).filter(f=>f.cols.length > 1);
+}
+function gpFlowHTML(f){
+  const keyImg = f.keyIts.map(findItem).filter(Boolean);
+  // Knoten zwischen zwei Stufen: Schlüssel-Item(s), die beide Seiten tragen, + die zwei häufigsten Begleit-Items beider Seiten
+  const node = (a, b) => { const all = [...a.l, ...b.l], keys = keyImg.filter(it=>all.some(([, its])=>its.includes(it.en))), cnt = {};
+    all.forEach(([, its])=>its.filter(i=>!f.key.test(i)).forEach(i=>{ cnt[i] = (cnt[i] || 0) + 1; }));
+    const extra = Object.entries(cnt).sort((x, y)=>y[1] - x[1]).slice(0, 2).map(([i])=>findItem(i)).filter(Boolean);
+    const ic = it => `<img src="${it.img}" alt="${esc(L(it.de || it.en, it.en))}" title="${esc(L(it.de || it.en, it.en))}" width="36" height="36" loading="lazy">`;
+    return `<div class="gpf-j"><div class="gpf-node"><span class="gpf-key">${keys.map(ic).join('')}</span>${extra.length ? `<i>+</i><span class="gpf-ex">${extra.map(ic).join('')}</span>` : ''}</div></div>`; };
+  const card = ([n]) => `<a class="gpf-c" href="${champHref(n)}" data-champ="${esc(n)}"><img class="c${champBy[n].c}" src="${champImg(n) || champFallback(n)}" alt="" width="64" height="64" loading="lazy"><b>${esc(n)}</b></a>`;
+  const col = c => `<div class="gpf-col"><div class="gpf-h">${c.k < 5 ? c.k : '5+7'}-Cost</div><div class="gpf-cs">${c.l.map(card).join('')}</div></div>`;
+  return `<section class="gpf gpf-${f.sd}"><h2 class="gpf-tt"><span class="gpf-tic">${keyImg.map(it=>`<img src="${it.img}" alt="" width="34" height="34">`).join('')}</span>${L(f.t[0], f.t[1])} <em>${f.sd.toUpperCase()}</em></h2>
+    <div class="gpf-scroll"><div class="gpf-grid"><svg class="gpf-svg" aria-hidden="true"></svg>${f.cols.map((c, i)=>(i ? node(f.cols[i - 1], c) : '') + col(c)).join('')}</div></div></section>`;
+}
+function gpDraw(){
+  document.querySelectorAll('#gpSoon .gpf-grid').forEach((g, gi)=>{
+    const svg = g.querySelector('.gpf-svg'), R = g.getBoundingClientRect(), W = g.scrollWidth, H = g.scrollHeight, P = [];
+    svg.setAttribute('width', W); svg.setAttribute('height', H); svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const at = el => { const r = el.getBoundingClientRect(); return {l:r.left - R.left, r:r.right - R.left, y:r.top - R.top + r.height / 2}; };
+    const curve = (x1, y1, x2, y2, arrow) => { const m = (x1 + x2) / 2; P.push(`<path d="M${x1} ${y1} C${m} ${y1} ${m} ${y2} ${x2} ${y2}"${arrow ? ` marker-end="url(#gpa${gi})"` : ''}/>`); };
+    g.querySelectorAll('.gpf-j').forEach(j=>{
+      const nd = at(j.querySelector('.gpf-node')), prev = j.previousElementSibling, next = j.nextElementSibling;
+      prev.querySelectorAll('.gpf-c img').forEach(im=>{ const c = at(im); curve(c.r + 4, c.y, nd.l, nd.y); });
+      next.querySelectorAll('.gpf-c img').forEach(im=>{ const c = at(im); curve(nd.r, nd.y, c.l - 9, c.y, true); });
+    });
+    svg.innerHTML = `<defs><marker id="gpa${gi}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z"/></marker></defs><g>${P.join('')}</g>`;
+  });
+}
+let GP_RS = false;
+function renderGpFlows(){
+  const box = $('#gpSoon'), F = gpFlows();
+  box.classList.add('gpf-box');   // die Seite nutzt sonst das Guide-Raster (2 Spalten) – Flowcharts stehen untereinander
+  box.innerHTML = `<p class="gpf-note">${L('Entwurf · Item-Holder: Welche Champions deine früh geslammten Items später weitertragen. Design und Text folgen.', 'Draft · item holders: which champions carry your early items later. Design and text to follow.')}</p>`
+    + (F.length ? F.map(gpFlowHTML).join('') : `<p class="gpf-note">${L('Für dieses Set gibt es noch keine Item-Builds – wähle oben Set 19.', 'No item builds for this set yet – pick Set 19 at the top.')}</p>`);
+  requestAnimationFrame(gpDraw); box.querySelectorAll('img').forEach(im=>{ if(!im.complete) im.addEventListener('load', ()=>requestAnimationFrame(gpDraw), {once:true}); });
+  if(!GP_RS){ GP_RS = true; addEventListener('resize', ()=>{ if(document.querySelector('#gpSoon .gpf')) gpDraw(); }); }
+}
 { const s = document.querySelector('#tlSrc'); if(s && PBE_SET && TFT_DATA.set !== PBE_SET && !SET_TL) s.insertAdjacentHTML('afterend', pbeTlBox()); }   // Tierlist des Live-Sets → PBE-Tierlist
 { const a = document.querySelector('#ndSide [data-nd="nextset"]'); if(a){ a.href = nsHref(); a.title = a.querySelector('span').textContent = 'Set ' + nsNext(); } }   // Seitenleiste zeigt immer das nächste Set
 
@@ -8030,7 +8096,8 @@ function route(){
   if(page==='guides') setGuide(sub);
   if(page==='erklaert') setErklaert(sub);
   if(page==='gameplans'){ if(sub) setUrl('/gameplans');   // Platzhalter bis Set 19: Gamepläne pro Patch
-    $('#gpSoon').innerHTML = `<div class="gd-soon"><img class="gd-soon-img" src="assets/icons/side-gameplans.webp" alt="" width="96" height="96"><b>Coming in Set 19</b><p>${L('Hier entstehen Gamepläne für jeden Patch: wie du die besten Comps vom Start bis ins Late Game spielst – mit dem Start von Set 19.', 'Game plans for every patch are coming here: how to play the best comps from the start to the late game – with the launch of Set 19.')}</p></div>`; }
+    if(/vorschau/.test(location.search)) renderGpFlows();   // Entwurf: Item-Holder-Flowchart (Wunsch 23.11.), bis Design und Text abgenommen sind
+    else $('#gpSoon').innerHTML = `<div class="gd-soon"><img class="gd-soon-img" src="assets/icons/side-gameplans.webp" alt="" width="96" height="96"><b>Coming in Set 19</b><p>${L('Hier entstehen Gamepläne für jeden Patch: wie du die besten Comps vom Start bis ins Late Game spielst – mit dem Start von Set 19.', 'Game plans for every patch are coming here: how to play the best comps from the start to the late game – with the launch of Set 19.')}</p></div>`; }
   if(isCv) renderChampV2();   // sofort (die Seite ist schon sichtbar) – sonst blitzt beim Wechsel ein leeres Bild auf
   else if(page==='bibliothek') setLib(['items','traits','augments'].includes(sub)?sub:'champions');
   if(page==='ranks') setRank(sub);
