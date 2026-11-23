@@ -27,6 +27,18 @@
     "DA_Augment19_Manager_ManagementTrack": {"de": [["60 % Chance", "40 % Chance"], ["20 Gold durch", "30 Gold durch"]], "en": [["60%", "40%"], ["20 gold", "30 gold"]]},
     "DA_TrueDamage19_PainIntoPassion": {"de": [["gesammelten 20 Glitzer", "gesammelten 30 Glitzer"]], "en": [["every 20", "every 30"]]}
    }
+  },
+  {
+   "tag": "2026-11-19 (Day 2) + 2026-11-20 (Wochenend-Patch)",
+   "quelle": "https://x.com/TheTruexy/status/2123482553810113002 · https://x.com/TheTruexy/status/2123837242229801164",
+   "_hinweis": "Fähigkeitswerte, Trait- und Augment-Texte hat Blitz schon (blitz.js am 23.11. neu gelesen); hier nur, was Blitz nicht liefert: Grundwerte aus dem Client und deutsche Texte, die Blitz noch auf altem Stand hat",
+   "stats": {"Rell": {"hp": 1400}, "Yuumi": {"as": 0.8}, "Viego": {"ad": 55}},
+   "texte": {
+    "Shyvana": {"de": [["erhält sie 300 max. Leben", "erhält sie 250 max. Leben"]]},
+    "Vayne": {"de": [[" + 2 % des max. Lebens des Ziels als normalen Schaden", " normalen Schaden + 1,5 % des max. Lebens des Ziels als absoluten Schaden"]]},
+    "Bard": {"de": [["um 30% verringert.", "um 30 % verringert (mindestens 30 %)."]]},
+    "Thresh": {"de": [["Passiv: Wenn Gegner Thresh Schaden zufügen, werden sie 12 Sekunden lang gefesselt, falls ihr aktuelles Leben niedriger ist als seines.", "Passiv: Fesselt alle 6 Sekunden den am weitesten entfernten Gegner, der noch nicht gefesselt ist, 12 Sekunden lang."], ["max. Leben.\\nKlassische Einheiten fesseln Gegner und wenden Bonuseffekte auf sie an.", "max. Leben. Währenddessen erhält er 15 % Haltbarkeit.\\nGefesselte Gegner gewähren Klassik-Champions Boni."]]}
+   }
   }
  ]
 }

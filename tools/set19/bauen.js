@@ -55,6 +55,31 @@ function readCT(f) {
 }
 const BLITZ = fs.existsSync(path.join(__dirname, 'blitz-daten.json')) ? require('./blitz-daten.json') : {champions: {de: {}, en: {}}, traits: {de: {}, en: {}}};
 const EN_CH = {}, EN_TR = {};
+// Blitz' deutsche Seiten hinken nach PBE-Patches hinterher: geänderte Werte stehen dort als „?“ (Platzhalter fehlt) oder als alte Zahl.
+// fillQ: „?“ an derselben Stelle wie im englischen Text durch dessen Platzhalter ersetzen (nur wenn beide Texte gleich viele Werte haben).
+// v: Werte des Champions – Platzhalter, die es dort nicht mehr gibt (eigene Übersetzung mit altem Wert), zählen wie „?“
+function fillQ(de, en, v) {
+  const T = /@v_[A-Za-z0-9_]+@|(?<![\w%])\?(?![\w])/g, a = String(de || '').match(T) || [], b = String(en || '').match(T) || [];
+  const alt = m => m === '?' || (v && m[0] === '@' && !v[m.slice(1, -1)]);
+  if (!a.some(alt) || a.length !== b.length) return de; let i = 0; return de.replace(T, m => { const e = b[i++]; return alt(m) && e !== '?' ? e : m; });
+}
+// syncN: einzelne Zahlen einer Trait-Stufe (außerhalb von @…@ und %i:…%) wie im englischen Text – gleiche Anzahl vorausgesetzt, deutsches Komma
+function syncN(de, en) {
+  const SEG = /(@[^@]+@|%i:[A-Za-z]+%)/, N = /\d+(?:[.,]\d+)?/g, nums = s => String(s).split(SEG).filter((x, i) => i % 2 === 0).join(' ').match(N) || [];
+  const a = nums(de), b = nums(en); if (a.length !== b.length || a.every((x, i) => x.replace(',', '.') === b[i])) return de;
+  let i = 0; return String(de).split(SEG).map((x, k) => k % 2 ? x : x.replace(N, () => b[i++].replace('.', ','))).join('');
+}
+// Kampfwerte einer Trait-Stufe für den Kampf-Simulator (assets/js/sim.js → simTraitGeneric): aus den Symbolen im Text, z. B. „%i:scaleHealth% 100, %i:scaleAS% 10%“
+function traitStats(t) {
+  const K = {scaleHealth: 'Health', scaleAS: 'AS', scaleAD: 'AD', scaleAP: 'AP', scaleArmor: 'Armor', scaleMR: 'MR', scaleDA: 'DamageAmp', scaleDR: 'Durability', scaleDurability: 'Durability', scaleOmnivamp: 'Omnivamp', scaleSV: 'Omnivamp', scaleCrit: 'CritChance', scaleCritChance: 'CritChance'};
+  const v = {};
+  for (const m of String(t || '').matchAll(/((?:%i:scale\w+%\s*)+)(\d+(?:[.,]\d+)?)\s*(%)?/g)) {
+    const ics = [...m[1].matchAll(/%i:(scale\w+)%/g)].map(x => x[1]), n = parseFloat(m[2].replace(',', '.')), pct = !!m[3];
+    const keys = ics.includes('scaleArmor') && ics.includes('scaleMR') ? ['Resists'] : ics.map(i => K[i]).filter(Boolean);
+    for (const k of keys) { if (v[k] != null) continue; v[k] = k === 'AP' || k === 'Health' && !pct || k === 'Armor' || k === 'MR' || k === 'Resists' ? n : pct || k === 'AD' ? n / 100 : n; if (k === 'Health' && pct) v[k] = n / 100; }
+  }
+  return v;
+}
 // Eigene deutsche Übersetzungen, wo Blitz auf Deutsch noch den englischen Text hat (tools/set19/uebersetzungen-de.json)
 const UE = fs.existsSync(path.join(__dirname, 'uebersetzungen-de.json')) ? JSON.parse(fs.readFileSync(path.join(__dirname, 'uebersetzungen-de.json'), 'utf8')) : {champions: {}, traits: {}};
 // Trait-Text wie in Riots Daten: Beschreibung, Leerzeile, je Stufe „(n) …“
@@ -118,13 +143,14 @@ async function toWebp(jobs) {
     if (bd || be) {
       const x = bd && bd.d ? bd : be, deGleich = bd && be && bd.d === be.d;
       o.ab = {n: (bd && bd.ab) || be.ab, d: deGleich && UE.champions[o.api] ? UE.champions[o.api] : x.d, v: {...(be ? be.v : {}), ...(bd ? bd.v : {})}};
+      if (be && be.d) o.ab.d = fillQ(o.ab.d, be.d, o.ab.v);
       if (be && be.d) EN_CH[o.api] = {n: be.ab, d: be.d};
       const mana = (bd || be).mana; if (o.st && mana && mana.length === 2) { o.st.mana0 = mana[0]; o.st.mana = mana[1]; }
       if ((bd && bd.unlock) || (be && be.unlock)) o.unlock = {de: bd && bd.unlock || be.unlock, en: be && be.unlock || bd.unlock};
       // Blitz hat diese Bedingungen auf Deutsch noch nicht übersetzt – eigene Übersetzung mit Riots Begriffen
-      const UL_DE = {'Akali (True Damage)': 'Verdiene 375 True-Damage-Bling, ohne dass K/DA-Akali freigeschaltet ist', 'Mordekaiser': '10 einzigartige Sternestufen von Pentakill',
+      const UL_DE = {'Akali (True Damage)': 'Verdiene 350 True-Damage-Bling, ohne dass K/DA-Akali freigeschaltet ist', 'Mordekaiser': '10 einzigartige Sternestufen von Pentakill',
         'Taliyah': 'Je ein Champion jeder Kostenstufe beginnt auf einem Beach-Pop-Feld', 'Teemo': 'Sammle 900 Hyperpop-Hype',
-        'Thresh': 'Gegner sind insgesamt 300 Sekunden lang von Classical gebannt', 'Samira': '2 Gegenstände auf einem Classical-, Renegade- oder Trickshot-Champion',
+        'Thresh': 'Gegner sind insgesamt 275 Sekunden lang von Classical gebannt', 'Samira': '2 Gegenstände auf einem Classical-, Renegade- oder Trickshot-Champion',
         'Kobuko': '2-Sterne-Ziggs mit 1 Gegenstand'};
       if (o.unlock && o.unlock.de === o.unlock.en && UL_DE[c.n]) o.unlock.de = UL_DE[c.n];
       // eigene Fassung hat Vorrang (Blitz mischt oft „Erf. St. 7 - <englischer Text>“), Trait-Namen wie auf der Seite
@@ -143,6 +169,8 @@ async function toWebp(jobs) {
     for (const [n, tx] of Object.entries(u.texte || {})) { const o = out.find(c => c.n === n); if (!o || !o.ab) continue;
       o.ab.d = repAll(o.ab.d, tx.de, n + ' de'); if (EN_CH[o.api]) EN_CH[o.api].d = repAll(EN_CH[o.api].d, tx.en, n + ' en'); }
     for (const [n, ul] of Object.entries(u.unlocks || {})) { const o = out.find(c => c.n === n); if (o) o.unlock = ul; }
+    // Grundwerte (Leben, Mana, Angriffstempo …): der Client-Stand ist älter als die PBE-Patches
+    for (const [n, st] of Object.entries(u.stats || {})) { const o = out.find(c => c.n === n); if (o && o.st) Object.assign(o.st, st); else warn.push('PBE: Werte fehlen ' + n); }
   }
   const traitNames = Object.keys(CUSTOM.traits);
   const used = new Set(champs.flatMap(c => c.t)); used.forEach(t => { if (!CUSTOM.traits[t]) warn.push('Trait nicht in custom-19: ' + t); });
@@ -155,6 +183,8 @@ async function toWebp(jobs) {
     if (!tde && ten) tde = {...ten, name: ''};   // Blitz hat den Trait nur auf Englisch (R&B): englische Fassung übersetzen
     if (tde) tde = {...tde, d: tr(tde.d), rows: tde.rows.map(r => ({...r, t: tr(r.t)}))};
     if (tde && ten && ue) tde = {...tde, d: tde.d === ten.d && ue.d ? ue.d : tde.d, rows: tde.rows.map(r => ue.rows && ue.rows[r.n] && r.t === (ten.rows.find(e => e.n === r.n) || {}).t ? {...r, t: ue.rows[r.n]} : r)};
+    // nach PBE-Patches: Zahlen der deutschen Stufen wie im (aktuellen) englischen Text, „?“ füllen; „Shield“ hat Blitz teils nicht übersetzt
+    if (tde && ten) tde = {...tde, d: fillQ(tde.d, ten.d), rows: tde.rows.map((r, i) => { const e = ten.rows[i]; return e && e.n === r.n ? {...r, t: syncN(fillQ(r.t, e.t), e.t).replace(/ Shield;/g, ' Schild;')} : r; })};
     if (tde && tde.name && tde.name !== n && tde.name.toUpperCase() !== n.toUpperCase()) o.de = tde.name;
     const rows = (ten || tde || {}).rows || [];
     const STYLE = {bronze: 1, silver: 3, gold: 5, prismatic: 6};
@@ -163,7 +193,7 @@ async function toWebp(jobs) {
     // wie in Riots Trait-Texten: Zeilen mit <br> getrennt (nicht \n), jede Stufe als <row>(n) …</row>
     const br = x => String(x || '').replace(/\\n/g, '<br>');
     const row = (t) => t ? [br(t.d), ...(t.rows || []).map(r => `<row>(${r.n}) ${br(r.t)}</row>`)].filter(Boolean).join('<br>') : '';
-    if (tde || ten) { o.desc = row(tde && (tde.d || (tde.rows || []).length) ? tde : ten); o.fx = (rows.length ? rows.map(r => r.n) : o.bp).map(b => ({min: b, v: {}})); /* je Zeile eine Stufe (A-/B-Seite, Prismatisch haben dieselbe Zahl) */ if (ten) EN_TR[o.api] = row(ten); }
+    if (tde || ten) { o.desc = row(tde && (tde.d || (tde.rows || []).length) ? tde : ten); o.fx = rows.length ? rows.map(r => ({min: r.n, v: traitStats(r.t)})) : o.bp.map(b => ({min: b, v: {}})); /* je Zeile eine Stufe (A-/B-Seite, Prismatisch haben dieselbe Zahl) */ if (ten) EN_TR[o.api] = row(ten); }
     const ic = iconFile(n); if (ic) { const s = n.toLowerCase().replace(/&/g, 'n').replace(/[^a-z0-9]+/g, '-'); jobs.push({src: ic, out: path.join(OUT_IMG, 'traits', s + '.webp'), w: 64, h: 64, q: 0.92}); o.icon = `assets/img/set19/traits/${s}.webp`; }
     else { warn.push('Trait ohne Icon: ' + n); o.icon = 'assets/img/set19/traits/leer.svg'; }
     if (!o.bp.length) o.bpOffen = 1;
@@ -184,6 +214,9 @@ async function toWebp(jobs) {
   // verweisen genau auf diese IDs. Icons mit voller Adresse (cdn ist hier leer). Änderungen aus dem Video kommen später dazu (bp: „am PBE prüfen“)
   global.window = {}; require(path.join(ROOT, 'data', 'tft-data-18.js')); const D18 = window.TFT_DATA;
   const items = D18.items.filter(i => ['component', 'craft', 'radiant'].includes(i.cat)).map(i => ({...i, icon: /^https?:/.test(i.icon) ? i.icon : D18.cdn + i.icon, aus18: 1}));
+  // Set-19-eigene Items von blitz.gg (tools/set19/items-blitz.js → items-19.json): Embleme, Artefakte, Support, Trait-Items, Verbrauchsgegenstände; englischer Text → tft-data-19-en.js
+  const I19 = fs.existsSync(path.join(__dirname, 'items-19.json')) ? require('./items-19.json') : [], EN_IT = {};
+  for (const x of I19) { if (items.some(i => i.id === x.id)) continue; const {en_desc, ...o} = x; items.push(o); if (en_desc) EN_IT[x.id] = en_desc; }
   // Augments von blitz.gg (Name, Stufe, Text DE/EN); Symbol: wie in Set 18 (gleiche ID/Name), sonst aus dem PBE-Client (tools/set19/augment-icons.js → C:\t19augpng),
   // sonst das Symbol eines verwandten Augments (Pyramid Scheme Level 2 → Pyramid Scheme, …_II → …_I)
   const A18 = D18.augments, a18id = new Map(A18.map(x => [x.id, x])), a18n = new Map(A18.map(x => [x.en.toLowerCase(), x]));
@@ -195,7 +228,7 @@ async function toWebp(jobs) {
   for (const [id, e] of Object.entries(AE)) {
     const d = AD[id] || e, old0 = a18id.get(id) || a18n.get(e.name.toLowerCase()), old = old0 && !/missing-t/.test(old0.icon || '') ? old0 : null;   // Set-18-Platzhalter zählt nicht als Symbol
     const deTxt = AD[id] && AD[id].d === e.d && (UE.augments || {})[id] ? UE.augments[id] : d.d;   // eigene Übersetzung, wo Blitz noch englisch ist
-    const o = {id, en: e.name, de: d.name || e.name, desc: vals(deTxt, d.v), fx: {}, lv: e.lv || (old0 && old0.lv) || 1};
+    const o = {id, en: e.name, de: d.name || e.name, desc: vals(fillQ(deTxt, e.d), {...e.v, ...d.v}), fx: {}, lv: e.lv || (old0 && old0.lv) || 1};
     if (old) o.icon = /^https?:/.test(old.icon) ? old.icon : D18.cdn + old.icon;
     else { let p = pngOf(id), sid = id; while (!p && stem(sid) !== sid) { sid = stem(sid); p = pngOf(sid) || Object.keys(AE).filter(k => k !== id && k.startsWith(sid)).map(pngOf).find(Boolean); }
       if (p) { const fn = path.basename(p, '.png').toLowerCase() + '.webp'; if (!jobs.some(j => j.out.endsWith(fn))) jobs.push({src: p, out: path.join(OUT_IMG, 'augments', fn), q: 0.9}); o.icon = 'assets/img/set19/augments/' + fn; }
@@ -208,7 +241,7 @@ async function toWebp(jobs) {
   await toWebp(jobs.filter(j => j.out.includes(path.sep + 'augments' + path.sep)));
   const body = `champions:[\n${out.map(J).join(',\n')}\n],\ntraits:[\n${traits.map(J).join(',\n')}\n],\nitems:[\n${items.map(J).join(',\n')}\n],\naugments:[\n${augs.map(J).join(',\n')}\n]\n};\n`;
   fs.writeFileSync(path.join(ROOT, 'data', 'tft-data-19.js'), head + body);
-  fs.writeFileSync(path.join(ROOT, 'data', 'tft-data-19-en.js'), '// TFTClimb – englische Texte zu Set 19 (noch keine – Set 19 wird von Hand gebaut, tools/set19/bauen.js)\nwindow.TFT_DATA_EN = ' + JSON.stringify({champions: EN_CH, traits: EN_TR, items: {}, augments: EN_AUG}) + ';\n');
+  fs.writeFileSync(path.join(ROOT, 'data', 'tft-data-19-en.js'), '// TFTClimb – englische Texte zu Set 19 (noch keine – Set 19 wird von Hand gebaut, tools/set19/bauen.js)\nwindow.TFT_DATA_EN = ' + JSON.stringify({champions: EN_CH, traits: EN_TR, items: EN_IT, augments: EN_AUG}) + ';\n');
   console.log(`Champions: ${out.length} (7 Gold: ${out.filter(c => c.c === 7).length}) · Traits: ${traits.length} · Bilder: ${jobs.length}`);
   console.log(warn.length ? 'Hinweise:\n  ' + warn.join('\n  ') : 'keine Hinweise');
   process.exit(0);

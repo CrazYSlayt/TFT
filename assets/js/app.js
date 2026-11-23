@@ -118,6 +118,9 @@ const TL_PATCH = (()=>{ const set = TFT_DATA.set + '.', now = new Date(), today 
 const tlPatchVar = () => { const pt = (window.TFT_PATCHES || []).find(x=>String(x.id) === String(TL_PATCH)); return pt ? patchVariant(pt) : ''; };
 // eigene Adresse der PBE-Tierlist (/tft-set-19/tierlist bzw. /en/tft-set-19/tier-list) – nur solange das Set im PBE ist
 const SET_TL = /^\/(en\/)?tft-set-\d+\/(tierlist|tier-list)\/?$/.test(location.pathname);
+// Solange ein Set auf dem PBE ist: Hinweis-Karte auf seine Tierlist (/tft-set-<N>/tierlist) – in den News zum Set, auf der PBE-Patch-Seite und auf der Tierlist des Live-Sets
+const PBE_SET = ((window.TFT_SETS || []).find(s=>s.status === 'pbe') || {}).set;
+const pbeTlBox = () => PBE_SET ? `<a class="pbe-tl" href="${EN ? `/en/tft-set-${PBE_SET}/tier-list` : `/tft-set-${PBE_SET}/tierlist`}"><span><b>${L(`TFT Set ${PBE_SET} Tierlist (PBE)`, `TFT Set ${PBE_SET} Tier List (PBE)`)}</b><small>${L('Die stärksten Comps auf dem PBE – laufend aktualisiert bis zum Release.', 'The strongest comps on the PBE – updated until release.')}</small></span><em>${L('Zur Tierlist', 'Open tier list')} →</em></a>` : '';
 const setStatus = () => (window.TFT_SET && TFT_SET.status) || TFT_DATA.channel || 'live';
 const PLANT_IMG = TFT_CUSTOM_SET.plants || {};
 // Sonderregeln für Units (data/custom-<Set>.js → unitRules): Teamplätze (slots) und Zählwert pro Trait (traits), z. B. Elder Dragon = 2 Plätze, +2 Riftbeast
@@ -1094,7 +1097,7 @@ if(ND) renderRankHex();
 /* ================= TEAM BUILDER ================= */
 const BUILDER_KEY = 'tftfreaks_builder_v1_' + TFT_DATA.set, BUILDER_ENEMY_KEY = 'tftfreaks_builder_enemy';
 const B_UNITS = [...champions.map(c=>c.n), ...Object.keys(PLANTS)]; // feste Reihenfolge für Teil-Links
-const B_ITEM_CATS = ['component','craft','radiant','artifact','emblem'];
+const B_ITEM_CATS = ['component','craft','radiant','artifact','support','emblem'];
 let bBoard = {}, bAugs = [], bAlt = [null, null];   // dein Board: Hex-Index (0–27) -> {u, s, i:[itemIds]}
 let eBoard = {}, eAugs = [];                         // Gegner-Board (eigene Koordinaten, Anzeige um 180° gedreht)
 let bEnemy = false, bActive = 'm', bNamesOn = false, bAugSide = 'm';
@@ -1586,7 +1589,7 @@ function admPickHTML(kind, c){
   const q = admPickQ.trim().toLowerCase(), hit = (...n) => !q || n.some(x=>String(x || '').toLowerCase().includes(q));
   let tabs = [], cells = '';
   if(kind === 'item'){
-    const CAT = [['craft', 'Fertige Items'], ['radiant', 'Strahlend'], ['artifact', 'Artefakte'], ['emblem', 'Embleme']].filter(([k])=>ITEMS.some(i=>i.cat === k));
+    const CAT = [['craft', 'Fertige Items'], ['radiant', 'Strahlend'], ['artifact', 'Artefakte'], ['support', 'Support'], ['emblem', 'Embleme']].filter(([k])=>ITEMS.some(i=>i.cat === k));
     const tab = CAT.some(([k])=>k === admPickTab) ? admPickTab : 'craft'; tabs = CAT.map(([k, l])=>[k, l, k === tab]);
     cells = ITEMS.filter(i=>(q ? B_ITEM_CATS.includes(i.cat) && i.cat !== 'component' : i.cat === tab) && hit(i.de, i.en)).map(i=>`<button type="button" class="adm2-pk${c.carousel.includes(i.id) ? ' has' : ''}" data-a2-item="${i.id}" title="${esc(admItemName(i))}"><img src="${i.img}" alt="" loading="lazy"><small>${esc(admItemName(i))}</small></button>`).join('');
   } else if(kind === 'aug'){
@@ -2541,7 +2544,7 @@ function champBuilds(n){
   const freq = {}, sets = {};
   comps.forEach(x=>[...(x.board||[]), ...(x.alt||[])].forEach(b=>{
     if(b.u!==n) return;
-    const ids = (b.i||[]).map(findItem).filter(it=>it && ['craft','radiant','artifact','emblem'].includes(it.cat)).map(it=>it.id);
+    const ids = (b.i||[]).map(findItem).filter(it=>it && ['craft','radiant','artifact','support','emblem'].includes(it.cat)).map(it=>it.id);
     ids.forEach(id=>{ freq[id] = (freq[id]||0) + 1; });
     if(ids.length===3){ const k = ids.slice().sort().join('|'); sets[k] = (sets[k]||0) + 1; }
   }));
@@ -2970,7 +2973,7 @@ $('#traitSearch').addEventListener('input', renderTraits);
 /* ================= RENDER: ITEMS ================= */
 const ITEM_CATS = [
   ['craft','Kombinierte Items'],['component','Komponenten'],['radiant','Lichtversionen'],
-  ['artifact','Artefakte'],['emblem','Embleme'],['other','Verbrauchsgegenstände & Sonstiges'],
+  ['artifact','Artefakte'],['support','Support-Items'],['emblem','Embleme'],['other','Verbrauchsgegenstände & Sonstiges'],
 ];
 function itemCat(it){
   const id = it.id;
@@ -5316,7 +5319,7 @@ const TM_DEFAULT = () => ({title:'', rows:[['S',0],['A',1],['B',2],['C',3],['X',
 // Tabs der Toolbox: Items, Artefakte und Embleme sind alles Item-Einträge (i:…) – nur anders gefiltert.
 // Traits (t:…) haben keinen Tab mehr, werden in älteren geteilten Tierlists aber weiter angezeigt.
 const TM_TABS = [['c','Champions'],['i','Items'],['r','Artefakte'],['e','Embleme'],['a','Augments']];
-const TM_ITEM_TABS = {i:['craft','radiant','component'], r:['artifact'], e:['emblem']};
+const TM_ITEM_TABS = {i:['craft','radiant','component'], r:['artifact','support'], e:['emblem']};
 // Augments: statt Sortierung eine Auswahl nach Stufe (Silber / Gold / Prismatisch)
 // Knöpfe über dem Pool: Champions nach Kosten filtern, Items nach Art, Augments nach Stufe
 const TM_SORTS = {c:[['all','Alle'],['1','1 Gold'],['2','2 Gold'],['3','3 Gold'],['4','4 Gold'],['5','5 Gold']],
@@ -5770,7 +5773,7 @@ function patchHero(p){
       <span class="pde-who"><span>${L('Von', 'By')} <b>${L('Claudio „CrazYSlayt“', 'Claudio "CrazYSlayt"')}</b> · TFT Challenger · TFTClimb Coach</span><small>${fmtDate(p.date)}</small></span>
     </a>
     <p class="pde-txt" data-meta>${esc(msg)}</p>
-  </section>`;
+  </section>${p.pbe && p.set === PBE_SET ? pbeTlBox() : ''}`;
 }
 function renderPatches(sub){
   const app = $('#patchesApp'), art = document.querySelector('[data-pre="pt"]');
@@ -6189,6 +6192,24 @@ function csSections(){
         <div class="csbc-wrap">${grp('Carrys', carries)}${grp('Tanks', tanks)}</div>`]);
     });
   }
+  // Item-Holder (Entwurf, Wunsch CrazYSlayt 23.11.2026): wer früh auf 1–3-Kostern Guinsoo oder ein Mana-Item (Shojin, Blauer Buff, Adaptiver Helm) slammt,
+  // sieht, welche 4- und 5-Kosten die Items später weitertragen – getrennt nach AD und AP, weil die übrigen Items dazu passen müssen.
+  // Grundlage: itemBuilds (BIS); AD/AP aus roles, Tanks mit Tank-Items fallen raus. Nur mit ?vorschau sichtbar, bis Design und Text stehen
+  if(IB && /vorschau/.test(location.search)){
+    const RL = TFT_CUSTOM_SET.roles || {}, TANKY = /Protector|Gargoyle|Warmog|Crownguard|Spirit Visage|Bramble|Dragon's Claw|Steadfast/;
+    const APX = /Jeweled|Rabadon|Archangel|Void Staff|Morello|Nashor|Gunblade|Blue Buff|Ionic/, ADX = /Infinity|Deathblade|Last Whisper|Giant Slayer|Kraken|Bloodthirster|Sterak|Edge of Night|Titan|Hand Of Justice|Red Buff/i;
+    const side = (n, its) => RL[n] === 'ad' || RL[n] === 'ap' ? RL[n] : its.filter(i=>APX.test(i)).length > its.filter(i=>ADX.test(i)).length ? 'ap' : 'ad';
+    const holders = (key, sd) => Object.entries(IB).filter(([n, its])=>champBy[n] && its.some(i=>key.test(i)) && !its.some(i=>TANKY.test(i)) && side(n, its) === sd);
+    const FLOWS = [['guinsoo', 'ad', /Guinsoo/, ["Guinsoo's Rageblade"], ['Guinsoo-Holder (AD)', 'Guinsoo holders (AD)']], ['guinsoo', 'ap', /Guinsoo/, ["Guinsoo's Rageblade"], ['Guinsoo-Holder (AP)', 'Guinsoo holders (AP)']],
+      ['mana', 'ad', /Spear of Shojin|Blue Buff|Adaptive Helm/, ['Spear of Shojin', 'Blue Buff', 'Adaptive Helm'], ['Mana-Item-Holder (AD)', 'Mana item holders (AD)']], ['mana', 'ap', /Spear of Shojin|Blue Buff|Adaptive Helm/, ['Spear of Shojin', 'Blue Buff', 'Adaptive Helm'], ['Mana-Item-Holder (AP)', 'Mana item holders (AP)']]];
+    const chip = ([n, its], key) => `<a class="ihf-c" href="${champHref(n)}" data-champ="${esc(n)}"><img class="ihf-p c${champBy[n].c}" src="${champImg(n) || champFallback(n)}" alt="" width="52" height="52" loading="lazy"><span class="ihf-t"><b>${esc(n)}</b><span class="ihf-its">${its.map(findItem).filter(Boolean).map(it=>`<img class="${key.test(it.en) ? 'on' : ''}" src="${it.img}" alt="" title="${esc(L(it.de || it.en, it.en))}" width="22" height="22" loading="lazy">`).join('')}</span></span></a>`;
+    const flows = FLOWS.map(([, sd, key, keyIts, t])=>{ const l = holders(key, sd);
+      const col = k => { const c = l.filter(([n])=>k < 5 ? champBy[n].c === k : champBy[n].c >= 5).sort((a, b)=>champBy[a[0]].c - champBy[b[0]].c || a[0].localeCompare(b[0]));
+        return `<div class="ihf-col${k >= 4 ? ' late' : ''}"><div class="ihf-h">${k < 5 ? k : '5+7'}-Cost</div>${c.length ? c.map(x=>chip(x, key)).join('') : '<div class="ihf-none">–</div>'}</div>`; };
+      return `<section class="ihf"><h3 class="ihf-tt">${keyIts.map(findItem).filter(Boolean).map(it=>`<img src="${it.img}" alt="" width="30" height="30">`).join('')}<span>${L(t[0], t[1])}</span></h3>
+        <div class="ihf-row">${[1, 2, 3, 4, 5].map(col).join('<i class="ihf-arr" aria-hidden="true">›</i>')}</div></section>`; }).join('');
+    out.push(['item-holder', L('Item-Holder: früh slammen, später weitertragen', 'Item holders: slam early, carry on later'), `<p class="cs-note">${L('Entwurf – Text folgt.', 'Draft – text to follow.')}</p><div class="ihf-wrap">${flows}</div>`]);
+  }
   // Unlocks: alle freischaltbaren Champions mit ihrer Bedingung, nach Kosten aufsteigend (1 → 7)
   const UL = TFT_DATA.champions.filter(c=>c.unlock).sort((a, b)=>a.c - b.c || a.n.localeCompare(b.n));
   if(UL.length){
@@ -6197,7 +6218,7 @@ function csSections(){
       <div class="cs-wrap"><table class="cs-table csb csu"><thead><tr><th>Champion</th><th>${L('Bedingung', 'Condition')}</th></tr></thead><tbody>${rows}</tbody></table></div>`]);
   }
   // Set ohne alte Tabellen: nur die Cheatsheets aus cheatsShow (data/custom-<Set>.js), bis klar ist, welche wir für das Set brauchen
-  return TFT_CUSTOM_SET.cheatsShow ? out.filter(s=>TFT_CUSTOM_SET.cheatsShow.includes(s[0].replace(/^item-builds-\d$/, 'item-builds'))) : out;
+  return TFT_CUSTOM_SET.cheatsShow ? out.filter(s=>s[0] === 'item-holder' || TFT_CUSTOM_SET.cheatsShow.includes(s[0].replace(/^item-builds-\d$/, 'item-builds'))) : out;
 }
 // Augment-Tabellen (Little Buddy Bot): Augment aus den Riot-Daten (Set-18-Version bevorzugt), Belohnungen aus Kürzeln (siehe data/custom-<Set>.js)
 const csAugFind = en => { const l = AUGS.filter(a=>a.en===en); const a = l.find(x=>/^DA_/.test(x.id)) || l[0]; if(!a) return null;
@@ -6406,12 +6427,14 @@ const CS_GROUPS = [
   [['Augments', 'Augments', 'Augment-Tabellen', 'Augment tables', 'Was einzelne Augments wirklich geben – mit allen Chancen.', 'What single augments really give – with every chance.'], CS.augTables ? CS.augTables.list.map(t=>t.id) : []],
   [['Attribute', 'Traits', 'Attribut-Tabellen', 'Trait tables', 'Was Attribute wirklich geben – Beute, Shop-Chancen und Boni.', 'What traits really give – loot, shop odds and bonuses.'], CS.traitTables ? CS.traitTables.list.map(t=>t.id) : []],
   [['Sonstiges', 'Other', 'Sonstiges', 'Other', 'Patch-Plan, Embleme bauen und Stage 1 allein schaffen.', 'Patch schedule, building emblems and winning Stage 1 solo.'], ['patch-schedule', 'emblems', 'solo']],
-  [['Items', 'Items', 'Item-Tabellen', 'Item tables', 'Welche Items deine Carrys und Tanks bekommen.', 'Which items your carries and tanks get.'], ['item-builds-1', 'item-builds-2', 'item-builds-3', 'item-builds-4', 'item-builds-5']],
+  [['Items', 'Items', 'Item-Tabellen', 'Item tables', 'Welche Items deine Carrys und Tanks bekommen.', 'Which items your carries and tanks get.'], ['item-builds-1', 'item-builds-2', 'item-builds-3', 'item-builds-4', 'item-builds-5', ...(/vorschau/.test(location.search) ? ['item-holder'] : [])]],
   [['Champions', 'Champions', 'Champion-Tabellen', 'Champion tables', 'Welche Champions du wie freischaltest.', 'Which champions you unlock and how.'], ['unlocks']]
 ];
 CS_META.unlocks = {s:['Unlocks', 'Unlocks'], h1:['TFT Unlocks: alle Champions freischalten', 'TFT Unlocks: How to Unlock Every Champion'], h:['Wie du jeden freischaltbaren Champion bekommst.', 'How to get every unlockable champion.'],
   d:['Alle freischaltbaren Champions mit Bedingung', 'Every unlockable champion and its condition'], img:'assets/img/set19/schloss.svg',
   tip:()=>L('Die Bedingungen gelten pro Partie – sobald du sie erfüllst, taucht der Champion in deinem Shop auf.', 'Conditions count per game – once you meet one, the champion shows up in your shop.')};
+CS_META['item-holder'] = {s:['Item-Holder', 'Item holders'], h1:['TFT Item-Holder: früh slammen, spät tragen', 'TFT Item Holders: Slam Early, Carry Late'], h:['Wer deine frühen Items später weiterträgt.', 'Who carries your early items later.'],
+  d:['Guinsoo- und Mana-Item-Holder von 1 bis 5 Kosten', 'Guinsoo and mana item holders from 1 to 5 cost'], img:(findItem("Guinsoo's Rageblade") || {}).img, rio:1};
 // Beste Items je Kostenstufe (BIS): ein Cheatsheet pro Stufe, 5 und 7 zusammen
 [1, 2, 3, 4, 5].forEach(k=>{ const w = k < 5 ? [`${k}-Kosten`, `${k}-costs`] : ['5- und 7-Kosten', '5- and 7-costs'], s = k < 5 ? `${k}-Cost BIS` : '5+7-Cost BIS';
   CS_META['item-builds-' + k] = {s:[s, s], h1:[`TFT ${s}: beste Items für alle ${w[0]}`, `TFT ${s}: Best Items for All ${w[1].replace(/costs$/, 'Costs')}`],
@@ -7241,6 +7264,7 @@ function renderNextSet(sub){
   app.setAttribute('aria-busy', 'true');   // tools/seo-meta.js wartet darauf, dass die nachgeladenen Daten eingesetzt sind
   nsData(n).then(D=>{ draw(D); app.removeAttribute('aria-busy'); });
 }
+{ const s = document.querySelector('#tlSrc'); if(s && PBE_SET && TFT_DATA.set !== PBE_SET && !SET_TL) s.insertAdjacentHTML('afterend', pbeTlBox()); }   // Tierlist des Live-Sets → PBE-Tierlist
 { const a = document.querySelector('#ndSide [data-nd="nextset"]'); if(a){ a.href = nsHref(); a.title = a.querySelector('span').textContent = 'Set ' + nsNext(); } }   // Seitenleiste zeigt immer das nächste Set
 
 /* ================= NEWS ZU EINEM SET (/tft-set-<N>/<beitrag>) ================= */
@@ -7371,7 +7395,7 @@ function nwHTML(p){
     <div class="nw-by"><a href="${PATCH_AUTHOR.href}"><img src="${PATCH_AUTHOR.img}" alt="Claudio „CrazYSlayt“" width="44" height="44"></a><span><span class="nw-by-n">${L('Von', 'By')} <a href="${PATCH_AUTHOR.href}">Claudio „CrazYSlayt“</a> · TFT Challenger · Coach</span><small>${esc(nwDay(p.date))}</small></span></div>
     <figure class="nw-hero er-hero"><img src="${p.img}" alt="${esc(nwL(p.alt))}" width="1200" height="630"></figure></header>
     <section class="tool-seo ag-art nw-art" aria-label="${esc(nwL(p.title))}"><div class="ts-main">${body.map(b=>NW_BLOCK[b.k](b)).join('')}
-      <p class="art-note">${L('Quelle', 'Source')}: <a href="${nwL(p.src.url)}" target="_blank" rel="noopener">Riot Games, „${esc(nwL(p.src.name))}“</a>, ${esc(nwDay(p.src.date))}. ${L('Bilder und Videos: Riot Games.', 'Images and videos: Riot Games.')}</p></div>
+      <p class="art-note">${L('Quelle', 'Source')}: <a href="${nwL(p.src.url)}" target="_blank" rel="noopener">Riot Games, „${esc(nwL(p.src.name))}“</a>, ${esc(nwDay(p.src.date))}. ${L('Bilder und Videos: Riot Games.', 'Images and videos: Riot Games.')}</p>${p.set === PBE_SET ? pbeTlBox() : ''}</div>
       <aside class="ts-side art-side"><nav class="art-toc" aria-label="${L('Inhalt', 'Contents')}"><b>${L('Inhalt', 'Contents')}</b><ol>${heads.map(b=>`<li><a href="#nwa-${b.id}" data-toc="nwa-${b.id}">${esc(b.t)}</a></li>`).join('')}</ol></nav></aside></section></div></article>`;
 }
 function renderSetNews(slug){ const app = $('#nwApp'), p = nwBy(slug); if(!app || !p) return; app.innerHTML = nwHTML(p); artToc(app.querySelector('.nw-art')); nwPolls(app); }

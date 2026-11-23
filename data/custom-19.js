@@ -128,7 +128,7 @@ window.TFT_CUSTOM = {
     'Akali (K/DA)': ["Sterak's Gage", 'Red Buff', 'Edge of Night'], 'Akali (True Damage)': ['Jeweled Gauntlet', 'Hand Of Justice', 'Edge of Night'],
     'Aphelios': ["Guinsoo's Rageblade", 'Infinity Edge', "Striker's Flail"], 'Dr. Mundo': ['Spirit Visage', 'Gargoyle Stoneplate', 'Steadfast Heart'],
     'Gwen': ['Jeweled Gauntlet', 'Hand Of Justice', "Striker's Flail"], 'Janna': ['Blue Buff', 'Morellonomicon', 'Void Staff'],
-    'Lee Sin': ['Edge of Night', "Sterak's Gage"], 'Miss Fortune': ['Blue Buff', 'Deathblade', 'Infinity Edge'],
+    'Lee Sin': ['Edge of Night', "Sterak's Gage", 'Scroll of The Beast'], 'Miss Fortune': ['Blue Buff', 'Deathblade', 'Infinity Edge'],
     'Mordekaiser': ['Edge of Night', "Guinsoo's Rageblade", 'Bloodthirster'], 'Nidalee': ['Jeweled Gauntlet', 'Hand Of Justice', 'Quicksilver'],
     'Nunu & Willump': ['Ionic Spark', 'Morellonomicon', 'Adaptive Helm'], 'Pyke': ['Edge of Night', "Sterak's Gage", 'Bloodthirster'],
     'Rell': ["Protector's Vow", "Protector's Vow", 'Crownguard'], 'Taliyah': ['Spear of Shojin', 'Jeweled Gauntlet', "Striker's Flail"],

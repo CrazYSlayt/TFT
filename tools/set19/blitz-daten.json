@@ -14,7 +14,7 @@
      80,
      120
     ],
-    "d": "Summon an 8-man orchestra and a Riff Herald, knocking up all enemies for 1 seconds. Deal %i:scaleAD% @v_550_825_2475@ physical damage and %i:scaleAP% @v_650_1000_3000@ magic damage split among all enemies.\\nEach minion attacks 4 times, with each attack dealing %i:scaleAD% @v_33_50_250@ physical damage.",
+    "d": "Summon an 8-man orchestra and a Riff Herald, knocking up all enemies for 1 seconds. Deal %i:scaleAD% @v_550_825_2475@ physical damage and %i:scaleAP% @v_650_1000_3000@ magic damage split among all enemies.\\nEach minion attacks 4 times, with each attack dealing %i:scaleAD% @v_30_48_250@ physical damage.",
     "v": {
      "v_550_825_2475": [
       550,
@@ -26,9 +26,9 @@
       1000,
       3000
      ],
-     "v_33_50_250": [
-      33,
-      50,
+     "v_30_48_250": [
+      30,
+      48,
       250
      ]
     }
@@ -41,17 +41,17 @@
      "Boy-Band",
      "Choreograf"
     ],
-    "unlock": "Win 4 combats in a row at Level 8+, Verliere 4 Kämpfe in Folge auf Stufe 8+",
+    "unlock": "Gewinne 4 Kämpfe in Folge auf Stufe 8+. Verliere 4 Kämpfe in Folge auf Stufe 8+",
     "ab": "Flieg wie ein Pfau",
     "mana": [
      0,
      55
     ],
-    "d": "Springt zu einer Gruppe von Gegnern in der Nähe und wirft dann 8 Federn, die sich auf Gegner innerhalb von 1 Feld aufteilen und jeweils %i:scaleAP% @v_100_180_2400@ magischen Schaden verursachen.\\nDer Haupt-Rakan trifft Gegner innerhalb von 2 Feldern und schleudert sie kurz hoch.",
+    "d": "Springt zu einer Gruppe von Gegnern in der Nähe und wirft dann 8 Federn, die sich auf Gegner innerhalb von 1 Feld aufteilen und jeweils %i:scaleAP% @v_115_190_2400@ magischen Schaden verursachen.\\nDer Haupt-Rakan trifft Gegner innerhalb von 2 Feldern und schleudert sie kurz hoch.",
     "v": {
-     "v_100_180_2400": [
-      100,
-      180,
+     "v_115_190_2400": [
+      115,
+      190,
       2400
      ]
     }
@@ -65,7 +65,7 @@
      "Schlächter"
     ],
     "unlock": "Erf. St. 9 - Sorge dafür, dass 8 oder mehr nicht einzigartige Attribute aktiv sind",
-    "ab": "Upswing",
+    "ab": "Aufschwung",
     "mana": [
      0,
      4
@@ -102,13 +102,13 @@
      "Produzent",
      "Kollab"
     ],
-    "unlock": "Erf. St. 10 - Collab Champions are inspired 15 times",
+    "unlock": "Erf. St. 10 - Kollab-Champions werden in PvP-Runden 15-mal inspiriert",
     "ab": "feat. Sona",
     "mana": [
      0,
      220
     ],
-    "d": "Passive: Cannot attack, instead every 3 seconds, gain @v_31_31_101@ Mana, deal %i:scaleAP% @v_120_180_1000@ magic damage to the 3 nearest enemies, and 2 allies gain %i:scaleAP% @v_40_65_9999@ Shield for 3 seconds. Sona is Unstoppable.\\nActive: Unleash a sonic wave across the battlefield, dealing %i:scaleAP% @v_1400_2200_9999999@ magic damage split between all enemies and Stunning them for 2 seconds. Allies gain %i:scaleAP% @v_250_450_99999@ Shield split amongst allies for 5 seconds.",
+    "d": "Passive: Cannot attack, instead every 3 seconds, gain @v_31_31_101@ Mana, deal %i:scaleAP% @v_120_180_1000@ magic damage to the 3 nearest enemies, and 2 allies gain %i:scaleAP% @v_40_65_9999@ Shield for 3 seconds. Sona is Unstoppable.\\nActive: Unleash a sonic wave across the battlefield, dealing %i:scaleAP% @v_1500_2400_9999999@ magic damage split between all enemies and Stunning them for 2 seconds. Allies gain %i:scaleAP% @v_250_450_99999@ Shield split amongst allies for 5 seconds.",
     "v": {
      "v_31_31_101": [
       31,
@@ -125,9 +125,9 @@
       65,
       9999
      ],
-     "v_1400_2200_9999999": [
-      1400,
-      2200,
+     "v_1500_2400_9999999": [
+      1500,
+      2400,
       9999999
      ],
      "v_250_450_99999": [
@@ -138,7 +138,7 @@
     }
    },
    "DA_AkaliKDA19": {
-    "name": "Akali (K/DA)",
+    "name": "Akali",
     "cost": 5,
     "role": "AD-Assassine",
     "traits": [
@@ -165,20 +165,20 @@
     }
    },
    "DA_Akali_TrueDamage19": {
-    "name": "Akali (True Damage, Freestyle)",
+    "name": "Akali",
     "cost": 5,
     "role": "AP-Kämpfer",
     "traits": [
      "True Damage",
      "Freestyle"
     ],
-    "unlock": "Earn 375 True Damage Bling without K/DA Akali unlocked",
+    "unlock": "Verdiene 350 „True Damage“-Glitzer, ohne K/DA-Akali freigeschaltet zu haben",
     "ab": "Sie fallen wie Dominosteine",
     "mana": [
      0,
      50
     ],
-    "d": "B-Side Passive: After every 4 takedowns, gain 1 Player Health. (0/4)\\nActive: Rapidly slash through the current target, dealing %i:scaleAP% @v_550_825_9999@ magic damage, increased by 50% against Tanks. While casting, gain 25% Durability and become untargetable by attacks.\\nAfterwards, blink over the target and throw a bomb that deals %i:scaleAP% @v_620_930_9999@ magic damage split amongst all enemies within 2 hexes.",
+    "d": "B-Seite – Passiv: Du erhältst nach jeder 4. Vollstreckung 1 Taktikerleben. (0/4)\\nAktiv: Führt einen schnellen Schnitt durch das aktuelle Ziel aus, der %i:scaleAP% @v_550_825_9999@ magischen Schaden verursacht (gegen Tanks um 50% erhöht). Beim Aktivieren erhältst du 25% Durchhaltevermögen und kannst nicht durch Angriffe anvisiert werden.\\nDanach springst du über das Ziel und wirfst eine Bombe ab, die %i:scaleAP% @v_620_930_9999@ magischen Schaden verursacht, der auf alle Gegner in einem Bereich von 2 Feldern aufgeteilt wird.",
     "v": {
      "v_550_825_9999": [
       550,
@@ -238,16 +238,16 @@
      20,
      80
     ],
-    "d": "Passiv: Wenn Dr. Mundo 3000 max. Leben oder mehr hat, ist er „Aufgeregt“, wodurch er 20% max. Leben erhält und seine Angriffe zusätzlich %i:scaleHealth% @v_89_114_2300@ magischen Schaden verursachen.\\nAktiv: Stellt über 5 Sekunden %i:scaleHealth% @v_480_530_4300@ Leben wieder her und fügt allen Gegnern innerhalb von 2 Feldern jede Sekunde %i:scaleHealth% %i:scaleAP% @v_25_29_102@ magischen Schaden zu.",
+    "d": "Passiv: Wenn Dr. Mundo 3000 max. Leben oder mehr hat, ist er „Aufgeregt“, wodurch er 20% max. Leben erhält und seine Angriffe zusätzlich %i:scaleHealth% @v_89_114_2300@ magischen Schaden verursachen.\\nAktiv: Stellt über 5 Sekunden %i:scaleHealth% @v_555_605_4300@ Leben wieder her und fügt allen Gegnern innerhalb von 2 Feldern jede Sekunde %i:scaleHealth% %i:scaleAP% @v_25_29_102@ magischen Schaden zu.",
     "v": {
      "v_89_114_2300": [
       89,
       114,
       2300
      ],
-     "v_480_530_4300": [
-      480,
-      530,
+     "v_555_605_4300": [
+      555,
+      605,
       4300
      ],
      "v_25_29_102": [
@@ -266,7 +266,7 @@
      "Melodisches Herz"
     ],
     "unlock": "Fans von „Ionic Spark“ jubeln 250-mal",
-    "ab": "Glimmer in the Night",
+    "ab": "Glimmern in der Nacht",
     "mana": [
      0,
      100
@@ -302,9 +302,9 @@
     "traits": [
      "Windgesegnet",
      "Gu Feng",
-     "Prodigy"
+     "Wunderkind"
     ],
-    "unlock": "Verdiene 20 Zinsen, während du Xayah einsetzt",
+    "unlock": "Verdiene 25 Zinsen, während du Xayah einsetzt",
     "ab": "Hymne des himmlischen Sturms",
     "mana": [
      0,
@@ -375,11 +375,11 @@
      0,
      50
     ],
-    "d": "Schieße mit einer Flipperkugel auf das Ziel und füge ihm %i:scaleAD% %i:scaleAP% @v_145_225_2245@ normalen Schaden zu. Nachdem sie einen Gegner getroffen hat, springt sie weiter, bis sie Gegnern 12-mal Schaden zugefügt hat, wobei ihr Schaden mit jedem Treffer um 30% verringert wird. (Mindestschaden: 20%)",
+    "d": "Schieße mit einer Flipperkugel auf das Ziel und füge ihm %i:scaleAD% %i:scaleAP% @v_155_235_2245@ normalen Schaden zu. Nachdem sie einen Gegner getroffen hat, springt sie weiter, bis sie Gegnern 12-mal Schaden zugefügt hat, wobei ihr Schaden mit jedem Treffer um 30% verringert wird. (Mindestschaden: 20%)",
     "v": {
-     "v_145_225_2245": [
-      145,
-      225,
+     "v_155_235_2245": [
+      155,
+      235,
       2245
      ]
     }
@@ -430,11 +430,11 @@
      20,
      45
     ],
-    "d": "Sprungparty: Springe 4-mal auf Gegner und füge ihnen %i:scaleAP% @v_135_200_1500@ magischen Schaden zu, der mit jedem Sprung um 40% erhöht wird.\\nTanz des Lebens: Heile %i:scaleAP% @v_325_500_2000@. Wirf einen Speer auf das Ziel, der %i:scaleAP% @v_380_570_3000@ magischen Schaden verursacht und 3 Blumen um es herum verstreut. Blumen fügen Gegnern in einem Radius von 1 Feldern nach einer kurzen Verzögerung %i:scaleAP% @v_80_120_500@ magischen Schaden zu.\\nAktiviert „Sprungparty“ in feliner Gestalt und „Tanz des Lebens“ in menschlicher Form.",
+    "d": "Sprungparty: Springe 4-mal auf Gegner und füge ihnen %i:scaleAP% @v_125_185_1500@ magischen Schaden zu, der mit jedem Sprung um 40% erhöht wird.\\nTanz des Lebens: Heile %i:scaleAP% @v_325_500_2000@. Wirf einen Speer auf das Ziel, der %i:scaleAP% @v_360_540_3000@ magischen Schaden verursacht und 3 Blumen um es herum verstreut. Blumen fügen Gegnern in einem Radius von 1 Feldern nach einer kurzen Verzögerung %i:scaleAP% @v_80_120_500@ magischen Schaden zu.\\nAktiviert „Sprungparty“ in feliner Gestalt und „Tanz des Lebens“ in menschlicher Form.",
     "v": {
-     "v_135_200_1500": [
-      135,
-      200,
+     "v_125_185_1500": [
+      125,
+      185,
       1500
      ],
      "v_325_500_2000": [
@@ -442,9 +442,9 @@
       500,
       2000
      ],
-     "v_380_570_3000": [
-      380,
-      570,
+     "v_360_540_3000": [
+      360,
+      540,
       3000
      ],
      "v_80_120_500": [
@@ -463,7 +463,7 @@
      "Frontman"
     ],
     "unlock": "",
-    "ab": "It's the Time to Disco!",
+    "ab": "Zeit für Disco!",
     "mana": [
      20,
      75
@@ -483,29 +483,29 @@
     "role": "AD-Kämpfer",
     "traits": [
      "Rock",
-     "Renegade"
+     "Renegat"
     ],
-    "unlock": "Erf. St. 7 - Have 85 or more Gold at the end of combat",
+    "unlock": "Erf. St. 7 - Have 85 or more gold at the end of combat",
     "ab": "Exekution für dich",
     "mana": [
      0,
      30
     ],
-    "d": "Passiv: Wann immer ein Gegner unter %i:scaleAP% @v_10_10_93@% des max. Lebens fällt, wirkst du die Fähigkeit sofort auf ihn und springst dann zum aktuellen Ziel zurück.\\nAktiv: Fügt dem Ziel %i:scaleAD% @v_300_470_4000@ normalen Schaden und allen anderen Gegnern in einer X-Form %i:scaleAD% @v_130_215_800@ Schaden zu. Richte alle Gegner unter %i:scaleAP% @v_10_10_93@% Leben hin.",
+    "d": "Passiv: Wann immer ein Gegner unter %i:scaleAP% @v_10_10_93@% des max. Lebens fällt, wirkst du die Fähigkeit sofort auf ihn und springst dann zum aktuellen Ziel zurück.\\nAktiv: Fügt dem Ziel %i:scaleAD% @v_320_515_4000@ normalen Schaden und allen anderen Gegnern in einer X-Form %i:scaleAD% @v_100_150_800@ Schaden zu. Richte alle Gegner unter %i:scaleAP% @v_10_10_93@% Leben hin.",
     "v": {
      "v_10_10_93": [
       10,
       10,
       93
      ],
-     "v_300_470_4000": [
-      300,
-      470,
+     "v_320_515_4000": [
+      320,
+      515,
       4000
      ],
-     "v_130_215_800": [
-      130,
-      215,
+     "v_100_150_800": [
+      100,
+      150,
       800
      ]
     }
@@ -521,14 +521,14 @@
     "unlock": "",
     "ab": "Rhythmus-Blaster / Metal-Ponyclub",
     "mana": [
-     30,
+     40,
      100
     ],
-    "d": "Rhythm Blaster: For 4 seconds, gain %i:scaleAP% @v_600_725_2000@ Shield and summon 3 speakers. Each second, they blast a wave of sound, dealing %i:scaleArmor% %i:scaleMR% @v_104_156_1950@ magic damage to enemies hit.\\nMetal Pony Club: Slam into a crowd of enemies, dealing %i:scaleArmor% %i:scaleMR% @v_124p8_187p2_39000@ magic damage to the center enemy and %i:scaleArmor% %i:scaleMR% @v_156_234_39000@ damage split among enemies within 2 hexes.\\nCasts Rhythm Blaster while unmounted and Metal Pony Club while mounted.",
+    "d": "Rhythm Blaster: For 4 seconds, gain %i:scaleAP% @v_650_800_2000@ Shield and summon 3 speakers. Each second, they blast a wave of sound, dealing %i:scaleArmor% %i:scaleMR% @v_104_156_1950@ magic damage to enemies hit.\\nMetal Pony Club: Slam into a crowd of enemies, dealing %i:scaleArmor% %i:scaleMR% @v_124p8_187p2_39000@ magic damage to the center enemy and %i:scaleArmor% %i:scaleMR% @v_187p2_280p8_39000@ damage split among enemies within 2 hexes.\\nCasts Rhythm Blaster while unmounted and Metal Pony Club while mounted.",
     "v": {
-     "v_600_725_2000": [
-      600,
-      725,
+     "v_650_800_2000": [
+      650,
+      800,
       2000
      ],
      "v_104_156_1950": [
@@ -541,9 +541,9 @@
       187.2,
       39000
      ],
-     "v_156_234_39000": [
-      156,
-      234,
+     "v_187p2_280p8_39000": [
+      187.2,
+      280.8,
       39000
      ]
     }
@@ -556,17 +556,17 @@
      "Beach-Pop",
      "Zugabe"
     ],
-    "unlock": "A Champion of each cost starts in a Beach Pop hex",
+    "unlock": "A champion of each cost starts in a Beach Pop hex",
     "ab": "Crowd-Surfing",
     "mana": [
      0,
      40
     ],
-    "d": "Wirft 3 Felsen auf das Ziel, die jeweils %i:scaleAP% @v_185_280_2000@ magischen Schaden verursachen.\\nBei jeder 3. Aktivierung positionierst du dich stattdessen schnell neu und surfst in einer geraden Linie. Getroffene Gegner erleiden %i:scaleAP% @v_160_240_2000@ + %i:scaleAP% @v_2_3_50@% magischen Schaden abhängig vom max. Leben und werden kurzzeitig hochgeschleudert.",
+    "d": "Wirft 3 Felsen auf das Ziel, die jeweils %i:scaleAP% @v_200_300_2000@ magischen Schaden verursachen.\\nBei jeder 3. Aktivierung positionierst du dich stattdessen schnell neu und surfst in einer geraden Linie. Getroffene Gegner erleiden %i:scaleAP% @v_160_240_2000@ + %i:scaleAP% @v_2_3_50@% magischen Schaden abhängig vom max. Leben und werden kurzzeitig hochgeschleudert.",
     "v": {
-     "v_185_280_2000": [
-      185,
-      280,
+     "v_200_300_2000": [
+      200,
+      300,
       2000
      ],
      "v_160_240_2000": [
@@ -595,11 +595,11 @@
      0,
      100
     ],
-    "d": "Passiv: Angriffe lösen „Viral“ aus und verursachen über 15 Sekunden %i:scaleAP% @v_110_165_1337@ magischen Schaden. Infizierte Gegner werden bei ihrem Tod zu Zombies, die nach nicht infizierten Gegnern suchen und explodieren. Dabei fügen sie angrenzenden Gegnern %i:scaleAP% @v_70_105_800@ Schaden zu und belegen sie mit „Viral“.\\nAktiv: Du wirfst einen Pilz, der Gegner in einem Radius von 3 Feldern mit „Viral“ belegt und ihnen %i:scaleAP% @v_530_800_13337@ magischen Schaden zufügt, der pro Feld Entfernung vom Zentrum um 20% verringert wird.",
+    "d": "Passiv: Angriffe lösen „Viral“ aus und verursachen über 15 Sekunden %i:scaleAP% @v_90_135_1337@ magischen Schaden. Infizierte Gegner werden bei ihrem Tod zu Zombies, die nach nicht infizierten Gegnern suchen und explodieren. Dabei fügen sie angrenzenden Gegnern %i:scaleAP% @v_70_105_800@ Schaden zu und belegen sie mit „Viral“.\\nAktiv: Du wirfst einen Pilz, der Gegner in einem Radius von 3 Feldern mit „Viral“ belegt und ihnen %i:scaleAP% @v_530_800_13337@ magischen Schaden zufügt, der pro Feld Entfernung vom Zentrum um 20% verringert wird.",
     "v": {
-     "v_110_165_1337": [
-      110,
-      165,
+     "v_90_135_1337": [
+      90,
+      135,
       1337
      ],
      "v_70_105_800": [
@@ -628,7 +628,7 @@
      0,
      50
     ],
-    "d": "Passive: At Combat Start, draw a card for each champion in the shop. If your shop has refreshed this round, gain loot based on the cards drawn!\\n1 or 2 of a Kind: 1 Gold\\n3 of a Kind: Random champion\\n4 of a Kind: Item Component\\n5 of a Kind: Mystery Box!\\nActive: The next 5 attacks gain 100% Attack Speed and are replaced with cards that deal %i:scaleAP% @v_100_150_2000@ magic damage to the target and %i:scaleAP% @v_30_45_1000@ magic damage to 2 nearby enemies.",
+    "d": "Passive: At Combat Start, draw a card for each champion in the shop. If your shop has refreshed this round, gain loot based on the cards drawn!\\n1 or 2 of a Kind: 1 Gold\\n3 of a Kind: Random champion\\n4 of a Kind: Mystery Box\\n5 of a Kind: Royale Mystery Box!\\nActive: The next 5 attacks gain 100% Attack Speed and are replaced with cards that deal %i:scaleAP% @v_100_150_2000@ magic damage to the target and %i:scaleAP% @v_30_45_1000@ magic damage to 2 nearby enemies.",
     "v": {
      "v_100_150_2000": [
       100,
@@ -686,19 +686,19 @@
     "role": "AP-Kämpfer",
     "traits": [
      "Klassik",
-     "Arcanist"
+     "Arkanist"
     ],
-    "unlock": "Erf. St. 8 - Only 1 Champion in the two front rows of the battlefield",
+    "unlock": "Erf. St. 8 - Only 1 champion in the 2 front rows of the battlefield",
     "ab": "Das Opernphantom",
     "mana": [
      0,
      40
     ],
-    "d": "Passive: Gain 30% Omnivamp. Debuffed enemies are Captivated.\\nActive: Deal %i:scaleAP% @v_100_150_999@ magic damage to the 3 nearest enemies and Captivate them for 3 seconds.\\nEvery 5th cast, drop a chandelier on the board. It deals %i:scaleAP% @v_380_600_9999@ magic damage to all enemies, reduced by 10% per hex they are away from the epicenter.\\nDebuffs: Burn, Wound, Shred, Sunder, Mana Reave, Weaken, Slow, Vunerable",
+    "d": "Passive: Gain 30% Omnivamp. Debuffed enemies are Captivated.\\nActive: Deal %i:scaleAP% @v_120_180_999@ magic damage to the 3 nearest enemies and Captivate them for 3 seconds.\\nEvery 5th cast, drop a chandelier on the board. It deals %i:scaleAP% @v_380_600_9999@ magic damage to all enemies, reduced by 10% per hex they are away from the epicenter.\\nDebuffs: Burn, Wound, Shred, Sunder, Mana Reave, Weaken, Slow, Vunerable",
     "v": {
-     "v_100_150_999": [
-      100,
-      150,
+     "v_120_180_999": [
+      120,
+      180,
       999
      ],
      "v_380_600_9999": [
@@ -722,11 +722,11 @@
      0,
      150
     ],
-    "d": "Springe schnell durch die Arena und visiere das aktuelle Ziel mit 6 Lasern an. Laser feuern in schneller Folge, fügen getroffenen Gegnern %i:scaleAD% %i:scaleAP% @v_165_250_1500@ normalen Schaden zu und ignorieren 40% ihrer Rüstung.",
+    "d": "Springe schnell durch die Arena und visiere das aktuelle Ziel mit 6 Lasern an. Laser feuern in schneller Folge, fügen getroffenen Gegnern %i:scaleAD% %i:scaleAP% @v_175_260_1500@ normalen Schaden zu und ignorieren 40% ihrer Rüstung.",
     "v": {
-     "v_165_250_1500": [
-      165,
-      250,
+     "v_175_260_1500": [
+      175,
+      260,
       1500
      ]
     }
@@ -772,11 +772,11 @@
      70,
      155
     ],
-    "d": "Heilt %i:scaleAP% @v_265_300_2000@, erhöht um bis zu 100% abhängig von fehlendem Leben. Schlage dann das Ziel, schleudere Gegner innerhalb von 3 Feldern um es herum 1.5 Sekunden lang hoch und füge allen getroffenen Gegnern %i:scaleAP% @v_100_150_2500@ magischen Schaden zu.",
+    "d": "Heilt %i:scaleAP% @v_285_320_2000@, erhöht um bis zu 100% abhängig von fehlendem Leben. Schlage dann das Ziel, schleudere Gegner innerhalb von 3 Feldern um es herum 1.5 Sekunden lang hoch und füge allen getroffenen Gegnern %i:scaleAP% @v_100_150_2500@ magischen Schaden zu.",
     "v": {
-     "v_265_300_2000": [
-      265,
-      300,
+     "v_285_320_2000": [
+      285,
+      320,
       2000
      ],
      "v_100_150_2500": [
@@ -793,7 +793,7 @@
     "traits": [
      "HEARTSTEEL",
      "Manager",
-     "Prodigy"
+     "Wunderkind"
     ],
     "unlock": "Erf. St. 7 - 4 einzigartige HEARTSTEEL- oder Wunderkind-Champions",
     "ab": "Rampenlicht",
@@ -826,7 +826,7 @@
     "role": "AP-Zauberer",
     "traits": [
      "Ionic Spark",
-     "Renegade"
+     "Renegat"
     ],
     "unlock": "",
     "ab": "Getrennt zwischen den Welten",
@@ -834,11 +834,11 @@
      0,
      60
     ],
-    "d": "Teleportiere dich weg und feuere einen Schub durch die beste Linie. Der Schub fügt den 2 Gegnern mit dem meisten Leben %i:scaleAP% @v_275_415_2000@ magischen Schaden und dem Rest %i:scaleAP% @v_90_135_1500@ magischen Schaden zu. Teleportiere dich dann wieder zurück.",
+    "d": "Teleportiere dich weg und feuere einen Schub durch die beste Linie. Der Schub fügt den 2 Gegnern mit dem meisten Leben %i:scaleAP% @v_300_450_2000@ magischen Schaden und dem Rest %i:scaleAP% @v_90_135_1500@ magischen Schaden zu. Teleportiere dich dann wieder zurück.",
     "v": {
-     "v_275_415_2000": [
-      275,
-      415,
+     "v_300_450_2000": [
+      300,
+      450,
       2000
      ],
      "v_90_135_1500": [
@@ -882,7 +882,7 @@
     "role": "AD-Kämpfer",
     "traits": [
      "Beach-Pop",
-     "Renegade"
+     "Renegat"
     ],
     "unlock": "",
     "ab": "Left Hand Free",
@@ -913,11 +913,11 @@
      4,
      4
     ],
-    "d": "Passive: Convert 1% bonus Attack Speed into 0.8% Attack Damage.\\nAttacks summon violins that attack in unison, dealing %i:scaleAD% @v_25_38_124@ physical damage and Captivating the target for 4 seconds. Every 4th attack is empowered, dealing %i:scaleAD% %i:scaleAP% @v_94_141_848@ physical damage and resetting the violins.\\nOn the 4th sequence onwards, all violins remain out, Jhin gains infinite range, and attacks pierce, dealing 60% reduced damage for each target hit.",
+    "d": "Passive: Convert 1% bonus Attack Speed into 0.8% Attack Damage.\\nAttacks summon violins that attack in unison, dealing %i:scaleAD% @v_27_41_124@ physical damage and Captivating the target for 4 seconds. Every 4th attack is empowered, dealing %i:scaleAD% %i:scaleAP% @v_94_141_848@ physical damage and resetting the violins.\\nOn the 4th sequence onwards, all violins remain out, Jhin gains infinite range, and attacks pierce, dealing 60% reduced damage for each target hit.",
     "v": {
-     "v_25_38_124": [
-      25,
-      38,
+     "v_27_41_124": [
+      27,
+      41,
       124
      ],
      "v_94_141_848": [
@@ -935,7 +935,7 @@
      "Ionic Spark",
      "Hitmaker"
     ],
-    "unlock": "Erf. St. 7 - 3 Gegenstände bei einem „Ionic Spark“- oder Hitmaker-Champion",
+    "unlock": "Erf. St. 7 - 3 items on an Ionic Spark or Hitmaker champion",
     "ab": "Bumm-Bumm Peng-Peng",
     "mana": [
      30,
@@ -958,13 +958,13 @@
      "Pentakill",
      "Schnellschläger"
     ],
-    "unlock": "Erf. St. 7 - 4 unique Pentakill or Swiftstriker Champions",
+    "unlock": "Erf. St. 7 - 4 unique Pentakill or Swiftstriker champions",
     "ab": "Treppe zur Hölle",
     "mana": [
      0,
      50
     ],
-    "d": "Passive: Attacks deal %i:scaleAP% @v_40_60_500@ bonus magic damage.\\nActive: For 4 seconds, gain 80% Attack Speed, infinite range, and summon a sword with each attack. Afterwards, rain swords on the target, dealing %i:scaleAP% @v_180_270_2000@ to all enemies within 2 hexes, plus %i:scaleAP% @v_37_55_400@ magic damage to the target for each sword.",
+    "d": "Passiv: Angriffe verursachen %i:scaleAP% @v_40_60_500@ zusätzlichen magischen Schaden.\\nAktiv: Du erhältst 4 Sekunden lang 80% Angriffstempo, unendliche Reichweite und beschwörst mit jedem Angriff ein Schwert. Danach lässt du Schwerter auf das Ziel herabregnen, die allen Gegnern innerhalb von 2 Feldern %i:scaleAP% @v_180_270_2000@ zufügen. Zusätzlich erleidet das Ziel pro Schwert %i:scaleAP% @v_37_55_400@ magischen Schaden.",
     "v": {
      "v_40_60_500": [
       40,
@@ -989,7 +989,7 @@
     "role": "AP-Tank",
     "traits": [
      "K/DA",
-     "Bodyguard",
+     "Leibwächter",
      "Manager"
     ],
     "unlock": "",
@@ -1026,7 +1026,7 @@
      0,
      30
     ],
-    "d": "Passive: Attacks deal %i:scaleAP% @v_45_68_500@ bonus magic damage. All damage Locke deals to enemies is increased by 10% for each mark he has applied to them.\\nActive: Hurl 3 Soul Nails at the furthest enemy within 4 hexes, each dealing %i:scaleAP% @v_15_22_400@ magic damage and marking all enemies hit. Then, teleport to the enemy and deal %i:scaleAP% @v_150_225_2000@ magic damage.",
+    "d": "Passiv: Angriffe verursachen %i:scaleAP% @v_45_68_500@ zusätzlichen magischen Schaden. Jeder Schaden, den Locke Gegnern zufügt, wird für jede Marke, die er auf ihnen platziert hat, um 15% erhöht.\\nAktiv: Wirf 3 Seelennägel auf den am weitesten entfernten Gegner innerhalb von 4 Feldern. Jeder Nagel verursacht %i:scaleAP% @v_15_22_400@ magischen Schaden und markiert alle getroffenen Gegner. Teleportiere dich dann zu dem Gegner und füge ihm %i:scaleAP% @v_135_205_2000@ magischen Schaden zu.",
     "v": {
      "v_45_68_500": [
       45,
@@ -1038,9 +1038,9 @@
       22,
       400
      ],
-     "v_150_225_2000": [
-      150,
-      225,
+     "v_135_205_2000": [
+      135,
+      205,
       2000
      ]
     }
@@ -1051,7 +1051,7 @@
     "role": "AP-Zauberer",
     "traits": [
      "R&B",
-     "Arcanist"
+     "Arkanist"
     ],
     "unlock": "",
     "ab": "Blues-Kette",
@@ -1082,11 +1082,11 @@
      40,
      100
     ],
-    "d": "Passive: At 70% Health, transform into Dragon Form. While transformed, gain 300 max Health, 150% Attack Speed, and every 3rd attacks deals %i:scaleAP% @v_150_225_3000@ bonus magic damage in a 1 hex area.\\nActive: Gain %i:scaleHealth% %i:scaleAP% @v_360_410_1010@ Shield for 4 seconds.",
+    "d": "Passive: At 70% Health, transform into Dragon Form. While transformed, gain 250 max Health, 150% Attack Speed, and every 3rd attacks deals %i:scaleAP% @v_100_150_3000@ bonus magic damage in a 1 hex area.\\nActive: Gain %i:scaleHealth% %i:scaleAP% @v_360_410_1010@ Shield for 4 seconds.",
     "v": {
-     "v_150_225_3000": [
+     "v_100_150_3000": [
+      100,
       150,
-      225,
       3000
      ],
      "v_360_410_1010": [
@@ -1104,7 +1104,7 @@
      "Klassik",
      "Frontman"
     ],
-    "unlock": "Have enemies spend 300 seconds Captivated by Classical",
+    "unlock": "Enemies spend 275 seconds Captivated by Classical",
     "ab": "Dunkler Weg (Reprise)",
     "mana": [
      40,
@@ -1138,11 +1138,11 @@
      0,
      50
     ],
-    "d": "Passive: On cast or when hit, tumble and gain %i:scaleAP% 50% Durability for 2 seconds. (4 second cooldown)\\nActive: Gain demonic power, enhancing the next 3 attacks to deal %i:scaleAD% @v_175_265_2000@ + 2% of the target's max Health as physical damage.",
+    "d": "Passive: On cast or when hit, tumble and gain %i:scaleAP% 50% Durability for 2 seconds. (4 second cooldown)\\nActive: Gain demonic power, enhancing the next 3 attacks to deal %i:scaleAD% @v_165_250_2000@ physical damage + 1.5% of the target's max Health as true damage.",
     "v": {
-     "v_175_265_2000": [
-      175,
-      265,
+     "v_165_250_2000": [
+      165,
+      250,
       2000
      ]
     }
@@ -1188,11 +1188,11 @@
      0,
      60
     ],
-    "d": "Beschwört 30 Federn, die das Ziel treffen, jeweils %i:scaleAD% %i:scaleAP% @v_23_35_166@ normalen Schaden verursachen und die Rüstung um 1 verringern.",
+    "d": "Beschwört 30 Federn, die das Ziel treffen, jeweils %i:scaleAD% %i:scaleAP% @v_25_38_166@ normalen Schaden verursachen und die Rüstung um 1 verringern.",
     "v": {
-     "v_23_35_166": [
-      23,
-      35,
+     "v_25_38_166": [
+      25,
+      38,
       166
      ]
     }
@@ -1205,17 +1205,17 @@
      "True Damage",
      "Schlächter"
     ],
-    "unlock": "Erf. St. 7 - 7 unique star levels of True Damage or Slayer Champions",
+    "unlock": "Erf. St. 7 - 6 unique star levels of True Damage or Slayer champions",
     "ab": "Letzter Atemzug",
     "mana": [
      0,
      30
     ],
-    "d": "Sprint und stößt nach vorne und fügt Gegnern in einer geraden Linie %i:scaleAD% @v_165_250_1400@ normalen Schaden zu.\\nJede 3. Aktivierung schleudert das Ziel hoch und fügt ihm %i:scaleAD% @v_400_600_2500@ normalen Schaden zu. Schmetter es dann zu Boden und füge Gegnern innerhalb von 1 Feld(ern) %i:scaleAD% %i:scaleAP% @v_210_315_1700@ normalen Schaden zu.",
+    "d": "Sprint und stößt nach vorne und fügt Gegnern in einer geraden Linie %i:scaleAD% @v_180_270_1400@ normalen Schaden zu.\\nJede 3. Aktivierung schleudert das Ziel hoch und fügt ihm %i:scaleAD% @v_400_600_2500@ normalen Schaden zu. Schmetter es dann zu Boden und füge Gegnern innerhalb von 1 Feld(ern) %i:scaleAD% %i:scaleAP% @v_210_315_1700@ normalen Schaden zu.",
     "v": {
-     "v_165_250_1400": [
-      165,
-      250,
+     "v_180_270_1400": [
+      180,
+      270,
       1400
      ],
      "v_400_600_2500": [
@@ -1277,7 +1277,7 @@
      50,
      100
     ],
-    "d": "Spiele ein episches Solo, das %i:scaleHealth% %i:scaleAP% @v_544_629_2104@ Leben wiederherstellt und eine Zone von 2 Feldern erschafft, die Gegner darin jede Sekunde %i:scaleAP% @v_25_40_1250@ magischen Schaden zufügt. Die letzte Note fügt Gegnern in der Zone %i:scaleAP% @v_100_150_2400@ magischen Schaden zu und verlangsamt sie 4 Sekunden lang um 20.\\nVerlangsamung: Verringert das Angriffstempo",
+    "d": "Spiele ein episches Solo, das %i:scaleHealth% %i:scaleAP% @v_544_629_2104@ Leben wiederherstellt und eine Zone von 2 Feldern erschafft, die Gegnern jede Sekunde %i:scaleAP% @v_25_40_1250@ magischen Schaden zufügt. Die letzte Note fügt Gegnern darin %i:scaleAP% @v_100_150_2400@ Schaden zu und verlangsamt sie 4 Sekunden lang um 20.\\nVerlangsamung: Verringert das Angriffstempo",
     "v": {
      "v_544_629_2104": [
       544,
@@ -1305,16 +1305,16 @@
      "Zugabe"
     ],
     "unlock": "",
-    "ab": "Girl, Put Your Records On (Your Head)",
+    "ab": "Mädchen, leg deine Platten auf (deinen Kopf)",
     "mana": [
      0,
      20
     ],
-    "d": "Wirft eine rotierende Scheibe, die %i:scaleAP% @v_175_265_1400@ magischen Schaden verursacht und auf dem Kopf des Ziels stapelbar ist, wodurch dessen Magieresistenz jede Sekunde um 1 verringert wird.\\nBei 5 Scheiben fällt der Stapel um und fügt dem Ziel 40% des Gesamtschadens der gestapelten Scheiben und weiteren 4 Gegnern in der Nähe 40% Schaden zu.\\nWenn ein Gegner mit einer Scheibe stirbt, springt sie auf einen anderen Gegner über.",
+    "d": "Wirft eine rotierende Scheibe, die %i:scaleAP% @v_185_280_1400@ magischen Schaden verursacht und auf dem Kopf des Ziels stapelbar ist, wodurch dessen Magieresistenz jede Sekunde um 1 verringert wird.\\nBei 5 Scheiben fällt der Stapel um und fügt dem Ziel 40% des Gesamtschadens der gestapelten Scheiben und weiteren 4 Gegnern in der Nähe 40% Schaden zu.\\nWenn ein Gegner mit einer Scheibe stirbt, springt sie auf einen anderen Gegner über.",
     "v": {
-     "v_175_265_1400": [
-      175,
-      265,
+     "v_185_280_1400": [
+      185,
+      280,
       1400
      ]
     }
@@ -1360,12 +1360,12 @@
      60,
      120
     ],
-    "d": "Heilung: %i:scaleAP% @v_475_625_750@ Wirft Bandagen auf die 4 nächsten Gegner ab, die %i:scaleAP% @v_100_150_240@ magischen Schaden verursachen und ihre Ziele 1.25 Sekunden lang betäuben.",
+    "d": "Heilung: %i:scaleAP% @v_450_575_725@ Wirft Bandagen auf die 4 nächsten Gegner ab, die %i:scaleAP% @v_100_150_240@ magischen Schaden verursachen und ihre Ziele 1.25 Sekunden lang betäuben.",
     "v": {
-     "v_475_625_750": [
-      475,
-      625,
-      750
+     "v_450_575_725": [
+      450,
+      575,
+      725
      ],
      "v_100_150_240": [
       100,
@@ -1439,17 +1439,22 @@
      0,
      30
     ],
-    "d": "Heile %i:scaleAP% @v_100_150_200@ und tritt einen Snack zum am weitesten entfernten Gegner innerhalb von 3 Feldern. Springe hin und verursache in einem Bereich von 1 Feldern %i:scaleAD% @v_100_150_240@ normalen Schaden.\\nMampfe ihn dann, um für die nächsten 3 Angriffe 200% Angriffstempo zu erhalten und sie durch Hiebe zu ersetzen, die %i:scaleAD% @v_100_150_240@ normalen Schaden verursachen.",
+    "d": "Heile %i:scaleAP% @v_100_150_200@ und tritt einen Snack zum am weitesten entfernten Gegner innerhalb von 3 Feldern. Springe hin und verursache in einem Bereich von 1 Feldern %i:scaleAD% @v_95_145_230@ normalen Schaden.\\nMampfe ihn dann, um für die nächsten 3 Angriffe 200% Angriffstempo zu erhalten und sie durch Hiebe zu ersetzen, die %i:scaleAD% @v_80_120_190@ normalen Schaden verursachen.",
     "v": {
      "v_100_150_200": [
       100,
       150,
       200
      ],
-     "v_100_150_240": [
-      100,
-      150,
-      240
+     "v_95_145_230": [
+      95,
+      145,
+      230
+     ],
+     "v_80_120_190": [
+      80,
+      120,
+      190
      ]
     }
    },
@@ -1462,22 +1467,22 @@
      "Trickshot"
     ],
     "unlock": "",
-    "ab": "You Spin Me Round (Like An Axe)",
+    "ab": "Du drehst mich herum (wie eine Axt)",
     "mana": [
      0,
      60
     ],
-    "d": "Throw a massive spinning record at the target, dealing %i:scaleAD% @v_140_210_340@ physical damage. The record leaves behind a vortex that lasts 3 seconds and deals %i:scaleAD% %i:scaleAP% @v_115_175_285@ physical damage per second split amongst enemies within 1 hex.",
+    "d": "Wirft eine riesige, sich drehende Schallplatte auf das Ziel, die %i:scaleAD% @v_155_235_370@ normalen Schaden verursacht. Die Schallplatte hinterlässt einen Wirbel, der 3 Sekunden lang bestehen bleibt und %i:scaleAD% %i:scaleAP% @v_130_200_310@ normalen Schaden pro Sekunde verursacht. Er wird zwischen Gegnern innerhalb von 1 Feld aufgeteilt.",
     "v": {
-     "v_140_210_340": [
-      140,
-      210,
-      340
+     "v_155_235_370": [
+      155,
+      235,
+      370
      ],
-     "v_115_175_285": [
-      115,
-      175,
-      285
+     "v_130_200_310": [
+      130,
+      200,
+      310
      ]
     }
    },
@@ -1488,7 +1493,7 @@
     "traits": [
      "True Damage",
      "Moloch",
-     "Prodigy"
+     "Wunderkind"
     ],
     "unlock": "",
     "ab": "Dreh die Zeit zurück",
@@ -1496,12 +1501,12 @@
      30,
      120
     ],
-    "d": "Passive: Rewind 30% of damage taken over 4 seconds.\\nActive: Instantly heal all damage being rewinded + %i:scaleAP% @v_150_180_250@ Health. Then whack the current target for %i:scaleAP% @v_230_345_675@ magic damage.",
+    "d": "Passive: Rewind 30% of damage taken over 4 seconds.\\nActive: Instantly heal all damage being rewinded + %i:scaleAP% @v_125_150_200@ Health. Then whack the current target for %i:scaleAP% @v_230_345_675@ magic damage.",
     "v": {
-     "v_150_180_250": [
+     "v_125_150_200": [
+      125,
       150,
-      180,
-      250
+      200
      ],
      "v_230_345_675": [
       230,
@@ -1516,7 +1521,7 @@
     "role": "AP-Kämpfer",
     "traits": [
      "K/DA",
-     "Renegade"
+     "Renegat"
     ],
     "unlock": "3 K/DA- oder Renegat-Champions",
     "ab": "Böse",
@@ -1524,17 +1529,17 @@
      0,
      40
     ],
-    "d": "Passiv: Zu Kampfbeginn teleportierst du dich hinter dein aktuelles Ziel und wirst dann für 15 Sekunden verhüllt. Solange du verhüllt bist, kannst du nicht von Angriffen anvisiert werden und erhältst 50% Durchhaltevermögen, wenn mindestens 3 andere Verbündete am Leben sind.\\nAktiv: Fügt dem aktuellen Ziel %i:scaleAP% @v_280_420_700@ magischen Schaden und anderen Gegnern in einem Halbkreis %i:scaleAP% @v_120_180_300@ magischen Schaden zu. Ignoriere 40% der gegnerischen Magieresistenz.",
+    "d": "Passiv: Zu Kampfbeginn teleportierst du dich hinter dein aktuelles Ziel und wirst dann für 15 Sekunden verhüllt. Solange du verhüllt bist, kannst du nicht von Angriffen anvisiert werden und erhältst 50% Durchhaltevermögen, wenn mindestens 3 andere Verbündete am Leben sind.\\nAktiv: Fügt dem aktuellen Ziel %i:scaleAP% @v_230_345_550@ magischen Schaden und anderen Gegnern in einem Halbkreis %i:scaleAP% @v_90_135_215@ magischen Schaden zu. Ignoriert 40% der gegnerischen Magieresistenz.",
     "v": {
-     "v_280_420_700": [
-      280,
-      420,
-      700
+     "v_230_345_550": [
+      230,
+      345,
+      550
      ],
-     "v_120_180_300": [
-      120,
-      180,
-      300
+     "v_90_135_215": [
+      90,
+      135,
+      215
      ]
     }
    },
@@ -1552,7 +1557,7 @@
      50,
      120
     ],
-    "d": "Gain %i:scaleHealth% %i:scaleAP% @v_435_510_610@ Shield for 4 seconds. Stun for 1 second and deal %i:scaleAP% @v_120_180_300@ magic damage to the enemy that's dealt the most damage this combat.",
+    "d": "Erhält 4 Sekunden lang einen Schild in Höhe von %i:scaleHealth% %i:scaleAP% @v_435_510_610@. Betäubt 1 Sekunde lang und verursacht %i:scaleAP% @v_120_180_300@ magischen Schaden bei dem Gegner, der in diesem Kampf den meisten Schaden verursacht hat.",
     "v": {
      "v_435_510_610": [
       435,
@@ -1572,7 +1577,7 @@
     "role": "AD-Tank",
     "traits": [
      "HEARTSTEEL",
-     "Bodyguard"
+     "Leibwächter"
     ],
     "unlock": "",
     "ab": "In deinem Haus!",
@@ -1613,12 +1618,12 @@
      0,
      30
     ],
-    "d": "Passiv: Feuert alle 3 Angriffe 3 Raketen ab, die %i:scaleAD% %i:scaleAP% @v_42_63_100@ normalen Schaden verursachen.\\nAktiv: Erhält für den Rest des Kampfes 15% Angriffstempo.",
+    "d": "Passiv: Feuert alle 3 Angriffe 3 Raketen ab, die %i:scaleAD% %i:scaleAP% @v_39_59_95@ normalen Schaden verursachen.\\nAktiv: Erhält für den Rest des Kampfes 15% Angriffstempo.",
     "v": {
-     "v_42_63_100": [
-      42,
-      63,
-      100
+     "v_39_59_95": [
+      39,
+      59,
+      95
      ]
     }
    },
@@ -1628,7 +1633,7 @@
     "role": "AP-Zauberer",
     "traits": [
      "Composer",
-     "Prodigy"
+     "Wunderkind"
     ],
     "unlock": "",
     "ab": "Verbotene Kakofonie",
@@ -1636,17 +1641,17 @@
      0,
      50
     ],
-    "d": "Feuere 2 Sekunden lang einen Strahl auf das Ziel, der %i:scaleAP% @v_380_570_960@ magischen Schaden verursacht. Die Energie explodiert 4-mal rhythmisch, belegt Gegner in einem Bereich von 1 Feldern für 4 Sekunden mit Magiefraktur in Höhe von 30 % und verursacht jedes Mal %i:scaleAP% @v_40_60_110@ magischen Schaden.\\nMagiefraktur: Verringert die Magieresistenz",
+    "d": "Feuere 2 Sekunden lang einen Strahl auf das Ziel, der %i:scaleAP% @v_260_390_625@ magischen Schaden verursacht. Die Energie explodiert 4-mal rhythmisch, belegt Gegner in einem Bereich von 1 Feldern für 4 Sekunden mit Magiefraktur in Höhe von 30 % und verursacht jedes Mal %i:scaleAP% @v_36_54_86@ magischen Schaden.\\nMagiefraktur: Verringert die Magieresistenz",
     "v": {
-     "v_380_570_960": [
-      380,
-      570,
-      960
+     "v_260_390_625": [
+      260,
+      390,
+      625
      ],
-     "v_40_60_110": [
-      40,
-      60,
-      110
+     "v_36_54_86": [
+      36,
+      54,
+      86
      ]
     }
    },
@@ -1664,17 +1669,17 @@
      0,
      20
     ],
-    "d": "Trifft das Ziel, fügt ihm %i:scaleAD% %i:scaleAP% @v_165_245_400@ normalen Schaden zu und markiert es. Wenn es markiert sind, detoniert stattdessen die Markierunggezündet, was %i:scaleAD% %i:scaleAP% @v_247p5_367p5_600@ Schaden verursacht.\\nBei Detonation oder dem Töten eines markierten Gegners erhältst du bis zum Ende des Kampfes 8% Schadenssteigerung.",
+    "d": "Trifft das Ziel, fügt ihm %i:scaleAD% %i:scaleAP% @v_185_275_445@ normalen Schaden zu und markiert es. Wenn es markiert sind, detoniert stattdessen die Markierunggezündet, was %i:scaleAD% %i:scaleAP% @v_277p5_412p5_667p5@ Schaden verursacht.\\nBei Detonation oder dem Töten eines markierten Gegners erhältst du bis zum Ende des Kampfes 8% Schadenssteigerung.",
     "v": {
-     "v_165_245_400": [
-      165,
-      245,
-      400
+     "v_185_275_445": [
+      185,
+      275,
+      445
      ],
-     "v_247p5_367p5_600": [
-      247.5,
-      367.5,
-      600
+     "v_277p5_412p5_667p5": [
+      277.5,
+      412.5,
+      667.5
      ]
     }
    },
@@ -1684,7 +1689,7 @@
     "role": "AP-Tank",
     "traits": [
      "Rock",
-     "Arcanist",
+     "Arkanist",
      "Frontman"
     ],
     "unlock": "",
@@ -1731,12 +1736,12 @@
      0,
      30
     ],
-    "d": "Spike a volleyball at target, dealing %i:scaleAP% @v_300_450_720@ magic damage. It bounces to an enemy behind them with the least items, dealing %i:scaleAP% @v_110_165_265@ magic damage.",
+    "d": "Spike a volleyball at target, dealing %i:scaleAP% @v_330_495_790@ magic damage. It bounces to an enemy behind them with the least items, dealing %i:scaleAP% @v_110_165_265@ magic damage.",
     "v": {
-     "v_300_450_720": [
-      300,
-      450,
-      720
+     "v_330_495_790": [
+      330,
+      495,
+      790
      ],
      "v_110_165_265": [
       110,
@@ -1751,7 +1756,7 @@
     "role": "AD-Tank",
     "traits": [
      "Ionic Spark",
-     "Bodyguard"
+     "Leibwächter"
     ],
     "unlock": "2-Sterne-Annie mit 1 Gegenstand",
     "ab": "Girl's Best Friend",
@@ -1759,12 +1764,12 @@
      40,
      100
     ],
-    "d": "Passiv: Unter 30% Leben oder wenn deine stärkste Annie stirbt, wirst du wütend und erhältst 300 max. Leben, 100% Angriffsschaden und 200% Angriffstempo. Diese Boni klingen über 6 Sekunden ab.\\nAktiv: Du erhältst 4 Sekunden lang einen Schild in Höhe von %i:scaleAP% @v_500_600_750@. Wenn wütend, wird das abklingende Angriffstempo zurückgesetzt.",
+    "d": "Passiv: Unter 30% Leben oder wenn deine stärkste Annie stirbt, wirst du wütend und erhältst 300 max. Leben, 100% Angriffsschaden und 200% Angriffstempo. Diese Boni klingen über 6 Sekunden ab.\\nAktiv: Du erhältst 4 Sekunden lang einen Schild in Höhe von %i:scaleAP% @v_550_650_800@. Wenn wütend, wird das abklingende Angriffstempo zurückgesetzt.",
     "v": {
-     "v_500_600_750": [
-      500,
-      600,
-      750
+     "v_550_650_800": [
+      550,
+      650,
+      800
      ]
     }
    },
@@ -1783,12 +1788,12 @@
      0,
      40
     ],
-    "d": "Summon 10 swords around the target. After a brief delay, impale them, dealing %i:scaleAD% %i:scaleAP% @v_39_59_93@ physical damage per sword.\\nEvery 8 takedowns, gain a permanent sword. (Current Takedowns: 0)",
+    "d": "Summon 10 swords around the target. After a brief delay, impale them, dealing %i:scaleAD% %i:scaleAP% @v_31_47_74@ physical damage per sword.\\nEvery 8 takedowns, gain a permanent sword. (Current Takedowns: 0)",
     "v": {
-     "v_39_59_93": [
-      39,
-      59,
-      93
+     "v_31_47_74": [
+      31,
+      47,
+      74
      ]
     }
    },
@@ -1798,7 +1803,7 @@
     "role": "AP-Tank",
     "traits": [
      "Ionic Spark",
-     "Arcanist",
+     "Arkanist",
      "Moloch"
     ],
     "unlock": "",
@@ -1807,12 +1812,12 @@
      20,
      80
     ],
-    "d": "Du erhältst 4 Sekunden lang einen Schild in Höhe von %i:scaleAP% @v_350_425_600@. Entfessle einen Feuerkegel, der Gegnern %i:scaleAP% @v_80_120_180@ magischen Schaden, 1 % Verbrennung und Verwundung für 4 Sekunden zufügt.",
+    "d": "Du erhältst 4 Sekunden lang einen Schild in Höhe von %i:scaleAP% @v_350_400_550@. Entfessle einen Feuerkegel, der Gegnern %i:scaleAP% @v_80_120_180@ magischen Schaden, 1 % Verbrennung und Verwundung für 4 Sekunden zufügt.",
     "v": {
-     "v_350_425_600": [
+     "v_350_400_550": [
       350,
-      425,
-      600
+      400,
+      550
      ],
      "v_80_120_180": [
       80,
@@ -1835,12 +1840,12 @@
      20,
      60
     ],
-    "d": "Die nächsten 6 Angriffe haben %i:scaleAP% 50% Angriffstempo und werden durch Salven aus 3 Pfeilen ersetzt. Jeder Pfeil verursacht %i:scaleAD% @v_33_50_75@ normalen Schaden.",
+    "d": "Die nächsten 6 Angriffe haben %i:scaleAP% 50% Angriffstempo und werden durch Salven aus 3 Pfeilen ersetzt. Jeder Pfeil verursacht %i:scaleAD% @v_35_53_80@ normalen Schaden.",
     "v": {
-     "v_33_50_75": [
-      33,
-      50,
-      75
+     "v_35_53_80": [
+      35,
+      53,
+      80
      ]
     }
    },
@@ -1858,17 +1863,17 @@
      0,
      40
     ],
-    "d": "Passive: When the target dies, hookshot to the next one and deal %i:scaleAD% @v_90_135_210@ physical damage to them.\\nActive: Do a sweeping kick, dealing %i:scaleAD% %i:scaleAP% @v_260_390_600@ physical damage in a cone.",
+    "d": "Passive: When the target dies, hookshot to the next one and deal %i:scaleAD% @v_90_135_210@ physical damage to them.\\nActive: Do a sweeping kick, dealing %i:scaleAD% %i:scaleAP% @v_240_360_585@ physical damage in a cone.",
     "v": {
      "v_90_135_210": [
       90,
       135,
       210
      ],
-     "v_260_390_600": [
-      260,
-      390,
-      600
+     "v_240_360_585": [
+      240,
+      360,
+      585
      ]
     }
    },
@@ -1886,17 +1891,17 @@
      0,
      35
     ],
-    "d": "Fire a missile that marks the target, then fire a second blast that detonates it. The explosion deals %i:scaleAD% %i:scaleAP% @v_220_330_500@ physical damage to the target and %i:scaleAD% %i:scaleAP% @v_72p6_108p9_165@ physical damage to enemies within 1 hex.\\nHeartsteel Upgrade: Detonation deals 25% more damage. Every 3rd cast hits enemies in a 2 hex radius instead.",
+    "d": "Fire a missile that marks the target, then fire a second blast that detonates it. The explosion deals %i:scaleAD% %i:scaleAP% @v_240_360_545@ physical damage to the target and %i:scaleAD% %i:scaleAP% @v_79p2_118p8_179p85@ physical damage to enemies within 1 hex.\\nHeartsteel Upgrade: Detonation deals 25% more damage. Every 3rd cast hits enemies in a 2 hex radius instead.",
     "v": {
-     "v_220_330_500": [
-      220,
-      330,
-      500
+     "v_240_360_545": [
+      240,
+      360,
+      545
      ],
-     "v_72p6_108p9_165": [
-      72.6,
-      108.9,
-      165
+     "v_79p2_118p8_179p85": [
+      79.2,
+      118.8,
+      179.85
      ]
     }
    },
@@ -1937,7 +1942,7 @@
      "Frontman"
     ],
     "unlock": "",
-    "ab": "Smash-Hit Royalties",
+    "ab": "Riesenhit-Tantiemen",
     "mana": [
      30,
      90
@@ -1962,7 +1967,7 @@
     "role": "AP-Kämpfer",
     "traits": [
      "EDM",
-     "Bodyguard",
+     "Leibwächter",
      "Schnellschläger"
     ],
     "unlock": "",
@@ -1991,7 +1996,7 @@
     "role": "AP-Zauberer",
     "traits": [
      "Pentakill",
-     "Arcanist"
+     "Arkanist"
     ],
     "unlock": "",
     "ab": "Requiem",
@@ -2023,7 +2028,7 @@
      0,
      20
     ],
-    "d": "Dash to a nearby hex, then fire 2 shots at target that each deal %i:scaleAD% %i:scaleAP% @v_88_132_198@ physical damage.",
+    "d": "Springe zu einem Feld in der Nähe und feuere dann 2 Schüsse auf das Ziel ab, die jeweils %i:scaleAD% %i:scaleAP% @v_88_132_198@ normalen Schaden verursachen.",
     "v": {
      "v_88_132_198": [
       88,
@@ -2040,13 +2045,13 @@
      "Hyperpop",
      "Choreograf"
     ],
-    "unlock": "Lasse deine Hyperpop-Champions 10-mal aktivieren, während das Attribut aktiv ist",
-    "ab": "Hype Girl",
+    "unlock": "Have your Hyperpop champions cast 10 times with the trait active",
+    "ab": "Hype-Girl",
     "mana": [
      0,
      40
     ],
-    "d": "Rotate between 2 effects:\\nWhimsy!: Grant an ally %i:scaleAP% @v_80_90_100@% decaying Attack Speed and %i:scaleAP% @v_20_30_45@ magic damage on hit for 5 seconds.\\nWild Growth: Increase an ally's Health by %i:scaleAP% @v_175_260_395@ for 5 seconds. While active, adjacent enemies take %i:scaleAP% @v_20_30_45@ magic damage each second.",
+    "d": "Wechsle zwischen 2 Effekten:\\nLaune!: Gewährt einem Verbündeten für 5 Sekunden %i:scaleAP% @v_80_90_100@% abfallendes Angriffstempo und %i:scaleAP% @v_20_30_45@ magischen Schaden bei Treffern.\\nWildwuchs: Erhöht das Leben eines Verbündeten 5 Sekunden lang um %i:scaleAP% @v_175_260_395@. Solange aktiv, erleiden angrenzende Gegner jede Sekunde %i:scaleAP% @v_20_30_45@ magischen Schaden.",
     "v": {
      "v_80_90_100": [
       80,
@@ -2071,7 +2076,7 @@
     "role": "AP-Zauberer",
     "traits": [
      "Ionic Spark",
-     "Prodigy"
+     "Wunderkind"
     ],
     "unlock": "",
     "ab": "Lux Lux-Strahl!",
@@ -2079,17 +2084,17 @@
      0,
      40
     ],
-    "d": "Wirf ein Prisma in die Luft und beschieße es dann mit einem Lichtstrahl. Der Strahl teilt sich, fügt dem Ziel %i:scaleAP% @v_330_500_800@ magischen Schaden und einem weiteren Gegner in der Nähe %i:scaleAP% @v_170_255_425@ magischen Schaden zu. Für jeden, der stirbt, erhältst du 8 Mana.",
+    "d": "Wirf ein Prisma in die Luft und beschieße es dann mit einem Lichtstrahl. Der Strahl teilt sich, fügt dem Ziel %i:scaleAP% @v_300_450_675@ magischen Schaden und einem weiteren Gegner in der Nähe %i:scaleAP% @v_160_240_360@ magischen Schaden zu. Für jeden, der stirbt, erhältst du 8 Mana.",
     "v": {
-     "v_330_500_800": [
-      330,
-      500,
-      800
+     "v_300_450_675": [
+      300,
+      450,
+      675
      ],
-     "v_170_255_425": [
-      170,
-      255,
-      425
+     "v_160_240_360": [
+      160,
+      240,
+      360
      ]
     }
    },
@@ -2099,7 +2104,7 @@
     "role": "AP-Tank",
     "traits": [
      "Klassik",
-     "Bodyguard"
+     "Leibwächter"
     ],
     "unlock": "",
     "ab": "Mäzen der Künste",
@@ -2132,7 +2137,7 @@
     "role": "AD-Kämpfer",
     "traits": [
      "True Damage",
-     "Renegade"
+     "Renegat"
     ],
     "unlock": "",
     "ab": "Zufällige Wiedergabeliste",
@@ -2163,12 +2168,12 @@
      "Choreograf"
     ],
     "unlock": "",
-    "ab": "Hostile Measures",
+    "ab": "Feindselige Maßnahmen",
     "mana": [
      0,
      45
     ],
-    "d": "Feuert einen Musiktakt auf das Ziel und belegt es mit 2 Steigerungen von „Toxin“. „Toxin“-Steigerungen verursachen über 15 Sekunden %i:scaleAP% @v_160_240_580@ magischen Schaden. Außerdem erhalten 2 Gegner in der Nähe, vorrangig nicht vergiftete, 1 Steigerung „Toxin“.\\nGegner werden bei der Anwendung von „Toxin“ für 3 Sekunden gefesselt. Die Dauer erhöht sich auf 6 Sekunden, wenn ihre Sternenwertung niedriger oder gleich der von Renata ist.\\nGefesselte Gegner gewähren Klassik-Champions Boni.",
+    "d": "Feuert einen Musiktakt auf das Ziel und belegt es mit 2 Steigerungen von „Toxin“. „Toxin“-Steigerungen verursachen über 15 Sekunden %i:scaleAP% @v_160_240_580@ magischen Schaden. Außerdem erhalten 2 Gegner in der Nähe, vorrangig nicht vergiftete, 1 Steigerung „Toxin“.\\nGegner werden bei der Anwendung von „Toxin“ für 3 Sekunden gefesselt. Die Dauer erhöht sich auf 9 Sekunden, wenn ihre Sternenwertung niedriger als die von Renata ist.\\nGefesselte Gegner gewähren Klassik-Champions Boni.",
     "v": {
      "v_160_240_580": [
       160,
@@ -2191,7 +2196,7 @@
      60,
      110
     ],
-    "d": "Grow larger, gaining %i:scaleAP% @v_180_230_325@ max Health for the rest of combat. Then spin, dealing %i:scaleHealth% %i:scaleAD% @v_176_221_316@ physical damage to adjacent enemies.",
+    "d": "Du wächst und erhältst für den Rest des Kampfes %i:scaleAP% @v_180_230_325@ max. Leben. Dann drehst du dich und verursachst %i:scaleHealth% %i:scaleAD% @v_176_221_316@ normalen Schaden an angrenzenden Gegnern.",
     "v": {
      "v_180_230_325": [
       180,
@@ -2211,21 +2216,21 @@
     "role": "AD-Zauberer",
     "traits": [
      "Klassik",
-     "Renegade",
+     "Renegat",
      "Trickshot"
     ],
-    "unlock": "2 items on a Classical, Renegade, or Trickshot Champion",
-    "ab": "Bullets N' Roses",
+    "unlock": "2 items on a Classical, Renegade, or Trickshot champion",
+    "ab": "Kugeln und Rosen",
     "mana": [
      0,
-     60
+     55
     ],
-    "d": "Passiv: Wenn Samira einen Gegner kritisch trifft, wird dieser 3 Sekunden lang gefesselt.\\nAktiv: Feuert 10 Kugeln auf das aktuelle Ziel, die jeweils %i:scaleAD% %i:scaleAP% @v_39_59_89@ Schaden verursachen.\\nGefesselte Gegner gewähren Boni für Classic-Champions.",
+    "d": "Passiv: Wenn Samira einen Gegner kritisch trifft, wird dieser 3 Sekunden lang gefesselt.\\nAktiv: Feuert 10 Kugeln auf das aktuelle Ziel, die jeweils %i:scaleAD% %i:scaleAP% @v_42_48_95@ Schaden verursachen.\\nGefesselte Gegner gewähren Boni für Classic-Champions.",
     "v": {
-     "v_39_59_89": [
-      39,
-      59,
-      89
+     "v_42_48_95": [
+      42,
+      48,
+      95
      ]
     }
    },
@@ -2242,12 +2247,12 @@
      0,
      50
     ],
-    "d": "Indie: Release a stream of notes at the target while posing for the fans, dealing %i:scaleAP% @v_600_900_1350@ magic damage over 2.5 seconds.\\nRising Star: Release bonus notes at nearby enemies.\\nSuperstar: Toss high notes at every enemy.",
+    "d": "Indie: Entfesselt beim Posieren für die Fans einen Strom aus Noten auf das Ziel und fügt ihm über 2,5 Sekunden %i:scaleAP% @v_550_825_1240@ magischen Schaden zu.\\nAufgehender Stern: Entfesselt zusätzliche Noten auf Gegner in der Nähe.\\nSuperstar: Beschießt jeden Gegner mit hohen Noten.",
     "v": {
-     "v_600_900_1350": [
-      600,
-      900,
-      1350
+     "v_550_825_1240": [
+      550,
+      825,
+      1240
      ]
     }
    },
@@ -2259,7 +2264,7 @@
      "Hyperpop",
      "Hitmaker"
     ],
-    "unlock": "Erziele 5 Kills, während Hyperpop aktiv ist",
+    "unlock": "Get 5 kills with Hyperpop active",
     "ab": "Headbanger",
     "mana": [
      0,
@@ -2326,7 +2331,7 @@
      0,
      3
     ],
-    "d": "Passive: Every 3rd attack is replaced with a rock that deals %i:scaleAD% @v_120_180_270@ physical damage and grants Gnar %i:scaleAP% 9% Attack Speed.",
+    "d": "Passiv: Jeder 3. Angriff wird durch einen Fels ersetzt, der %i:scaleAD% @v_120_180_270@ normalen Schaden verursacht und Gnar %i:scaleAP% 9% Angriffstempo gewährt.",
     "v": {
      "v_120_180_270": [
       120,
@@ -2344,7 +2349,7 @@
      "Schlächter"
     ],
     "unlock": "",
-    "ab": "Blade Sonata",
+    "ab": "Klingensonate",
     "mana": [
      0,
      40
@@ -2392,7 +2397,7 @@
     "role": "AP-Tank",
     "traits": [
      "True Damage",
-     "Bodyguard"
+     "Leibwächter"
     ],
     "unlock": "",
     "ab": "Elektroschock",
@@ -2400,12 +2405,12 @@
      0,
      0
     ],
-    "d": "Passive: Reduce all incoming damage by %i:scaleAP% @v_12_15_19@. Every second, zap adjacent enemies, dealing %i:scaleAP% @v_12_18_30@ magic damage.",
+    "d": "Passive: Reduce all incoming damage by %i:scaleAP% @v_13_16_21@. Every second, zap adjacent enemies, dealing %i:scaleAP% @v_12_18_30@ magic damage.",
     "v": {
-     "v_12_15_19": [
-      12,
-      15,
-      19
+     "v_13_16_21": [
+      13,
+      16,
+      21
      ],
      "v_12_18_30": [
       12,
@@ -2428,12 +2433,12 @@
      40,
      90
     ],
-    "d": "Passiv: Dein stärkster Kobuko erhält zusätzliches Leben in Höhe von 100% deines Hyperpop-Hypes. (Aktuelles Leben: 0)\\nAktiv: Verbessert für 8 Sekunden, um jede Sekunde %i:scaleHealth% %i:scaleAP% @v_57_67_92@ zu heilen.",
+    "d": "Passiv: Dein stärkster Kobuko erhält zusätzliches Leben in Höhe von 85% deines Hyperpop-Hypes. (Aktuelles Leben: 0)\\nAktiv: Verbessert für 8 Sekunden, um jede Sekunde %i:scaleHealth% %i:scaleAP% @v_42_52_67@ zu heilen.",
     "v": {
-     "v_57_67_92": [
-      57,
-      67,
-      92
+     "v_42_52_67": [
+      42,
+      52,
+      67
      ]
     }
    },
@@ -2443,7 +2448,7 @@
     "role": "AP-Tank",
     "traits": [
      "K/DA",
-     "Bodyguard"
+     "Leibwächter"
     ],
     "unlock": "",
     "ab": "Wir lieben euch, K/DA",
@@ -2451,7 +2456,7 @@
      40,
      100
     ],
-    "d": "Heal %i:scaleAP% @v_280_350_550@ Health and strike the target, dealing %i:scaleAP% @v_120_180_270@ magic damage to enemies in a 1 Hex circle and 10% Weakening them for 5 seconds.\\nWeaken: Reduce Damage Dealt",
+    "d": "Du heilst %i:scaleAP% @v_280_350_550@ Leben und schlägst auf das Ziel ein, wodurch du Gegnern in einem Umkreis von 1 Feld %i:scaleAP% @v_120_180_270@ magischen Schaden zufügst und sie 5 Sekunden lang um 10 % schwächst.\\nSchwächung: Verringert den verursachten Schaden",
     "v": {
      "v_280_350_550": [
       280,
@@ -2472,7 +2477,7 @@
     "traits": [
      "K/DA",
      "Zugabe",
-     "Prodigy"
+     "Wunderkind"
     ],
     "unlock": "",
     "ab": "K/DA Fan Club",
@@ -2480,12 +2485,12 @@
      0,
      40
     ],
-    "d": "Convene the K/DA fan club, throwing 3 confetti streams at target that each deal %i:scaleAP% @v_75_115_175@ magic damage. If they kill, permanently gain 1% Ability Power.\\nCurrent Bonus: 0 Ability Power",
+    "d": "Rufe den K/DA-Fanclub zusammen und wirf 3 Konfettiregen auf das Ziel, die jeweils %i:scaleAP% @v_70_105_155@ magischen Schaden verursachen. Wenn sie einen Kill erzielen, erhältst du permanent 1% Fähigkeitsstärke.\\nAktueller Bonus: 0 Fähigkeitsstärke",
     "v": {
-     "v_75_115_175": [
-      75,
-      115,
-      175
+     "v_70_105_155": [
+      70,
+      105,
+      155
      ]
     }
    },
@@ -2573,17 +2578,17 @@
      30,
      70
     ],
-    "d": "Fire a hail of arrows, dealing %i:scaleAD% %i:scaleAP% @v_260_390_590@ physical damage to the target and %i:scaleAD% %i:scaleAP% @v_130_195_295@ damage to adjacent enemies. 20% Slow them for 4 seconds.\\nSlow: Reduce Attack Speed",
+    "d": "Feuert einen Pfeilhagel ab, der dem Ziel %i:scaleAD% %i:scaleAP% @v_275_415_620@ normalen Schaden und angrenzenden Gegnern %i:scaleAD% %i:scaleAP% @v_137p5_207p5_310@ Schaden zufügt. Verlangsamt sie 4 Sekunden lang um 20 %.\\nVerlangsamung: Verringert das Angriffstempo",
     "v": {
-     "v_260_390_590": [
-      260,
-      390,
-      590
+     "v_275_415_620": [
+      275,
+      415,
+      620
      ],
-     "v_130_195_295": [
-      130,
-      195,
-      295
+     "v_137p5_207p5_310": [
+      137.5,
+      207.5,
+      310
      ]
     }
    },
@@ -2616,7 +2621,7 @@
     "role": "AP-Schütze",
     "traits": [
      "Hyperpop",
-     "Arcanist",
+     "Arkanist",
      "Schnellschläger"
     ],
     "unlock": "",
@@ -2625,22 +2630,22 @@
      0,
      50
     ],
-    "d": "Passiv: Angriffe verursachen %i:scaleAP% @v_40_60_90@ zusätzlichen magischen Schaden.\\nAktiv: Du wirfst eine Bombe auf das Ziel, die ihm %i:scaleAP% @v_180_270_405@ magischen Schaden und angrenzenden Gegnern %i:scaleAP% @v_80_120_180@ magischen Schaden zufügt.",
+    "d": "Passiv: Angriffe verursachen %i:scaleAP% @v_40_60_90@ zusätzlichen magischen Schaden.\\nAktiv: Du wirfst eine Bombe auf das Ziel, die ihm %i:scaleAP% @v_155_235_355@ magischen Schaden und angrenzenden Gegnern %i:scaleAP% @v_70_105_160@ magischen Schaden zufügt.",
     "v": {
      "v_40_60_90": [
       40,
       60,
       90
      ],
-     "v_180_270_405": [
-      180,
-      270,
-      405
+     "v_155_235_355": [
+      155,
+      235,
+      355
      ],
-     "v_80_120_180": [
-      80,
-      120,
-      180
+     "v_70_105_160": [
+      70,
+      105,
+      160
      ]
     }
    },
@@ -2650,7 +2655,7 @@
     "role": "AP-Zauberer",
     "traits": [
      "Beach-Pop",
-     "Arcanist"
+     "Arkanist"
     ],
     "unlock": "",
     "ab": "Paddleball",
@@ -2658,12 +2663,12 @@
      15,
      90
     ],
-    "d": "Feuert einen Paddleball nach hinten und lenkt ihn auf den am weitesten entfernten Gegner um, wodurch der erste getroffene Gegner %i:scaleAP% @v_450_675_1000@ magischen Schaden erleidet. Stirbt das Ziel, prallt der Ball ab und fügt dem nächstbefindlichen getroffenen Gegner den übrigen Schaden zu.",
+    "d": "Feuert einen Paddleball nach hinten und lenkt ihn auf den am weitesten entfernten Gegner um, wodurch der erste getroffene Gegner %i:scaleAP% @v_450_675_1100@ magischen Schaden erleidet. Stirbt das Ziel, prallt der Ball ab und fügt dem nächstbefindlichen getroffenen Gegner den übrigen Schaden zu.",
     "v": {
-     "v_450_675_1000": [
+     "v_450_675_1100": [
       450,
       675,
-      1000
+      1100
      ]
     }
    }
@@ -2682,7 +2687,7 @@
      80,
      120
     ],
-    "d": "Summon an 8-man orchestra and a Riff Herald, knocking up all enemies for 1 seconds. Deal %i:scaleAD% @v_550_825_2475@ physical damage and %i:scaleAP% @v_650_1000_3000@ magic damage split among all enemies.\\nEach minion attacks 4 times, with each attack dealing %i:scaleAD% @v_33_50_250@ physical damage.",
+    "d": "Summon an 8-man orchestra and a Riff Herald, knocking up all enemies for 1 seconds. Deal %i:scaleAD% @v_550_825_2475@ physical damage and %i:scaleAP% @v_650_1000_3000@ magic damage split among all enemies.\\nEach minion attacks 4 times, with each attack dealing %i:scaleAD% @v_30_48_250@ physical damage.",
     "v": {
      "v_550_825_2475": [
       550,
@@ -2694,9 +2699,9 @@
       1000,
       3000
      ],
-     "v_33_50_250": [
-      33,
-      50,
+     "v_30_48_250": [
+      30,
+      48,
       250
      ]
     }
@@ -2715,11 +2720,11 @@
      0,
      55
     ],
-    "d": "Dash to a nearby group of enemies, then fling 8 feathers split amongst enemies within 1 hex, each dealing %i:scaleAP% @v_100_180_2400@ magic damage.\\nThe main Rakan hits enemies within 2 hexes and briefly knocks up them up.",
+    "d": "Dash to a nearby group of enemies, then fling 8 feathers split amongst enemies within 1 hex, each dealing %i:scaleAP% @v_115_190_2400@ magic damage.\\nThe main Rakan hits enemies within 2 hexes and briefly knocks up them up.",
     "v": {
-     "v_100_180_2400": [
-      100,
-      180,
+     "v_115_190_2400": [
+      115,
+      190,
       2400
      ]
     }
@@ -2732,7 +2737,7 @@
      "Jazz",
      "Slayer"
     ],
-    "unlock": "Req. Lvl 9 - Have 8 or more non-unique traits active",
+    "unlock": "Req. Lvl 9 - Activate 8 or more non-unique traits",
     "ab": "Upswing",
     "mana": [
      0,
@@ -2770,13 +2775,13 @@
      "Producer",
      "Collab"
     ],
-    "unlock": "Req. Lvl 10 - Collab Champions are inspired 15 times",
+    "unlock": "Req. Lvl 10 - Collab champions are inspired 15 times during player combat",
     "ab": "feat. Sona",
     "mana": [
      0,
      220
     ],
-    "d": "Passive: Cannot attack, instead every 3 seconds, gain @v_31_31_101@ Mana, deal %i:scaleAP% @v_120_180_1000@ magic damage to the 3 nearest enemies, and 2 allies gain %i:scaleAP% @v_40_65_9999@ Shield for 3 seconds. Sona is Unstoppable.\\nActive: Unleash a sonic wave across the battlefield, dealing %i:scaleAP% @v_1400_2200_9999999@ magic damage split between all enemies and Stunning them for 2 seconds. Allies gain %i:scaleAP% @v_250_450_99999@ Shield split amongst allies for 5 seconds.",
+    "d": "Passive: Cannot attack, instead every 3 seconds, gain @v_31_31_101@ Mana, deal %i:scaleAP% @v_120_180_1000@ magic damage to the 3 nearest enemies, and 2 allies gain %i:scaleAP% @v_40_65_9999@ Shield for 3 seconds. Sona is Unstoppable.\\nActive: Unleash a sonic wave across the battlefield, dealing %i:scaleAP% @v_1500_2400_9999999@ magic damage split between all enemies and Stunning them for 2 seconds. Allies gain %i:scaleAP% @v_250_450_99999@ Shield split amongst allies for 5 seconds.",
     "v": {
      "v_31_31_101": [
       31,
@@ -2793,9 +2798,9 @@
       65,
       9999
      ],
-     "v_1400_2200_9999999": [
-      1400,
-      2200,
+     "v_1500_2400_9999999": [
+      1500,
+      2400,
       9999999
      ],
      "v_250_450_99999": [
@@ -2806,7 +2811,7 @@
     }
    },
    "DA_AkaliKDA19": {
-    "name": "Akali (K/DA)",
+    "name": "Akali",
     "cost": 5,
     "role": "Attack Assassin",
     "traits": [
@@ -2833,15 +2838,15 @@
     }
    },
    "DA_Akali_TrueDamage19": {
-    "name": "Akali (True Damage, Freestyle)",
+    "name": "Akali",
     "cost": 5,
     "role": "Magic Fighter",
     "traits": [
      "True Damage",
      "Freestyle"
     ],
-    "unlock": "Earn 375 True Damage Bling without K/DA Akali unlocked",
-    "ab": "Killin' like Domino",
+    "unlock": "Earn 350 True Damage Bling without K/DA Akali unlocked",
+    "ab": "Killin' Like Domino",
     "mana": [
      0,
      50
@@ -2906,16 +2911,16 @@
      20,
      80
     ],
-    "d": "Passive: While Dr. Mundo has 3000 max Health or more, he becomes Pumped Up, gaining 20% max Health and causing attacks to deal an additional %i:scaleHealth% @v_89_114_2300@ magic damage.\\nActive: Restore %i:scaleHealth% @v_480_530_4300@ Health over 5 seconds and deal %i:scaleHealth% %i:scaleAP% @v_25_29_102@ magic damage each second to all enemies within 2 hexes.",
+    "d": "Passive: While Dr. Mundo has 3000 max Health or more, he becomes Pumped Up, gaining 20% max Health and causing attacks to deal an additional %i:scaleHealth% @v_89_114_2300@ magic damage.\\nActive: Restore %i:scaleHealth% @v_555_605_4300@ Health over 5 seconds and deal %i:scaleHealth% %i:scaleAP% @v_25_29_102@ magic damage each second to all enemies within 2 hexes.",
     "v": {
      "v_89_114_2300": [
       89,
       114,
       2300
      ],
-     "v_480_530_4300": [
-      480,
-      530,
+     "v_555_605_4300": [
+      555,
+      605,
       4300
      ],
      "v_25_29_102": [
@@ -2972,7 +2977,7 @@
      "Gu Feng",
      "Prodigy"
     ],
-    "unlock": "Earn 20 interest while fielding Xayah",
+    "unlock": "Earn 25 interest while fielding Xayah",
     "ab": "Hymn of the Heaven's Gale",
     "mana": [
      0,
@@ -3043,11 +3048,11 @@
      0,
      50
     ],
-    "d": "Fire a pinball towards the target, dealing %i:scaleAD% %i:scaleAP% @v_145_225_2245@ physical damage. After hitting an enemy, it continues bouncing until damaging enemies 12 times, reducing its damage by 30% each hit. (Minimum damage: 20%)",
+    "d": "Fire a pinball towards the target, dealing %i:scaleAD% %i:scaleAP% @v_155_235_2245@ physical damage. After hitting an enemy, it continues bouncing until damaging enemies 12 times, reducing its damage by 30% each hit. (Minimum damage: 20%)",
     "v": {
-     "v_145_225_2245": [
-      145,
-      225,
+     "v_155_235_2245": [
+      155,
+      235,
       2245
      ]
     }
@@ -3098,11 +3103,11 @@
      20,
      45
     ],
-    "d": "Pounce Party: Pounce 4 times on enemies, dealing %i:scaleAP% @v_135_200_1500@ magic damage, increased by 40% each pounce.\\nDance of Life: Heal %i:scaleAP% @v_325_500_2000@. Hurl a javelin at the target, dealing %i:scaleAP% @v_380_570_3000@ magic damage and scattering 3 flowers around them. Flowers deal %i:scaleAP% @v_80_120_500@ magic damage to enemies in a 1 Hex radius after a brief delay.\\nCasts Pounce Party in Cougar Form and Dance of Life in Human form.",
+    "d": "Pounce Party: Pounce 4 times on enemies, dealing %i:scaleAP% @v_125_185_1500@ magic damage, increased by 40% each pounce.\\nDance of Life: Heal %i:scaleAP% @v_325_500_2000@. Hurl a javelin at the target, dealing %i:scaleAP% @v_360_540_3000@ magic damage and scattering 3 flowers around them. Flowers deal %i:scaleAP% @v_80_120_500@ magic damage to enemies in a 1 Hex radius after a brief delay.\\nCasts Pounce Party in Cougar Form and Dance of Life in Human form.",
     "v": {
-     "v_135_200_1500": [
-      135,
-      200,
+     "v_125_185_1500": [
+      125,
+      185,
       1500
      ],
      "v_325_500_2000": [
@@ -3110,9 +3115,9 @@
       500,
       2000
      ],
-     "v_380_570_3000": [
-      380,
-      570,
+     "v_360_540_3000": [
+      360,
+      540,
       3000
      ],
      "v_80_120_500": [
@@ -3136,7 +3141,7 @@
      20,
      75
     ],
-    "d": "Passive: Gain 10 Mana Regen. Slowly roll around a Disco Ball, dealing %i:scaleAP% @v_156_234_4500@ magic damage to all enemies it passes through.\\nActive: For the rest of combat, move faster and increase the size and damage of the Disco Ball by 30%.",
+    "d": "Passive: Gain 10 Mana Regen. Slowly roll around a disco ball, dealing %i:scaleAP% @v_156_234_4500@ magic damage to all enemies it passes through.\\nActive: For the rest of combat, move faster and increase the size and damage of the disco ball by 30%.",
     "v": {
      "v_156_234_4500": [
       156,
@@ -3153,27 +3158,27 @@
      "Rock",
      "Renegade"
     ],
-    "unlock": "Req. Lvl 7 - Have 85 or more Gold at the end of combat",
+    "unlock": "Req. Lvl 7 - Have 85 or more gold at the end of combat",
     "ab": "Execute Gon' Give it to Ya",
     "mana": [
      0,
      30
     ],
-    "d": "Passive: Whenever an enemy drops below %i:scaleAP% @v_10_10_93@% max Health, instantly cast on them, then dash back to the current target.\\nActive: Deal %i:scaleAD% @v_300_470_4000@ physical damage to the target and %i:scaleAD% @v_130_215_800@ to all other enemies in an X shape. Execute any enemies below %i:scaleAP% @v_10_10_93@% Health.",
+    "d": "Passive: Whenever an enemy drops below %i:scaleAP% @v_10_10_93@% max Health, instantly cast on them, then dash back to the current target.\\nActive: Deal %i:scaleAD% @v_320_515_4000@ physical damage to the target and %i:scaleAD% @v_100_150_800@ to all other enemies in an X shape. Execute any enemies below %i:scaleAP% @v_10_10_93@% Health.",
     "v": {
      "v_10_10_93": [
       10,
       10,
       93
      ],
-     "v_300_470_4000": [
-      300,
-      470,
+     "v_320_515_4000": [
+      320,
+      515,
       4000
      ],
-     "v_130_215_800": [
-      130,
-      215,
+     "v_100_150_800": [
+      100,
+      150,
       800
      ]
     }
@@ -3189,14 +3194,14 @@
     "unlock": "",
     "ab": "Rhythm Blaster / Metal Pony Club",
     "mana": [
-     30,
+     40,
      100
     ],
-    "d": "Rhythm Blaster: For 4 seconds, gain %i:scaleAP% @v_600_725_2000@ Shield and summon 3 speakers. Each second, they blast a wave of sound, dealing %i:scaleArmor% %i:scaleMR% @v_104_156_1950@ magic damage to enemies hit.\\nMetal Pony Club: Slam into a crowd of enemies, dealing %i:scaleArmor% %i:scaleMR% @v_124p8_187p2_39000@ magic damage to the center enemy and %i:scaleArmor% %i:scaleMR% @v_156_234_39000@ damage split among enemies within 2 hexes.\\nCasts Rhythm Blaster while unmounted and Metal Pony Club while mounted.",
+    "d": "Rhythm Blaster: For 4 seconds, gain %i:scaleAP% @v_650_800_2000@ Shield and summon 3 speakers. Each second, they blast a wave of sound, dealing %i:scaleArmor% %i:scaleMR% @v_104_156_1950@ magic damage to enemies hit.\\nMetal Pony Club: Slam into a crowd of enemies, dealing %i:scaleArmor% %i:scaleMR% @v_124p8_187p2_39000@ magic damage to the center enemy and %i:scaleArmor% %i:scaleMR% @v_187p2_280p8_39000@ damage split among enemies within 2 hexes.\\nCasts Rhythm Blaster while unmounted and Metal Pony Club while mounted.",
     "v": {
-     "v_600_725_2000": [
-      600,
-      725,
+     "v_650_800_2000": [
+      650,
+      800,
       2000
      ],
      "v_104_156_1950": [
@@ -3209,9 +3214,9 @@
       187.2,
       39000
      ],
-     "v_156_234_39000": [
-      156,
-      234,
+     "v_187p2_280p8_39000": [
+      187.2,
+      280.8,
       39000
      ]
     }
@@ -3224,17 +3229,17 @@
      "Beach Pop",
      "Encore"
     ],
-    "unlock": "A Champion of each cost starts in a Beach Pop hex",
+    "unlock": "A champion of each cost starts in a Beach Pop hex",
     "ab": "Crowd Surfing",
     "mana": [
      0,
      40
     ],
-    "d": "Throw 3 rocks at the target, each dealing %i:scaleAP% @v_185_280_2000@ magic damage.\\nEvery 3rd cast, quickly reposition and surf in a line instead. Enemies hit take %i:scaleAP% @v_160_240_2000@ + %i:scaleAP% @v_2_3_50@% max Health magic damage and are briefly knocked up.",
+    "d": "Throw 3 rocks at the target, each dealing %i:scaleAP% @v_200_300_2000@ magic damage.\\nEvery 3rd cast, quickly reposition and surf in a line instead. Enemies hit take %i:scaleAP% @v_160_240_2000@ + %i:scaleAP% @v_2_3_50@% max Health magic damage and are briefly knocked up.",
     "v": {
-     "v_185_280_2000": [
-      185,
-      280,
+     "v_200_300_2000": [
+      200,
+      300,
       2000
      ],
      "v_160_240_2000": [
@@ -3263,11 +3268,11 @@
      0,
      100
     ],
-    "d": "Passive: Attacks apply Viral, dealing %i:scaleAP% @v_110_165_1337@ magic damage over 15 seconds. Infected enemies become zombies on death, seeking out unaffected enemies and exploding, dealing %i:scaleAP% @v_70_105_800@ damage to adjacent enemies and applying Viral.\\nActive: Launch a mushroom that applies Viral to enemies in a 3 hex radius and deals %i:scaleAP% @v_530_800_13337@ magic damage, reduced by 20% per hex away from the center.",
+    "d": "Passive: Attacks apply Viral, dealing %i:scaleAP% @v_90_135_1337@ magic damage over 15 seconds. Infected enemies become zombies on death, seeking out unaffected enemies and exploding, dealing %i:scaleAP% @v_70_105_800@ damage to adjacent enemies and applying Viral.\\nActive: Launch a mushroom that applies Viral to enemies in a 3 hex radius and deals %i:scaleAP% @v_530_800_13337@ magic damage, reduced by 20% per hex away from the center.",
     "v": {
-     "v_110_165_1337": [
-      110,
-      165,
+     "v_90_135_1337": [
+      90,
+      135,
       1337
      ],
      "v_70_105_800": [
@@ -3296,7 +3301,7 @@
      0,
      50
     ],
-    "d": "Passive: At Combat Start, draw a card for each champion in the shop. If your shop has refreshed this round, gain loot based on the cards drawn!\\n1 or 2 of a Kind: 1 Gold\\n3 of a Kind: Random champion\\n4 of a Kind: Item Component\\n5 of a Kind: Mystery Box!\\nActive: The next 5 attacks gain 100% Attack Speed and are replaced with cards that deal %i:scaleAP% @v_100_150_2000@ magic damage to the target and %i:scaleAP% @v_30_45_1000@ magic damage to 2 nearby enemies.",
+    "d": "Passive: At Combat Start, draw a card for each champion in the shop. If your shop has refreshed this round, gain loot based on the cards drawn!\\n1 or 2 of a Kind: 1 Gold\\n3 of a Kind: Random champion\\n4 of a Kind: Mystery Box\\n5 of a Kind: Royale Mystery Box!\\nActive: The next 5 attacks gain 100% Attack Speed and are replaced with cards that deal %i:scaleAP% @v_100_150_2000@ magic damage to the target and %i:scaleAP% @v_30_45_1000@ magic damage to 2 nearby enemies.",
     "v": {
      "v_100_150_2000": [
       100,
@@ -3356,17 +3361,17 @@
      "Classical",
      "Arcanist"
     ],
-    "unlock": "Req. Lvl 8 - Only 1 Champion in the two front rows of the battlefield",
+    "unlock": "Req. Lvl 8 - Only 1 champion in the 2 front rows of the battlefield",
     "ab": "The Opera Phantom",
     "mana": [
      0,
      40
     ],
-    "d": "Passive: Gain 30% Omnivamp. Debuffed enemies are Captivated.\\nActive: Deal %i:scaleAP% @v_100_150_999@ magic damage to the 3 nearest enemies and Captivate them for 3 seconds.\\nEvery 5th cast, drop a chandelier on the board. It deals %i:scaleAP% @v_380_600_9999@ magic damage to all enemies, reduced by 10% per hex they are away from the epicenter.\\nDebuffs: Burn, Wound, Shred, Sunder, Mana Reave, Weaken, Slow, Vunerable",
+    "d": "Passive: Gain 30% Omnivamp. Debuffed enemies are Captivated.\\nActive: Deal %i:scaleAP% @v_120_180_999@ magic damage to the 3 nearest enemies and Captivate them for 3 seconds.\\nEvery 5th cast, drop a chandelier on the board. It deals %i:scaleAP% @v_380_600_9999@ magic damage to all enemies, reduced by 10% per hex they are away from the epicenter.\\nDebuffs: Burn, Wound, Shred, Sunder, Mana Reave, Weaken, Slow, Vunerable",
     "v": {
-     "v_100_150_999": [
-      100,
-      150,
+     "v_120_180_999": [
+      120,
+      180,
       999
      ],
      "v_380_600_9999": [
@@ -3390,11 +3395,11 @@
      0,
      150
     ],
-    "d": "Quickly dash around the arena, aiming 6 lasers at the current target. Lasers fire in rapid succession, each dealing %i:scaleAD% %i:scaleAP% @v_165_250_1500@ physical damage to enemies hit and ignoring 40% of their Armor.",
+    "d": "Quickly dash around the arena, aiming 6 lasers at the current target. Lasers fire in rapid succession, each dealing %i:scaleAD% %i:scaleAP% @v_175_260_1500@ physical damage to enemies hit and ignoring 40% of their Armor.",
     "v": {
-     "v_165_250_1500": [
-      165,
-      250,
+     "v_175_260_1500": [
+      175,
+      260,
       1500
      ]
     }
@@ -3440,11 +3445,11 @@
      70,
      155
     ],
-    "d": "Heal %i:scaleAP% @v_265_300_2000@, increased by up to 100% based on missing Health. Then slam the target, knocking up enemies within 3 hexes of them for 1.5 seconds and dealing %i:scaleAP% @v_100_150_2500@ magic damage to all enemies hit.",
+    "d": "Heal %i:scaleAP% @v_285_320_2000@, increased by up to 100% based on missing Health. Then slam the target, knocking up enemies within 3 hexes of them for 1.5 seconds and dealing %i:scaleAP% @v_100_150_2500@ magic damage to all enemies hit.",
     "v": {
-     "v_265_300_2000": [
-      265,
-      300,
+     "v_285_320_2000": [
+      285,
+      320,
       2000
      ],
      "v_100_150_2500": [
@@ -3463,7 +3468,7 @@
      "Manager",
      "Prodigy"
     ],
-    "unlock": "Req. Lvl 7 - 4 unique Heartsteel or Prodigy Champions",
+    "unlock": "Req. Lvl 7 - 4 unique Heartsteel or Prodigy champions",
     "ab": "Spotlight",
     "mana": [
      20,
@@ -3502,11 +3507,11 @@
      0,
      60
     ],
-    "d": "Blink away and fire a blast through the best line. The blast deals %i:scaleAP% @v_275_415_2000@ magic damage to the 2 highest Health enemies, and %i:scaleAP% @v_90_135_1500@ magic damage to the rest. Then, blink back.",
+    "d": "Blink away and fire a blast through the best line. The blast deals %i:scaleAP% @v_300_450_2000@ magic damage to the 2 highest Health enemies, and %i:scaleAP% @v_90_135_1500@ magic damage to the rest. Then, blink back.",
     "v": {
-     "v_275_415_2000": [
-      275,
-      415,
+     "v_300_450_2000": [
+      300,
+      450,
       2000
      ],
      "v_90_135_1500": [
@@ -3581,11 +3586,11 @@
      4,
      4
     ],
-    "d": "Passive: Convert 1% bonus Attack Speed into 0.8% Attack Damage.\\nAttacks summon violins that attack in unison, dealing %i:scaleAD% @v_25_38_124@ physical damage and Captivating the target for 4 seconds. Every 4th attack is empowered, dealing %i:scaleAD% %i:scaleAP% @v_94_141_848@ physical damage and resetting the violins.\\nOn the 4th sequence onwards, all violins remain out, Jhin gains infinite range, and attacks pierce, dealing 60% reduced damage for each target hit.",
+    "d": "Passive: Convert 1% bonus Attack Speed into 0.8% Attack Damage.\\nAttacks summon violins that attack in unison, dealing %i:scaleAD% @v_27_41_124@ physical damage and Captivating the target for 4 seconds. Every 4th attack is empowered, dealing %i:scaleAD% %i:scaleAP% @v_94_141_848@ physical damage and resetting the violins.\\nOn the 4th sequence onwards, all violins remain out, Jhin gains infinite range, and attacks pierce, dealing 60% reduced damage for each target hit.",
     "v": {
-     "v_25_38_124": [
-      25,
-      38,
+     "v_27_41_124": [
+      27,
+      41,
       124
      ],
      "v_94_141_848": [
@@ -3603,7 +3608,7 @@
      "Ionic Spark",
      "Hitmaker"
     ],
-    "unlock": "Req. Lvl 7 - 3 items on an Ionic Spark or Hitmaker Champion",
+    "unlock": "Req. Lvl 7 - 3 items on an Ionic Spark or Hitmaker champion",
     "ab": "Boom Boom POW POW",
     "mana": [
      30,
@@ -3626,7 +3631,7 @@
      "Pentakill",
      "Swiftstriker"
     ],
-    "unlock": "Req. Lvl 7 - 4 unique Pentakill or Swiftstriker Champions",
+    "unlock": "Req. Lvl 7 - 4 unique Pentakill or Swiftstriker champions",
     "ab": "Stairway to Hell",
     "mana": [
      0,
@@ -3694,7 +3699,7 @@
      0,
      30
     ],
-    "d": "Passive: Attacks deal %i:scaleAP% @v_45_68_500@ bonus magic damage. All damage Locke deals to enemies is increased by 10% for each mark he has applied to them.\\nActive: Hurl 3 Soul Nails at the furthest enemy within 4 hexes, each dealing %i:scaleAP% @v_15_22_400@ magic damage and marking all enemies hit. Then, teleport to the enemy and deal %i:scaleAP% @v_150_225_2000@ magic damage.",
+    "d": "Passive: Attacks deal %i:scaleAP% @v_45_68_500@ bonus magic damage. All damage Locke deals to enemies is increased by 15% for each mark he has applied to them.\\nActive: Hurl 3 Soul Nails at the furthest enemy within 4 hexes, each dealing %i:scaleAP% @v_15_22_400@ magic damage and marking all enemies hit. Then, teleport to the enemy and deal %i:scaleAP% @v_135_205_2000@ magic damage.",
     "v": {
      "v_45_68_500": [
       45,
@@ -3706,9 +3711,9 @@
       22,
       400
      ],
-     "v_150_225_2000": [
-      150,
-      225,
+     "v_135_205_2000": [
+      135,
+      205,
       2000
      ]
     }
@@ -3750,11 +3755,11 @@
      40,
      100
     ],
-    "d": "Passive: At 70% Health, transform into Dragon Form. While transformed, gain 300 max Health, 150% Attack Speed, and every 3rd attacks deals %i:scaleAP% @v_150_225_3000@ bonus magic damage in a 1 hex area.\\nActive: Gain %i:scaleHealth% %i:scaleAP% @v_360_410_1010@ Shield for 4 seconds.",
+    "d": "Passive: At 70% Health, transform into Dragon Form. While transformed, gain 250 max Health, 150% Attack Speed, and every 3rd attacks deals %i:scaleAP% @v_100_150_3000@ bonus magic damage in a 1 hex area.\\nActive: Gain %i:scaleHealth% %i:scaleAP% @v_360_410_1010@ Shield for 4 seconds.",
     "v": {
-     "v_150_225_3000": [
+     "v_100_150_3000": [
+      100,
       150,
-      225,
       3000
      ],
      "v_360_410_1010": [
@@ -3772,7 +3777,7 @@
      "Classical",
      "Frontman"
     ],
-    "unlock": "Have enemies spend 300 seconds Captivated by Classical",
+    "unlock": "Enemies spend 275 seconds Captivated by Classical",
     "ab": "Dark Passage (Reprise)",
     "mana": [
      40,
@@ -3806,11 +3811,11 @@
      0,
      50
     ],
-    "d": "Passive: On cast or when hit, tumble and gain %i:scaleAP% 50% Durability for 2 seconds. (4 second cooldown)\\nActive: Gain demonic power, enhancing the next 3 attacks to deal %i:scaleAD% @v_175_265_2000@ + 2% of the target's max Health as physical damage.",
+    "d": "Passive: On cast or when hit, tumble and gain %i:scaleAP% 50% Durability for 2 seconds. (4 second cooldown)\\nActive: Gain demonic power, enhancing the next 3 attacks to deal %i:scaleAD% @v_165_250_2000@ physical damage + 1.5% of the target's max Health as true damage.",
     "v": {
-     "v_175_265_2000": [
-      175,
-      265,
+     "v_165_250_2000": [
+      165,
+      250,
       2000
      ]
     }
@@ -3856,11 +3861,11 @@
      0,
      60
     ],
-    "d": "Summon 30 feathers that strike the target, each dealing %i:scaleAD% %i:scaleAP% @v_23_35_166@ physical damage and reducing Armor by 1.",
+    "d": "Summon 30 feathers that strike the target, each dealing %i:scaleAD% %i:scaleAP% @v_25_38_166@ physical damage and reducing Armor by 1.",
     "v": {
-     "v_23_35_166": [
-      23,
-      35,
+     "v_25_38_166": [
+      25,
+      38,
       166
      ]
     }
@@ -3873,17 +3878,17 @@
      "True Damage",
      "Slayer"
     ],
-    "unlock": "Req. Lvl 7 - 7 unique star levels of True Damage or Slayer Champions",
+    "unlock": "Req. Lvl 7 - 6 unique star levels of True Damage or Slayer champions",
     "ab": "Last Breath",
     "mana": [
      0,
      30
     ],
-    "d": "Dash and thrust forward, dealing %i:scaleAD% @v_165_250_1400@ physical damage to enemies in a line.\\nEvery 3rd cast, knock up the target and deal %i:scaleAD% @v_400_600_2500@ physical damage. Then slam them down, dealing %i:scaleAD% %i:scaleAP% @v_210_315_1700@ physical damage to enemies within 1 Hex.",
+    "d": "Dash and thrust forward, dealing %i:scaleAD% @v_180_270_1400@ physical damage to enemies in a line.\\nEvery 3rd cast, knock up the target and deal %i:scaleAD% @v_400_600_2500@ physical damage. Then slam them down, dealing %i:scaleAD% %i:scaleAP% @v_210_315_1700@ physical damage to enemies within 1 Hex.",
     "v": {
-     "v_165_250_1400": [
-      165,
-      250,
+     "v_180_270_1400": [
+      180,
+      270,
       1400
      ],
      "v_400_600_2500": [
@@ -3978,11 +3983,11 @@
      0,
      20
     ],
-    "d": "Throw a spinning disc that deals %i:scaleAP% @v_175_265_1400@ magic damage and stacks on the target's head, reducing their Magic Resist by 1 every second.\\nWhen they have 5 discs, the stack topples over, dealing 40% of the stacked discs' total damage to the target and another 40% split among 4 nearby enemies.\\nIf an enemy dies with a disc, it passes to another enemy.",
+    "d": "Throw a spinning disc that deals %i:scaleAP% @v_185_280_1400@ magic damage and stacks on the target's head, reducing their Magic Resist by 1 every second.\\nWhen they have 5 discs, the stack topples over, dealing 40% of the stacked discs' total damage to the target and another 40% split among 4 nearby enemies.\\nIf an enemy dies with a disc, it passes to another enemy.",
     "v": {
-     "v_175_265_1400": [
-      175,
-      265,
+     "v_185_280_1400": [
+      185,
+      280,
       1400
      ]
     }
@@ -3995,7 +4000,7 @@
      "Beach Pop",
      "Juggernaut"
     ],
-    "unlock": "Req. Lvl 7 - 5 unique Beach Pop or Juggernaut Champions",
+    "unlock": "Req. Lvl 7 - 5 unique Beach Pop or Juggernaut champions",
     "ab": "Cannonball!",
     "mana": [
      60,
@@ -4028,12 +4033,12 @@
      60,
      120
     ],
-    "d": "Heal %i:scaleAP% @v_475_625_750@. Toss bandages at the 4 nearest enemies, dealing %i:scaleAP% @v_100_150_240@ magic damage and Stunning them for 1.25 seconds.",
+    "d": "Heal %i:scaleAP% @v_450_575_725@. Toss bandages at the 4 nearest enemies, dealing %i:scaleAP% @v_100_150_240@ magic damage and Stunning them for 1.25 seconds.",
     "v": {
-     "v_475_625_750": [
-      475,
-      625,
-      750
+     "v_450_575_725": [
+      450,
+      575,
+      725
      ],
      "v_100_150_240": [
       100,
@@ -4051,12 +4056,12 @@
      "Swiftstriker"
     ],
     "unlock": "",
-    "ab": "Come Chime with Me",
+    "ab": "Come Chime With Me",
     "mana": [
      20,
      80
     ],
-    "d": "Passive: Gain the Horn of the Traveler. While equipped, casts generate XP and attacks grant bonus Mana.\\nActive: Summon a wave of meeps that deal %i:scaleAP% @v_210_315_505@ magic damage to enemies hit, reduced by 30% for each one it passes through.",
+    "d": "Passive: Gain the Horn of the Traveler. While equipped, casts generate XP and attacks grant bonus Mana.\\nActive: Summon a wave of meeps that deal %i:scaleAP% @v_210_315_505@ magic damage to enemies hit, reduced by 30% for each one it passes through (minimum 30%).",
     "v": {
      "v_210_315_505": [
       210,
@@ -4107,17 +4112,22 @@
      0,
      30
     ],
-    "d": "Heal %i:scaleAP% @v_100_150_200@ and kick a snack at the furthest enemy within 3 hexes. Dash toward it, dealing %i:scaleAD% @v_100_150_240@ physical damage in a 1 hex area.\\nThen chow down, gaining 200% Attack Speed for the next 3 attacks and replacing them with slashes that deal %i:scaleAD% @v_100_150_240@ physical damage.",
+    "d": "Heal %i:scaleAP% @v_100_150_200@ and kick a snack at the furthest enemy within 3 hexes. Dash toward it, dealing %i:scaleAD% @v_95_145_230@ physical damage in a 1 hex area.\\nThen chow down, gaining 200% Attack Speed for the next 3 attacks and replacing them with slashes that deal %i:scaleAD% @v_80_120_190@ physical damage.",
     "v": {
      "v_100_150_200": [
       100,
       150,
       200
      ],
-     "v_100_150_240": [
-      100,
-      150,
-      240
+     "v_95_145_230": [
+      95,
+      145,
+      230
+     ],
+     "v_80_120_190": [
+      80,
+      120,
+      190
      ]
     }
    },
@@ -4135,17 +4145,17 @@
      0,
      60
     ],
-    "d": "Throw a massive spinning record at the target, dealing %i:scaleAD% @v_140_210_340@ physical damage. The record leaves behind a vortex that lasts 3 seconds and deals %i:scaleAD% %i:scaleAP% @v_115_175_285@ physical damage per second split amongst enemies within 1 hex.",
+    "d": "Throw a massive spinning record at the target, dealing %i:scaleAD% @v_155_235_370@ physical damage. The record leaves behind a vortex that lasts 3 seconds and deals %i:scaleAD% %i:scaleAP% @v_130_200_310@ physical damage per second split amongst enemies within 1 hex.",
     "v": {
-     "v_140_210_340": [
-      140,
-      210,
-      340
+     "v_155_235_370": [
+      155,
+      235,
+      370
      ],
-     "v_115_175_285": [
-      115,
-      175,
-      285
+     "v_130_200_310": [
+      130,
+      200,
+      310
      ]
     }
    },
@@ -4164,12 +4174,12 @@
      30,
      120
     ],
-    "d": "Passive: Rewind 30% of damage taken over 4 seconds.\\nActive: Instantly heal all damage being rewinded + %i:scaleAP% @v_150_180_250@ Health. Then whack the current target for %i:scaleAP% @v_230_345_675@ magic damage.",
+    "d": "Passive: Rewind 30% of damage taken over 4 seconds.\\nActive: Instantly heal all damage being rewinded + %i:scaleAP% @v_125_150_200@ Health. Then whack the current target for %i:scaleAP% @v_230_345_675@ magic damage.",
     "v": {
-     "v_150_180_250": [
+     "v_125_150_200": [
+      125,
       150,
-      180,
-      250
+      200
      ],
      "v_230_345_675": [
       230,
@@ -4186,23 +4196,23 @@
      "K/DA",
      "Renegade"
     ],
-    "unlock": "3 unique K/DA or Renegade Champions",
+    "unlock": "3 unique K/DA or Renegade champions",
     "ab": "Villainous",
     "mana": [
      0,
      40
     ],
-    "d": "Passive: At combat start, teleport behind the current target, then become enshrouded for 15 seconds. While enshrouded, become untargetable to attacks and gain 50% Durability if at least 3 other allies are alive.\\nActive: Deal %i:scaleAP% @v_280_420_700@ magic damage to the current target and %i:scaleAP% @v_120_180_300@ magic damage to other enemies in a semi-circle. Ignore 40% of enemy Magic Resist.",
+    "d": "Passive: At combat start, teleport behind the current target, then become enshrouded for 15 seconds. While enshrouded, become untargetable to attacks and gain 50% Durability if at least 3 other allies are alive.\\nActive: Deal %i:scaleAP% @v_230_345_550@ magic damage to the current target and %i:scaleAP% @v_90_135_215@ magic damage to other enemies in a semicircle. Ignore 40% of enemy Magic Resist.",
     "v": {
-     "v_280_420_700": [
-      280,
-      420,
-      700
+     "v_230_345_550": [
+      230,
+      345,
+      550
      ],
-     "v_120_180_300": [
-      120,
-      180,
-      300
+     "v_90_135_215": [
+      90,
+      135,
+      215
      ]
     }
    },
@@ -4281,12 +4291,12 @@
      0,
      30
     ],
-    "d": "Passive: Every 3 attacks, fire 3 missiles that deal %i:scaleAD% %i:scaleAP% @v_42_63_100@ physical damage.\\nActive: Gain 15% Attack Speed for the rest of combat.",
+    "d": "Passive: Every 3 attacks, fire 3 missiles that deal %i:scaleAD% %i:scaleAP% @v_39_59_95@ physical damage.\\nActive: Gain 15% Attack Speed for the rest of combat.",
     "v": {
-     "v_42_63_100": [
-      42,
-      63,
-      100
+     "v_39_59_95": [
+      39,
+      59,
+      95
      ]
     }
    },
@@ -4304,17 +4314,17 @@
      0,
      50
     ],
-    "d": "Fire a beam at the target for 2 seconds, dealing %i:scaleAP% @v_380_570_960@ magic damage. The energy rhythmically explodes 4 times, 30% Shredding enemies in a 1 hex area for 4 seconds, and dealing %i:scaleAP% @v_40_60_110@ magic damage each time.\\nShred: Reduce Magic Resist",
+    "d": "Fire a beam at the target for 2 seconds, dealing %i:scaleAP% @v_260_390_625@ magic damage. The energy rhythmically explodes 4 times, 30% Shredding enemies in a 1 hex area for 4 seconds, and dealing %i:scaleAP% @v_36_54_86@ magic damage each time.\\nShred: reduce Magic Resist",
     "v": {
-     "v_380_570_960": [
-      380,
-      570,
-      960
+     "v_260_390_625": [
+      260,
+      390,
+      625
      ],
-     "v_40_60_110": [
-      40,
-      60,
-      110
+     "v_36_54_86": [
+      36,
+      54,
+      86
      ]
     }
    },
@@ -4332,17 +4342,17 @@
      0,
      20
     ],
-    "d": "Blast the target, dealing %i:scaleAD% %i:scaleAP% @v_165_245_400@ physical damage and marking them. If they are marked, detonate it instead, dealing %i:scaleAD% %i:scaleAP% @v_247p5_367p5_600@ damage.\\nOn detonation or killing a marked enemy, gain 8% Damage Amp until the end of combat.",
+    "d": "Blast the target, dealing %i:scaleAD% %i:scaleAP% @v_185_275_445@ physical damage and marking them. If they are marked, detonate it instead, dealing %i:scaleAD% %i:scaleAP% @v_277p5_412p5_667p5@ damage.\\nOn detonation or killing a marked enemy, gain 8% Damage Amp until the end of combat.",
     "v": {
-     "v_165_245_400": [
-      165,
-      245,
-      400
+     "v_185_275_445": [
+      185,
+      275,
+      445
      ],
-     "v_247p5_367p5_600": [
-      247.5,
-      367.5,
-      600
+     "v_277p5_412p5_667p5": [
+      277.5,
+      412.5,
+      667.5
      ]
     }
    },
@@ -4399,12 +4409,12 @@
      0,
      30
     ],
-    "d": "Spike a volleyball at target, dealing %i:scaleAP% @v_300_450_720@ magic damage. It bounces to an enemy behind them with the least items, dealing %i:scaleAP% @v_110_165_265@ magic damage.",
+    "d": "Spike a volleyball at target, dealing %i:scaleAP% @v_330_495_790@ magic damage. It bounces to an enemy behind them with the least items, dealing %i:scaleAP% @v_110_165_265@ magic damage.",
     "v": {
-     "v_300_450_720": [
-      300,
-      450,
-      720
+     "v_330_495_790": [
+      330,
+      495,
+      790
      ],
      "v_110_165_265": [
       110,
@@ -4421,18 +4431,18 @@
      "Ionic Spark",
      "Bodyguard"
     ],
-    "unlock": "2-star Annie with 1 item",
+    "unlock": "2-star Annie holding 1 item",
     "ab": "Girl's Best Friend",
     "mana": [
      40,
      100
     ],
-    "d": "Passive: At 30% Health or when your strongest Annie dies, become enraged, gaining 300 max Health, 100% Attack Damage, and 200% Attack Speed that decays over 6 seconds.\\nActive: Gain %i:scaleAP% @v_500_600_750@ Shield for 4 seconds. If enraged, refresh the decaying Attack Speed.",
+    "d": "Passive: At 30% Health or when your strongest Annie dies, become enraged, gaining 300 max Health, 100% Attack Damage, and 200% Attack Speed that decays over 6 seconds.\\nActive: Gain %i:scaleAP% @v_550_650_800@ Shield for 4 seconds. If enraged, refresh the decaying Attack Speed.",
     "v": {
-     "v_500_600_750": [
-      500,
-      600,
-      750
+     "v_550_650_800": [
+      550,
+      650,
+      800
      ]
     }
    },
@@ -4451,12 +4461,12 @@
      0,
      40
     ],
-    "d": "Summon 10 swords around the target. After a brief delay, impale them, dealing %i:scaleAD% %i:scaleAP% @v_39_59_93@ physical damage per sword.\\nEvery 8 takedowns, gain a permanent sword. (Current Takedowns: 0)",
+    "d": "Summon 10 swords around the target. After a brief delay, impale them, dealing %i:scaleAD% %i:scaleAP% @v_31_47_74@ physical damage per sword.\\nEvery 8 takedowns, gain a permanent sword. (Current Takedowns: 0)",
     "v": {
-     "v_39_59_93": [
-      39,
-      59,
-      93
+     "v_31_47_74": [
+      31,
+      47,
+      74
      ]
     }
    },
@@ -4475,12 +4485,12 @@
      20,
      80
     ],
-    "d": "Gain %i:scaleAP% @v_350_425_600@ Shield for 4 seconds. Unleash a cone of fire, dealing %i:scaleAP% @v_80_120_180@ magic damage to enemies. 1% Burn and Wound them for 4 seconds.",
+    "d": "Gain %i:scaleAP% @v_350_400_550@ Shield for 4 seconds. Unleash a cone of fire, dealing %i:scaleAP% @v_80_120_180@ magic damage to enemies. 1% Burn and Wound them for 4 seconds.",
     "v": {
-     "v_350_425_600": [
+     "v_350_400_550": [
       350,
-      425,
-      600
+      400,
+      550
      ],
      "v_80_120_180": [
       80,
@@ -4497,18 +4507,18 @@
      "Beach Pop",
      "Swiftstriker"
     ],
-    "unlock": "A Beach Pop Champion with 2 items",
+    "unlock": "A Beach Pop champion with 2 items",
     "ab": "Feelin' Shot Shot Shot",
     "mana": [
      20,
      60
     ],
-    "d": "The next 6 attacks have %i:scaleAP% 50% Attack Speed and are replaced with flurries of 3 arrows. Each arrow deals %i:scaleAD% @v_33_50_75@ physical damage.",
+    "d": "The next 6 attacks have %i:scaleAP% 50% Attack Speed and are replaced with flurries of 3 arrows. Each arrow deals %i:scaleAD% @v_35_53_80@ physical damage.",
     "v": {
-     "v_33_50_75": [
-      33,
-      50,
-      75
+     "v_35_53_80": [
+      35,
+      53,
+      80
      ]
     }
    },
@@ -4526,17 +4536,17 @@
      0,
      40
     ],
-    "d": "Passive: When the target dies, hookshot to the next one and deal %i:scaleAD% @v_90_135_210@ physical damage to them.\\nActive: Do a sweeping kick, dealing %i:scaleAD% %i:scaleAP% @v_260_390_600@ physical damage in a cone.",
+    "d": "Passive: When the target dies, hookshot to the next one and deal %i:scaleAD% @v_90_135_210@ physical damage to them.\\nActive: Do a sweeping kick, dealing %i:scaleAD% %i:scaleAP% @v_240_360_585@ physical damage in a cone.",
     "v": {
      "v_90_135_210": [
       90,
       135,
       210
      ],
-     "v_260_390_600": [
-      260,
-      390,
-      600
+     "v_240_360_585": [
+      240,
+      360,
+      585
      ]
     }
    },
@@ -4554,17 +4564,17 @@
      0,
      35
     ],
-    "d": "Fire a missile that marks the target, then fire a second blast that detonates it. The explosion deals %i:scaleAD% %i:scaleAP% @v_220_330_500@ physical damage to the target and %i:scaleAD% %i:scaleAP% @v_72p6_108p9_165@ physical damage to enemies within 1 hex.\\nHeartsteel Upgrade: Detonation deals 25% more damage. Every 3rd cast hits enemies in a 2 hex radius instead.",
+    "d": "Fire a missile that marks the target, then fire a second blast that detonates it. The explosion deals %i:scaleAD% %i:scaleAP% @v_240_360_545@ physical damage to the target and %i:scaleAD% %i:scaleAP% @v_79p2_118p8_179p85@ physical damage to enemies within 1 hex.\\nHeartsteel Upgrade: Detonation deals 25% more damage. Every 3rd cast hits enemies in a 2 hex radius instead.",
     "v": {
-     "v_220_330_500": [
-      220,
-      330,
-      500
+     "v_240_360_545": [
+      240,
+      360,
+      545
      ],
-     "v_72p6_108p9_165": [
-      72.6,
-      108.9,
-      165
+     "v_79p2_118p8_179p85": [
+      79.2,
+      118.8,
+      179.85
      ]
     }
    },
@@ -4708,7 +4718,7 @@
      "Hyperpop",
      "Choreographer"
     ],
-    "unlock": "Have your Hyperpop Champions cast 10 times with the trait active",
+    "unlock": "Have your Hyperpop champions cast 10 times with the trait active",
     "ab": "Hype Girl",
     "mana": [
      0,
@@ -4747,17 +4757,17 @@
      0,
      40
     ],
-    "d": "Toss a prism into the air, then blast it with a beam of light. The beam splits, dealing %i:scaleAP% @v_330_500_800@ magic damage to the target, and %i:scaleAP% @v_170_255_425@ to another nearby enemy. For each one that dies, gain 8 Mana.",
+    "d": "Toss a prism into the air, then blast it with a beam of light. The beam splits, dealing %i:scaleAP% @v_300_450_675@ magic damage to the target, and %i:scaleAP% @v_160_240_360@ to another nearby enemy. For each one that dies, gain 8 Mana.",
     "v": {
-     "v_330_500_800": [
-      330,
-      500,
-      800
+     "v_300_450_675": [
+      300,
+      450,
+      675
      ],
-     "v_170_255_425": [
-      170,
-      255,
-      425
+     "v_160_240_360": [
+      160,
+      240,
+      360
      ]
     }
    },
@@ -4836,7 +4846,7 @@
      0,
      45
     ],
-    "d": "Fire a musical bar at the target, applying 2 stacks of Toxin. Toxin stacks deal %i:scaleAP% @v_160_240_580@ magic damage over 15 seconds. Additionally, apply 1 stack of Toxin to 2 nearby enemies, prioritizing unpoisoned enemies.\\nEnemies are Captivated for 3 seconds upon Toxin application, increased to 6 seconds if their star level is less than or equal to Renata's.\\nCaptivated enemies grant bonuses to Classical champions.",
+    "d": "Fire a musical bar at the target, applying 2 stacks of Toxin. Toxin stacks deal %i:scaleAP% @v_160_240_580@ magic damage over 15 seconds. Additionally, apply 1 stack of Toxin to 2 nearby enemies, prioritizing unpoisoned enemies.\\nEnemies are Captivated for 3 seconds upon Toxin application, increased to 9 seconds if their star level is less than Renata's.\\nCaptivated enemies grant bonuses to Classical champions.",
     "v": {
      "v_160_240_580": [
       160,
@@ -4882,18 +4892,18 @@
      "Renegade",
      "Trickshot"
     ],
-    "unlock": "2 items on a Classical, Renegade, or Trickshot Champion",
+    "unlock": "2 items on a Classical, Renegade, or Trickshot champion",
     "ab": "Bullets N' Roses",
     "mana": [
      0,
-     60
+     55
     ],
-    "d": "Passive: When Samira critically strikes an enemy, they become Captivated for 3 seconds.\\nActive: Fire 10 bullets at the current target, each dealing %i:scaleAD% %i:scaleAP% @v_39_59_89@ damage.\\nCaptivated enemies grant bonuses to Classical champions.",
+    "d": "Passive: When Samira critically strikes an enemy, they become Captivated for 3 seconds.\\nActive: Fire 10 bullets at the current target, each dealing %i:scaleAD% %i:scaleAP% @v_42_48_95@ damage.\\nCaptivated enemies grant bonuses to Classical champions.",
     "v": {
-     "v_39_59_89": [
-      39,
-      59,
-      89
+     "v_42_48_95": [
+      42,
+      48,
+      95
      ]
     }
    },
@@ -4910,12 +4920,12 @@
      0,
      50
     ],
-    "d": "Indie: Release a stream of notes at the target while posing for the fans, dealing %i:scaleAP% @v_600_900_1350@ magic damage over 2.5 seconds.\\nRising Star: Release bonus notes at nearby enemies.\\nSuperstar: Toss high notes at every enemy.",
+    "d": "Indie: Release a stream of notes at the target while posing for the fans, dealing %i:scaleAP% @v_550_825_1240@ magic damage over 2.5 seconds.\\nRising Star: Release bonus notes at nearby enemies.\\nSuperstar: Toss high notes at every enemy.",
     "v": {
-     "v_600_900_1350": [
-      600,
-      900,
-      1350
+     "v_550_825_1240": [
+      550,
+      825,
+      1240
      ]
     }
    },
@@ -4927,7 +4937,7 @@
      "Hyperpop",
      "Hitmaker"
     ],
-    "unlock": "Get 5 kills with Hyperpop Active",
+    "unlock": "Get 5 kills with Hyperpop active",
     "ab": "Head Banger",
     "mana": [
      0,
@@ -5068,12 +5078,12 @@
      0,
      0
     ],
-    "d": "Passive: Reduce all incoming damage by %i:scaleAP% @v_12_15_19@. Every second, zap adjacent enemies, dealing %i:scaleAP% @v_12_18_30@ magic damage.",
+    "d": "Passive: Reduce all incoming damage by %i:scaleAP% @v_13_16_21@. Every second, zap adjacent enemies, dealing %i:scaleAP% @v_12_18_30@ magic damage.",
     "v": {
-     "v_12_15_19": [
-      12,
-      15,
-      19
+     "v_13_16_21": [
+      13,
+      16,
+      21
      ],
      "v_12_18_30": [
       12,
@@ -5096,12 +5106,12 @@
      40,
      90
     ],
-    "d": "Passive: Your strongest Kobuko gains bonus Health equal to 100% of your Hyperpop Hype. (Current Health: 0)\\nActive: Amp Up for 8 seconds, healing %i:scaleHealth% %i:scaleAP% @v_57_67_92@ each second.",
+    "d": "Passive: Your strongest Kobuko gains bonus Health equal to 85% of your Hyperpop Hype. (Current Health: 0)\\nActive: Amp Up for 8 seconds, healing %i:scaleHealth% %i:scaleAP% @v_42_52_67@ each second.",
     "v": {
-     "v_57_67_92": [
-      57,
-      67,
-      92
+     "v_42_52_67": [
+      42,
+      52,
+      67
      ]
     }
    },
@@ -5119,7 +5129,7 @@
      40,
      100
     ],
-    "d": "Heal %i:scaleAP% @v_280_350_550@ Health and strike the target, dealing %i:scaleAP% @v_120_180_270@ magic damage to enemies in a 1 Hex circle and 10% Weakening them for 5 seconds.\\nWeaken: Reduce Damage Dealt",
+    "d": "Heal %i:scaleAP% @v_280_350_550@ Health and strike the target, dealing %i:scaleAP% @v_120_180_270@ magic damage to enemies in a 1 hex radius and 10% Weakening them for 5 seconds.\\nWeaken: reduce Damage Amp",
     "v": {
      "v_280_350_550": [
       280,
@@ -5148,12 +5158,12 @@
      0,
      40
     ],
-    "d": "Convene the K/DA fan club, throwing 3 confetti streams at target that each deal %i:scaleAP% @v_75_115_175@ magic damage. If they kill, permanently gain 1% Ability Power.\\nCurrent Bonus: 0 Ability Power",
+    "d": "Convene the K/DA fan club, throwing 3 confetti streams at the target that each deal %i:scaleAP% @v_70_105_155@ magic damage. If they kill, permanently gain 1% Ability Power.\\nCurrent Bonus: 0 Ability Power",
     "v": {
-     "v_75_115_175": [
-      75,
-      115,
-      175
+     "v_70_105_155": [
+      70,
+      105,
+      155
      ]
     }
    },
@@ -5241,17 +5251,17 @@
      30,
      70
     ],
-    "d": "Fire a hail of arrows, dealing %i:scaleAD% %i:scaleAP% @v_260_390_590@ physical damage to the target and %i:scaleAD% %i:scaleAP% @v_130_195_295@ damage to adjacent enemies. 20% Slow them for 4 seconds.\\nSlow: Reduce Attack Speed",
+    "d": "Fire a hail of arrows, dealing %i:scaleAD% %i:scaleAP% @v_275_415_620@ physical damage to the target and %i:scaleAD% %i:scaleAP% @v_137p5_207p5_310@ damage to adjacent enemies. 20% Slow them for 4 seconds.\\nSlow: Reduce Attack Speed",
     "v": {
-     "v_260_390_590": [
-      260,
-      390,
-      590
+     "v_275_415_620": [
+      275,
+      415,
+      620
      ],
-     "v_130_195_295": [
-      130,
-      195,
-      295
+     "v_137p5_207p5_310": [
+      137.5,
+      207.5,
+      310
      ]
     }
    },
@@ -5293,22 +5303,22 @@
      0,
      50
     ],
-    "d": "Passive: Attacks deal %i:scaleAP% @v_40_60_90@ bonus magic damage.\\nActive: Throw a bomb at the target that deals %i:scaleAP% @v_180_270_405@ magic damage to them and %i:scaleAP% @v_80_120_180@ magic damage to adjacent enemies.",
+    "d": "Passive: Attacks deal %i:scaleAP% @v_40_60_90@ bonus magic damage.\\nActive: Throw a bomb at the target that deals %i:scaleAP% @v_155_235_355@ magic damage to them and %i:scaleAP% @v_70_105_160@ magic damage to adjacent enemies.",
     "v": {
      "v_40_60_90": [
       40,
       60,
       90
      ],
-     "v_180_270_405": [
-      180,
-      270,
-      405
+     "v_155_235_355": [
+      155,
+      235,
+      355
      ],
-     "v_80_120_180": [
-      80,
-      120,
-      180
+     "v_70_105_160": [
+      70,
+      105,
+      160
      ]
     }
    },
@@ -5326,12 +5336,12 @@
      15,
      90
     ],
-    "d": "Fire a paddle ball backwards and redirect it towards the farthest enemy, dealing %i:scaleAP% @v_450_675_1000@ magic damage to the first enemy hit. If they die, the ball ricochets, dealing excess damage to the next enemy hit.",
+    "d": "Fire a paddle ball backwards and redirect it towards the farthest enemy, dealing %i:scaleAP% @v_450_675_1100@ magic damage to the first enemy hit. If they die, the ball ricochets, dealing excess damage to the next enemy hit.",
     "v": {
-     "v_450_675_1000": [
+     "v_450_675_1100": [
       450,
       675,
-      1000
+      1100
      ]
     }
    }
@@ -5346,7 +5356,7 @@
     "v": {}
    },
    "Arcanist": {
-    "name": "Arcanist",
+    "name": "Arkanist",
     "d": "Dein Team erhält Fähigkeitsstärke, deine Arkanisten erhalten mehr.",
     "rows": [
      {
@@ -5357,12 +5367,12 @@
      {
       "n": 4,
       "s": "silver",
-      "t": "%i:scaleAP% 18%, %i:scaleAP% 50% for Arcanists"
+      "t": "%i:scaleAP% 18%, %i:scaleAP% 50% für Arkanisten"
      },
      {
       "n": 6,
       "s": "gold",
-      "t": "%i:scaleAP% 30%, %i:scaleAP% 70% für Arkanisten"
+      "t": "%i:scaleAP% 30%, %i:scaleAP% 75% für Arkanisten"
      }
     ],
     "v": {}
@@ -5380,12 +5390,12 @@
      {
       "n": 3,
       "s": "bronze",
-      "t": "1 Instrument; %i:scaleAS% 20%, %i:scaleMana% 5"
+      "t": "1 Instrument; %i:scaleAS% 25%, %i:scaleMana% 5"
      },
      {
       "n": 5,
       "s": "silver",
-      "t": "2 Instrumente; %i:scaleAS% 35%, %i:scaleMana% 8"
+      "t": "2 Instrumente; %i:scaleAS% 40%, %i:scaleMana% 8"
      },
      {
       "n": 7,
@@ -5401,28 +5411,6 @@
     "rows": [],
     "v": {}
    },
-   "Bodyguard": {
-    "name": "Bodyguard",
-    "d": "While at least one Bodyguard is alive, your team gains 15 Armor and Magic Resist. Bodyguards gain more.",
-    "rows": [
-     {
-      "n": 2,
-      "s": "bronze",
-      "t": "%i:scaleArmor% %i:scaleMR% 22"
-     },
-     {
-      "n": 4,
-      "s": "silver",
-      "t": "%i:scaleArmor% %i:scaleMR% 55"
-     },
-     {
-      "n": 6,
-      "s": "gold",
-      "t": "%i:scaleArmor% %i:scaleMR% 115"
-     }
-    ],
-    "v": {}
-   },
    "Boy Band": {
     "name": "Boy-Band",
     "d": "",
@@ -5431,7 +5419,7 @@
    },
    "Choreographer": {
     "name": "Choreograf",
-    "d": "Allies who start in the front 2 rows gain Shield. All other allies gain Damage Amp. Choreographers gain double.",
+    "d": "Verbündete, die in den vorderen beiden Reihen starten, erhalten einen Schild. Alle anderen Verbündeten erhalten Schadenssteigerung. Choreografen erhalten das Doppelte.",
     "rows": [
      {
       "n": 2,
@@ -5532,7 +5520,7 @@
      {
       "n": 3,
       "s": "silver",
-      "t": "and 2% %i:scaleHealth% per level."
+      "t": "und 2% %i:scaleHealth% pro Stufe."
      },
      {
       "n": 4,
@@ -5564,12 +5552,12 @@
      {
       "n": 7,
       "s": "gold",
-      "t": "Heartsteel champions gain an additional 150% of active Heartsteel bonuses."
+      "t": "HEARTSTEEL-Champions erhalten zusätzlich 120% der aktiven HEARTSTEEL-Boni."
      },
      {
       "n": 7,
       "s": "prismatic",
-      "t": "Heartsteel champions gain an additional 150% of active Heartsteel bonuses.\\nPrismatic: Buckle up—HEARTSTEEL IS BACK!"
+      "t": "Heartsteel champions gain an additional 120% of active Heartsteel bonuses.\\nPrismatic: Buckle up—HEARTSTEEL IS BACK!"
      }
     ],
     "v": {}
@@ -5586,7 +5574,7 @@
      {
       "n": 4,
       "s": "gold",
-      "t": "2 Big Shots, %i:scaleAD% 35%"
+      "t": "2 Big Shots, %i:scaleAD% 40%"
      }
     ],
     "v": {}
@@ -5609,17 +5597,17 @@
      {
       "n": 3,
       "s": "silver",
-      "t": "%i:scaleHealth% 200, %i:scaleAS% 15%, 1.5x Hype"
+      "t": "%i:scaleHealth% 150, %i:scaleAS% 15%, 1.5x Hype"
      },
      {
       "n": 4,
       "s": "silver",
-      "t": "%i:scaleHealth% 300, %i:scaleAS% 25%, 3x Hype"
+      "t": "%i:scaleHealth% 200, %i:scaleAS% 20%, 2.5x Hype"
      },
      {
       "n": 5,
       "s": "gold",
-      "t": "%i:scaleHealth% 500, %i:scaleAS% 40%, 3.5x Hype"
+      "t": "%i:scaleHealth% 350, %i:scaleAS% 33%, 3x Hype"
      }
     ],
     "v": {
@@ -5642,12 +5630,12 @@
      {
       "n": 3,
       "s": "silver",
-      "t": "14 Decibels"
+      "t": "15 Decibels"
      },
      {
       "n": 4,
       "s": "gold",
-      "t": "18 Decibels. The mix is 50% stronger."
+      "t": "18 Decibels. The mix is 65% stronger."
      }
     ],
     "v": {}
@@ -5670,12 +5658,12 @@
      {
       "n": 5,
       "s": "silver",
-      "t": "%i:scaleHealth% 250; personalisierte Geschenke, die %i:scaleAD% 25% oder %i:scaleAP% 25% gewähren"
+      "t": "%i:scaleHealth% 225; personalisierte Geschenke, die %i:scaleAD% 22% oder %i:scaleAP% 22% gewähren"
      },
      {
       "n": 7,
       "s": "gold",
-      "t": "%i:scaleHealth% 550; Every 2 player combats, gain gold and a consumable!"
+      "t": "%i:scaleHealth% 450; du erhältst alle 2 PvP-Runden Gold und einen Verbrauchsgegenstand!"
      },
      {
       "n": 10,
@@ -5724,7 +5712,7 @@
      {
       "n": 7,
       "s": "silver",
-      "t": "SCHURKE: 60% %i:scaleAS% , das über 8 Sekunden abfällt."
+      "t": "SCHURKE: 45% %i:scaleAS% , das über 8 Sekunden abfällt."
      },
      {
       "n": 10,
@@ -5734,12 +5722,12 @@
      {
       "n": 13,
       "s": "silver",
-      "t": "WATCH ME: Betäubt alle Gegner 1.25 Sekunden lang."
+      "t": "WATCH ME: Betäubt alle Gegner 1 Sekunden lang."
      },
      {
       "n": 15,
       "s": "gold",
-      "t": "FIRESTARTER: Gegner erleiden über 8 Sekunden magischen Schaden in Höhe von 16% ihres max. Lebens."
+      "t": "FIRESTARTER: Gegner erleiden über 8 Sekunden magischen Schaden in Höhe von 12% ihres max. Lebens."
      },
      {
       "n": 21,
@@ -5761,19 +5749,19 @@
      {
       "n": 4,
       "s": "silver",
-      "t": "%i:scaleDA% 18%; Gefesselte werfen bei ihrem Tod Rosen und heilen einen Klassik-Champion um %i:scaleHealth% 10%."
+      "t": "%i:scaleDA% 20%; Gefesselte werfen bei ihrem Tod Rosen und heilen einen Klassik-Champion um %i:scaleHealth% 10%."
      },
      {
       "n": 6,
       "s": "gold",
-      "t": "%i:scaleDA% 33%; die Gefesselten haben eine Chance von 15%, bei ihrem Tod auf deine Bank zu kommen."
+      "t": "%i:scaleDA% 35%; die Gefesselten haben eine Chance von 15%, bei ihrem Tod auf deine Bank zu kommen."
      }
     ],
     "v": {}
    },
    "Collab": {
     "name": "Kollab",
-    "d": "Collab champions become inspired after taking or dealing damage 8 times, gaining Attack Damage and Ability Power.\\nEvery 7 inspirations during player combat, gain copies of Collab champions. (?/7)\\nEach game a different set of champions gain the Collab trait!",
+    "d": "Collab champions become inspired after taking or dealing damage 8 times, gaining Attack Damage and Ability Power.\\nEvery 7 inspirations during player combat, gain copies of Collab champions. (?/7)\\nIn jedem Match erhält eine andere Auswahl von Champions das Kollab-Attribut!",
     "rows": [
      {
       "n": 3,
@@ -5784,6 +5772,28 @@
       "n": 5,
       "s": "gold",
       "t": "%i:scaleAD% %i:scaleAP% 20%"
+     }
+    ],
+    "v": {}
+   },
+   "Bodyguard": {
+    "name": "Leibwächter",
+    "d": "Solange mindestens ein Leibwächter am Leben ist, erhält dein Team 15 Rüstung und Magieresistenz. Leibwächter erhalten mehr.",
+    "rows": [
+     {
+      "n": 2,
+      "s": "bronze",
+      "t": "%i:scaleArmor% %i:scaleMR% 22"
+     },
+     {
+      "n": 4,
+      "s": "silver",
+      "t": "%i:scaleArmor% %i:scaleMR% 55"
+     },
+     {
+      "n": 6,
+      "s": "gold",
+      "t": "%i:scaleArmor% %i:scaleMR% 105"
      }
     ],
     "v": {}
@@ -5829,17 +5839,17 @@
      {
       "n": 2,
       "s": "bronze",
-      "t": "%i:scaleDR% 15% bis %i:scaleDR% 25%"
+      "t": "%i:scaleDR% 18% bis %i:scaleDR% 25%"
      },
      {
       "n": 4,
       "s": "silver",
-      "t": "%i:scaleDR% 25% bis %i:scaleDR% 35%"
+      "t": "%i:scaleDR% 28% bis %i:scaleDR% 35%"
      },
      {
       "n": 6,
       "s": "gold",
-      "t": "%i:scaleDR% 35% to %i:scaleDR% 45%"
+      "t": "%i:scaleDR% 35% bis %i:scaleDR% 48%"
      }
     ],
     "v": {}
@@ -5863,7 +5873,7 @@
      {
       "n": 3,
       "s": "bronze",
-      "t": "15% %i:scaleAD% %i:scaleAP% , 2 enemies"
+      "t": "15% %i:scaleAD% %i:scaleAP% , 2 Gegner"
      },
      {
       "n": 5,
@@ -5887,33 +5897,6 @@
     "name": "Plattenmogul",
     "d": "",
     "rows": [],
-    "v": {}
-   },
-   "Prodigy": {
-    "name": "Prodigy",
-    "d": "Dein Team erhält 1 Manaregeneration. Wunderkinder erhalten mehr.",
-    "rows": [
-     {
-      "n": 2,
-      "s": "bronze",
-      "t": "2"
-     },
-     {
-      "n": 3,
-      "s": "silver",
-      "t": "3"
-     },
-     {
-      "n": 4,
-      "s": "silver",
-      "t": "6"
-     },
-     {
-      "n": 5,
-      "s": "gold",
-      "t": "7; Der Verbündete mit dem niedrigsten Leben wird um 12% des Schadens geheilt, den Fähigkeiten von Wunderkindern verursachen."
-     }
-    ],
     "v": {}
    },
    "Producer": {
@@ -5940,7 +5923,7 @@
     "v": {}
    },
    "Renegade": {
-    "name": "Renegade",
+    "name": "Renegat",
     "d": "Renegaten erhalten Präzision, Chance auf kritische Treffer und kritischen Trefferschaden.",
     "rows": [
      {
@@ -5988,7 +5971,7 @@
      {
       "n": 7,
       "s": "gold",
-      "t": "Every 3 seconds he lives, 2 bolts blast nearby enemies, repeating 15% of damage dealt by Rock champions as magic damage."
+      "t": "Alle 3 Sekunden, die er lebt, treffen 2 Bolzen Gegner in der Nähe und wiederholen 18% des von Rock-Champions verursachten Schadens als magischen Schaden."
      }
     ],
     "v": {}
@@ -6062,7 +6045,7 @@
    },
    "Trickshot": {
     "name": "Trickshot",
-    "d": "Trickshots' Attacks and Abilities ricochet. Each ricochet deals a percentage of the previous bounce's damage.",
+    "d": "Trickschuss-Angriffe und -Fähigkeiten prallen ab. Jeder Querschläger verursacht Schaden in Höhe eines Prozentsatzes des vorangehenden Treffers.",
     "rows": [
      {
       "n": 2,
@@ -6077,7 +6060,7 @@
      {
       "n": 4,
       "s": "gold",
-      "t": "2 richochets; 33% of previous damage"
+      "t": "2 Querschläger; 33% des vorherigen Schadens"
      }
     ],
     "v": {}
@@ -6089,22 +6072,22 @@
      {
       "n": 3,
       "s": "bronze",
-      "t": "\\nA-Seite: Sieg\\nMitglieder von True Damage verursachen 18% zusätzlichen absoluten Schaden. Du erhältst 2 Glitzer bei einem Kill + 10, wenn du den Kampf gewinnst."
+      "t": "A-Seite: Sieg\\nMitglieder von True Damage verursachen 18% zusätzlichen absoluten Schaden. Du erhältst 2 Glitzer bei einem Kill + 15, wenn du den Kampf gewinnst."
      },
      {
       "n": 5,
       "s": "gold",
-      "t": "30% absoluter Schaden. 4 Glitzer bei einem Kill + 18, wenn du den Kampf gewinnst."
+      "t": "30% absoluter Schaden. 4 Glitzer bei einem Kill + 20, wenn du den Kampf gewinnst."
      },
      {
       "n": 5,
       "s": "prismatic",
-      "t": "67% absoluter Schaden. 10 Glitzer bei einem Kill + 20, wenn du den Kampf gewinnst.\\nPrismatisch: KNOW MY NAME dröhnt aus dem Plattenspieler!\\n„True Damage“-Mitglieder verursachen 99 % zusätzlichen absoluten Schaden verdienen doppelt so viel Glitzer."
+      "t": "67% absoluter Schaden. 10 Glitzer bei einem Kill + 30, wenn du den Kampf gewinnst.\\nPrismatisch: KNOW MY NAME dröhnt aus dem Plattenspieler!\\n„True Damage“-Mitglieder verursachen 99 % zusätzlichen absoluten Schaden und verdienen doppelt so viel Glitzer."
      },
      {
       "n": 3,
       "s": "bronze",
-      "t": "\\nB-Seite: Niederlage\\nDu erhältst nach einer Niederlage 14 Glitzer + 6 pro Niederlage in Folge auf der B-Seite. Wenn du gewinnst, verlierst du 50% deines Glitzers."
+      "t": "B-Seite: Niederlage\\nDu erhältst nach einer Niederlage 14 Glitzer + 6 pro Niederlage in Folge auf der B-Seite. Wenn du gewinnst, verlierst du 50% deines Glitzers."
      },
      {
       "n": 5,
@@ -6125,14 +6108,41 @@
     "rows": [],
     "v": {}
    },
-   "Encore": {
-    "name": "Zugabe",
-    "d": "When Encore champions fire projectiles with their abilities, they fire an extra one with reduced effectiveness.",
+   "Prodigy": {
+    "name": "Wunderkind",
+    "d": "Dein Team erhält 1 Manaregeneration. Wunderkinder erhalten mehr.",
     "rows": [
      {
       "n": 2,
       "s": "bronze",
-      "t": "25% effectiveness"
+      "t": "2"
+     },
+     {
+      "n": 3,
+      "s": "silver",
+      "t": "3"
+     },
+     {
+      "n": 4,
+      "s": "silver",
+      "t": "5"
+     },
+     {
+      "n": 5,
+      "s": "gold",
+      "t": "6; Der Verbündete mit dem niedrigsten Leben wird um 10% des Schadens geheilt, den Fähigkeiten von Wunderkindern verursachen."
+     }
+    ],
+    "v": {}
+   },
+   "Encore": {
+    "name": "Zugabe",
+    "d": "Wenn „Zugabe“-Champions mit ihren Fähigkeiten Geschosse abfeuern, verschießen sie ein zusätzliches mit verringerter Effektivität.",
+    "rows": [
+     {
+      "n": 2,
+      "s": "bronze",
+      "t": "25% Effektivität"
      },
      {
       "n": 4,
@@ -6167,7 +6177,7 @@
      {
       "n": 6,
       "s": "gold",
-      "t": "%i:scaleAP% 30%, %i:scaleAP% 70% for Arcanists"
+      "t": "%i:scaleAP% 30%, %i:scaleAP% 75% for Arcanists"
      }
     ],
     "v": {}
@@ -6179,12 +6189,12 @@
      {
       "n": 3,
       "s": "bronze",
-      "t": "1 Instrument; %i:scaleAS% 20%, %i:scaleMana% 5"
+      "t": "1 Instrument; %i:scaleAS% 25%, %i:scaleMana% 5"
      },
      {
       "n": 5,
       "s": "silver",
-      "t": "2 Instruments; %i:scaleAS% 35%, %i:scaleMana% 8"
+      "t": "2 Instruments; %i:scaleAS% 40%, %i:scaleMana% 8"
      },
      {
       "n": 7,
@@ -6217,7 +6227,7 @@
      {
       "n": 6,
       "s": "gold",
-      "t": "%i:scaleArmor% %i:scaleMR% 115"
+      "t": "%i:scaleArmor% %i:scaleMR% 105"
      }
     ],
     "v": {}
@@ -6267,12 +6277,12 @@
      {
       "n": 4,
       "s": "silver",
-      "t": "%i:scaleDA% 18%; the Captivated throw roses on death, healing a Classical champion for %i:scaleHealth% 10%"
+      "t": "%i:scaleDA% 20%; the Captivated throw roses on death, healing a Classical champion for %i:scaleHealth% 10%"
      },
      {
       "n": 6,
       "s": "gold",
-      "t": "%i:scaleDA% 33%; the Captivated have a 15% chance to join your bench on death."
+      "t": "%i:scaleDA% 35%; the Captivated have a 15% chance to join your bench on death."
      }
     ],
     "v": {}
@@ -6326,7 +6336,7 @@
    },
    "Encore": {
     "name": "Encore",
-    "d": "When Encore champions fire projectiles with their abilities, they fire an extra one with reduced effectiveness.",
+    "d": "When Encore champions fire projectiles with their Abilities, they fire an extra one with reduced effectiveness.",
     "rows": [
      {
       "n": 2,
@@ -6419,12 +6429,12 @@
      {
       "n": 7,
       "s": "gold",
-      "t": "Heartsteel champions gain an additional 150% of active Heartsteel bonuses."
+      "t": "Heartsteel champions gain an additional 120% of active Heartsteel bonuses."
      },
      {
       "n": 7,
       "s": "prismatic",
-      "t": "Heartsteel champions gain an additional 150% of active Heartsteel bonuses.\\nPrismatic: Buckle up—HEARTSTEEL IS BACK!"
+      "t": "Heartsteel champions gain an additional 120% of active Heartsteel bonuses.\\nPrismatic: Buckle up—HEARTSTEEL IS BACK!"
      }
     ],
     "v": {}
@@ -6441,7 +6451,7 @@
      {
       "n": 4,
       "s": "gold",
-      "t": "2 Big Shots, %i:scaleAD% 35%"
+      "t": "2 Big Shots, %i:scaleAD% 40%"
      }
     ],
     "v": {}
@@ -6464,17 +6474,17 @@
      {
       "n": 3,
       "s": "silver",
-      "t": "%i:scaleHealth% 200, %i:scaleAS% 15%, 1.5x Hype"
+      "t": "%i:scaleHealth% 150, %i:scaleAS% 15%, 1.5x Hype"
      },
      {
       "n": 4,
       "s": "silver",
-      "t": "%i:scaleHealth% 300, %i:scaleAS% 25%, 3x Hype"
+      "t": "%i:scaleHealth% 200, %i:scaleAS% 20%, 2.5x Hype"
      },
      {
       "n": 5,
       "s": "gold",
-      "t": "%i:scaleHealth% 500, %i:scaleAS% 40%, 3.5x Hype"
+      "t": "%i:scaleHealth% 350, %i:scaleAS% 33%, 3x Hype"
      }
     ],
     "v": {
@@ -6497,12 +6507,12 @@
      {
       "n": 3,
       "s": "silver",
-      "t": "14 Decibels"
+      "t": "15 Decibels"
      },
      {
       "n": 4,
       "s": "gold",
-      "t": "18 Decibels. The mix is 50% stronger."
+      "t": "18 Decibels. The mix is 65% stronger."
      }
     ],
     "v": {}
@@ -6525,12 +6535,12 @@
      {
       "n": 5,
       "s": "silver",
-      "t": "%i:scaleHealth% 250; Personalized gifts that grant %i:scaleAD% 25% or %i:scaleAP% 25%"
+      "t": "%i:scaleHealth% 225; Personalized gifts that grant %i:scaleAD% 22% or %i:scaleAP% 22%"
      },
      {
       "n": 7,
       "s": "gold",
-      "t": "%i:scaleHealth% 550; Every 2 player combats, gain gold and a consumable!"
+      "t": "%i:scaleHealth% 450; Every 2 player combats, gain gold and a consumable!"
      },
      {
       "n": 10,
@@ -6569,29 +6579,29 @@
      {
       "n": 2,
       "s": "bronze",
-      "t": "%i:scaleDR% 15% to %i:scaleDR% 25%"
+      "t": "%i:scaleDR% 18% to %i:scaleDR% 25%"
      },
      {
       "n": 4,
       "s": "silver",
-      "t": "%i:scaleDR% 25% to %i:scaleDR% 35%"
+      "t": "%i:scaleDR% 28% to %i:scaleDR% 35%"
      },
      {
       "n": 6,
       "s": "gold",
-      "t": "%i:scaleDR% 35% to %i:scaleDR% 45%"
+      "t": "%i:scaleDR% 35% to %i:scaleDR% 48%"
      }
     ],
     "v": {}
    },
    "K/DA": {
     "name": "K/DA",
-    "d": "K/DA champions release new songs based on their total star level. At Combat Start and after 8 seconds, they gain power for each of their songs.",
+    "d": "K/DA champions release new songs based on their total star level. At combat start and after 8 seconds, they gain power for each of their songs.",
     "rows": [
      {
       "n": 3,
       "s": "bronze",
-      "t": "POP/STARS: 10% reduced max Mana."
+      "t": "POP/STARS: Abilities cost 10% less Mana."
      },
      {
       "n": 5,
@@ -6601,7 +6611,7 @@
      {
       "n": 7,
       "s": "silver",
-      "t": "VILLAIN: 60% %i:scaleAS% that decays over 8 seconds."
+      "t": "VILLAIN: 45% %i:scaleAS% that decays over 8 seconds."
      },
      {
       "n": 10,
@@ -6611,12 +6621,12 @@
      {
       "n": 13,
       "s": "silver",
-      "t": "WATCH ME: Stun all enemies for 1.25 seconds."
+      "t": "WATCH ME: Stun all enemies for 1 second."
      },
      {
       "n": 15,
       "s": "gold",
-      "t": "FIRESTARTER: Enemies take 16% max Health magic damage over 8 seconds."
+      "t": "FIRESTARTER: Enemies take 12% max Health magic damage over 8 seconds."
      },
      {
       "n": 21,
@@ -6628,7 +6638,7 @@
    },
    "Manager": {
     "name": "Manager",
-    "d": "Gain a Spotlight Hex. The ally who starts combat in it gains bonuses at Combat Start and every 5 seconds.",
+    "d": "Gain a spotlight hex. The ally standing in it gains bonuses at combat start and every 5 seconds.",
     "rows": [
      {
       "n": 2,
@@ -6716,12 +6726,12 @@
      {
       "n": 4,
       "s": "silver",
-      "t": "6"
+      "t": "5"
      },
      {
       "n": 5,
       "s": "gold",
-      "t": "7; The lowest Health ally heals for 12% of damage dealt by Prodigies' abilties."
+      "t": "6; The lowest Health ally heals for 10% of damage dealt by Prodigies' abilties."
      }
     ],
     "v": {}
@@ -6739,7 +6749,7 @@
      {
       "n": 1,
       "s": "bronze",
-      "t": "Your team takes 6% less damage from abilities."
+      "t": "Your team takes 6% less damage from Abilities."
      },
      {
       "n": 2,
@@ -6810,7 +6820,7 @@
      {
       "n": 7,
       "s": "gold",
-      "t": "Every 3 seconds he lives, 2 bolts blast nearby enemies, repeating 15% of damage dealt by Rock champions as magic damage."
+      "t": "Every 3 seconds he lives, 2 bolts blast nearby enemies, repeating 18% of damage dealt by Rock champions as magic damage."
      }
     ],
     "v": {}
@@ -6884,7 +6894,7 @@
    },
    "Trickshot": {
     "name": "Trickshot",
-    "d": "Trickshots' Attacks and Abilities ricochet. Each ricochet deals a percentage of the previous bounce's damage.",
+    "d": "Trickshots' attacks and Abilities ricochet. Each ricochet deals a percentage of the previous bounce's damage.",
     "rows": [
      {
       "n": 2,
@@ -6911,22 +6921,22 @@
      {
       "n": 3,
       "s": "bronze",
-      "t": "\\nA-Side: Win\\nTrue Damage members deal 18% bonus true damage. Gain 2 Bling on kill + 10 if you win combat."
+      "t": "A-Side: Win\\nTrue Damage members deal 18% bonus true damage. Gain 2 Bling on kill + 15 if you win combat."
      },
      {
       "n": 5,
       "s": "gold",
-      "t": "30% true damage. 4 Bling on kill + 18 if you win combat."
+      "t": "30% true damage. 4 Bling on kill + 20 if you win combat."
      },
      {
       "n": 5,
       "s": "prismatic",
-      "t": "67% true damage. 10 Bling on kill + 20 if you win combat.\\nPrismatic: KNOW MY NAME blasts from the record player!\\nTrue Damage members deal 99% bonus true damage and earn double the bling."
+      "t": "67% true damage. 10 Bling on kill + 30 if you win combat.\\nPrismatic: KNOW MY NAME blasts from the record player!\\nTrue Damage members deal 99% bonus true damage and earn double the bling."
      },
      {
       "n": 3,
       "s": "bronze",
-      "t": "\\nB-Side: Lose\\nAfter losing, gain 14 Bling + 6 per consecutive loss on the B-Side. If you win, lose 50% of your Bling."
+      "t": "B-Side: Lose\\nAfter losing, gain 14 Bling + 6 per consecutive loss on the B-Side. If you win, lose 50% of your Bling."
      },
      {
       "n": 5,
@@ -7081,7 +7091,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain an Illbeats Emblem, a Gargoyle Stoneplate, and a Braum.",
+    "d": "Gain an Illbeats Emblem, a Spear of Shojin, and a Draven.",
     "v": {}
    },
    "DA_19_IonicSparkCirclet": {
@@ -7100,7 +7110,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain an Ionic Spark Emblem, an Ionic Spark, and an Annie.",
+    "d": "Gain an Ionic Spark Emblem, a Negatron Cloak, and an Elise.",
     "v": {}
    },
    "DA_19_IonicSparkPrismaticTour": {
@@ -7138,7 +7148,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain a Jazz Emblem, a Spear of Shojin, and a Lucian.",
+    "d": "Gain a Jazz Emblem, a Spirit Visage, and a Galio.",
     "v": {}
    },
    "DA_19_KDACirclet": {
@@ -7157,7 +7167,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain a K/DA Emblem, a Guinsoo's Rageblade, and a Kai'Sa.",
+    "d": "Gain a K/DA Emblem, a Needlessly Large Rod, and a Neeko.",
     "v": {}
    },
    "DA_19_KDAPrismaticTour": {
@@ -7178,16 +7188,6 @@
     "d": "Gain the K/DA Prismatic Quest, 3 K/DA champions, 2 Tiny Duplicators, 2 Lesser Champion Duplicators, and 6 free rerolls.\\nReach 21 star levels of K/DA champions!",
     "v": {}
    },
-   "DA_19_ManagerCirclet": {
-    "name": "Manager Circlet",
-    "lv": 3,
-    "rounds": [
-     "3-2",
-     "4-2"
-    ],
-    "d": "Gain a Manager Emblem, a Chain Vest, and a Leona.",
-    "v": {}
-   },
    "DA_19_MosherCirclet": {
     "name": "Slayer Circlet",
     "lv": 3,
@@ -7204,7 +7204,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain a Slayer Emblem, a Titan's Resolve, and a Briar.",
+    "d": "Gain a Slayer Emblem, a Titan's Resolve, and a Camille.",
     "v": {}
    },
    "DA_19_OceanSongCirclet": {
@@ -7242,7 +7242,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain a Pentakill Emblem, a Giant Slayer, and a Viego.",
+    "d": "Gain a Pentakill Emblem, a Recurve Bow, and a Gnar.",
     "v": {}
    },
    "DA_19_PentakillPrismaticTour": {
@@ -7251,7 +7251,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain the Pentakill Prismatic Quest, 3 Pentakill champions, a Lucky Item Chest, and 7 gold.\\nReach level 10 and have a Pentakill ally score multikills with 7 Pentakill active!",
+    "d": "Gain the Pentakill Prismatic Quest, 3 Pentakill champions, a Lucky Item Chest, and 7 gold.\\nWith 7 Pentakill active, have the Lightbringer get kills and reach level 10!",
     "v": {}
    },
    "DA_19_PentakillPrismaticTourPlus": {
@@ -7261,7 +7261,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "Gain the Pentakill Prismatic Quest, 3 Pentakill champions, 2 components, and 10 gold.\\nReach level 10 and have a Pentakill ally score multikills with 7 Pentakill active!",
+    "d": "Gain the Pentakill Prismatic Quest, 3 Pentakill champions, 2 components, and 10 gold.\\nWith 7 Pentakill active, have the Lightbringer get kills and reach level 10!",
     "v": {}
    },
    "DA_19_PyramidScheme": {
@@ -7308,7 +7308,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain a Swiftstriker Emblem, a Hextech Gunblade, and a Bard.",
+    "d": "Gain a Swiftstriker Emblem, a Rabadon's Deathcap, and a Bard.",
     "v": {}
    },
    "DA_19_TrueDamageCirclet": {
@@ -7355,7 +7355,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain a Classical Emblem, a Spirit Visage, and a Nasus.",
+    "d": "Gain a Classical Emblem, a Gargoyle Stoneplate, and a Nasus.",
     "v": {}
    },
    "DA_Augment19_Manager_ManagementTrack": {
@@ -7364,7 +7364,16 @@
     "rounds": [
      "3-2"
     ],
-    "d": "Gain a Manager Emblem and a Leona. When champions gain bonuses from Manager there is a 60% chance to gain 1 gold.\\nAfter collecting 20 gold from the Manager trait, gain a Dr. Mundo and a Warmog's Armor.",
+    "d": "Gain a Manager Emblem and a Leona. When champions gain bonuses from Manager there is a 40% chance to gain 1 gold.\\nAfter collecting 40 gold from the Manager trait, gain a Dr. Mundo and a Warmog's Armor.",
+    "v": {}
+   },
+   "DA_Augment19_Manager_ManagementTrackPlus": {
+    "name": "Management Track+",
+    "lv": 3,
+    "rounds": [
+     "4-2"
+    ],
+    "d": "Gain a Manager Emblem and a Leona. When champions gain bonuses from Manager there is a 40% chance to gain 1 gold.\\nAfter collecting 30 gold from the Manager trait, gain a Dr. Mundo and a Warmog's Armor.",
     "v": {}
    },
    "DA_BandOfThievesII": {
@@ -7503,7 +7512,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "After each player combat, gain a copy of a random champion on your board.\\nIf you have fewer than 3 unique champions, you may instead instead gain gold",
+    "d": "After each player combat, gain a copy of a random champion on your board.\\nIf you have fewer than 3 unique champions, you may instead gain gold.",
     "v": {}
    },
    "DA_ComebackStory": {
@@ -7870,7 +7879,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "Your units gain 2.5 Armor and Magic Resist for each non-Unique trait active in your team and your partner's team (counting duplicates).",
+    "d": "Your team gains 2.5 Armor and Magic Resist for each non-unique trait you and your partner have active (counting duplicates).",
     "v": {}
    },
    "DA_PrismaticDestiny": {
@@ -7966,7 +7975,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "Combat start: Your team gains 1.5% Attack Damage and Ability Power per second for 10 seconds. At max stacks, deal 12% bonus true damage.",
+    "d": "Combat start: Your team gains 1.5% Attack Damage and Ability Power per second for 10 seconds. At max stacks, deal 10% bonus true damage.",
     "v": {}
    },
    "DA_StarOfTheShow": {
@@ -8069,7 +8078,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "On the A-Side, True Damage champions gain 1% Attack Speed and 10 Health for every 20 Bling collected. On the B-Side, gain 3 Gold after losing combat.\\nGain 3 True Damage champions.",
+    "d": "On the A-Side, True Damage champions gain 1% Attack Speed and 10 Health for every 30 Bling collected. On the B-Side, gain 3 Gold after losing combat.\\nGain 3 True Damage champions.",
     "v": {}
    },
    "DA_UpwardMobility": {
@@ -8412,12 +8421,12 @@
     "v": {}
    },
    "DA_BundleOShroomsGold": {
-    "name": "Bundle o' Shrooms",
+    "name": "Bundle o' Shrooms II",
     "lv": 2,
     "rounds": [
      "2-1"
     ],
-    "d": "Gain 9 mushrooms, which each grant either 1 reroll, 2 XP, or 3 Tactician Health.\\nMushrooms have a small chance to be HUGE and grant double loot",
+    "d": "Gain 11 mushrooms, which each grant either 1 reroll, 2 XP, or 3 Tactician Health.\\nMushrooms have a small chance to be HUGE and grant double loot.",
     "v": {}
    },
    "DA_CalculatedLoss": {
@@ -8461,7 +8470,6 @@
     "name": "Chalice of Power",
     "lv": 2,
     "rounds": [
-     "2-1",
      "3-2",
      "4-2"
     ],
@@ -8577,7 +8585,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain 5 gold. Each time you 3-star a champion, gain 5 gold for each 3-star you have.",
+    "d": "Gain 8 gold. Each time you 3-star a champion, gain 4 gold for each 3-star you have.",
     "v": {}
    },
    "DA_CryMeARiver": {
@@ -8785,7 +8793,7 @@
     "rounds": [
      "4-2"
     ],
-    "d": "Gain 32 gold.",
+    "d": "Gain 28 gold.",
     "v": {}
    },
    "DA_GildedSteel": {
@@ -8980,7 +8988,7 @@
      "2-1",
      "3-2"
     ],
-    "d": "Your Jazz champions gain 150% increased Health and Damage Amp from the Jazz trait. Gain a Lucian and a Galio.",
+    "d": "Your Jazz champions gain 100% increased Health and Damage Amp from the Jazz trait. Gain a Lucian and a Galio.",
     "v": {}
    },
    "DA_JeweledLotus_I": {
@@ -9154,7 +9162,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Your Pentakill champions gain 10 Health permanently every time the Pentakill trait executes an enemy. Gain 3 Pentakill champions.",
+    "d": "Your Pentakill champions gain 8 Health permanently every time the Pentakill trait executes an enemy. Gain 3 Pentakill champions.",
     "v": {}
    },
    "DA_Pilfer": {
@@ -9211,11 +9219,10 @@
     "name": "Randuin's Omen",
     "lv": 2,
     "rounds": [
-     "2-1",
      "3-2",
      "4-2"
     ],
-    "d": "Gain a Randuin's Omen, an item which grants 30 Armor and Magic Resist to the holder and allies within 1 hex.",
+    "d": "Gain a Randuin's Omen, an item which grants 33 Armor and Magic Resist to the holder and allies within 1 hex.",
     "v": {}
    },
    "DA_Renegade19_HighRolling": {
@@ -9253,7 +9260,7 @@
     "rounds": [
      "3-2"
     ],
-    "d": "Gain 16g of champions that all share a trait.",
+    "d": "Gain 16 gold of champions that all share a trait.",
     "v": {}
    },
    "DA_SalvageBin": {
@@ -9433,7 +9440,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "After 12 seconds of combat, your team heals 30% max Health and enemies take 12% max Health true damage.",
+    "d": "After 12 seconds of combat, your team heals 24% max Health and enemies take 12% max Health true damage.",
     "v": {}
    },
    "DA_TheGoldenDragon": {
@@ -9490,7 +9497,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "Gain a Spatula. Spatula or Frying Pan items gain 20% Attack Speed and 3 Mana Regen.",
+    "d": "Gain a Spatula. Spatula and Frying Pan items gain 20% Attack Speed and 3 Mana Regen.",
     "v": {}
    },
    "DA_VerticalityII": {
@@ -9545,11 +9552,10 @@
     "name": "Zeke's Herald",
     "lv": 2,
     "rounds": [
-     "2-1",
      "3-2",
      "4-2"
     ],
-    "d": "Gain a Zeke's Herald, an item which grants 30% Attack Speed to the holder and allies within 2 hexes in the same row.",
+    "d": "Gain a Zeke's Herald, an item which grants 33% Attack Speed to the holder and allies within 2 hexes in the same row.",
     "v": {}
    },
    "DA_19_PyramidScheme_Level2": {
@@ -9709,7 +9715,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain 6 mushrooms, which each grant either 1 reroll, 2 XP, or 3 Tactician Health.\\nMushrooms have a small chance to be HUGE and grant double loot",
+    "d": "Gain 6 mushrooms, which each grant either 1 reroll, 2 XP, or 3 Tactician Health.\\nMushrooms have a small chance to be HUGE and grant double loot.",
     "v": {}
    },
    "DA_CalledShot": {
@@ -10066,9 +10072,7 @@
     "name": "Item Grab Bag",
     "lv": 1,
     "rounds": [
-     "2-1",
-     "3-2",
-     "4-2"
+     "2-1"
     ],
     "d": "Gain 1 random completed item.",
     "v": {}
@@ -10088,7 +10092,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain a Kennen. Your strongest Kennen becomes a Magic Assassin who permanently adds True Damage to his spell on kills.",
+    "d": "Gain a Kennen. Your strongest Kennen becomes a Magic Assassin who permanently adds True Damage to his Ability on kills.",
     "v": {}
    },
    "DA_KickStart": {
@@ -10248,7 +10252,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "Your units gain 1 Armor and Magic Resist for each non-Unique trait active in your team and your partner's team (counting duplicates).",
+    "d": "Your team gains 1 Armor and Magic Resist for each non-unique trait you and your partner have active (counting duplicates).",
     "v": {}
    },
    "DA_PatienceIsAVirtue": {
@@ -10284,7 +10288,7 @@
     "rounds": [
      "3-2"
     ],
-    "d": "Gain 10g of champions that all share a trait.",
+    "d": "Gain 10 gold of champions that all share a trait.",
     "v": {}
    },
    "DA_RollingForDays": {
@@ -10386,7 +10390,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "Your units gain 1.5% Attack Damage and 1.5% Ability Power for each non-unique Trait active across your team.",
+    "d": "Your team gains 1.5% Attack Damage and 1.5% Ability Power for each active non-unique trait.",
     "v": {}
    },
    "DA_StatsOnStats": {
@@ -10443,7 +10447,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "After 12 seconds of combat, your team heals 20% max Health and enemies take 8% max Health true damage.",
+    "d": "After 12 seconds of combat, your team heals 18% max Health and enemies take 8% max Health true damage.",
     "v": {}
    },
    "DA_TheTower": {
@@ -10492,7 +10496,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "After every 6 player combats, gain a completed item anvil.",
+    "d": "After every 7 player combats, gain a completed item anvil.",
     "v": {}
    },
    "DA_YoungAndWildAndFree": {
@@ -10522,17 +10526,17 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain an Arcanist Emblem, a Jeweled Gauntlet, and a Swain.",
+    "d": "Du erhältst ein Arkanist-Emblem, „Juwelenbesetzter Handschuh“ und einen Swain.",
     "v": {}
    },
    "DA_19_ChoreographerCirclet": {
-    "name": "Choreographer Circlet",
+    "name": "Choreografen-Reif",
     "lv": 3,
     "rounds": [
      "3-2",
      "4-2"
     ],
-    "d": "Gain a Choreographer Emblem, a Giant's Belt, and a Garen.",
+    "d": "Du erhältst ein Choregraf-Emblem, „Gürtel des Riesen“ und einen Garen.",
     "v": {}
    },
    "DA_19_ChoreographerCrown": {
@@ -10541,7 +10545,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain a Choreographer Emblem, an Adaptive Helm, and a Syndra.",
+    "d": "Du erhältst ein Choreograph-Emblem, „Adaptiver Helm“ und eine Syndra.",
     "v": {}
    },
    "DA_19_DemonVisionCirclet": {
@@ -10592,17 +10596,17 @@
     "v": {}
    },
    "DA_19_HeartsteelPrismaticTourPlus": {
-    "name": "Heartsteel Prismatic Tour+",
+    "name": "HEARTSTEEL – Prismatische Tour+",
     "lv": 3,
     "rounds": [
      "3-2",
      "4-2"
     ],
-    "d": "Gain the Heartsteel Prismatic Quest, 3 Heartsteel champions, 3 components, and 2 gold.\\nHave Heartsteel allies deal damage, block damage, and heal health with 7 Heartsteel active!",
+    "d": "Du erhältst die prismatische HEARTSTEEL-Quest, 3 HEARTSTEEL-Champions, 3 Komponenten und 2 Gold.\\nLasse HEARTSTEEL-Verbündete Schaden verursachen, Schaden blocken und Leben heilen, während 7 HEARTSTEEL-Einheiten aktiv sind!",
     "v": {}
    },
    "DA_19_HitmakerCirclet": {
-    "name": "Hitmaker Circlet",
+    "name": "Hitmaker-Reif",
     "lv": 3,
     "rounds": [
      "3-2",
@@ -10627,7 +10631,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "Gain an Illbeats Emblem, a Tear Of The Goddess, and a Draven.",
+    "d": "Du erhältst ein Illbeats-Emblem, eine Träne der Göttin und einen Draven.",
     "v": {}
    },
    "DA_19_IllBeatsCrown": {
@@ -10659,7 +10663,7 @@
     "v": {}
    },
    "DA_19_IonicSparkPrismaticTour": {
-    "name": "Ionic Spark Prismatic Tour",
+    "name": "Prismatische „Ionic Spark“-Tour",
     "lv": 3,
     "rounds": [
      "2-1"
@@ -10684,11 +10688,11 @@
      "3-2",
      "4-2"
     ],
-    "d": "Gain a Jazz Emblem, a Recurve Bow, and a Bard.",
+    "d": "Du erhältst ein Jazz-Emblem, einen Rekursivbogen und einen Bard.",
     "v": {}
    },
    "DA_19_JazzCrown": {
-    "name": "Jazz Crown",
+    "name": "Jazz-Krone",
     "lv": 3,
     "rounds": [
      "2-1"
@@ -10733,16 +10737,6 @@
     "d": "Du erhältst die prismatische K/DA-Quest, 3 K/DA-Champions, 2 winzige Duplikatoren, 2 kleine Champion-Duplikator und 6 kostenlose Händleraktualisierungen.\\nErreiche 21 Sternenwertungen mit K/DA-Champions!",
     "v": {}
    },
-   "DA_19_ManagerCirclet": {
-    "name": "Manager-Reif",
-    "lv": 3,
-    "rounds": [
-     "3-2",
-     "4-2"
-    ],
-    "d": "Du erhältst ein Manager-Emblem, „Kettenweste“ und eine Leona.",
-    "v": {}
-   },
    "DA_19_MosherCirclet": {
     "name": "Schlächter-Reif",
     "lv": 3,
@@ -10754,12 +10748,12 @@
     "v": {}
    },
    "DA_19_MosherCrown": {
-    "name": "Slayer Crown",
+    "name": "Schlächter-Krone",
     "lv": 3,
     "rounds": [
      "2-1"
     ],
-    "d": "Gain a Slayer Emblem, a Titan's Resolve, and a Briar.",
+    "d": "Gain a Slayer Emblem, a Titan's Resolve, and a Camille.",
     "v": {}
    },
    "DA_19_OceanSongCirclet": {
@@ -10773,7 +10767,7 @@
     "v": {}
    },
    "DA_19_OceanSongCrown": {
-    "name": "Beach Pop Crown",
+    "name": "Beach-Pop-Krone",
     "lv": 3,
     "rounds": [
      "2-1"
@@ -10782,7 +10776,7 @@
     "v": {}
    },
    "DA_19_PentakillCirclet": {
-    "name": "Pentakill Circlet",
+    "name": "Pentakill-Reif",
     "lv": 3,
     "rounds": [
      "3-2",
@@ -10806,7 +10800,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain the Pentakill Prismatic Quest, 3 Pentakill champions, a Lucky Item Chest, and 7 gold.\\nReach level 10 and have a Pentakill ally score multikills with 7 Pentakill active!",
+    "d": "Du erhältst die prismatische Pentakill-Quest, 3 Pentakill-Champions, eine Glücksgegenstandstruhe und 7 Gold.\\nErziele mit „Lichtbringer“ Kills, während 7 Pentakill-Einheiten aktiv sind, und erreiche Stufe 10!",
     "v": {}
    },
    "DA_19_PentakillPrismaticTourPlus": {
@@ -10816,7 +10810,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "Du erhältst die prismatische Pentakill-Quest, 3 Pentakill-Champions, 2 Komponenten und 10 Gold.\\nErreiche Stufe 10 und sorge dafür, dass ein Pentakill-Verbündeter Mehrfachkills erzielt, während 7 Pentakill-Einheiten aktiv sind!",
+    "d": "Du erhältst die prismatische Pentakill-Quest, 3 Pentakill-Champions, 2 Komponenten und 10 Gold.\\nErziele mit „Lichtbringer“ Kills, während 7 Pentakill-Einheiten aktiv sind, und erreiche Stufe 10!",
     "v": {}
    },
    "DA_19_PyramidScheme": {
@@ -10844,7 +10838,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain a Renegade Emblem, a Hand of Justice, and a Qiyana.",
+    "d": "Du erhältst ein Renegaten-Emblem, „Hand der Gerechtigkeit“ und eine Qiyana.",
     "v": {}
    },
    "DA_19_SwiftstrikerCirclet": {
@@ -10863,17 +10857,17 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain a Swiftstriker Emblem, a Hextech Gunblade, and a Bard.",
+    "d": "Du erhältst ein Schnellschläger-Emblem, „Hextech-Gunblade“ und einen Bard.",
     "v": {}
    },
    "DA_19_TrueDamageCirclet": {
-    "name": "True Damage Circlet",
+    "name": "„True Damage“-Reif",
     "lv": 3,
     "rounds": [
      "3-2",
      "4-2"
     ],
-    "d": "Gain a True Damage Emblem, a Giant's Belt, and an Ekko.",
+    "d": "Du erhältst ein True Damage-Emblem, „Gürtel des Riesen“ und einen Ekko.",
     "v": {}
    },
    "DA_19_TrueDamageCrown": {
@@ -10914,12 +10908,21 @@
     "v": {}
    },
    "DA_Augment19_Manager_ManagementTrack": {
-    "name": "Management Track",
+    "name": "Management-Song",
     "lv": 3,
     "rounds": [
      "3-2"
     ],
-    "d": "Gain a Manager Emblem and a Leona. When champions gain bonuses from Manager there is a 60% chance to gain 1 gold.\\nAfter collecting 20 gold from the Manager trait, gain a Dr. Mundo and a Warmog's Armor.",
+    "d": "Gain a Manager Emblem and a Leona. When champions gain bonuses from Manager there is a 40% chance to gain 1 gold.\\nAfter collecting 40 gold from the Manager trait, gain a Dr. Mundo and a Warmog's Armor.",
+    "v": {}
+   },
+   "DA_Augment19_Manager_ManagementTrackPlus": {
+    "name": "Management Track+",
+    "lv": 3,
+    "rounds": [
+     "4-2"
+    ],
+    "d": "Gain a Manager Emblem and a Leona. When champions gain bonuses from Manager there is a 40% chance to gain 1 gold.\\nAfter collecting 30 gold from the Manager trait, gain a Dr. Mundo and a Warmog's Armor.",
     "v": {}
    },
    "DA_BandOfThievesII": {
@@ -11184,7 +11187,7 @@
     "rounds": [
      "4-2"
     ],
-    "d": "Du erhältst ein goldenes Ei, das in 11 Runden schlüpft und reichlich Beute gewährt. Siegreiche Kämpfe gegen Spieler beschleunigen das Ausschlüpfen um eine zusätzliche Runde.",
+    "d": "Du erhältst ein goldenes Ei, das in 11 Runden schlüpft und reichlich Beute gewährt. Siegreiche PvP-Runden beschleunigen das Ausschlüpfen um eine zusätzliche Runde.",
     "v": {}
    },
    "DA_GoldenGamble": {
@@ -11229,7 +11232,7 @@
     "rounds": [
      "3-2"
     ],
-    "d": "Gain a Xayah, a Spear of Shojin and 3 gold.",
+    "d": "Du erhältst eine Xayah, „Speer von Shojin“ und 3 Gold.",
     "v": {}
    },
    "DA_HedgeFund": {
@@ -11335,7 +11338,7 @@
     "v": {}
    },
    "DA_MadScience": {
-    "name": "Mad Science",
+    "name": "Verrückte Wissenschaft",
     "lv": 3,
     "rounds": [
      "3-2",
@@ -11521,7 +11524,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "Kampfbeginn: Dein Team erhält 10 Sekunden lang pro Sekunde 1.5% Angriffsschaden und Fähigkeitsstärke. Bei maximalen Steigerungen verursachst du zusätzlich 12% absoluten Schaden.",
+    "d": "Kampfbeginn: Dein Team erhält 10 Sekunden lang pro Sekunde 1.5% Angriffsschaden und Fähigkeitsstärke. Bei maximalen Steigerungen verursachst du zusätzlich 10% absoluten Schaden.",
     "v": {}
    },
    "DA_StarOfTheShow": {
@@ -11530,7 +11533,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gain a 2-star 1-cost non-Tank champion and an Emblem for one of their traits. On Stage 3-1, gain 6 more copies of that champion.",
+    "d": "Du erhältst einen 1-Gold-Champion mit 2 Sternen, der kein Tank ist, und ein Emblem für eines seiner Attribute. In Phase 3–1 erhältst du 6 weitere Kopien dieses Champions.",
     "v": {}
    },
    "DA_StrangeDuetIII": {
@@ -11624,7 +11627,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Auf der A-Seite erhalten „True Damage“-Champions 1 % Angriffstempo und 10 Leben für jeden gesammelten 20 Glitzer. Auf der B-Seite erhältst du 3 Gold, nachdem du einen Kampf verloren hast.\\nDu erhältst 3 „True Damage“-Champions.",
+    "d": "Auf der A-Seite erhalten „True Damage“-Champions 1 % Angriffstempo und 10 Leben für jeden gesammelten 30 Glitzer. Auf der B-Seite erhältst du 3 Gold, nachdem du einen Kampf verloren hast.\\nDu erhältst 3 „True Damage“-Champions.",
     "v": {}
    },
    "DA_UpwardMobility": {
@@ -11768,7 +11771,7 @@
     "v": {}
    },
    "DA_ArmedAndGenerous": {
-    "name": "Armed and Generous",
+    "name": "Bewaffnet und großzügig",
     "lv": 2,
     "rounds": [
      "2-1",
@@ -11810,7 +11813,7 @@
     "v": {}
    },
    "DA_Augment19_Heartsteel_SmallSquad": {
-    "name": "Small Squad",
+    "name": "Kleines Team",
     "lv": 2,
     "rounds": [
      "2-1",
@@ -11854,7 +11857,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "If you have 2 or more active Bands, your team gains 18% Attack Damage and Ability Power.",
+    "d": "Wenn du 2 oder mehr aktive Bands hast, erhält dein Team 18% Angriffsschaden und Fähigkeitsstärke.",
     "v": {}
    },
    "DA_BeltSmith2": {
@@ -11885,7 +11888,7 @@
     "v": {}
    },
    "DA_BlindBoxIIPlus": {
-    "name": "Blind Box II",
+    "name": "Überraschungsbox II",
     "lv": 2,
     "rounds": [
      "3-2"
@@ -11972,7 +11975,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Du erhältst 9 Pilze, die dir entweder 1 Händleraktualisierung, 2 ERF oder 3 Taktikerleben gewähren.\\nEs besteht eine geringe Chance, dass die Pilze RIESIG sind und doppelte Beute gewähren.",
+    "d": "Du erhältst 11 Pilze, die dir entweder 1 Händleraktualisierung, 2 ERF oder 3 Taktikerleben gewähren.\\nEs besteht eine geringe Chance, dass die Pilze RIESIG sind und doppelte Beute gewähren.",
     "v": {}
    },
    "DA_CalculatedLoss": {
@@ -12013,14 +12016,13 @@
     "v": {}
    },
    "DA_ChaliceOfPowerAugment": {
-    "name": "Chalice of Power",
+    "name": "Kelch der Macht",
     "lv": 2,
     "rounds": [
-     "2-1",
      "3-2",
      "4-2"
     ],
-    "d": "Gain a Chalice of Power, an item which grants 25% Ability Power and 1 Mana Regen to the holder and allies within 2 hexes in the same row.",
+    "d": "Du erhältst einen Kelch der Macht. Dieser Gegenstand gewährt dem Träger und Verbündeten innerhalb von 2 Feldern in derselben Reihe 25% Fähigkeitsstärke und 1 Manaregeneration.",
     "v": {}
    },
    "DA_ChallengersGrace": {
@@ -12034,7 +12036,7 @@
     "v": {}
    },
    "DA_ChampionAirdrop": {
-    "name": "Champion Airdrop",
+    "name": "Champion-Luftabwurf",
     "lv": 2,
     "rounds": [
      "2-1"
@@ -12052,12 +12054,12 @@
     "v": {}
    },
    "DA_Choreographer19_DanceParty": {
-    "name": "Dance Party",
+    "name": "Tanzparty",
     "lv": 2,
     "rounds": [
      "3-2"
     ],
-    "d": "When you win combat, each surviving champion has a 5% chance to drop 1 gold. The chance increases by 15% for each Choreographer you're fielding. Gain 2 Choreographers.",
+    "d": "Wenn du einen Kampf gewinnst, hat jeder überlebende Champion eine Chance von 5%, 1 Gold fallen zu lassen. Die Chance erhöht sich um 15% für jeden Choreografen, den du einsetzt. Du erhältst 2 Choreografen.",
     "v": {}
    },
    "DA_Classical19_CombatAugment": {
@@ -12123,7 +12125,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Zu Beginn jeder Runde verleihen alle Verbündeten, die eine Bratpfanne oder einen Pfannenwender halten, dem nächstbefindlichen Champion dauerhaft 70 Leben. Du erhältst eine Bratpfanne.",
+    "d": "Zu Beginn jeder Runde gewähren alle Verbündeten, die eine Bratpfanne oder einen Pfannenwender halten, dem nächstbefindlichen Champion dauerhaft 70 Leben. Du erhältst eine Bratpfanne.",
     "v": {}
    },
    "DA_CountingStars": {
@@ -12132,7 +12134,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Du erhältst 5 Gold. Jedes Mal, wenn du einen Champion auf 3 Sterne aufwertest, erhältst du 5 Gold für jeden 3-Sterne-Champion, den du hast.",
+    "d": "Du erhältst 8 Gold. Jedes Mal, wenn du einen Champion auf 3 Sterne aufwertest, erhältst du 4 Gold für jeden 3-Sterne-Champion, den du hast.",
     "v": {}
    },
    "DA_CryMeARiver": {
@@ -12182,7 +12184,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "Rock champions gain 10% Attack Damage and Ability Power. Every 2 seconds the Infernal Idol lives, they gain 1% more. Gain 3 Rock champions.",
+    "d": "Rock-Champions erhalten 10 % Angriffsschaden und Fähigkeitsstärke. Alle 2 Sekunden, die der Infernalische Götze überlebt, erhält er 1 % mehr. Du erhältst 3 Rock-Champions.",
     "v": {}
    },
    "DA_Diversification": {
@@ -12326,7 +12328,7 @@
     "v": {}
    },
    "DA_GainGold": {
-    "name": "Du erhältst 21 Gold.",
+    "name": "Du erhältst 21 Gold",
     "lv": 2,
     "rounds": [
      "3-2"
@@ -12340,7 +12342,7 @@
     "rounds": [
      "4-2"
     ],
-    "d": "Du erhältst 32 Gold.",
+    "d": "Du erhältst 28 Gold.",
     "v": {}
    },
    "DA_GildedSteel": {
@@ -12505,7 +12507,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "Every 3 seconds, the 3 highest Health enemies take 5% max Health magic damage + 1% for every Ionic Spark champion you have fielded. Gain 3 Ionic Spark champions.",
+    "d": "Alle 3 Sekunden erleiden die 3 Gegner mit dem meisten Leben magischen Schaden in Höhe von 5% ihres max. Lebens + 1% für jeden „Ionic Spark“-Champion, den du eingesetzt hast. Du erhältst 3 „Ionic Spark“-Champions.",
     "v": {}
    },
    "DA_IonicSpark19_OurHeartsAligned": {
@@ -12515,7 +12517,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "Every time Ionic Spark champions collectively spend 600 Mana, they all gain a 10% max Health Shield for 6 seconds. Gain 3 Ionic Spark champions.",
+    "d": "Immer wenn „Ionic Spark“-Champions kollektiv 600 Mana ausgeben, erhalten sie alle für 6 Sekunden einen Schild in Höhe von 10% ihres max. Lebens. Du erhältst 3 „Ionic Spark“-Champions.",
     "v": {}
    },
    "DA_ItsMeBaby": {
@@ -12535,7 +12537,7 @@
      "2-1",
      "3-2"
     ],
-    "d": "Your Jazz champions gain 150% increased Health and Damage Amp from the Jazz trait. Gain a Lucian and a Galio.",
+    "d": "Deine Jazz-Champions erhalten durch das Jazz-Attribut 100% erhöhtes Leben und Schadenssteigerung. Du erhältst einen Lucian und einen Galio.",
     "v": {}
    },
    "DA_JeweledLotus_I": {
@@ -12709,7 +12711,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Deine Pentakill-Champions erhalten jedes Mal, wenn das Pentakill-Attribut einen Gegner hinrichtet, permanent 10 Leben. Du erhältst 3 Pentakill-Champions.",
+    "d": "Deine Pentakill-Champions erhalten jedes Mal, wenn das Pentakill-Attribut einen Gegner hinrichtet, permanent 8 Leben. Du erhältst 3 Pentakill-Champions.",
     "v": {}
    },
    "DA_Pilfer": {
@@ -12728,7 +12730,7 @@
      "2-1",
      "3-2"
     ],
-    "d": "Gain a Training Dummy with 3 Giant's Belts. Your training dummies drop 1 gold for every 700 damage they take.",
+    "d": "Du erhältst eine Übungspuppe mit 3 „Gürtel des Riesen“. Deine Übungspuppen lassen jeweils 1 Gold fallen, wenn sie 700 Schaden erleiden.",
     "v": {}
    },
    "DA_PlotArmor": {
@@ -12766,11 +12768,10 @@
     "name": "Randuins Omen",
     "lv": 2,
     "rounds": [
-     "2-1",
      "3-2",
      "4-2"
     ],
-    "d": "Du erhältst „Randuins Omen“, einen Gegenstand, der dem Träger und Verbündeten innerhalb von 1 Feld(ern) 30 Rüstung und Magieresistenz gewährt.",
+    "d": "Du erhältst „Randuins Omen“, einen Gegenstand, der dem Träger und Verbündeten innerhalb von 1 Feld(ern) 33 Rüstung und Magieresistenz gewährt.",
     "v": {}
    },
    "DA_Renegade19_HighRolling": {
@@ -12780,7 +12781,7 @@
      "2-1",
      "3-2"
     ],
-    "d": "Renegade kills have a chance to drop loot, scaling with Critical Strike Chance. The value of the loot given can also critically strike, granting even more loot. Gain a Qiyana.",
+    "d": "Kills von Renegaten haben eine Chance auf Beute, die mit der Chance auf kritische Treffer skaliert. Der Wert der gegebenen Beute kann auch einen kritischen Treffer auslösen, was noch mehr Beute verleiht. Du erhältst eine Qiyana.",
     "v": {}
    },
    "DA_Renekton19_HeroAugment": {
@@ -12808,7 +12809,7 @@
     "rounds": [
      "3-2"
     ],
-    "d": "Gain 16g of champions that all share a trait.",
+    "d": "Gain 16 gold of champions that all share a trait.",
     "v": {}
    },
    "DA_SalvageBin": {
@@ -12929,7 +12930,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Now and after every 5 rounds, gain 4 stat boosting consumables.",
+    "d": "Jetzt und nach jeweils 5 Runden erhältst du 4 werteverbessernde Verbrauchsgegenstände.",
     "v": {}
    },
    "DA_StrangeDuetII": {
@@ -12988,7 +12989,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "After 12 seconds of combat, your team heals 30% max Health and enemies take 12% max Health true damage.",
+    "d": "After 12 seconds of combat, your team heals 24% max Health and enemies take 12% max Health true damage.",
     "v": {}
    },
    "DA_TheGoldenDragon": {
@@ -13045,7 +13046,7 @@
      "3-2",
      "4-2"
     ],
-    "d": "Du erhältst einen Pfannenwender. Champions mit einem Pfannenwender oder einer Bratpfanne erhalten 20% Angriffstempo und 3 Manaregeneration.",
+    "d": "Du erhältst einen Pfannenwender. Pfannenwender und Bratpfannen erhalten 20% Angriffstempo und 3 Manaregeneration.",
     "v": {}
    },
    "DA_VerticalityII": {
@@ -13100,11 +13101,10 @@
     "name": "Zekes Herold",
     "lv": 2,
     "rounds": [
-     "2-1",
      "3-2",
      "4-2"
     ],
-    "d": "Du erhältst den Gegenstand „Zekes Herold“, der dem Träger und Verbündeten in maximal 2 Feldern Entfernung in derselben Reihe 30% Angriffstempo gewährt.",
+    "d": "Du erhältst den Gegenstand „Zekes Herold“, der dem Träger und Verbündeten in maximal 2 Feldern Entfernung in derselben Reihe 33% Angriffstempo gewährt.",
     "v": {}
    },
    "DA_19_PyramidScheme_Level2": {
@@ -13118,7 +13118,7 @@
     "name": "Pyramid Scheme, Level 3",
     "lv": 1,
     "rounds": [],
-    "d": "Combat start: If your opponent isn't already in the Pyramid Scheme, steal 1 gold from them and give them a weaker copy of this augment.",
+    "d": "Kampfbeginn: Wenn dein Gegner nicht bereits Teil des Pyramidensystems ist, stiehl ihm 1 Gold und gib ihm eine schwächere Kopie dieser Augmentierung.",
     "v": {}
    },
    "DA_19_PyramidScheme_Level4": {
@@ -13213,7 +13213,7 @@
     "v": {}
    },
    "DA_BlindBoxPlusPlus": {
-    "name": "Blind Box",
+    "name": "Überraschungsbox",
     "lv": 1,
     "rounds": [
      "4-2"
@@ -13350,7 +13350,7 @@
     "v": {}
    },
    "DA_CheatCode": {
-    "name": "Cheat Code",
+    "name": "Cheat-Code",
     "lv": 1,
     "rounds": [
      "2-1"
@@ -13486,7 +13486,7 @@
     "v": {}
    },
    "DA_FeelingLuckyPlus": {
-    "name": "Feeling Lucky+",
+    "name": "Wie ist es um dein Glück bestellt?+",
     "lv": 1,
     "rounds": [
      "4-2"
@@ -13504,7 +13504,7 @@
     "v": {}
    },
    "DA_FighterFlight": {
-    "name": "Kampf oder Flucht II",
+    "name": "Kampf oder Flucht",
     "lv": 1,
     "rounds": [
      "3-2",
@@ -13621,15 +13621,13 @@
     "name": "Gegenstand-Wundertüte I",
     "lv": 1,
     "rounds": [
-     "2-1",
-     "3-2",
-     "4-2"
+     "2-1"
     ],
     "d": "Du erhältst 1 zufälligen vollständigen Gegenstand.",
     "v": {}
    },
    "DA_KeepingTempo": {
-    "name": "Keeping Tempo",
+    "name": "Das Tempo halten",
     "lv": 1,
     "rounds": [
      "2-1"
@@ -13671,7 +13669,7 @@
     "rounds": [
      "4-2"
     ],
-    "d": "Gain 20 XP.",
+    "d": "Du erhältst 20 ERF.",
     "v": {}
    },
    "DA_LateGameSpecialist": {
@@ -13739,7 +13737,7 @@
     "v": {}
    },
    "DA_Olaf19_HeroAugment": {
-    "name": "Axe Crescendo",
+    "name": "Axt-Crescendo",
     "lv": 1,
     "rounds": [
      "2-1"
@@ -13853,7 +13851,7 @@
     "v": {}
    },
    "DA_Sett19_HeroAugment": {
-    "name": "Punch Line",
+    "name": "Schlaglinie",
     "lv": 1,
     "rounds": [
      "2-1"
@@ -13992,13 +13990,13 @@
     "v": {}
    },
    "DA_TheDrop": {
-    "name": "The Drop",
+    "name": "Der Drop",
     "lv": 1,
     "rounds": [
      "3-2",
      "4-2"
     ],
-    "d": "Nach 12 Sekunden im Kampf heilt dein Team 20% max. Leben und Gegner erleiden 8% des max. Lebens als absoluten Schaden.",
+    "d": "Nach 12 Sekunden im Kampf heilt dein Team 18% max. Leben und Gegner erleiden 8% des max. Lebens als absoluten Schaden.",
     "v": {}
    },
    "DA_TheTower": {
@@ -14013,7 +14011,7 @@
     "v": {}
    },
    "DA_ThreeFourTime": {
-    "name": "3/4 Time",
+    "name": "3/4-Takt",
     "lv": 1,
     "rounds": [
      "2-1"
@@ -14047,7 +14045,7 @@
     "rounds": [
      "2-1"
     ],
-    "d": "Gewährt nach jeweils 6 PvP-Runden eine Schmiede für vollständige Gegenstände.",
+    "d": "Gewährt nach jeweils 7 PvP-Runden eine Schmiede für vollständige Gegenstände.",
     "v": {}
    },
    "DA_YoungAndWildAndFree": {
