@@ -2895,6 +2895,11 @@ function renderChampPage(slug){
     <nav class="chp-nav" aria-label="Champions blättern"><a href="${champHref(prev.n)}">← ${esc(prev.n)}</a><a href="${champHref(next.n)}">${esc(next.n)} →</a></nav>
     <section class="tool-seo" aria-labelledby="ts-champ">
       <div class="ts-main">
+        ${d.unlock ? `<h2 id="ts-champ-unl">${L(`Wie schaltest du ${esc(n)} in TFT Set ${S} frei?`, `How do you unlock ${esc(n)} in TFT Set ${S}?`)}</h2>
+        <p>${L(`${esc(n)} ist ein freischaltbarer ${c.c}-Kosten-Champion und erscheint erst in deinem Shop, wenn du diese Bedingung in der Partie erfüllst: <b>${esc(d.unlock.de)}</b>.`,
+          `${esc(n)} is an unlockable ${c.c}-cost champion and only shows up in your shop once you meet this condition in the game: <b>${esc(d.unlock.en)}</b>.`)}</p>
+        <p>${L(`Die Freischaltung gilt nur für die laufende Partie – im nächsten Spiel musst du die Bedingung wieder erfüllen. Alle Bedingungen auf einen Blick: <a href="${csHref('unlocks')}">TFT Unlocks</a>.`,
+          `The unlock only lasts for the current game – next game you have to meet the condition again. Every condition at a glance: <a href="${csHref('unlocks')}">TFT unlocks</a>.`)}</p>` : ''}
         <h2 id="ts-champ">${esc(n)} in TFT Set ${S}: So spielst du ihn</h2>
         ${CH_RENDER[n] ? `<figure class="art-fig"><img src="assets/og/champions/tft-${champSlug(n)}-build.jpg" alt="${esc(n)} – ${L(`TFT Set ${S} Build`, `TFT Set ${S} build`)}" width="1200" height="630" loading="lazy"></figure>` : ''}
         <p>${esc(n)} ist ein ${c.c}-Kosten-Champion. Für ★★ brauchst du 3 Kopien, für ★★★ 9 Kopien.</p>
@@ -2903,6 +2908,7 @@ function renderChampPage(slug){
       </div>
       <aside class="ts-side">
         <h3>Häufige Fragen</h3>
+        ${d.unlock ? `<details><summary>${L(`Wie schalte ich ${esc(n)} in TFT Set ${S} frei?`, `How do I unlock ${esc(n)} in TFT Set ${S}?`)}</summary><p>${L(`${esc(n)} erscheint erst in deinem Shop, wenn du in der Partie diese Bedingung erfüllst: ${esc(d.unlock.de)}.`, `${esc(n)} only shows up in your shop once you meet this condition in the game: ${esc(d.unlock.en)}.`)}</p></details>` : ''}
         <details><summary>Welche Items sind die besten für ${esc(n)}?</summary><p>${best.length ? `Der beliebteste Build für ${esc(n)} in unserer Tierlist ist ${best.map(it=>esc(it.en)).join(', ')}.` : top.length ? `Am häufigsten bekommt ${esc(n)} in unserer Tierlist ${top.slice(0, 3).map(x=>esc(x.it.en)).join(', ')}.` : `Für ${esc(n)} gibt es in unserer Tierlist noch keine festen Items – teste Builds im DPS-Rechner.`}</p></details>
         <details><summary>Welche Traits hat ${esc(n)}?</summary><p>${esc(n)}: ${c.t.map(esc).join(', ')}.</p></details>
         <details><summary>Wie viel kostet ${esc(n)} in TFT?</summary><p>${esc(n)} kostet ${c.c} Gold. Für ★★ brauchst du 3 Kopien, für ★★★ 9 Kopien.</p></details>
@@ -7792,6 +7798,11 @@ function pageMeta(page, sub){
     case 'champion': {
       const c = champBySlug[sub];
       if(!c) return ['Champion nicht gefunden', '', true];
+      // Freischaltbare Champions: Google-Suche „wie schalte ich Sona in TFT Set 19 frei?“ (Wunsch 24.11.) → Keyword „freischalten“/„unlock“ in Titel und Beschreibung
+      const u = (CH_DATA[c.n] || {}).unlock;
+      if(u) return [L(fitT(`${c.n} freischalten: TFT ${S} Unlock & Build`, `${c.n} freischalten – TFT ${S}`), fitT(`How to Unlock ${c.n} in TFT ${S} & Build`, `How to Unlock ${c.n} in TFT ${S}`)),
+        L(fit(`${c.n} in TFT ${S} freischalten: ${u.de}. Dazu die besten Items, Comps und Werte.`, `${c.n} in TFT ${S} freischalten: ${u.de}.`, `${c.n} in TFT ${S} freischalten: Bedingung, beste Items, Comps und Werte aus unserer Tierlist.`),
+          fit(`How to unlock ${c.n} in TFT ${S}: ${u.en}. Plus the best items, comps and stats.`, `How to unlock ${c.n} in TFT ${S}: ${u.en}.`, `How to unlock ${c.n} in TFT ${S}: condition, best items, comps and stats from our tier list.`))];
       return [`${c.n} TFT Build ${S} – Items & Comps`, L(fit(`${c.n} TFT Build für ${S}: die besten Items, Comps und Traits, dazu Fähigkeit und Werte – mit Builds aus unserer Challenger-Tierlist.`,
         `${c.n} TFT Build für ${S}: die besten Items, Comps und Traits, dazu Fähigkeit und Werte – aus unserer Tierlist.`),
         fit(`${c.n} TFT build for ${S}: the best items, comps and traits, plus ability and stats – with builds from our Challenger tier list.`,
