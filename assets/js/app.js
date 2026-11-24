@@ -7289,7 +7289,8 @@ function gpFlows(){
   const IB = TFT_CUSTOM_SET.itemBuilds; if(!IB) return [];
   const RL = TFT_CUSTOM_SET.roles || {}, RC = ((window.TFT_ROLES || {}).champions) || {};
   const APX = /Jeweled|Rabadon|Archangel|Void Staff|Morello|Nashor|Gunblade|Blue Buff|Ionic/, ADX = /Infinity|Deathblade|Last Whisper|Giant Slayer|Kraken|Bloodthirster|Sterak|Edge of Night|Titan|Hand Of Justice|Red Buff/i;
-  const side = (n, its) => RL[n] === 'ad' || RL[n] === 'ap' ? RL[n] : its.filter(i=>APX.test(i)).length > its.filter(i=>ADX.test(i)).length ? 'ap' : 'ad';
+  // AD/AP: eigene Rolle > Riots Kategorie (Magic… = AP, z. B. Mordekaiser mit Guinsoo → Guinsoo AP) > Items im BIS
+  const side = (n, its) => RL[n] === 'ad' || RL[n] === 'ap' ? RL[n] : /^Magic/.test(RC[n] || '') ? 'ap' : /^Attack/.test(RC[n] || '') ? 'ad' : its.filter(i=>APX.test(i)).length > its.filter(i=>ADX.test(i)).length ? 'ap' : 'ad';
   // Wer gehört in eine Reihe? In erster Linie die Unit-Kategorie (Riot): ein AP-Caster wie Malzahar hält im Midgame die AP-Items für Ahri, Alune, Aurora,
   // Mel oder Yuumi, auch wenn Shojin nicht in seinem BIS steht (Wunsch 23.11.). Dazu jeder, dessen BIS das Schlüssel-Item hat (z. B. Samira mit Guinsoo).
   // Raus: Units mit Tank-Items im BIS (Rakan, Elise …)
