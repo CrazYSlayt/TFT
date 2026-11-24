@@ -3244,7 +3244,7 @@ const GD_BLOCK = {
   // Reihe kleiner Kacheln (z. B. Runden einer Stage): [text, unten, farbe]; farbe: w (Sieg) · l (Niederlage) · p · g · x (grau)
   chips:b=>`<figure class="gd-chips">${b.t ? `<b class="gd-chips-t">${b.t}</b>` : ''}<div class="gd-chips-r">${b.l.map(([x, s, c])=>`<span class="gd-chip ${c || 'x'}"><b>${x}</b>${s ? `<small>${s}</small>` : ''}</span>`).join('')}</div>${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`,
   // Übersichts-Tabelle mit farbigen Kürzeln: Zellen-Kürzel i (Item) · e (Econ) · k (Kampf) · y (✓) · n (–), sonst Text
-  matrix:b=>{ const P = {i:['Item', 'g'], e:['Econ', 'c'], k:[L('Kampf', 'Combat'), 'r'], y:['✓', 'y'], n:['–', 'n']};
+  matrix:b=>{ const P = {i:['Item', 'g'], e:['Econ', 'c'], k:['Combat', 'r'], y:['✓', 'y'], n:['–', 'n']};
     const cell = v => v.split(' ').map(x=>P[x] ? `<span class="gd-mx-p ${P[x][1]}">${P[x][0]}</span>` : x).join(' ');
     return artTw(b.head, b.rows.map(([n, ...c])=>`<tr><td><b>${n}</b></td>${c.map(v=>`<td class="gd-mx-c">${cell(v)}</td>`).join('')}</tr>`)).replace('art-table', 'art-table gd-mx'); },
   // kurzer Spruch mit kleinem Kopf-Bild
@@ -3262,6 +3262,11 @@ const GD_BLOCK = {
     <div class="gd-talk-screen"><b class="gd-talk-t">${b.t}</b>${(b.b || []).map(x=>x.k === 'talk' ? '' : GD_BLOCK[x.k](x)).join('')}</div></figure>`,
   // Vergleich in zwei (oder drei) Karten nebeneinander: {t, c:'p'|'g'|'r', l:[…]}
   cmp:b=>`<div class="gd-cmp">${b.l.map(x=>`<div class="gd-cmp-c ${x.c || 'p'}"><b>${x.t}</b><ul>${x.l.map(y=>`<li>${y}</li>`).join('')}</ul></div>`).join('')}</div>`,
+  // Runden-Zeitleiste wie im Anfänger-Guide (gd-stage) mit offiziellen Symbolen: l: [[symbol, runde, text, hervorhebung]] – symbol aus assets/icons/tft, hervorhebung sp (cyan) · hot (pink)
+  stage:b=>`<figure class="gd-stagef">${b.t ? `<b class="gd-chips-t">${b.t}</b>` : ''}<div class="gd-stage gd-stage-x" role="list" style="--n:${b.l.length}">${b.l.map(([ic, r, x, c])=>`<div class="gd-r${c ? ' ' + c : ''}" role="listitem"><img src="assets/icons/tft/${ic}.png" alt="" width="28" height="28" loading="lazy"><b>${r}</b><span>${x}</span></div>`).join('')}</div>${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`,
+  // Zinsen mit Gold-Münzen (wie im Anfänger-Guide): l: [[gold, text]] – je volle 10 Gold eine Münze, höchstens 5
+  zins:b=>`<figure class="gd-stagef">${b.t ? `<b class="gd-chips-t">${b.t}</b>` : ''}<div class="gd-zins gd-zins-x">${b.l.map(([g, x])=>{ const n = Math.min(5, Math.floor(g / 10));
+      return `<div${n === 5 ? ' class="max"' : ''}><span class="gd-c">${Array.from({length:n}, ()=>'<img src="assets/icons/tft/gold.png" alt="" width="18" height="18" loading="lazy">').join('')}</span><b>+${n}</b><small>${L('Zinsen', 'interest')} · ${g} Gold</small><small>${x}</small></div>`; }).join('')}</div>${b.cap ? `<figcaption>${b.cap}</figcaption>` : ''}</figure>`,
   // Ablauf als Leiste mit Stationen: [Zeitpunkt, was passiert]
   flow:b=>`<ol class="gd-flow">${b.l.map(([w, t])=>`<li><b>${w}</b><span>${t}</span></li>`).join('')}</ol>`,
   // Riots Rollen mit den offiziellen Symbolen (assets/icons/tft/roles): l: [[[symbol, …], name, text], …], z. B. ['attack-tank', 'magic-tank']
@@ -3288,17 +3293,19 @@ function gdTok(html){
 }
 // Kleine Rechner in den Guides – nur mit den Faustregeln von CrazYSlayt aus den Guides, keine erfundenen Werte
 const GD_WIDGET = {
-  // Fast 8: HP und Gold auf 4-2 → Ampel (über 50 HP und über 50 Gold = gut, ab 40 Gold eng, darunter schwerer Spot)
+  // Fast 8: HP und Gold auf Level 8 → Ampel (ab 50 HP und 50 Gold = guter Spot, über 60 Gold perfekt, 40–49 Gold eng, darunter schwerer Spot)
+  // beide Regler 0–100, damit 50 HP und 50 Gold genau untereinander stehen (Wunsch 24.11.)
   lvl8:{html:()=>`<b class="gd-w-t">${L('Bin ich bereit für Level 8?', 'Am I ready for level 8?')}</b>
-      <label class="gd-w-sl"><span>HP <output data-o="hp">60</output></span><input type="range" min="1" max="100" value="60" data-k="hp" aria-label="HP"></label>
-      <label class="gd-w-sl"><span>${L('Gold auf 4-2', 'Gold on 4-2')} <output data-o="g">50</output></span><input type="range" min="0" max="90" value="50" data-k="g" aria-label="Gold"></label>
+      <label class="gd-w-sl"><span><span><img class="gd-gi" src="assets/icons/tft/stat-hp.png" alt="" width="20" height="20">HP</span> <output data-o="hp">50</output></span><input type="range" min="0" max="100" value="50" data-k="hp" aria-label="HP"></label>
+      <label class="gd-w-sl"><span><span><img class="gd-gi" src="assets/icons/tft/gold.png" alt="" width="20" height="20">${L('Gold auf Level 8', 'Gold on level 8')}</span> <output data-o="g">50</output></span><input type="range" min="0" max="100" value="50" data-k="g" aria-label="Gold"></label>
       <div class="gd-w-res" aria-live="polite"></div><small class="gd-w-n">${L('Nach meinen Faustregeln für eine Standard-Fast-8-Comp.', 'Based on my rules of thumb for a standard Fast 8 comp.')}</small>`,
     run:(el)=>{ const v = k => +el.querySelector(`[data-k="${k}"]`).value, hp = v('hp'), g = v('g');
       el.querySelector('[data-o="hp"]').textContent = hp; el.querySelector('[data-o="g"]').textContent = g;
-      const [c, t, d] = g < 40 ? ['r', L('Schwerer Spot', 'Tough spot'), L('Du brauchst auf 4-2 ein Econ-Augment. Sonst: Core-Units behalten, einen 4-Kosten-Tank und -Carry mit Trait spielen und die Top 4 sichern.', 'You need an econ augment on 4-2. Otherwise keep your core units, play a 4-cost tank and carry with a trait and secure top 4.')]
-        : g <= 50 ? ['y', L('Eng', 'Tight'), L('Mit 40 bis 50 Gold hittest du wahrscheinlich nicht alles. Roll trotzdem und bleib flexibel.', 'With 40 to 50 gold you probably will not hit everything. Roll anyway and stay flexible.')]
-        : hp <= 50 ? ['y', L('Gold passt, Puffer knapp', 'Gold is fine, little buffer'), L('Unter etwa 50 HP wird es eng. Roll, bis dein Board stabil ist.', 'Below about 50 HP it gets tight. Roll until your board is stable.')]
-        : ['g', L('Perfekt', 'Perfect'), L('Geh auf 4-2 auf Level 8 und roll für deine Comp – bis etwa 10 Gold.', 'Go level 8 on 4-2 and roll for your comp – down to about 10 gold.')];
+      const [c, t, d] = g < 40 ? ['r', L('Schwerer Spot', 'Tough spot'), L('Du brauchst auf 4-2 ein Econ-Augment. Sonst: Core-Units behalten, einen 4-Cost-Tank und -Carry mit Trait spielen und die Top 4 sichern.', 'You need an econ augment on 4-2. Otherwise keep your core units, play a 4-cost tank and carry with a trait and secure top 4.')]
+        : g < 50 ? ['y', L('Eng', 'Tight'), L('Mit 40 bis 49 Gold hittest du wahrscheinlich nicht alles. Roll trotzdem und bleib flexibel.', 'With 40 to 49 gold you probably will not hit everything. Roll anyway and stay flexible.')]
+        : hp < 50 ? ['y', L('Gold passt, HP knapp', 'Gold is fine, HP is low'), L('Unter 50 HP bleiben dir kaum Leben. Roll, bis dein Board stabil ist – Fehler und Bad RNG kannst du dir nicht mehr leisten.', 'Below 50 HP you have few lives left. Roll until your board is stable – you cannot afford mistakes or bad RNG anymore.')]
+        : g > 60 ? ['g', L('Perfekt', 'Perfect'), L('Mit über 60 Gold hast du genug Rolls, um dein Board zu hitten. Roll für deine Comp – bis etwa 10 Gold.', 'With over 60 gold you have enough rolls to hit your board. Roll for your comp – down to about 10 gold.')]
+        : ['g', L('Guter Spot', 'Good spot'), L('Geh auf Level 8 und roll für deine Comp – bis etwa 10 Gold. Den Rest hittest du auf 4-5.', 'Go level 8 and roll for your comp – down to about 10 gold. Hit the rest on 4-5.')];
       el.querySelector('.gd-w-res').className = 'gd-w-res ' + c; el.querySelector('.gd-w-res').innerHTML = `<b>${t}</b><span>${d}</span>`; }},
   // 13-Siege-Faustregel zum Mitzählen
   wins:{html:()=>`<b class="gd-w-t">${L('Mein Siege-Zähler', 'My win counter')}</b>
@@ -3310,8 +3317,8 @@ const GD_WIDGET = {
       const r = el.querySelector('.gd-w-res'); r.className = 'gd-w-res ' + (n >= 13 ? 'g' : n >= 9 ? 'y' : 'x');
       r.innerHTML = n >= 13 ? `<b>${L('13 Siege', '13 wins')}</b><span>${L('Damit kommst du meistens in die Top 4.', 'That usually gets you top 4.')}</span>` : `<b>${L('Noch ', '')}${13 - n} ${L(13 - n === 1 ? 'Sieg' : 'Siege', 13 - n === 1 ? 'win to go' : 'wins to go')}</b><span>${n >= 11 ? L('Die kommen nicht von allein – in Stage 5 ist jeder stark. Dein Board muss die Runden noch gewinnen können.', 'They will not come by themselves – in Stage 5 everyone is strong. Your board has to be able to still win those rounds.') : L('Je früher die Siege kommen, desto entspannter entscheidest du später.', 'The earlier the wins come, the calmer you decide later.')}</span>`; }},
   // Wie tief darf ich rollen? – die Goldgrenzen aus dem Rolldown-Guide
-  floor:{html:()=>{ const s = [[L('1-Kosten-Reroll auf 3-1', '1-cost reroll on 3-1'), '~32', L('Der zweite Rolldown nach 2-7 – danach wieder Gold aufbauen.', 'The second rolldown after 2-7 – then rebuild your gold.')],
-        [L('2-Kosten-Reroll auf 3-2', '2-cost reroll on 3-2'), '32', L('So bist du auch ohne Sieg nach zwei Runden wieder bei 50 Gold und kannst slowrollen.', 'That way you are back at 50 gold after two rounds even without a win.')],
+  floor:{html:()=>{ const s = [[L('1-Cost-Reroll auf 3-1', '1-cost reroll on 3-1'), '~32', L('Der zweite Rolldown nach 2-7 – danach wieder Gold aufbauen.', 'The second rolldown after 2-7 – then rebuild your gold.')],
+        [L('2-Cost-Reroll auf 3-2', '2-cost reroll on 3-2'), '32', L('So bist du auch ohne Sieg nach zwei Runden wieder bei 50 Gold und kannst slowrollen.', 'That way you are back at 50 gold after two rounds even without a win.')],
         [L('Fast 8 auf 4-2', 'Fast 8 on 4-2'), '~10', L('Darunter kommen keine Zinsen mehr. Fehlt noch was: auf 4-5 weiterrollen.', 'Below that you get no interest. Still missing something: roll again on 4-5.')],
         [L('Nur noch zwei Leben', 'Only two lives left'), '0', L('All-in, bis das Board stabil ist.', 'All-in until your board is stable.')],
         [L('Es geht um Platz 4 oder 5', 'It is about 4th or 5th'), '0', L('Auf 4-2 auf 0 rollen – sonst auf 4-5 noch mal all-in.', 'Roll to 0 on 4-2 – otherwise all-in again on 4-5.')]];
@@ -3428,7 +3435,7 @@ function gdBeginnerHTML(){
     ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-encounter.webp', w:1300, h:890, alt:'Runde 1-1', cap:'Runde 1-1: Alle acht Spieler stehen im Kreis, in der Mitte erscheint der Encounter der Partie.', pos:'right'})}
     <ul class="art-list">
       <li><b>Start:</b> Alle acht Spieler stehen im Kreis, in der Mitte wird der <b>Encounter</b> der Partie gezeigt – ein Ereignis, das für alle gilt. Was die Encounters bewirken, steht im ${artA(csHref('encounters'), 'Encounter-Cheatsheet')}.</li>
-      <li><b>Stage 1:</b> Du startest meist mit einem 1-Kosten-Champion auf der Bank – manche Encounters geben dir stattdessen stärkere oder mehrere Champions. Danach folgen die Runden <b>1-1 bis 1-3</b> gegen Monster, die deine ersten Komponenten und Champions fallen lassen – was dort droppen kann, zeigt das ${artA(csHref('loot'), 'Loot-Cheatsheet')}.</li>
+      <li><b>Stage 1:</b> Du startest meist mit einem 1-Cost-Champion auf der Bank – manche Encounters geben dir stattdessen stärkere oder mehrere Champions. Danach folgen die Runden <b>1-1 bis 1-3</b> gegen Monster, die deine ersten Komponenten und Champions fallen lassen – was dort droppen kann, zeigt das ${artA(csHref('loot'), 'Loot-Cheatsheet')}.</li>
       <li><b>PvP:</b> Kämpfe gegen andere Spieler – die meisten Runden der Partie.</li>
       <li><b>Karussell:</b> In der Mitte dreht sich ein Kreis aus Champions mit Items. Die Spieler laufen paarweise los: zuerst die zwei mit dem wenigsten Leben, dann die nächsten zwei – so bekommen schwächere Spieler eine Chance aufzuholen.</li>
       <li><b>Monster:</b> Ein Kampf gegen Monster, die Beute fallen lassen – Gold, Champions oder Komponenten.</li>
@@ -3472,13 +3479,13 @@ function gdBeginnerHTML(){
     <p>Dein Level bestimmt, <b>wie viele Champions</b> auf dem Feld kämpfen (Level 5 heißt 5 Champions) und <b>welche Champions</b> im Shop erscheinen. Jede Runde bekommst du automatisch 2 XP, zusätzlich kannst du für 4 Gold 4 XP kaufen. Das Maximum ist Level 10.</p>
     ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-lategame.webp', w:1220, h:640, alt:'Late Game auf Level 9', cap:'Late Game auf Level 9: neun Champions kämpfen auf dem Feld.', pos:'center'})}
     <p>Die große Frage jeder Partie lautet: <b>Gold in Level stecken oder in Rollen?</b> Dafür gibt es grob zwei Spielweisen:</p>
-    <div class="gd-two"><div><b>${ic('shop-xp')}Leveln (Fast 8 / Fast 9)</b><p>Du sparst, levelst zügig und suchst auf hohem Level nach starken 4- und 5-Kostern.</p></div>
+    <div class="gd-two"><div><b>${ic('shop-xp')}Leveln (Fast 8 / Fast 9)</b><p>Du sparst, levelst zügig und suchst auf hohem Level nach starken 4- und 5-Cost.</p></div>
       <div><b>${ic('shop-reroll')}Rerollen</b><p>Du bleibst auf niedrigerem Level und rollst so lange, bis deine günstigen Carrys 3 Sterne haben.</p></div></div>
     <p>Welche Comps gerade welche Spielweise nutzen, steht in unserer ${artA('/tierlist', 'Tierlist')}.</p>
     ${tip('Woran erkennst du, dass du jetzt leveln solltest – und wann rollen?', 'selbstbewusst',
-      'Kommt auf die Comp an: 1-Kosten-Reroll rollt schon auf 2-7 mit Level 4, 2-Kosten-Reroll auf 3-2 mit Level 6, 3-Kosten-Reroll auf 3-5 mit Level 7 – und Fast 8 zwischen 4-1 und 4-2 mit Level 8. Fehlt dir das Gold, kannst du mit genug Tempo auch erst auf 4-5 auf Level 8 rollen.',
+      'Kommt auf die Comp an: 1-Cost-Reroll rollt schon auf 2-7 mit Level 4, 2-Cost-Reroll auf 3-2 mit Level 6, 3-Cost-Reroll auf 3-5 mit Level 7 – und Fast 8 zwischen 4-1 und 4-2 mit Level 8. Fehlt dir das Gold, kannst du mit genug Tempo auch erst auf 4-5 auf Level 8 rollen.',
       'Und: Ich gebe kein Gold fürs Leveln aus, wenn ich die nächsten Runden sowieso verliere.')}
-    ${GD_BLOCK.bars({ax:['2-1', '2-7', '3-2', '3-5', '4-1', '4-2', '4-5', '5-1'], rows:[['1-Kosten-Reroll', [[1, 1, 'Level 4', 'g']]], ['2-Kosten-Reroll', [[2, 2, 'Level 6', 'g']]], ['3-Kosten-Reroll', [[3, 3, 'Level 7', 'g']]], ['Fast 8', [[4, 5, 'Level 8', 'c'], [6, 6, 'mit Tempo', 'c']]], ['Fast 9', [[7, 7, 'Level 9', 'r']]]], cap:'Wann welche Spielweise ihren großen Rolldown macht. Fast 8 rollt zwischen 4-1 und 4-2 – fehlt das Gold, mit genug Tempo auch erst auf 4-5.'})}
+    ${GD_BLOCK.bars({ax:['2-1', '2-7', '3-2', '3-5', '4-1', '4-2', '4-5', '5-1'], rows:[['1-Cost-Reroll', [[1, 1, 'Level 4', 'g']]], ['2-Cost-Reroll', [[2, 2, 'Level 6', 'g']]], ['3-Cost-Reroll', [[3, 3, 'Level 7', 'g']]], ['Fast 8', [[4, 5, 'Level 8', 'c'], [6, 6, 'mit Tempo', 'c']]], ['Fast 9', [[7, 7, 'Level 9', 'r']]]], cap:'Wann welche Spielweise ihren großen Rolldown macht. Fast 8 rollt zwischen 4-1 und 4-2 – fehlt das Gold, mit genug Tempo auch erst auf 4-5.'})}
     ${h('traits')}
     ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-traits.webp', w:272, h:638, alt:'Die Trait-Leiste links', cap:'Die Trait-Leiste: Die Zahl zeigt, wie viele verschiedene Champions den Trait haben, daneben die Stufen. Aktive Traits sind farbig.', side:true, pos:'left'})}
     <p>Jeder Champion hat zwei oder drei <b>Traits</b>. Stellst du genug verschiedene Champions mit demselben Trait aufs Feld, wird ein Bonus aktiv – je mehr, desto stärker.</p>

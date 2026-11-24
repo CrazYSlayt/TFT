@@ -3553,6 +3553,16 @@ a.gd-next:hover{border-color:var(--cy,#2ee6d6);transform:translateY(-2px)}
 .gd-w-sl span{display:flex;justify-content:space-between}
 .gd-w-sl output{font:900 italic 1.2rem/1 var(--ff-head);color:var(--text)}
 .gd-w-sl input{width:100%;accent-color:var(--cy,#2ee6d6)}
+.gd-w-sl span span{display:inline-flex;align-items:center;justify-content:flex-start}
+/* Guide-Blöcke stage (Runden-Zeitleiste) und zins (Münzen) aus data/guides.js */
+.gd-stagef{margin:18px 0;clear:both}
+.gd-stagef figcaption{margin-top:8px;font-size:.84rem;color:var(--muted)}
+.gd-stage.gd-stage-x{grid-template-columns:repeat(var(--n),minmax(0,1fr));margin:0}
+.gd-r.hot{border-color:rgba(247,22,110,.55);background:linear-gradient(160deg,rgba(247,22,110,.18),rgba(3,17,27,.5))}
+.gd-r.hot span{color:#ff8fb8;font-weight:700}
+.gd-zins.gd-zins-x{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:0}
+.gd-zins-x small+small{white-space:normal;text-align:center;color:var(--text)}
+@media (max-width:760px){.gd-stage.gd-stage-x{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .gd-w-res{display:flex;flex-direction:column;gap:4px;margin-top:4px;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);transition:border-color .25s,background .25s}
 .gd-w-res b{font:900 italic 1.3rem/1.1 var(--ff-head);padding-right:.15em}
 .gd-w-res span{font-size:.9rem;line-height:1.45;color:var(--muted)}
