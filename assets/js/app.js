@@ -7299,7 +7299,7 @@ function gpFlows(){
   return [
     ['guinsoo-ad', 'ad', /Guinsoo/, ["Guinsoo's Rageblade"], null, ['Guinsoo-Holder', 'Guinsoo holders'], /^AttackMarksman/],
     ['guinsoo-ap', 'ap', /Guinsoo/, ["Guinsoo's Rageblade"], null, ['Guinsoo-Holder', 'Guinsoo holders'], /^MagicMarksman/],
-    ['mana-ad', 'ad', MANA, ['Spear of Shojin', 'Blue Buff', 'Adaptive Helm'], null, ['Mana-Item-Holder', 'Mana item holders'], /^AttackCaster/],
+    ['mana-ad', 'ad', MANA, ['Spear of Shojin', 'Blue Buff', 'Adaptive Helm'], null, ['Mana-Item-Holder', 'Mana item holders'], /^AttackCaster|^AttackSpecialist_Ammo/],   // Jhin: full AD → Mana-Carry (CrazYSlayt 24.11.)
     ['mana-ap', 'ap', MANA, ['Spear of Shojin', 'Blue Buff', 'Adaptive Helm'], null, ['Mana-Item-Holder', 'Mana item holders'], /^MagicCaster/],
     ['fighter-ad', 'ad', null, [], ['attack-fighter', 'attack-reaper'], ['Kämpfer & Assassinen', 'Fighters & assassins'], /^Attack(Fighter|Assassin)|^AttackSpecialist_Time/],
     ['fighter-ap', 'ap', null, [], ['magic-fighter', 'magic-reaper'], ['Kämpfer & Assassinen', 'Fighters & assassins'], /^Magic(Fighter|Assassin)/]]
@@ -7351,7 +7351,7 @@ let GP_RS = false;
 function renderGpFlows(){
   const box = $('#gpSoon'), F = gpFlows();
   box.classList.add('gpf-box');   // die Seite nutzt sonst das Guide-Raster (2 Spalten) – Flowcharts stehen untereinander
-  box.innerHTML = `<p class="gpf-note">${L('Entwurf · Item-Holder: Welche Champions deine früh geslammten Items später weitertragen. Design und Text folgen.', 'Draft · item holders: which champions carry your early items later. Design and text to follow.')}</p>`
+  box.innerHTML = `<p class="gpf-note">${L('Item-Holder: Welche Champions deine früh geslammten Items später weitertragen – ein Vorschlag für deine Line, kein Muss.', 'Item holders: which champions carry your early items later – a suggestion for your line, not a must.')}</p>`
     + (F.length ? F.map(gpFlowHTML).join('') : `<p class="gpf-note">${L('Für dieses Set gibt es noch keine Item-Builds – wähle oben Set 19.', 'No item builds for this set yet – pick Set 19 at the top.')}</p>`);
   requestAnimationFrame(gpDraw); box.querySelectorAll('img').forEach(im=>{ if(!im.complete) im.addEventListener('load', ()=>requestAnimationFrame(gpDraw), {once:true}); });
   if(!GP_RS){ GP_RS = true; addEventListener('resize', ()=>{ if(document.querySelector('#gpSoon .gpf')) gpDraw(); }); }
@@ -8122,8 +8122,7 @@ function route(){
   if(page==='guides') setGuide(sub);
   if(page==='erklaert') setErklaert(sub);
   if(page==='gameplans'){ if(sub) setUrl('/gameplans');   // Platzhalter bis Set 19: Gamepläne pro Patch
-    if(/vorschau/.test(location.search)) renderGpFlows();   // Entwurf: Item-Holder-Flowchart (Wunsch 23.11.), bis Design und Text abgenommen sind
-    else $('#gpSoon').innerHTML = `<div class="gd-soon"><img class="gd-soon-img" src="assets/icons/side-gameplans.webp" alt="" width="96" height="96"><b>Coming in Set 19</b><p>${L('Hier entstehen Gamepläne für jeden Patch: wie du die besten Comps vom Start bis ins Late Game spielst – mit dem Start von Set 19.', 'Game plans for every patch are coming here: how to play the best comps from the start to the late game – with the launch of Set 19.')}</p></div>`; }
+    renderGpFlows(); }   // Item-Holder-Flowchart, öffentlich seit 24.11. (vorher nur mit ?vorschau)
   if(isCv) renderChampV2();   // sofort (die Seite ist schon sichtbar) – sonst blitzt beim Wechsel ein leeres Bild auf
   else if(page==='bibliothek') setLib(['items','traits','augments'].includes(sub)?sub:'champions');
   if(page==='ranks') setRank(sub);
