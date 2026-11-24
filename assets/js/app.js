@@ -7277,46 +7277,72 @@ function renderNextSet(sub){
   nsData(n).then(D=>{ draw(D); app.removeAttribute('aria-busy'); });
 }
 /* ================= GAMEPLANS: Item-Holder-Flowchart (Entwurf) =================
-   Früh auf 1–3-Kostern geslammte Items (Guinsoo, Mana-Items) führen zu den 4- und 5-Kostern, die sie später tragen – getrennt nach AD und AP,
-   weil die übrigen Items dazu passen müssen. Je Kostenstufe laufen die Holder in einem Item-Knoten zusammen (Schlüssel-Item + häufigste Begleit-Items),
-   von dort führen Pfeile zu allen Holdern der nächsten Stufe. Grundlage: itemBuilds (BIS) und roles in data/custom-<Set>.js; Linien zeichnet gpDraw als SVG */
+   Früh auf 1–3-Kostern geslammte Items führen zu den 4- und 5-Kostern, die sie später tragen. Reihen:
+   – Guinsoo- und Mana-Item-Holder (Shojin, Blauer Buff, Adaptiver Helm), je AD und AP (roles in data/custom-<Set>.js)
+   – Kämpfer & Assassinen nach Riots Unit-Kategorie (data/rollen-<Set>.js: Attack… = AD, Magic… = AP) – die tragen meist keine Mana-/Angriffstempo-Items,
+     sondern Bruiser- und Schadens-Items (z. B. Juwelenbesetzter Handschuh + Hand der Gerechtigkeit)
+   Vorne das Itembild der Line (GP_PIC, z. B. Guinsoo + Kraken/IE/Klinge des Todes + 1), dann immer fünf gleich breite Stufen (1-Cost … 5+7-Cost);
+   fehlt eine Stufe, steht dort ein freies Feld. Zwischen den Stufen laufen die Linien in einem Punkt zusammen und verzweigen wieder.
+   Grundlage: itemBuilds (BIS); Linien zeichnet gpDraw als SVG – nebeneinander am Desktop, untereinander am Handy */
+const GP_TANKY = /Protector|Gargoyle|Warmog|Crownguard|Spirit Visage|Bramble|Dragon's Claw|Steadfast/;
 function gpFlows(){
   const IB = TFT_CUSTOM_SET.itemBuilds; if(!IB) return [];
-  const RL = TFT_CUSTOM_SET.roles || {}, TANKY = /Protector|Gargoyle|Warmog|Crownguard|Spirit Visage|Bramble|Dragon's Claw|Steadfast/;
+  const RL = TFT_CUSTOM_SET.roles || {}, RC = ((window.TFT_ROLES || {}).champions) || {};
   const APX = /Jeweled|Rabadon|Archangel|Void Staff|Morello|Nashor|Gunblade|Blue Buff|Ionic/, ADX = /Infinity|Deathblade|Last Whisper|Giant Slayer|Kraken|Bloodthirster|Sterak|Edge of Night|Titan|Hand Of Justice|Red Buff/i;
   const side = (n, its) => RL[n] === 'ad' || RL[n] === 'ap' ? RL[n] : its.filter(i=>APX.test(i)).length > its.filter(i=>ADX.test(i)).length ? 'ap' : 'ad';
-  const MANA = /Spear of Shojin|Blue Buff|Adaptive Helm/;
-  return [['guinsoo-ad', 'ad', /Guinsoo/, ["Guinsoo's Rageblade"], ['Guinsoo-Holder', 'Guinsoo holders']], ['guinsoo-ap', 'ap', /Guinsoo/, ["Guinsoo's Rageblade"], ['Guinsoo-Holder', 'Guinsoo holders']],
-    ['mana-ad', 'ad', MANA, ['Spear of Shojin', 'Blue Buff', 'Adaptive Helm'], ['Mana-Item-Holder', 'Mana item holders']], ['mana-ap', 'ap', MANA, ['Spear of Shojin', 'Blue Buff', 'Adaptive Helm'], ['Mana-Item-Holder', 'Mana item holders']]]
-    .map(([id, sd, key, keyIts, t])=>{
-      const l = Object.entries(IB).filter(([n, its])=>champBy[n] && its.some(i=>key.test(i)) && !its.some(i=>TANKY.test(i)) && side(n, its) === sd);
-      const cols = [1, 2, 3, 4, 5].map(k=>({k, l:l.filter(([n])=>k < 5 ? champBy[n].c === k : champBy[n].c >= 5).sort((a, b)=>champBy[a[0]].c - champBy[b[0]].c || a[0].localeCompare(b[0]))})).filter(c=>c.l.length);
-      return {id, sd, key, keyIts, t, cols};
-    }).filter(f=>f.cols.length > 1);
+  // Wer gehört in eine Reihe? In erster Linie die Unit-Kategorie (Riot): ein AP-Caster wie Malzahar hält im Midgame die AP-Items für Ahri, Alune, Aurora,
+  // Mel oder Yuumi, auch wenn Shojin nicht in seinem BIS steht (Wunsch 23.11.). Dazu jeder, dessen BIS das Schlüssel-Item hat (z. B. Samira mit Guinsoo).
+  // Raus: Units mit Tank-Items im BIS (Rakan, Elise …)
+  const MANA = /Spear of Shojin|Blue Buff|Adaptive Helm/, ok = ([n, its]) => champBy[n] && !its.some(i=>GP_TANKY.test(i));
+  const byItem = (key, sd) => ([n, its]) => key && its.some(i=>key.test(i)) && side(n, its) === sd;
+  const byRole = re => ([n]) => re.test(RC[n] || '');
+  return [
+    ['guinsoo-ad', 'ad', /Guinsoo/, ["Guinsoo's Rageblade"], null, ['Guinsoo-Holder', 'Guinsoo holders'], /^AttackMarksman/],
+    ['guinsoo-ap', 'ap', /Guinsoo/, ["Guinsoo's Rageblade"], null, ['Guinsoo-Holder', 'Guinsoo holders'], /^MagicMarksman/],
+    ['mana-ad', 'ad', MANA, ['Spear of Shojin', 'Blue Buff', 'Adaptive Helm'], null, ['Mana-Item-Holder', 'Mana item holders'], /^AttackCaster/],
+    ['mana-ap', 'ap', MANA, ['Spear of Shojin', 'Blue Buff', 'Adaptive Helm'], null, ['Mana-Item-Holder', 'Mana item holders'], /^MagicCaster/],
+    ['fighter-ad', 'ad', null, [], ['attack-fighter', 'attack-reaper'], ['Kämpfer & Assassinen', 'Fighters & assassins'], /^Attack(Fighter|Assassin)|^AttackSpecialist_Time/],
+    ['fighter-ap', 'ap', null, [], ['magic-fighter', 'magic-reaper'], ['Kämpfer & Assassinen', 'Fighters & assassins'], /^Magic(Fighter|Assassin)/]]
+    .map(([id, sd, key, keyIts, roleIc, t, roleRe])=>{
+      const l = TFT_DATA.champions.map(c=>[c.n, IB[c.n] || []]).filter(x=>ok(x) && (byRole(roleRe)(x) || byItem(key, sd)(x)));
+      const cols = [1, 2, 3, 4, 5].map(k=>({k, l:l.filter(([n])=>k < 5 ? champBy[n].c === k : champBy[n].c >= 5).sort((a, b)=>champBy[a[0]].c - champBy[b[0]].c || a[0].localeCompare(b[0]))}));
+      const cnt = {}; l.forEach(([, its])=>[...new Set(its)].forEach(i=>{ cnt[i] = (cnt[i] || 0) + 1; }));
+      return {id, sd, key, keyIts, roleIc, t, cols, cnt, n:l.length};
+    }).filter(f=>f.cols.filter(c=>c.l.length).length > 1);
 }
+// Itembild am Anfang jeder Reihe (Wunsch CrazYSlayt 23.11.): Schlüssel-Item + eins der passenden Items + 1 Item deiner Wahl – ein Vorschlag für die Line,
+// ausgerichtet auf das BIS der 4-Koster (bei Kämpfern AD: Graves, Yasuo, Yone). Andere Items für die einzelnen Carrys gehen natürlich auch
+const GP_PIC = {'guinsoo-ad':[["Guinsoo's Rageblade"], ["Kraken's Fury", 'Infinity Edge', 'Deathblade']], 'guinsoo-ap':[["Guinsoo's Rageblade"], ['Jeweled Gauntlet', "Rabadon's Deathcap", "Archangel's Staff"]],
+  'mana-ad':[['Spear of Shojin'], ['Infinity Edge', 'Deathblade']], 'mana-ap':[['Spear of Shojin'], ['Jeweled Gauntlet']],
+  'fighter-ad':[["Sterak's Gage"], ['Hand of Justice', 'Edge of Night']], 'fighter-ap':[['Jeweled Gauntlet'], ['Hand of Justice']]};
 function gpFlowHTML(f){
-  const keyImg = f.keyIts.map(findItem).filter(Boolean);
-  // Knoten zwischen zwei Stufen: Schlüssel-Item(s), die beide Seiten tragen, + die zwei häufigsten Begleit-Items beider Seiten
-  const node = (a, b) => { const all = [...a.l, ...b.l], keys = keyImg.filter(it=>all.some(([, its])=>its.includes(it.en))), cnt = {};
-    all.forEach(([, its])=>its.filter(i=>!f.key.test(i)).forEach(i=>{ cnt[i] = (cnt[i] || 0) + 1; }));
-    const extra = Object.entries(cnt).sort((x, y)=>y[1] - x[1]).slice(0, 2).map(([i])=>findItem(i)).filter(Boolean);
-    const ic = it => `<img src="${it.img}" alt="${esc(L(it.de || it.en, it.en))}" title="${esc(L(it.de || it.en, it.en))}" width="36" height="36" loading="lazy">`;
-    return `<div class="gpf-j"><div class="gpf-node"><span class="gpf-key">${keys.map(ic).join('')}</span>${extra.length ? `<i>+</i><span class="gpf-ex">${extra.map(ic).join('')}</span>` : ''}</div></div>`; };
+  const keyImg = f.keyIts.map(findItem).filter(Boolean), nm = it => esc(L(it.de || it.en, it.en));
+  const ic = (it, s) => `<img src="${it.img}" alt="${nm(it)}" title="${nm(it)}" width="${s}" height="${s}" loading="lazy">`;
+  const [pk, pa] = (GP_PIC[f.id] || [f.keyIts, []]).map(l=>l.map(findItem).filter(Boolean));
+  const start = `<div class="gpf-start"><div class="gpf-h">${L('Items', 'Items')}</div><div class="gpf-cs"><div class="gpf-pic" title="${esc(pk.concat(pa).map(it=>L(it.de || it.en, it.en)).join(' · '))}">
+    <span class="gpf-pk">${pk.map(it=>ic(it, 40)).join('')}</span><i>+</i><span class="gpf-pa">${pa.map(it=>ic(it, 32)).join('<em>/</em>')}</span><i>+</i><span class="gpf-p1">1</span></div>
+    <small class="gpf-pic-c">${L('+ 1 Item deiner Wahl', '+ 1 item of your choice')}</small></div></div>`;
+  const node = () => `<div class="gpf-j"><span class="gpf-dot"></span></div>`;   // Stufen laufen hier zusammen – ohne Items, das Itembild steht am Anfang
   const card = ([n]) => `<a class="gpf-c" href="${champHref(n)}" data-champ="${esc(n)}"><img class="c${champBy[n].c}" src="${champImg(n) || champFallback(n)}" alt="" width="64" height="64" loading="lazy"><b>${esc(n)}</b></a>`;
-  const col = c => `<div class="gpf-col"><div class="gpf-h">${c.k < 5 ? c.k : '5+7'}-Cost</div><div class="gpf-cs">${c.l.map(card).join('')}</div></div>`;
-  return `<section class="gpf gpf-${f.sd}"><h2 class="gpf-tt"><span class="gpf-tic">${keyImg.map(it=>`<img src="${it.img}" alt="" width="34" height="34">`).join('')}</span>${L(f.t[0], f.t[1])} <em>${f.sd.toUpperCase()}</em></h2>
-    <div class="gpf-scroll"><div class="gpf-grid"><svg class="gpf-svg" aria-hidden="true"></svg>${f.cols.map((c, i)=>(i ? node(f.cols[i - 1], c) : '') + col(c)).join('')}</div></div></section>`;
+  const empty = c => `<span class="gpf-c gpf-free"><span class="gpf-ph" aria-hidden="true">–</span><b>${L('kein ' + (c.k < 5 ? c.k : '5') + '-Cost', 'no ' + (c.k < 5 ? c.k : '5') + '-cost')}</b></span>`;
+  const col = c => `<div class="gpf-col"><div class="gpf-h">${c.k < 5 ? c.k : '5+7'}-Cost</div><div class="gpf-cs">${c.l.length ? c.l.map(card).join('') : empty(c)}</div></div>`;
+  const head = f.roleIc ? f.roleIc.map(r=>`<img src="assets/icons/tft/roles/${r}.png" alt="" width="34" height="34">`).join('') : keyImg.map(it=>`<img src="${it.img}" alt="" width="34" height="34">`).join('');
+  return `<section class="gpf gpf-${f.sd}" id="gpf-${f.id}"><h2 class="gpf-tt"><span class="gpf-tic${f.roleIc ? ' role' : ''}">${head}</span>${L(f.t[0], f.t[1])} <em>${f.sd.toUpperCase()}</em></h2>
+    <div class="gpf-grid"><svg class="gpf-svg" aria-hidden="true"></svg>${start}${f.cols.map(c=>node() + col(c)).join('')}</div></section>`;
 }
 function gpDraw(){
   document.querySelectorAll('#gpSoon .gpf-grid').forEach((g, gi)=>{
-    const svg = g.querySelector('.gpf-svg'), R = g.getBoundingClientRect(), W = g.scrollWidth, H = g.scrollHeight, P = [];
+    const svg = g.querySelector('.gpf-svg'), R = g.getBoundingClientRect(), W = g.clientWidth, H = g.clientHeight, P = [];
     svg.setAttribute('width', W); svg.setAttribute('height', H); svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    const at = el => { const r = el.getBoundingClientRect(); return {l:r.left - R.left, r:r.right - R.left, y:r.top - R.top + r.height / 2}; };
-    const curve = (x1, y1, x2, y2, arrow) => { const m = (x1 + x2) / 2; P.push(`<path d="M${x1} ${y1} C${m} ${y1} ${m} ${y2} ${x2} ${y2}"${arrow ? ` marker-end="url(#gpa${gi})"` : ''}/>`); };
+    const at = el => { const r = el.getBoundingClientRect(); return {l:r.left - R.left, r:r.right - R.left, t:r.top - R.top, b:r.bottom - R.top, x:r.left - R.left + r.width / 2, y:r.top - R.top + r.height / 2}; };
+    const pics = el => el.matches('.gpf-start') ? [el.querySelector('.gpf-pic')] : [...el.querySelectorAll('.gpf-c img, .gpf-ph')];
     g.querySelectorAll('.gpf-j').forEach(j=>{
-      const nd = at(j.querySelector('.gpf-node')), prev = j.previousElementSibling, next = j.nextElementSibling;
-      prev.querySelectorAll('.gpf-c img').forEach(im=>{ const c = at(im); curve(c.r + 4, c.y, nd.l, nd.y); });
-      next.querySelectorAll('.gpf-c img').forEach(im=>{ const c = at(im); curve(nd.r, nd.y, c.l - 9, c.y, true); });
+      const nd = at(j.querySelector('.gpf-dot')), prev = j.previousElementSibling, next = j.nextElementSibling;
+      const vert = at(prev).b <= nd.t + 1;   // Handy: Stufen untereinander → Linien von oben nach unten
+      const cv = (a, b, arrow) => { const d = vert ? (()=>{ const m = (a[1] + b[1]) / 2; return `M${a[0]} ${a[1]} C${a[0]} ${m} ${b[0]} ${m} ${b[0]} ${b[1]}`; })() : (()=>{ const m = (a[0] + b[0]) / 2; return `M${a[0]} ${a[1]} C${m} ${a[1]} ${m} ${b[1]} ${b[0]} ${b[1]}`; })();
+        P.push(`<path d="${d}"${arrow ? ` marker-end="url(#gpa${gi})"` : ''}/>`); };
+      pics(prev).forEach(im=>{ const c = at(im); cv(vert ? [c.x, c.b + 3] : [c.r + 4, c.y], vert ? [nd.x, nd.t] : [nd.l, nd.y]); });
+      pics(next).forEach(im=>{ const c = at(im); cv(vert ? [nd.x, nd.b] : [nd.r, nd.y], vert ? [c.x, c.t - 9] : [c.l - 9, c.y], true); });
     });
     svg.innerHTML = `<defs><marker id="gpa${gi}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z"/></marker></defs><g>${P.join('')}</g>`;
   });
