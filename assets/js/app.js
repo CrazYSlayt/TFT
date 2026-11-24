@@ -7320,8 +7320,7 @@ function gpFlowHTML(f){
   const ic = (it, s) => `<img src="${it.img}" alt="${nm(it)}" title="${nm(it)}" width="${s}" height="${s}" loading="lazy">`;
   const [pk, pa] = (GP_PIC[f.id] || [f.keyIts, []]).map(l=>l.map(findItem).filter(Boolean));
   const start = `<div class="gpf-start"><div class="gpf-h">${L('Items', 'Items')}</div><div class="gpf-cs"><div class="gpf-pic" title="${esc(pk.concat(pa).map(it=>L(it.de || it.en, it.en)).join(' · '))}">
-    <span class="gpf-pk">${pk.map(it=>ic(it, 40)).join('')}</span><i>+</i><span class="gpf-pa">${pa.map(it=>ic(it, 32)).join('<em>/</em>')}</span><i>+</i><span class="gpf-p1">1</span></div>
-    <small class="gpf-pic-c">${L('+ 1 Item deiner Wahl', '+ 1 item of your choice')}</small></div></div>`;
+    <span class="gpf-pk">${pk.map(it=>ic(it, 40)).join('')}</span><i>+</i><span class="gpf-pa">${pa.map(it=>ic(it, 32)).join('<em>/</em>')}</span><span class="gpf-p1" title="${L('+ 1 Item deiner Wahl', '+ 1 item of your choice')}">+1</span></div></div></div>`;
   const node = () => `<div class="gpf-j"><span class="gpf-dot"></span></div>`;   // Stufen laufen hier zusammen – ohne Items, das Itembild steht am Anfang
   const card = ([n]) => `<a class="gpf-c" href="${champHref(n)}" data-champ="${esc(n)}"><img class="c${champBy[n].c}" src="${champImg(n) || champFallback(n)}" alt="" width="64" height="64" loading="lazy"><b>${esc(n)}</b></a>`;
   const empty = c => `<span class="gpf-c gpf-free"><span class="gpf-ph" aria-hidden="true">–</span><b>${L('kein ' + (c.k < 5 ? c.k : '5') + '-Cost', 'no ' + (c.k < 5 ? c.k : '5') + '-cost')}</b></span>`;

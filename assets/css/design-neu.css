@@ -2566,8 +2566,7 @@ button.adm2-aty.has{opacity:.35}button.adm2-aty:disabled{opacity:.25;cursor:defa
 .gpf-pk,.gpf-pa{display:flex;align-items:center;gap:3px}
 .gpf-pk img{width:40px;height:40px;border-radius:8px;display:block}
 .gpf-pa img{width:30px;height:30px;border-radius:6px;display:block}.gpf-pa em{font-style:normal;color:var(--muted);font-size:.75rem}
-.gpf-p1{display:grid;place-items:center;width:30px;height:30px;border-radius:6px;border:2px dashed color-mix(in srgb,var(--fc) 60%,#2a3f4e);color:#fff;font:900 .95rem var(--ff-head)}
-.gpf-pic-c{margin-top:6px;font-size:.7rem;color:var(--muted);text-align:center}
+.gpf-p1{display:grid;place-items:center;width:32px;height:32px;border-radius:6px;border:2px dashed color-mix(in srgb,var(--fc) 60%,#2a3f4e);color:#fff;font:900 .85rem var(--ff-head);margin-left:4px}
 .gpf-start .gpf-cs{align-items:center}
 .gpf-dot{width:12px;height:12px;border-radius:50%;background:var(--fc);box-shadow:0 0 0 4px #0b1620,0 0 12px var(--fc)}
 .gpf-j{padding-top:22px}
