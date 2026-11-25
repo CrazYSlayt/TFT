@@ -3403,7 +3403,7 @@ function gdDataMount(g){
 /* --- Anfänger-Guide: bewusst ohne Set-Bezug. Alles hier gilt seit vielen Sets; Zahlen, die Riot pro Set ändert
    (Shop-Chancen, Serien-Gold, Spielerschaden, Augment-Stufen, Loot), stehen nicht im Text, sondern kommen über Links auf die Cheatsheets --- */
 function gdBeginnerHTML(){
-  const sec = {ziel:'Wie funktioniert TFT?', ablauf:'Eine TFT-Partie: So laufen Stages und Runden ab', gold:'Gold und Zinsen: So verdienst du mehr', shop:'Shop und Rollen: So findest du deine Champions', sterne:'Wie bekommt man 2 und 3 Sterne?', level:'Leveln oder rollen? Die große Frage jeder Partie', traits:'TFT Traits: So aktivierst du ihre Boni', items:'TFT Items: Komponenten, Rezepte und wer sie trägt', aufstellung:'Richtig aufstellen: Frontline vorne, Carry hinten', schaden:'Wie viel Leben kostet eine Niederlage?', fehler:'Die 8 häufigsten Anfängerfehler in TFT', begriffe:'TFT-Begriffe einfach erklärt', faq:'Häufige Fragen von TFT-Anfängern'};
+  const sec = {ziel:'Wie funktioniert TFT?', ablauf:'Eine TFT-Partie: So laufen Stages und Runden ab', gold:'Gold und Zinsen: So verdienst du mehr', shop:'Shop und Rollen: So findest du deine Champions', sterne:'Wie bekommt man 2-Star und 3-Star?', level:'Leveln oder rollen? Die große Frage jeder Partie', traits:'TFT Traits: So aktivierst du ihre Boni', items:'TFT Items: Komponenten, Rezepte und wer sie trägt', aufstellung:'Richtig aufstellen: Frontline vorne, Carry hinten', schaden:'Wie viel Leben kostet eine Niederlage?', fehler:'Die 8 häufigsten Anfängerfehler in TFT', begriffe:'TFT-Begriffe einfach erklärt', faq:'Häufige Fragen von TFT-Anfängern'};
   const h = k => `<h3 id="gda-${k}">${sec[k]}</h3>`, ic = (k, alt = '') => `<img src="assets/icons/tft/${k}.png" alt="${alt}" width="28" height="28" loading="lazy">`;
   // Platzhalter für die Profi-Tipps aus der Sprachaufnahme von CrazYSlayt
   // CrazYSlayt als Cartoon (assets/img/coach/<pose>.webp, aus seinen Vorlagen): sitzt rechts in der Box und ragt oben leicht heraus – dosiert, nur an Tipps und Kernaussagen
@@ -3414,7 +3414,7 @@ function gdBeginnerHTML(){
   const words = [['Carry', 'Der Champion, der den meisten Schaden macht und die Items bekommt'], ['Tank', 'Ein Champion mit viel Leben, der vorne steht'], ['Econ', 'Deine Wirtschaft – wie gut du Gold sparst und Zinsen sammelst'],
     ['Rollen / Reroll', 'Für 2 Gold einen neuen Shop holen'], ['Rolldown', 'Auf einmal viel Gold ausgeben, um die gesuchten Champions zu finden'], ['Fast 8 / Fast 9', 'Schnell auf Level 8 oder 9 gehen, um teure Champions zu finden'],
     ['Contested', 'Mehrere Spieler sammeln dieselben Champions'], ['Pivot', 'Mitten in der Partie auf eine andere Comp wechseln'], ['Streak', 'Mehrere Siege oder Niederlagen in Folge'], ['Comp', 'Eine Team-Zusammenstellung, z. B. aus der Tierlist'], ['Top 4', 'Platz 1 bis 4 – damit gewinnst du in Ranked LP']];
-  const faq = [['Wie viele Zinsen kann man in TFT maximal bekommen?', '5 Gold pro Runde, ab 50 Gold auf dem Konto. Mehr Gold bringt keine weiteren Zinsen.'], ['Wie viele Kopien braucht man für 3 Sterne?', 'Neun: drei für 2 Sterne, und drei 2-Sterne-Champions für 3 Sterne.'],
+  const faq = [['Wie viele Zinsen kann man in TFT maximal bekommen?', '5 Gold pro Runde, ab 50 Gold auf dem Konto. Mehr Gold bringt keine weiteren Zinsen.'], ['Wie viele Kopien braucht man für 3-Star?', 'Neun: drei für 2-Star, und drei 2-Star-Champions für 3-Star.'],
     ['Was kostet ein Level in TFT?', '4 Gold für 4 Erfahrungspunkte. Zusätzlich bekommst du jede Runde 2 XP automatisch.'], ['Lohnt es sich, in TFT zu sparen?', 'Ja, vor allem früh: Wer auf 50 Gold spart, bekommt jede Runde 5 Gold Zinsen. Bei wenig Leben geht Überleben aber vor Sparen.'],
     ['Was heißt Top 4 in TFT?', 'Platz 1 bis 4 einer Partie. In Ranked gewinnst du damit LP, mit Platz 5 bis 8 verlierst du LP.']];
   const fehler = ['<b>Jedes Gold sofort ausgeben</b> – und damit auf alle Zinsen verzichten.', '<b>Auf 2-1 leveln, obwohl das Board schwach ist</b> – 4 Gold für eine Unit mehr, und verloren wird trotzdem.', '<b>Zu viele kleine Traits</b> statt einem klaren Plan.',
@@ -3422,7 +3422,7 @@ function gdBeginnerHTML(){
     '<b>Zu spät leveln</b> – und mit zu kleinem Team zu viel Leben verlieren.', '<b>Mit wenig Leben weiter sparen</b>, statt endlich das Gold für ein starkes Team auszugeben.'];
   return `<div class="ts-main">
     <h2 id="gda-start">TFT für Anfänger: das Wichtigste in Kürze</h2>
-    <div class="art-stats"><div class="p"><b>Top 4</b><span>bringt dir in Ranked LP</span></div><div class="g"><b>5 Gold</b><span>Zinsen pro Runde ab 50 Gold</span></div><div class="p"><b>4 Gold</b><span>für 4 XP zum Leveln</span></div><div class="g"><b>9 Kopien</b><span>für einen 3-Sterne-Champion</span></div></div>
+    <div class="art-stats"><div class="p"><b>Top 4</b><span>bringt dir in Ranked LP</span></div><div class="g"><b>5 Gold</b><span>Zinsen pro Runde ab 50 Gold</span></div><div class="p"><b>4 Gold</b><span>für 4 XP zum Leveln</span></div><div class="g"><b>9 Kopien</b><span>für einen 3-Star-Champion</span></div></div>
     <p>Kennst du das? Du startest deine erste Partie: acht Spieler, ein Shop voller Champions, überall Zahlen – und keine Ahnung, was du eigentlich kaufen sollst. Keine Sorge, nach diesem Guide weißt du in jeder Runde, was zu tun ist.</p>
     <header class="gd-chap" id="gdk-1" data-n="01"><span class="gd-chap-n">Kapitel 1</span><h2>TFT Grundlagen: So läuft eine Partie ab</h2><p>Acht Spieler, eine Lobby, ein Ziel: Top 4. Hier lernst du den Ablauf einer Partie und woher dein Gold kommt.</p></header>
     ${h('ziel')}
@@ -3473,14 +3473,14 @@ function gdBeginnerHTML(){
     <p>Wie viel Gold du brauchst, um einen bestimmten Champion zu finden, rechnet dir der ${artA(toolHref('rolldown'), 'Rolldown-Rechner')} aus.</p>
     ${h('sterne')}
     <div class="gd-stars"><span>1★ <i>×3</i></span><em>→</em><span>2★ <i>×3</i></span><em>→</em><span class="max">3★</span></div>
-    <p>Drei gleiche Champions verschmelzen automatisch zu einem <b>2-Sterne-Champion</b>, drei 2-Sterne zu einem <b>3-Sterne-Champion</b>. Für 3 Sterne brauchst du also 9 Kopien.</p>
-    <p>Jede Sternstufe macht einen Champion deutlich stärker – ein 2-Sterne-Champion schlägt meist einen 1-Sterne-Champion, der eine Kostenstufe teurer ist. Deshalb lohnt es sich früh, Paare auf der Bank zu halten. Deine <b>Bank</b> hat 9 Plätze: Champions dort kämpfen nicht mit, zählen aber zum Verschmelzen.</p>
+    <p>Drei gleiche Champions verschmelzen automatisch zu einem <b>2-Star-Champion</b> (2 Sterne), drei 2-Star zu einem <b>3-Star-Champion</b>. Für 3-Star brauchst du also 9 Kopien.</p>
+    <p>Jede Sternstufe macht einen Champion deutlich stärker – ein 2-Star-Champion schlägt meist einen 1-Star-Champion, der eine Kostenstufe teurer ist. Deshalb lohnt es sich früh, Paare auf der Bank zu halten. Deine <b>Bank</b> hat 9 Plätze: Champions dort kämpfen nicht mit, zählen aber zum Verschmelzen.</p>
     ${h('level')}
     <p>Dein Level bestimmt, <b>wie viele Champions</b> auf dem Feld kämpfen (Level 5 heißt 5 Champions) und <b>welche Champions</b> im Shop erscheinen. Jede Runde bekommst du automatisch 2 XP, zusätzlich kannst du für 4 Gold 4 XP kaufen. Das Maximum ist Level 10.</p>
     ${GD_BLOCK.img({src:'assets/img/guides/anfaenger-lategame.webp', w:1220, h:640, alt:'Late Game auf Level 9', cap:'Late Game auf Level 9: neun Champions kämpfen auf dem Feld.', pos:'center'})}
     <p>Die große Frage jeder Partie lautet: <b>Gold in Level stecken oder in Rollen?</b> Dafür gibt es grob zwei Spielweisen:</p>
     <div class="gd-two"><div><b>${ic('shop-xp')}Leveln (Fast 8 / Fast 9)</b><p>Du sparst, levelst zügig und suchst auf hohem Level nach starken 4- und 5-Cost.</p></div>
-      <div><b>${ic('shop-reroll')}Rerollen</b><p>Du bleibst auf niedrigerem Level und rollst so lange, bis deine günstigen Carrys 3 Sterne haben.</p></div></div>
+      <div><b>${ic('shop-reroll')}Rerollen</b><p>Du bleibst auf niedrigerem Level und rollst so lange, bis deine günstigen Carrys auf 3-Star sind.</p></div></div>
     <p>Welche Comps gerade welche Spielweise nutzen, steht in unserer ${artA('/tierlist', 'Tierlist')}.</p>
     ${tip('Woran erkennst du, dass du jetzt leveln solltest – und wann rollen?', 'selbstbewusst',
       'Kommt auf die Comp an: 1-Cost-Reroll rollt schon auf 2-7 mit Level 4, 2-Cost-Reroll auf 3-2 mit Level 6, 3-Cost-Reroll auf 3-5 mit Level 7 – und Fast 8 zwischen 4-1 und 4-2 mit Level 8. Fehlt dir das Gold, kannst du mit genug Tempo auch erst auf 4-5 auf Level 8 rollen.',
