@@ -32,6 +32,8 @@ for (const s of job.shots) {
   await ev(`document.getElementById('ckb')?.remove(); document.querySelectorAll('.fn-pop,.exit-pop').forEach(e=>e.remove());`);
   if (s.steps) await ev(`(async()=>{ ${HELP} ${s.steps} })()`);
   await sleep(s.wait || 1800);   // Ergebnis-Animationen auslaufen lassen
+  if (s.print) console.log(s.label || s.url, '→', (await ev(`document.querySelector(${JSON.stringify(s.print)})?.innerText`) || '').replace(/\s+/g, ' ').slice(0, 160));
+  if (!s.out) continue;   // nur Werte ablesen, kein Bild
   const b = await ev(`(()=>{ const e = document.querySelector(${JSON.stringify(s.sel)}); if(!e) return null; const r = e.getBoundingClientRect(); return {x:r.x + scrollX, y:r.y + scrollY, w:r.width, h:r.height}; })()`);
   if (!b) { console.log('fehlt:', s.sel, s.url); continue; }
   const pad = s.pad ?? 0;

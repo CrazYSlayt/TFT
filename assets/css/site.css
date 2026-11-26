@@ -3439,6 +3439,7 @@ img.cs-ric{border-radius:0 !important;object-fit:contain;filter:drop-shadow(0 2p
 .gb-leg i{width:11px;height:11px;border-radius:3px}
 /* Vergleich in Karten */
 .gd-cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:18px 0}
+.gd-cmp:has(>:nth-child(3)){grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
 .gd-cmp-c{padding:14px 16px;border-radius:14px;border:1px solid rgba(167,139,250,.35);background:linear-gradient(135deg,rgba(167,139,250,.13),rgba(167,139,250,.03))}
 .gd-cmp-c.g{border-color:rgba(245,184,46,.38);background:linear-gradient(135deg,rgba(245,184,46,.12),rgba(245,184,46,.03))}
 .gd-cmp-c.r{border-color:rgba(247,22,110,.38);background:linear-gradient(135deg,rgba(247,22,110,.12),rgba(247,22,110,.03))}
@@ -3516,6 +3517,14 @@ a.gd-pl:hover{border-color:var(--cy,#2ee6d6);transform:translateY(-2px);box-shad
 .gd-mx-p.n{color:var(--faint);border-color:transparent}
 .gd-mx td.gd-mx-c:has(.gd-mx-p){white-space:nowrap}
 .gd-shots{margin:18px 0;clear:both}
+.gd-art .gd-fig.side + p + :is(h2,h3,h4){clear:both}
+.gd-psh{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.7fr);gap:20px;align-items:center;margin:18px 0;clear:both}
+.gd-psh-t>p{margin:0}
+.gd-psh-t>h4{margin:0 0 10px}
+.gd-psh-i{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center}
+.gd-psh-i img{width:100%;height:auto;border-radius:12px;border:1px solid var(--line);cursor:zoom-in}
+.gd-psh-i i{font-style:normal;font-weight:800;color:var(--muted)}
+@media (max-width:760px){.gd-psh{grid-template-columns:minmax(0,1fr)}}
 .gd-shots-r{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:start}
 .gd-shot{display:flex;flex-direction:column;gap:8px}
 .gd-shot>b{font-size:.84rem;font-weight:800;letter-spacing:.02em}
