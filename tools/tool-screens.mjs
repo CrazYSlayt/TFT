@@ -18,7 +18,7 @@ const tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json();
 const ws = new WebSocket(tabs.find(t => t.type === 'page').webSocketDebuggerUrl);
 await new Promise(r => ws.onopen = r);
 let id = 0; const pend = {}, errs = [];
-ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id && pend[m.id]) { pend[m.id](m.result); delete pend[m.id]; }
+ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id && pend[m.id]) { pend[m.id](m.result || {error: m.error}); delete pend[m.id]; }
   if (m.method === 'Runtime.exceptionThrown') errs.push(m.params.exceptionDetails.exception?.description || m.params.exceptionDetails.text); };
 const cmd = (method, params = {}) => new Promise(r => { pend[++id] = r; ws.send(JSON.stringify({ id, method, params })); });
 const ev = async x => (await cmd('Runtime.evaluate', { expression: x, returnByValue: true, awaitPromise: true })).result?.value;
@@ -39,6 +39,7 @@ for (const s of job.shots) {
   const pad = s.pad ?? 0;
   const shot = await cmd('Page.captureScreenshot', { format: 'webp', quality: 88, captureBeyondViewport: true,
     clip: { x: b.x - pad, y: b.y - pad, width: b.w + 2 * pad, height: b.h + 2 * pad, scale: s.scale || 1 } });
+  if (!shot.data) { console.log('Screenshot fehlgeschlagen:', s.url, JSON.stringify(shot.error), JSON.stringify(b)); continue; }
   mkdirSync(dirname(s.out), { recursive: true }); writeFileSync(s.out, Buffer.from(shot.data, 'base64'));
   console.log('gespeichert:', s.out, Math.round(b.w) + '×' + Math.round(b.h));
 }

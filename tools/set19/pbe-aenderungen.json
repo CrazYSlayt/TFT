@@ -253,12 +253,28 @@
       [
        "%i:scaleAS% 7% gewähren",
        "%i:scaleAS% 8% gewähren"
+      ],
+      [
+       "<br>Nächste Lieferung: 0 PvP-Runde Sek.",
+       ""
       ]
      ],
      "en": [
       [
        "grant %i:scaleAS% 7%",
        "grant %i:scaleAS% 8%"
+      ],
+      [
+       "<br>Next Delivery: 0 player combats",
+       ""
+      ]
+     ]
+    },
+    "K/DA": {
+     "de": [
+      [
+       "über 10 Sekunden magischen Schaden in Höhe von 8% ihres max. Lebens",
+       "über 8 Sekunden magischen Schaden in Höhe von 10% ihres max. Lebens"
       ]
      ]
     }
@@ -282,7 +298,23 @@
      "Health": 150
     }
    },
-   "_hinweis_items": "Kronwacht „Bonus Healing/Shielding 25 → 20 %“ passt zu keinem Wert der Set-18-Kronwacht (Schild 25 % max. Leben) – nur auf der Patch-Seite, nicht in den Werten"
+   "_hinweis_items": "Kronwacht „Bonus Healing/Shielding 25 → 20 %“ passt zu keinem Wert der Set-18-Kronwacht (Schild 25 % max. Leben) – nur auf der Patch-Seite, nicht in den Werten",
+   "augments": {
+    "DA_WeStickTogether": {
+     "de": [
+      [
+       "25% Angriffstempo",
+       "30% Angriffstempo"
+      ]
+     ],
+     "en": [
+      [
+       "25% Attack Speed",
+       "30% Attack Speed"
+      ]
+     ]
+    }
+   }
   }
  ]
 }

@@ -2411,7 +2411,10 @@ function traitTiersHTML(name){
   const exp = d.match(/<expandRow>([\s\S]*?)<\/expandRow>/i);
   if(exp){ d = d.replace(exp[0], ''); rows = fx.map(()=>exp[1]); }
   else { rows = [...d.matchAll(/<row>([\s\S]*?)<\/row>/gi)].map(m=>m[1]); d = d.replace(/<row>[\s\S]*?<\/row>/gi, ''); }
-  const sub = (txt, e) => fmtDesc(txt.replace(/@MinUnits@/gi, e.min), e.v);
+  // Werte-Symbole aus Riots Text (%i:scaleAS% …) als offizielles Symbol statt sie wegzulassen (fmtDesc entfernt %i:…%)
+  const SI = {health:'hp', ad:'ad', ap:'ap', as:'as', armor:'armor', mr:'mr', crit:'crit', critmult:'crit', da:'da', dr:'dr', sv:'sv', mana:'mana'};
+  const sub = (txt, e) => fmtDesc(txt.replace(/@MinUnits@/gi, e.min).replace(/%i:scale([A-Za-z]+)%/g, (m, k)=>SI[k.toLowerCase()] ? `⁣${SI[k.toLowerCase()]}⁤` : ''), e.v)
+    .replace(/⁣([a-z]+)⁤/g, (m, k)=>`<img class="tt-si" src="${TI('stat-' + k)}" alt="" width="16" height="16">`);
   const intro = sub(d, fx[0]);
   const t = traitBy[name], bpCls = m => { const i = t ? t.bp.map(Number).indexOf(+m) : -1, s = i >= 0 && t.bs ? t.bs[i] : 0; return s ? ' bp-' + (s === 4 ? 'unique' : HEX_LVL[TRAIT_STYLE[s]] || 'base') : ''; };   // Stufe in Spielfarbe
   const list = rows.map((r,i)=>fx[i] ? `<li><span class="tt-bp${bpCls(fx[i].min)}">${fx[i].min}</span><span>${sub(r, fx[i]).replace(/^\(\d+\)\s*/, '')}</span></li>` : '').join('');
@@ -6281,6 +6284,8 @@ function csTok(str){
     if((m = t.match(/^(fi|em)(?:x(\d+))?$/))) return csRq(m[1]==='em', +(m[2] || 1));
     if((m = t.match(/^(ar|ra)(?:x(\d+))?$/))){ const r = CS_RAND[m[1]]; return csIc(TI(r[2]), +(m[2] || 1), L(r[0], r[1]), 'item rand'); }
     if(t==='sp' || t==='ti') return csSpatPan();
+    if(t==='tac'){ const it = itemById.DA_TacticiansCrown; return it ? csIc(it.img, '', L('Zufälliges Taktiker-Item', 'Random Tactician\'s item'), 'item') : ''; }
+    if(t==='conv') return csIc(TI('random-radiant'), '', L('Alle Items werden zu Lichtversionen', 'All items convert to Radiant'), 'item conv');
     if((m = t.match(/^xp(\d+)$/))) return csIc(TI('xp'), m[1], m[1] + L(' Erfahrung', ' XP'), 'xp');
     if((m = t.match(/^rr(\d+)$/))) return csIc(TI('reroll'), m[1], m[1] + L(' kostenlose Rerolls', ' free rerolls'), 'rr');
     if(t==='hp') return csIc(TI('stat-hp'), '', L('Leben für alle Einheiten', 'Health for all units'), 'sti');
@@ -6317,7 +6322,18 @@ function csAugBody(t){
     return `<div class="cax-traits">${ok.map(csTrChip).join('')}</div>${no.length ? `<div class="cax-no"><span>${L('Nicht möglich', 'Not possible')}:</span>${no.map(n=>`<span class="cax-x" title="${esc(n)}">${csEmbImg(n, 40)}</span>`).join('')}</div>` : ''}`;
   }
   // Champion + das Emblem, das es dazu gibt
-  if(t.type==='units') return `<div class="cax-units" style="--c:${Math.min(t.units.length, 6)}">${t.units.filter(([n])=>champBy[n]).map(([n, tr])=>`<div class="cax-unit"><div class="cax-pair">${csAv(n, 64)}<i>+</i>${csEmbImg(tr, 52)}</div><b>${esc(n)}${t.stars ? ` <i class="cax-star">${'★'.repeat(t.stars)}</i>` : ''}</b><span>${esc(csTrName(tr))}</span></div>`).join('')}</div>`;
+  // Champion + das Emblem, das es dazu gibt (bei zwei möglichen Traits: beide, „oder“)
+  if(t.type==='units'){ const alt = t.units.some(u=>Array.isArray(u[1])), es = alt ? 44 : 52; return `<div class="cax-units" style="--c:${Math.min(t.units.length, alt ? 3 : 6)}">${t.units.filter(([n])=>champBy[n]).map(([n, tr])=>{ const trs = [].concat(tr);
+    return `<div class="cax-unit"><div class="cax-pair">${csAv(n, 64)}<i>+</i>${trs.map(x=>csEmbImg(x, es)).join('<i class="cax-or">/</i>')}</div><b>${esc(n)}${t.stars ? ` <i class="cax-star">${'★'.repeat(t.stars)}</i>` : ''}</b><span>${trs.map(x=>esc(csTrName(x))).join(L(' oder ', ' or '))}</span></div>`; }).join('')}</div>`; }
+  // Cheat Code: je Stage mögliche Codes (Aktionen als Symbole) und die Belohnung je Augment-Stufe
+  if(t.type==='codes'){
+    const ACT = {h:['champ', 'Champion kaufen', 'Buy a champion'], x:['shop-xp', 'XP kaufen', 'Buy XP'], r:['shop-reroll', 'Shop neu laden', 'Reroll'], g:['gold', 'Champion verkaufen', 'Sell a champion']};
+    const act = c => `<img class="cac-a" src="${TI(ACT[c][0])}" alt="${esc(L(ACT[c][1], ACT[c][2]))}" title="${esc(L(ACT[c][1], ACT[c][2]))}" width="26" height="26" loading="lazy">`;
+    const tiers = t.tiers.map(csAugFind);
+    const head = `<tr><th>Stage</th><th>Code</th>${tiers.map((a, i)=>`<th>${a ? `<span class="cac-th" title="${esc(a.de)}"><img src="${a.img}" alt="" width="28" height="28" loading="lazy">${['I', 'II', 'III'][i]}</span>` : ''}</th>`).join('')}</tr>`;
+    const rows = t.stages.map(s=>s.codes.map(([p, c], i)=>`<tr${i ? '' : ' class="cac-first"'}>${i ? '' : `<td rowspan="${s.codes.length}" class="cac-st">${esc(s.s)}</td>`}<td><span class="cac-code">${p != null ? `<b>${p} %</b>` : ''}${c.split('').map(act).join('')}</span></td>${i ? '' : s.rew.map(r=>`<td rowspan="${s.codes.length}"><span class="cax-ic">${csTok(r)}</span></td>`).join('')}</tr>`).join('')).join('');
+    return `<div class="cac-leg">${Object.keys(ACT).map(k=>`<span>${act(k)}${esc(L(ACT[k][1], ACT[k][2]))}</span>`).join('')}</div><div class="cs-wrap"><table class="cs-table cac"><thead>${head}</thead><tbody>${rows}</tbody></table></div>`;
+  }
   if(t.type==='luck') return `<div class="csx-card cax-card cax-luck ${csSz(t.rows.length, 1)}" style="--kc:3">${t.rows.map(([st, src, sub, tok, txt])=>{ const a = csAugFind(src);
     return `<div class="cax-row"><b class="cax-k">${st}</b><span class="cax-src">${a ? `<img src="${a.img}" alt="" width="40" height="40" loading="lazy">` : csTrIc('Blossom', 40)}<b>${esc(a ? a.de : src)}${sub || !a ? ` <small>${sub ? esc(L(sub[0], sub[1])) : L('Geist', 'Wisp')}</small>` : ''}</b></span><span class="cax-ic">${csTok(tok)}</span><span class="cax-t">${esc(L(txt[0], txt[1]))}</span></div>`; }).join('')}</div>`;
   if(t.type==='blossom'){ const mem = champions.filter(c=>c.t.includes(t.trait)).sort((a, b)=>a.c - b.c || a.n.localeCompare(b.n));
@@ -6371,6 +6387,19 @@ const csTraitHead = (n, text) => { const t = traitBy[n];
   return `<div class="cax-info">${csTrIc(n, 56)}<div><b>${esc(n)}${t && t.bp && t.bp.length > 1 ? ` <span class="cax-st">${t.bp.join(' / ')}</span>` : ''}</b>${text ? `<p>${csTL(text)}</p>` : ''}</div></div>`; };
 const csChTile = (n, size=44, cls='') => champBy[n] ? `<a class="cax-av ${cls}" href="${champHref(n)}" title="${esc(n)} · ${champBy[n].c} Gold">${avatar(n, size)}</a>` : '';
 function csTraitBody(t){
+  // Collab: alle möglichen Gruppen (Champions nach Kosten) und oben die häufigsten Champions
+  if(t.type==='collab'){
+    const cnt = {}; t.sets.forEach(g=>g.forEach(n=>{ cnt[n] = (cnt[n] || 0) + 1; }));
+    const top = Object.entries(cnt).filter(([n])=>champBy[n]).sort((a, b)=>b[1] - a[1] || champBy[a[0]].c - champBy[b[0]].c).slice(0, 8);
+    return `<div class="ctr-cf"><b>${L('Am häufigsten dabei', 'Most frequent')}</b><span>${top.map(([n, k])=>`<span class="ctr-cfi">${csChTile(n, 44)}<i>×${k}</i></span>`).join('')}</span></div>
+      <div class="ctr-col">${t.sets.map((g, i)=>`<div class="ctr-cg"><b>${i + 1}</b><span>${g.filter(n=>champBy[n]).sort((a, b)=>champBy[a].c - champBy[b].c || a.localeCompare(b)).map(n=>csChTile(n, 34)).join('')}</span></div>`).join('')}</div>`;
+  }
+  // Stufen direkt aus den Trait-Daten (bleibt nach Patches von selbst aktuell), dazu eigene Hinweise
+  if(t.type==='tiers') return `<div class="ctr-tiers">${traitTiersHTML(t.trait)}</div>${t.notes ? `<ul class="art-list ctr-notes">${t.notes.map(x=>`<li>${csTL(x)}</li>`).join('')}</ul>` : ''}`;
+  if(t.groups) return csAugBody(t);   // Belohnungsstufen (Hyperpop, 8-Bit …) wie die Augment-Tabellen
+  // Bonus je Mitglied (Heartsteel): Champion oder Emblem, Wert-Symbol und Wert
+  if(t.type==='bonus') return `<div class="ctr-bon">${t.rows.map(([n, st, v, de, en])=>{ const em = /^emblem:/.test(n);
+    return `<div class="ctr-bc">${em ? csEmbImg(n.slice(7), 52) : csChTile(n, 52)}<div><b>${esc(em ? L('Emblem', 'Emblem') : n)}</b><span>${st ? csSt(st) : ''}${esc(v)}${de ? ' ' + esc(L(de, en)) : ''}</span></div></div>`; }).join('')}</div>`;
   if(t.type==='prismatic') return `<div class="ctr-pris">${t.rows.map(([n, q, fx])=>`<div class="ctr-pc">${csTrIc(n, 72)}<div><b>${esc(n)}</b>
     <p><span>${L('Aufgabe', 'Quest')}</span>${csTL(q)}</p><p class="fx"><span>${L('Effekt', 'Effect')}</span>${csTL(fx)}</p></div></div>`).join('')}</div>`;
   if(t.type==='coven'){

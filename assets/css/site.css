@@ -2841,6 +2841,11 @@ html[lang="en"] .csx-ic.coinh i::after{content:"H"}
 .cax-pair .av{width:64px;height:64px}
 .cax-pair>i{font-style:normal;font-size:1.3rem;font-weight:800;color:var(--muted)}
 .cax-pair .cax-emb{width:52px;height:52px}
+/* zwei mögliche Embleme (Star of the Show): kleiner, damit Champion + 2 Embleme in die Kachel passen */
+.cax-pair:has(.cax-or){gap:5px}
+.cax-pair:has(.cax-or) .av{width:52px;height:52px}
+.cax-pair:has(.cax-or) .cax-emb{width:40px;height:40px}
+.cax-pair>i.cax-or{font-size:1rem}
 .cax-unit b{font-size:1.15rem;color:#fff;white-space:nowrap}
 .cax-unit span{font-size:.88rem;color:var(--muted)}
 .cax-star{font-style:normal;font-size:.95rem;letter-spacing:-1px;color:#dfe7ef}
@@ -3528,6 +3533,39 @@ a.gd-pl:hover{border-color:var(--cy,#2ee6d6);transform:translateY(-2px);box-shad
 .csk-c>img{border-radius:8px;flex:none}
 .csk-c b{display:block;font-size:.86rem;line-height:1.25;white-space:normal}
 .csk-c small{display:block;color:var(--muted);font-size:.78rem}
+/* Cheatsheet Cheat Code (app.js csAugBody type codes): Aktionen als Symbole, Belohnung je Stufe */
+.cac td{vertical-align:middle}
+.cac .cax-ic{display:flex;gap:4px;flex-wrap:wrap}
+.cac .csx-ic{width:36px;height:36px}
+.cac .csx-ic img{width:36px;height:36px}
+.cac-st{font:900 italic 1.3rem/1 var(--ff-head);text-align:center;width:1%}
+.cac-code{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.cac-code b{min-width:46px;font-size:.82rem;color:var(--muted)}
+.cac-a{width:26px;height:26px;border-radius:6px}
+.cac-th{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.cac-th img{border-radius:6px}
+.cac-leg{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0 0 12px;font-size:.86rem;color:var(--muted)}
+.cac-leg span{display:inline-flex;align-items:center;gap:6px}
+.cax-or{font-style:normal;color:var(--muted);font-weight:800}
+/* „Alle Items werden zu Lichtversionen“ (csTok conv): gleiches Riot-Symbol wie zufällige Lichtversion, grün getönt wie im Spiel */
+.csx-ic.conv img{filter:hue-rotate(75deg) saturate(1.2)}
+/* Cheatsheet Collab (app.js csTraitBody type collab): Gruppen-Raster und häufigste Champions */
+.ctr-cf{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;margin:0 0 14px}
+.ctr-cf>b{font-size:.9rem}
+.ctr-cf>span{display:flex;flex-wrap:wrap;gap:10px}
+.ctr-cfi{position:relative;display:inline-block}
+.ctr-cfi i{position:absolute;right:-6px;bottom:-6px;font:800 normal .72rem/1.3 inherit;background:#02131c;border:1px solid rgba(46,230,214,.35);border-radius:6px;padding:0 4px;color:#7ff7ec}
+.ctr-col{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:8px}
+.ctr-cg{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:rgba(3,17,27,.45);border:1px solid rgba(46,230,214,.12)}
+.ctr-cg>b{min-width:24px;font:900 italic 1.05rem/1 var(--ff-head);color:var(--muted);text-align:right}
+.ctr-cg>span{display:flex;gap:3px;flex-wrap:nowrap}
+/* Werte-Symbole in Trait-Stufen (app.js traitTiersHTML) */
+.tt-si{display:inline-block;width:16px;height:16px;vertical-align:-3px;margin:0 2px}
+/* Cheatsheet Heartsteel (app.js csTraitBody type bonus): Bonus je Mitglied */
+.ctr-bon{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.ctr-bc{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(3,17,27,.45);border:1px solid rgba(46,230,214,.15)}
+.ctr-bc b{display:block;line-height:1.2}
+.ctr-bc span{display:inline-flex;align-items:center;gap:5px;font-weight:800;color:#7ff7ec;font-size:.95rem}
 /* Cheatsheet Hero-Augments: eine Karte je Champion */
 .csh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
 .csh-card{padding:16px}
