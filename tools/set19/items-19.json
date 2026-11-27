@@ -27,7 +27,7 @@
   "de": "Pestjuwel",
   "icon": "assets/img/set19/items/artifact_blightingjewel.webp",
   "comp": [],
-  "desc": "Dealing magic damage reduces the target’s Magic Resist by <bright>3</bright>. If their Magic Resist is 0, grant the holder <bright>2</bright> Mana instead. <br><br><rules>Damage over time effects can only trigger on each enemy once every</rules> <rules>0.5</rules> <rules>seconds.</rules>",
+  "desc": "Wenn du dem Ziel magischen Schaden zufügst, wird dessen Magieresistenz um <bright>3</bright> verringert. Falls seine Magieresistenz 0 beträgt, erhält der Träger stattdessen <bright>2</bright> Mana.<br><br><rules>Schadenseffekte über Zeit können nur einmal alle</rules> <rules>0.5</rules> <rules>Sekunden ausgelöst werden.</rules>",
   "fx": {},
   "cat": "artifact",
   "en_desc": "Dealing magic damage reduces the target’s Magic Resist by <bright>3</bright>. If their Magic Resist is 0, grant the holder <bright>2</bright> Mana instead. <br><br><rules>Damage over time effects can only trigger on each enemy once every</rules> <rules>0.5</rules> <rules>seconds.</rules>"
@@ -38,7 +38,7 @@
   "de": "Cappa-Trank",
   "icon": "assets/img/set19/items/artifact_cappajuice.webp",
   "comp": [],
-  "desc": "Der Träger setzt bei allen Kills/Unterstützungen einen Hut auf. Der Träger erhält pro Hut <bright>1%</bright> Angriffsschaden und Fähigkeitsstärke. Wenn du stirbst, verlierst du <bright>20%</bright> aller Hüte.",
+  "desc": "Der Träger setzt bei allen Vollstreckungen einen Hut auf. Der Träger erhält pro Hut <bright>1%</bright> Angriffsschaden und Fähigkeitsstärke. Wenn du stirbst, verlierst du <bright>20%</bright> aller Hüte.<br><br><rules>Aktuelle Hüte:</rules> <rules>?</rules>",
   "fx": {},
   "cat": "artifact",
   "en_desc": "The holder dons a Hat on each takedown. The holder gains <bright>1%</bright> Attack Damage and Ability Power per Hat. On death lose <bright>20%</bright> of all Hats.<br><br><rules>Current Hats:</rules> <rules>?</rules>"
@@ -49,10 +49,10 @@
   "de": "Dämmerkern",
   "icon": "assets/img/set19/items/artifact_dawncore.webp",
   "comp": [],
-  "desc": "Verringert das max. Mana des Trägers um <bright>10</bright>. Erneute Aktivierungen der Fähigkeit verringern das max. Mana um <bright>5</bright> % (bis zu einem Minimum von <bright>15</bright>).",
+  "desc": "Die Fähigkeiten des Trägers kosten <bright>10</bright> Mana weniger. Jede weitere Aktivierung verringert die Fähigkeitskosten um <bright>5</bright> %, bis zu einem Minimum von <bright>15</bright>.",
   "fx": {},
   "cat": "artifact",
-  "en_desc": "Reduce the holder's max Mana by <bright>10</bright>. Subsequent spellcasts reduce max Mana by <bright>5</bright>%, to a minimum of <bright>15</bright>."
+  "en_desc": "The holder's Abilities cost <bright>10</bright> less Mana to cast. Subsequent casts make the Ability cost <bright>5</bright>% less, to a minimum of <bright>15</bright>."
  },
  {
   "id": "DA_Artifact_DeathsDefiance",
@@ -71,7 +71,7 @@
   "de": "Ewiger Pakt",
   "icon": "assets/img/set19/items/artifact_eternalpact.webp",
   "comp": [],
-  "desc": "Kampfbeginn: Schmiedet einen Pakt mit dem verbündeten Champion mit dem höchsten Leben und erhält <bright>10</bright> Manaregeneration und <bright>40%</bright> Fähigkeitsstärke, wenn dieser stirbt.<br><br>Erhält <bright>10</bright> Mana, wenn der Verbündete seine Fähigkeit aktiviert. Gewährt dem Verbündeten alle <bright>6</bright> Sekunden einen Schild in Höhe von <bright>200%</bright> der Fähigkeitsstärke des Trägers.",
+  "desc": "Einmal pro Kampf: Binde dich an den verbündeten Champion mit dem höchsten maximalen Leben. Wenn er stirbt, erhältst du <bright>10</bright> Manaregeneration und <bright>40%</bright> Fähigkeitsstärke.<br><br>Du erhältst <bright>10</bright> Mana, wenn der Verbündete seine Fähigkeit einsetzt. Gewährt dem Verbündeten alle <bright>6</bright> Sekunden einen Schild in Höhe von <bright>200%</bright> der Fähigkeitsstärke des Trägers.",
   "fx": {},
   "cat": "artifact",
   "en_desc": "Once per combat, bind to the highest Max Health allied champion. If they die, gain <bright>10</bright> Mana regen and <bright>40%</bright> Ability Power. <br><br>When the ally uses their ability, gain <bright>10</bright> Mana. Every <bright>6</bright> seconds, shield the ally for <bright>200%</bright> of the holder's Ability Power."
@@ -159,10 +159,10 @@
   "de": "Rumpfbrecher",
   "icon": "assets/img/set19/items/artifact_hullcrusher.webp",
   "comp": [],
-  "desc": "Kampfbeginn: Wenn es keine angrenzenden Verbündeten gibt, erhältst du <bright>400</bright> Leben, <bright>10%</bright> Angriffsschaden und <bright>10%</bright> Fähigkeitsstärke.",
+  "desc": "Kampfbeginn: Wenn es keine angrenzenden Verbündeten gibt, erhältst du <bright>500</bright> Leben, <bright>15%</bright> Angriffsschaden und <bright>15%</bright> Fähigkeitsstärke.",
   "fx": {},
   "cat": "artifact",
-  "en_desc": "Combat Start: If there are no adjacent allies, gain <bright>400</bright> Health, <bright>10%</bright> Attack Damage, and <bright>10%</bright> Ability Power."
+  "en_desc": "Combat Start: If there are no adjacent allies, gain <bright>500</bright> Health, <bright>15%</bright> Attack Damage, and <bright>15%</bright> Ability Power."
  },
  {
   "id": "DA_Artifact_InfinityForce",
@@ -236,10 +236,10 @@
   "de": "Moguls Panzer",
   "icon": "assets/img/set19/items/artifact_mogulsmail.webp",
   "comp": [],
-  "desc": "Gewährt <bright>1</bright> Rüstung, <bright>1</bright> Magieresistenz und <bright>5</bright> Leben, wenn du Schaden erleidest (bis zu <bright>35</bright> Steigerungen).<br><br>Gewährt bei vollen Steigerungen 1 Gold und du erhältst alle <bright>11</bright> Sekunden 1 Gold.<br><br>Generiertes Gold in diesem Spiel: ?<br><br><rules>Einzigartig – Nur 1 pro Champion</rules>",
+  "desc": "Gewährt <bright>1</bright> Rüstung, <bright>1</bright> Magieresistenz und <bright>3</bright> Leben, wenn du Schaden erleidest (bis zu <bright>35</bright> Steigerungen).<br><br>Gewährt bei vollen Steigerungen 1 Gold und du erhältst alle <bright>11</bright> Sekunden 1 Gold.<br><br>Generiertes Gold in diesem Spiel: ?<br><br><rules>Einzigartig – Nur 1 pro Champion</rules>",
   "fx": {},
   "cat": "artifact",
-  "en_desc": "Grants <bright>1</bright> Armor, <bright>1</bright> Magic Resist, and <bright>5</bright> Health when taking damage, stacking up to <bright>35</bright> times.<br><br>At full stacks, grant 1 gold and continue gaining 1 gold every <bright>11</bright> seconds.<br><br>Gold generated this game: ?<br><br><rules>Unique - only 1 per champion</rules>"
+  "en_desc": "Grants <bright>1</bright> Armor, <bright>1</bright> Magic Resist, and <bright>3</bright> Health when taking damage, stacking up to <bright>35</bright> times.<br><br>At full stacks, grant 1 gold and continue gaining 1 gold every <bright>11</bright> seconds.<br><br>Gold generated this game: ?<br><br><rules>Unique - only 1 per champion</rules>"
  },
  {
   "id": "DA_Artifact_RapidFireCannon",
@@ -335,7 +335,7 @@
   "de": "Leerenhandschuh",
   "icon": "assets/img/set19/items/artifact_voidgauntlet.webp",
   "comp": [],
-  "desc": "Kampfbeginn: Du speicherst <bright>30%</bright> max. Leben und jede weitere Sekunde <bright>2.5%</bright> mehr. Entfesselt beim Tod das gespeicherte Leben als magischen Schaden, der zwischen allen Gegnern im Umkreis von 4 Feldern aufgeteilt wird.<br><br><rules>Einzigartig – Nur 1 pro Champion</rules>",
+  "desc": "Speichert <bright>30%</bright> maximales Leben plus jede Sekunde <bright>2.5%</bright> mehr. Entfesselt beim Tod das gespeicherte Leben als magischen Schaden, der zwischen allen Gegnern im Umkreis von 4 Feldern aufgeteilt wird.<br><br><rules>Einzigartig – Nur 1 pro Champion</rules>",
   "fx": {},
   "cat": "artifact",
   "en_desc": "Store <bright>30%</bright> max Health plus <bright>2.5%</bright> more every second. On death, unleash the stored Health as magic damage split between enemies within 4 hexes.<br><br><rules>Unique - only 1 per champion</rules>"
@@ -357,7 +357,7 @@
   "de": "Zhonyas Paradoxon",
   "icon": "assets/img/set19/items/artifact_zhonyasparadox.webp",
   "comp": [],
-  "desc": "Einmal pro Kampf: Wird bei <bright>40%</bright> Leben unverwundbar und kann <bright>3</bright> Sekunden lang nicht anvisiert werden.<br><br><rules>Einzigartig – Nur 1 pro Champion</rules>",
+  "desc": "Einmal pro Kampf: Wird bei <bright>40%</bright> Leben unverwundbar und unaufhaltsam und kann <bright>3</bright> Sekunden lang nicht anvisiert werden.<br><br><rules>Einzigartig – Nur 1 pro Champion</rules>",
   "fx": {},
   "cat": "artifact",
   "en_desc": "Once per combat at <bright>40%</bright> Health, become invulnerable, unstoppable, and untargetable for <bright>3</bright> seconds.<br><br><rules>Unique - only 1 per champion</rules>"
@@ -407,10 +407,10 @@
  {
   "id": "DA_Choreographer19_Emblem",
   "en": "Choreographer Emblem",
-  "de": "Choreograf-Emblem",
+  "de": "Choreografen-Emblem",
   "icon": "assets/img/set19/items/choreographer19_emblem.webp",
   "comp": [],
-  "desc": "Der Träger erhält das Choreograf-Attribut und einen zusätzlichen Bonus abhängig davon, ob er in den vorderen oder hinteren 2 Reihen platziert wird.<br><br>Vorne: <bright>25%</bright> erhöhte Heilung und Schilde.<br><br>Hinten: <bright>20%</bright> Angriffstempo und zusätzliches Lauftempo.",
+  "desc": "Der Träger erhält das Choreograf-Attribut und einen zusätzlichen Bonus abhängig davon, ob er in den vorderen oder hinteren 2 Reihen platziert wird.<br><br>Vorne: <bright>25%</bright> erhöhte Heilung und Schilde.<br><br>Hinten: <bright>20%</bright> Angriffstempo und zusätzliches Lauftempo.<br><br><Rules>Mysteriös – Kann nicht hergestellt werden.</Rules>",
   "fx": {},
   "cat": "emblem",
   "en_desc": "The holder gains the Choreographer trait and an additional bonus based on if they're placed in the front 2 rows or back 2 rows.<br><br>Front: <bright>25%</bright> increased healing and shielding.<br><br>Back: <bright>20%</bright> Attack Speed and additional movement speed.<br><br><Rules>Elusive - Cannot be crafted.</Rules>"
@@ -438,7 +438,7 @@
    "DA_Component_FryingPan",
    "DA_Component_GiantsBelt"
   ],
-  "desc": "The holder gains the Frontman trait. <br><br>Every <bright>5</bright> seconds, the next attack deals <bright>12%</bright> of the holder's max Health as magic damage.",
+  "desc": "Der Träger erhält das Attribut „Frontman“.<br><br>Alle <bright>5</bright> Sekunden verursacht der nächste Angriff magischen Schaden in Höhe von <bright>12%</bright> des maximalen Lebens des Trägers.",
   "fx": {},
   "cat": "emblem",
   "en_desc": "The holder gains the Frontman trait. <br><br>Every <bright>5</bright> seconds, the next attack deals <bright>12%</bright> of the holder's max Health as magic damage."
@@ -477,7 +477,7 @@
   "de": "Hyperpop-Emblem",
   "icon": "assets/img/set19/items/glitterbomb19_emblem.webp",
   "comp": [],
-  "desc": "The holder gains the Hyperpop trait.<br><br><Rules>Elusive - Cannot be crafted.</Rules>",
+  "desc": "Der Träger erhält das Attribut „Hyperpop“.<br><br><Rules>Mysteriös – Kann nicht hergestellt werden.</Rules>",
   "fx": {},
   "cat": "emblem",
   "en_desc": "The holder gains the Hyperpop trait.<br><br><Rules>Elusive - Cannot be crafted.</Rules>"
@@ -485,13 +485,13 @@
  {
   "id": "DA_IllBeats19_Emblem",
   "en": "Illbeats Emblem",
-  "de": "Illbeats-Emblem",
+  "de": "IllBeats-Emblem",
   "icon": "assets/img/set19/items/illbeats19_emblem.webp",
   "comp": [
    "DA_Component_GiantsBelt",
    "DA_Component_Spatula"
   ],
-  "desc": "The holder gains the IllBeats trait.",
+  "desc": "Der Träger erhält das Attribut „IllBeats“.",
   "fx": {},
   "cat": "emblem",
   "en_desc": "The holder gains the IllBeats trait."
@@ -516,7 +516,7 @@
   "de": "Jazz-Emblem",
   "icon": "assets/img/set19/items/jazz19_emblem.webp",
   "comp": [],
-  "desc": "Der Träger erhält das Attribut „Jazz“.",
+  "desc": "Der Träger erhält das Attribut „Jazz“.<br><br><Rules>Mysteriös – Kann nicht hergestellt werden.</Rules>",
   "fx": {},
   "cat": "emblem",
   "en_desc": "The holder gains the Jazz trait.<br><br><Rules>Elusive - Cannot be crafted.</Rules>"
@@ -527,7 +527,7 @@
   "de": "Moloch-Emblem",
   "icon": "assets/img/set19/items/juggernaut19_emblem.webp",
   "comp": [],
-  "desc": "The holder gains the Juggernaut trait and becomes unstoppable. <br><br>They also gain <bright>5%</bright> Damage Amp per 1,000 max Health.<br><br><Rules>Elusive - Cannot be crafted.</Rules>",
+  "desc": "Der Träger erhält das Attribut „Moloch“ und wird unaufhaltsam.<br><br>Er erhält außerdem <bright>5%</bright> Schadenssteigerung pro 1.000 max. Leben.<br><br><Rules>Mysteriös – Kann nicht hergestellt werden.</Rules>",
   "fx": {},
   "cat": "emblem",
   "en_desc": "The holder gains the Juggernaut trait and becomes unstoppable. <br><br>They also gain <bright>5%</bright> Damage Amp per 1,000 max Health.<br><br><Rules>Elusive - Cannot be crafted.</Rules>"
@@ -541,7 +541,7 @@
    "DA_Component_NeedlesslyLargeRod",
    "DA_Component_Spatula"
   ],
-  "desc": "The holder gains the K/DA trait.",
+  "desc": "Der Träger erhält das Attribut „K/DA“.",
   "fx": {},
   "cat": "emblem",
   "en_desc": "The holder gains the K/DA trait."
@@ -552,7 +552,7 @@
   "de": "Manager-Emblem",
   "icon": "assets/img/set19/items/manager19_emblem.webp",
   "comp": [],
-  "desc": "Der Träger erhält das Attribut „Manager“.<br><br>Bei der Aktivierung wird dem Verbündeten im Rampenlichtfeld <bright>20%</bright> des verbrauchten Manas gewährt.",
+  "desc": "Der Träger erhält das Attribut „Manager“.<br><br>Bei der Aktivierung wird dem Verbündeten im Rampenlichtfeld <bright>20%</bright> des verbrauchten Manas gewährt.<br><br><Rules>Mysteriös – Kann nicht hergestellt werden.</Rules>",
   "fx": {},
   "cat": "emblem",
   "en_desc": "The holder gains the Manager trait.<br><br>On cast, grant the ally in the Spotlight Hex <bright>20%</bright> of Mana spent.<br><br><Rules>Elusive - Cannot be crafted.</Rules>"
@@ -636,7 +636,7 @@
    "DA_Component_FryingPan",
    "DA_Component_RecurveBow"
   ],
-  "desc": "The holder gains the Swiftstriker trait.<br><br>Attacks deal ? bonus true damage.<br><br><Rules>Damage increases based on Stage.</Rules>",
+  "desc": "Der Träger erhält das Attribut „Schnellschläger“.<br><br>Angriffe verursachen ? zusätzlichen absoluten Schaden.<br><br><Rules>Der Schaden wird abhängig von der Phase erhöht.</Rules>",
   "fx": {},
   "cat": "emblem",
   "en_desc": "The holder gains the Swiftstriker trait.<br><br>Attacks deal ? bonus true damage.<br><br><Rules>Damage increases based on Stage.</Rules>"
@@ -647,7 +647,7 @@
   "de": "True Damage-Emblem",
   "icon": "assets/img/set19/items/truedamage19_emblem.webp",
   "comp": [],
-  "desc": "The holder gains the True Damage trait.<br><br><Rules>Elusive - Cannot be crafted.</Rules>",
+  "desc": "Der Träger erhält das Attribut „True Damage“.<br><br><Rules>Mysteriös – Kann nicht hergestellt werden.</Rules>",
   "fx": {},
   "cat": "emblem",
   "en_desc": "The holder gains the True Damage trait.<br><br><Rules>Elusive - Cannot be crafted.</Rules>"
@@ -658,10 +658,10 @@
   "de": "Bards Horn des Reisenden",
   "icon": "assets/img/set19/items/bard19_uniqueitem.webp",
   "comp": [],
-  "desc": "Wenn ausgerüstet, wird Bards Fähigkeit durch eine ersetzt, die Meeps beschwört, die für ERF verkauft werden können. Sein max. Mana wird um <bright>140</bright> erhöht.<br><br><Rules>Kann nur bei Bard ausgerüstet werden. Wird nach Aktivierungen in der Verlängerung und in PvE-Runden vorübergehend unterbrochen. </Rules>",
+  "desc": "Ändert Bards Fähigkeit so, dass sie Meeps beschwört, die du für ERF verkaufen kannst. Diese Fähigkeit kostet zur Aktivierung <bright>130</bright> mehr Mana.<br><br><Rules>Nur Bard kann diesen Gegenstand tragen. Setze Bard auf die Bank, um den Gegenstand zu entfernen! Wird in Runden gegen Monster und nach Aktivierungen in der Verlängerung vorübergehend unterbrochen.</Rules>",
   "fx": {},
   "cat": "other",
-  "en_desc": "Change Bard’s Ability to one that summons meeps which you can sell for XP. This Ability costs <bright>140</bright> more Mana to cast.<br><br><Rules>Only Bard can hold this item. Bench Bard to remove it! Temporarily breaks in rounds vs monsters and after casting in overtime.</Rules>"
+  "en_desc": "Change Bard’s Ability to one that summons meeps which you can sell for XP. This Ability costs <bright>130</bright> more Mana to cast.<br><br><Rules>Only Bard can hold this item. Bench Bard to remove it! Temporarily breaks in rounds vs monsters and after casting in overtime.</Rules>"
  },
  {
   "id": "DA_Heartsteel19_Selector1",
@@ -680,7 +680,7 @@
   "de": "Bias-Selektor #2",
   "icon": "assets/img/set19/items/heartsteel19_selector2.webp",
   "comp": [],
-  "desc": "Use on another Heartsteel member to improve their Ability.",
+  "desc": "Bei einem anderen HEARTSTEEL-Mitglied einsetzen, um dessen Fähigkeit zu verbessern.",
   "fx": {},
   "cat": "other",
   "en_desc": "Use on another Heartsteel member to improve their Ability."
@@ -702,7 +702,7 @@
   "de": "Dr. Mundos Plattenvertrag",
   "icon": "assets/img/set19/items/drmundo19_uniquetrait_contractitem.webp",
   "comp": [],
-  "desc": "Wird auf einen Champion angewendet, um ihn als Künstler zu verpflichten. Kills gewähren Dr. Mundo permanent Leben und <bright>5%</bright> Schadenssteigerung.<br><br><Rules>Kann nicht bei Champions im Kampf eingesetzt werden.</Rules><br><Rules>Verbrauchsgegenstand – Gegenstand verschwindet nach Benutzung.</Rules><br><Rules>Wird zurückgegeben, wenn der ausgerüstete Champion verkauft oder auf die Bank gesetzt wird.</Rules>",
+  "desc": "Wird auf einen Champion angewendet, um ihn als Künstler zu verpflichten. Sie erhalten <bright>5%</bright> Schadenssteigerung und ihre Kills gewähren Dr. Mundo permanent Leben.<br><br><Rules>Kann nicht auf Champions im Kampf angewendet werden.</Rules><br><Rules>Schicke den Champion auf die Bank oder verkaufe ihn, um den Vertrag aufzuheben!</Rules>",
   "fx": {},
   "cat": "other",
   "en_desc": "Use on a champion to sign them as a Recording Artist. They gain <bright>5%</bright> Damage Amp and their kills grant Dr. Mundo permanent Health.<br><br><Rules>Cannot be used on champions in combat.</Rules><br><Rules>Bench or sell the champion to remove the contract!</Rules>"
@@ -710,7 +710,7 @@
  {
   "id": "DA_IonicSpark19_GreaterEncore",
   "en": "Encore",
-  "de": "Encore",
+  "de": "Zugabe",
   "icon": "assets/img/set19/items/ionicspark19_greaterencore.webp",
   "comp": [],
   "desc": "Auf einen „Ionic Spark“-Champion anwenden, um auf deiner Bank eine 1-Stern-Kopie von diesem Champion zu erschaffen.<br><br><rules>Verbrauchsgegenstand – Gegenstand verschwindet nach Benutzung.</rules>",
@@ -721,10 +721,10 @@
  {
   "id": "DA_IonicSpark19_SmallASConsumable",
   "en": "Energetic Charm",
-  "de": "Energetic Charm",
+  "de": "Energiegeladener Glücksbringer",
   "icon": "assets/img/set19/items/ionicspark19_smallasconsumable.webp",
   "comp": [],
-  "desc": "Use on an Ionic Spark champion to give them <bright>12%</bright> Attack Speed.<br><br><Rules>Consumable: This item disappears when used.</Rules>",
+  "desc": "Bei einer „Ionic Spark“-Champion benutzen, um ihm <bright>12%</bright> Angriffstempo zu geben.<br><br><Rules>Verbrauchsgegenstand – Gegenstand verschwindet nach Benutzung.</Rules>",
   "fx": {},
   "cat": "other",
   "en_desc": "Use on an Ionic Spark champion to give them <bright>12%</bright> Attack Speed.<br><br><Rules>Consumable: This item disappears when used.</Rules>"
@@ -732,10 +732,10 @@
  {
   "id": "DA_IonicSpark19_SmallADConsumable",
   "en": "Fearless Charm",
-  "de": "Fearless Charm",
+  "de": "Furchtloser Glücksbringer",
   "icon": "assets/img/set19/items/ionicspark19_smalladconsumable.webp",
   "comp": [],
-  "desc": "Use on an Ionic Spark champion to give them <bright>15%</bright> Attack Damage.<br><br><Rules>Consumable: This item disappears when used.</Rules>",
+  "desc": "Bei einem „Ionic Spark“-Champion benutzen, um ihm <bright>15%</bright> Angriffsschaden zu geben.<br><br><Rules>Verbrauchsgegenstand – Gegenstand verschwindet nach Benutzung.</Rules>",
   "fx": {},
   "cat": "other",
   "en_desc": "Use on an Ionic Spark champion to give them <bright>15%</bright> Attack Damage.<br><br><Rules>Consumable: This item disappears when used.</Rules>"
@@ -746,7 +746,7 @@
   "de": "Goldener Gegenstandsentferner",
   "icon": "assets/img/set19/items/consumable_goldenitemremover.webp",
   "comp": [],
-  "desc": "Beliebig oft auf einen Champion anwenden, um alle Gegenstände von ihm zu entfernen. Wandelt alle zukünftigen „Magnetischen Entferner“ in „Umgestalter“ um.<br><br><Rules>Wiederholbar: Dieser Gegenstand kann unendlich oft wiederverwendet werden.</Rules>",
+  "desc": "Beliebig oft auf einen Champion anwenden, um alle Gegenstände von ihm zu entfernen. Wandelt alle zukünftigen „Magnetischen Entferner“ in „Umgestalter“ um.<br><br><Rules>Kann nicht auf Champions im Kampf angewendet werden. Wird bei Benutzung nicht verbraucht.</Rules>",
   "fx": {},
   "cat": "other",
   "en_desc": "Use on a champion to unequip all items as many times as you want. Converts all future Magnetic Removers to Reforgers. <br><br><Rules>Cannot be used on champions in combat. Does not disappear when used.</Rules>"
@@ -754,7 +754,7 @@
  {
   "id": "DA_Heartsteel19_PrismaticQuestItem",
   "en": "Heartsteel Prismatic Quest",
-  "de": "Heartsteel Prismatic Quest",
+  "de": "Prismatische „HEARTSTEEL“-Quest",
   "icon": "assets/img/set19/items/heartsteel19_prismaticquestitem.webp",
   "comp": [],
   "desc": "Hilf den HEARTSTEEL-Mitgliedern, sich auf ihr nächstes Comeback vorzubereiten!",
@@ -787,10 +787,10 @@
  {
   "id": "DA_IonicSpark19_SmallHPConsumable",
   "en": "Joyous Charm",
-  "de": "Joyous Charm",
+  "de": "Freudiger Glücksbringer",
   "icon": "assets/img/set19/items/ionicspark19_smallhpconsumable.webp",
   "comp": [],
-  "desc": "Use on an Ionic Spark champion to give them <bright>15%</bright> max Health.<br><br><Rules>Consumable: This item disappears when used.</Rules>",
+  "desc": "Bei einem „Ionic Spark“-Champion benutzen, um ihm <bright>15%</bright> max. Leben zu geben.<br><br><Rules>Verbrauchsgegenstand – Gegenstand verschwindet nach Benutzung.</Rules>",
   "fx": {},
   "cat": "other",
   "en_desc": "Use on an Ionic Spark champion to give them <bright>15%</bright> max Health.<br><br><Rules>Consumable: This item disappears when used.</Rules>"
@@ -823,7 +823,7 @@
   "de": "Großer Purritos-Beutel",
   "icon": "assets/img/set19/items/ionicspark19_largecritconsumable.webp",
   "comp": [],
-  "desc": "Use on an Ionic Spark unit to give them <bright>50%</bright> Critical Strike Chance.<br><br><Rules>Consumable: This item disappears when used.</Rules>",
+  "desc": "Bei einer „Ionic Spark“-Einheit benutzen, um ihr <bright>50%</bright> Chance auf kritische Treffer zu geben.<br><br><Rules>Verbrauchsgegenstand – Gegenstand verschwindet nach Benutzung.</Rules>",
   "fx": {},
   "cat": "other",
   "en_desc": "Use on an Ionic Spark unit to give them <bright>50%</bright> Critical Strike Chance.<br><br><Rules>Consumable: This item disappears when used.</Rules>"
@@ -864,10 +864,10 @@
  {
   "id": "DA_IonicSpark19_SmallCritConsumable",
   "en": "Lucky Charm",
-  "de": "Lucky Charm",
+  "de": "Glücksbringer",
   "icon": "assets/img/set19/items/ionicspark19_smallcritconsumable.webp",
   "comp": [],
-  "desc": "Use on an Ionic Spark champion to give them <bright>10%</bright> Critical Strike Chance.<br><br><Rules>Consumable: This item disappears when used.</Rules>",
+  "desc": "Bei einem „Ionic Spark“-Champion benutzen, um ihm <bright>10%</bright> Chance auf kritische Treffer zu geben.<br><br><Rules>Verbrauchsgegenstand – Gegenstand verschwindet nach Benutzung.</Rules>",
   "fx": {},
   "cat": "other",
   "en_desc": "Use on an Ionic Spark champion to give them <bright>10%</bright> Critical Strike Chance.<br><br><Rules>Consumable: This item disappears when used.</Rules>"
@@ -897,10 +897,10 @@
  {
   "id": "DA_IonicSpark19_SmallAPConsumable",
   "en": "Passion Charm",
-  "de": "Passion Charm",
+  "de": "Leidenschaftsglücksbringer",
   "icon": "assets/img/set19/items/ionicspark19_smallapconsumable.webp",
   "comp": [],
-  "desc": "Use on an Ionic Spark champion to give them <bright>15%</bright> Ability Power.<br><br><Rules>Consumable: This item disappears when used.</Rules>",
+  "desc": "Bei einem „Ionic Spark“-Champion benutzen, um ihm <bright>15%</bright> Fähigkeitsstärke zu geben.<br><br><Rules>Verbrauchsgegenstand – Gegenstand verschwindet nach Benutzung.</Rules>",
   "fx": {},
   "cat": "other",
   "en_desc": "Use on an Ionic Spark champion to give them <bright>15%</bright> Ability Power.<br><br><Rules>Consumable: This item disappears when used.</Rules>"
@@ -908,7 +908,7 @@
  {
   "id": "DA_Pentakill19_PrismaticQuestItem",
   "en": "Pentakill Prismatic Quest",
-  "de": "Pentakill Prismatic Quest",
+  "de": "Prismatische „Pentakill“-Quest",
   "icon": "assets/img/set19/items/pentakill19_prismaticquestitem.webp",
   "comp": [],
   "desc": "Erziele einen Pentakill!",
@@ -922,7 +922,7 @@
   "de": "Umgestalter",
   "icon": "assets/img/set19/items/reforger.webp",
   "comp": [],
-  "desc": "Entferne alle Gegenstände und transformiere sie zufällig in neue Gegenstände mit ähnlichen Typen und ähnlicher Qualität.<br><br><rules>[Verbrauchsgegenstand – Gegenstand verschwindet nach Benutzung.]</rules>",
+  "desc": "Entferne alle Gegenstände und transformiere sie zufällig in neue Gegenstände mit ähnlichen Typen und ähnlicher Qualität.<br><br><Rules>Kann nicht auf Champions im Kampf angewendet werden.</Rules><br><Rules>Verbrauchsgegenstand – Gegenstand verschwindet nach Benutzung.</Rules>",
   "fx": {},
   "cat": "other",
   "en_desc": "Unequip all items and randomly transform them into new ones of a similar type and quality.<br><br><Rules>Cannot be used on champions in combat.</Rules><br><Rules>Consumable: This item disappears when used.</Rules>"
@@ -933,7 +933,7 @@
   "de": "Schrottsammler",
   "icon": "assets/img/set19/items/scissorsalvager.webp",
   "comp": [],
-  "desc": "Auf einen Champion anwenden, um alle seine Gegenstände zu entfernen und sie in Komponenten zu zerlegen.<br> <br><rules>[Verbrauchsgegenstand – Gegenstand verschwindet nach Benutzung.]</rules>",
+  "desc": "Auf einen Champion anwenden, um alle seine Gegenstände zu entfernen und sie in Komponenten zu zerlegen.<br> <br><Rules>Gegenstände und Embleme von Taktikern können nicht zerlegt werden.</Rules><br><Rules>Kann nicht auf Champions im Kampf angewendet werden.</Rules><br><Rules>Verbrauchsgegenstand: Gegenstand verschwindet nach Benutzung.</Rules>",
   "fx": {},
   "cat": "other",
   "en_desc": "Use on a champion to remove all their items and break them down into components.<br> <br><Rules>Tactician's items and Emblems cannot be broken apart.</Rules><br><Rules>Cannot be used on champions in combat.</Rules><br><Rules>Consumable: This item disappears when used.</Rules>"
@@ -944,7 +944,7 @@
   "de": "Schriftrolle des himmlischen Gebets",
   "icon": "assets/img/set19/items/heavenscale19_heavenlyprayer.webp",
   "comp": [],
-  "desc": "Bei Kampfbeginn wird das zu einem zufälligen empfohlenen Gegenstand.<br><br><Rules>Kann nur bei Gu-Feng-Champions ausgerüstet werden.</Rules>",
+  "desc": "Jede Runde: Rüste 1 zufälligen Gegenstand aus.<br><br><Rules>Nur Gu-Feng-Champions können diesen Gegenstand tragen.</Rules>",
   "fx": {},
   "cat": "other",
   "en_desc": "Each round: equip 1 random recommended item. <br><br><Rules>Only Gu Feng champions can hold this item.</Rules>"
@@ -955,10 +955,10 @@
   "de": "Schriftrolle der Bestie",
   "icon": "assets/img/set19/items/heavenscale19_dangerousitem.webp",
   "comp": [],
-  "desc": "Immediately gain XP equal to <bright>20%</bright> of your Player Health (0.2 XP). <Keyword>The Beast Who Devours All Song</Keyword> looms over you for the rest of the game. If you lose <bright>2</bright> player combats in a row, <Keyword>The Beast</Keyword> consumes <colorStatReduced>YOU!</colorStatReduced><br><br>When you win player combat, gain <bright>6</bright> XP, increased to <bright>250</bright> at Level 10. Reach Level 11 by gaining <bright>?</bright> XP to enlighten <Keyword>The Beast</Keyword> and obtain <colorRadiant>Heavenly</colorRadiant> power.<br><br><Rules>Only Gu Feng champions can hold this item.</Rules>",
+  "desc": "Du erhältst sofort ERF in Höhe von <bright>20%</bright> deines Taktikerlebens (0.2 ERF). <Keyword>Die Bestie, die alle Lieder verschlingt</Keyword>, schwebt für den Rest des Spiels über dir. Wenn du <bright>2</bright> PvP-Runden in Folge verlierst, verschlingt <Keyword>die Bestie</Keyword> <colorStatReduced>DICH!</colorStatReduced><br><br>Wenn du eine PvP-Runde gewinnst, erhältst du <bright>4</bright> ERF. Auf Stufe 10 erhöht sich der Wert auf <bright>200</bright>. Erreiche Stufe 11, indem du <bright>?</bright> ERF sammelst, um <Keyword>die Bestie</Keyword> zu erleuchten und <colorRadiant>himmlische</colorRadiant> Macht zu erlangen.<br><br><Rules>Nur Gu-Feng-Champions können diesen Gegenstand tragen.</Rules>",
   "fx": {},
   "cat": "other",
-  "en_desc": "Immediately gain XP equal to <bright>20%</bright> of your Player Health (0.2 XP). <Keyword>The Beast Who Devours All Song</Keyword> looms over you for the rest of the game. If you lose <bright>2</bright> player combats in a row, <Keyword>The Beast</Keyword> consumes <colorStatReduced>YOU!</colorStatReduced><br><br>When you win player combat, gain <bright>6</bright> XP, increased to <bright>250</bright> at Level 10. Reach Level 11 by gaining <bright>?</bright> XP to enlighten <Keyword>The Beast</Keyword> and obtain <colorRadiant>Heavenly</colorRadiant> power.<br><br><Rules>Only Gu Feng champions can hold this item.</Rules>"
+  "en_desc": "Immediately gain XP equal to <bright>20%</bright> of your Player Health (0.2 XP). <Keyword>The Beast Who Devours All Song</Keyword> looms over you for the rest of the game. If you lose <bright>2</bright> player combats in a row, <Keyword>The Beast</Keyword> consumes <colorStatReduced>YOU!</colorStatReduced><br><br>When you win player combat, gain <bright>4</bright> XP, increased to <bright>200</bright> at Level 10. Reach Level 11 by gaining <bright>?</bright> XP to enlighten <Keyword>The Beast</Keyword> and obtain <colorRadiant>Heavenly</colorRadiant> power.<br><br><Rules>Only Gu Feng champions can hold this item.</Rules>"
  },
  {
   "id": "DA_IonicSpark19_LesserEncore",
@@ -974,7 +974,7 @@
  {
   "id": "DA_IonicSpark19_SonaConsumable",
   "en": "Sona's Homemade Cookies",
-  "de": "Sona's Homemade Cookies",
+  "de": "Sonas hausgemachte Cookies",
   "icon": "assets/img/set19/items/ionicspark19_sonaconsumable.webp",
   "comp": [],
   "desc": "Bei einer „Ionic Spark“-Einheit benutzen, um ihr <bright>15%</bright> Angriffsschaden und Fähigkeitsstärke zu geben. Macht sie außerdem 100 % niedlicher %i:scaleHealth%!<br><br><Rules>Verbrauchsgegenstand – Gegenstand verschwindet nach Benutzung.</Rules>",
@@ -1074,7 +1074,7 @@
   "de": "Randuins Omen",
   "icon": "assets/img/set19/items/randuinsomen.webp",
   "comp": [],
-  "desc": "Grant <bright>33</bright> Armor and Magic Resist to the holder and allies within <bright>1</bright> hex.",
+  "desc": "Gewährt dem Träger und Verbündeten innerhalb von <bright>1</bright> Feld(ern) <bright>33</bright> Rüstung und Magieresistenz.",
   "fx": {},
   "cat": "support",
   "en_desc": "Grant <bright>33</bright> Armor and Magic Resist to the holder and allies within <bright>1</bright> hex."
@@ -1096,7 +1096,7 @@
   "de": "Zz’Rot-Portal",
   "icon": "assets/img/set19/items/zzrotportal.webp",
   "comp": [],
-  "desc": "Summon a large Voidspawn. Its strength increases with each Stage.",
+  "desc": "Beschwört eine große Leerenbrut. Ihre Stärke nimmt mit jeder Phase zu.",
   "fx": {},
   "cat": "support",
   "en_desc": "Summon a large Voidspawn. Its strength increases with each Stage."

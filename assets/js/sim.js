@@ -102,7 +102,7 @@ function simSpec(n){
   const vals = Object.assign({}, (d.ab && d.ab.v) || {}, ((typeof TFT_CUSTOM_SET!=='undefined' && TFT_CUSTOM_SET.abilities) || {})[n] || {});
   const dk = Object.keys(vals).find(k=>/^((Magic|Physical)DamageCalc1|(Base|Spell|Magic|Physical)?Damage)$/i.test(k));
   if(dk && Array.isArray(vals[dk])) s.val = vals[dk];
-  // Sets ohne Riot-Variablennamen (Set 19 von blitz.gg: @v_31_47_74@): der erste Wert im aktiven Teil, auf den „… Schaden“ folgt
+  // Sets ohne Riot-Variablennamen (Set 19 von Hand gebaut: @v_31_47_74@): der erste Wert im aktiven Teil, auf den „… Schaden“ folgt
   if(!s.val){ const raw = String((d.ab && (d.ab.dDe || d.ab.d)) || ''), ia2 = raw.search(/Aktiv:/), part = ia2 >= 0 ? raw.slice(ia2) : raw;
     const m = part.match(/@(v_[A-Za-z0-9_]+)@(?:(?!@v_)[^.@])*?Schaden/); if(m && Array.isArray(vals[m[1]])) { s.val = vals[m[1]]; s.valAD = true;
       // mehrere Treffer aufs selbe Ziel („3 Konfettiregen auf das Ziel, die jeweils …“, „Fuchsfeuer auf das Ziel, jedes verursacht …“): Wert × Anzahl
@@ -119,7 +119,7 @@ const simStarVal = (arr, star) => arr.length >= 4 ? arr[star] : arr[Math.min(arr
 const simManaF = u => u.maxMana > 5 ? Math.min(1.5, Math.max(0.4, u.maxMana / 70)) : 1;
 function simPow(u){   // Schaden einer Fähigkeit (vor Aufteilung), geschätzt nach Kosten, Sternen und Manakosten
   const sp = u.spec, c = Math.min(5, Math.max(1, u.cost)) - 1, s = u.star - 1;
-  // Blitz-Werte (valAD) sind schon mit dem Grund-AD verrechnet – mit Items/Buffs wächst normaler Schaden mit dem AD-Bonus
+  // Set-19-Werte (valAD) sind schon mit dem Grund-AD verrechnet – mit Items/Buffs wächst normaler Schaden mit dem AD-Bonus
   if(sp.val) return (+simStarVal(sp.val, u.star) || 0) * (sp.dt==='magic' ? sAP(u)/100 : sp.valAD && sp.dt==='phys' ? sAD(u)/Math.max(1, u.ad0) : 1);
   return (sp.dt==='phys' ? sAD(u) * SIM_PHYS[c][s] * sAP(u)/100 : SIM_MAGIC[c][s] * sAP(u)/100) * simManaF(u);
 }

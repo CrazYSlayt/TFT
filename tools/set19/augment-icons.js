@@ -5,7 +5,7 @@
 const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..', '..'), SRC = 'C:/t19aug', OUT = 'C:/t19augpng';
 const {texToPng} = require(path.join(ROOT, 'tools', 'unreal', 'tex2png.js'));
-const B = require('./blitz-daten.json');
+const B = require('./basis-texte.json');
 global.window = {}; require(path.join(ROOT, 'data', 'tft-data-18.js')); const A18 = window.TFT_DATA.augments;
 // „alt“ nur mit echtem Symbol aus Set 18 – Set-18-Augments mit Platzhalter (missing-t…) holen ihr Symbol auch aus dem Client
 const A18ok = A18.filter(a => !/missing-t/.test(a.icon || '')), old = new Set(A18ok.map(a => a.id)), oldName = new Set(A18ok.map(a => a.en.toLowerCase()));

@@ -56,15 +56,16 @@ function ndShellHTML(en){
     <aside class="nd-side" id="ndSide" aria-label="${T('Seiten', 'Pages')}">
       ${ndLink('tierlist', 'Tierlist', '/tierlist', '', '/tierlist|/tier-list|/comps|/augments')}
       ${ndLink('gameplans', 'Gameplans', '/gameplans').replace('</span></a>', '</span><em class="nds-soon">Soon</em></a>')}
+      ${ndLink('cheatsheet', 'Cheatsheets', '/cheatsheet', '', '/cheatsheet')}
+      ${ndLink('tools', 'Tools', '/tools')}
       ${ndLink('builder', 'Team Builder', '/tft-team-builder')}
       <div class="nds-gap"></div>
-      ${ndLink('tools', 'Tools', '/tools')}
       ${ndGroup('lernen', T('Lernen', 'Learn'), '', ndSub('Guides', '/guides', '/guides', true, '', 'guides') + ndSub(T('TFT erklärt', 'TFT explained'), '', '', true, '', 'explain'), '', en)}
       ${ndGroup('daten', T('Daten', 'Data'), '',
-        ndSub(T('Bibliothek', 'Library'), '/bibliothek', '/bibliothek|/library|/champions|/traits|/items', false, '', 'bibliothek') + ndSub('Cheatsheets', '/cheatsheet', '/cheatsheet', false, '', 'cheatsheet') + ndSub('Ranks', '/ranks', '/ranks', false, '', 'ranks'), '', en)}
+        ndSub(T('Bibliothek', 'Library'), '/bibliothek', '/bibliothek|/library|/champions|/traits|/items', false, '', 'bibliothek') + ndSub('Ranks', '/ranks', '/ranks', false, '', 'ranks'), '', en)}
       ${ndGroup('news', 'News', '',
         ndSub('Patches', '/patches', '/patches|/tft-patch-countdown|/tft-next-patch-countdown', false, '', 'patches') + ndSub('Set 19', '/tft-set-19', '', false, 'nextset', 'nextset'), `<em class="nds-soon nds-new">${T('Neu', 'New')}</em>`, en)}
-      <div class="nds-gap"></div><div class="nds-gap"></div>
+      <div class="nds-gap"></div><div class="nds-push"></div>
       ${ndLink('coaching', 'Coaching', '/coaching', '', '/coaching|/apply').replace('class="nds-link"', 'class="nds-link nds-hot"')}${ndLink('about', 'Meet the Team', '/about')}
       <button class="nds-link nds-col" type="button" onclick="document.body.classList.toggle('nd-mini');try{localStorage.setItem('tftfreaks_side',document.body.classList.contains('nd-mini')?'mini':'')}catch(e){}">${ndSvg('col', 2)}<span>${T('Einklappen', 'Collapse')}</span></button>    </aside>
     <div class="nds-fly" id="ndFly" hidden></div>

@@ -13,7 +13,8 @@ const curPath = () => { const p = rawPath(); return fromEn(EN ? (p.replace(/^\/e
 // Alte Adressen leiten weiter – online per 301 (vercel.json), in der Seite über seoPath(). Gleiche Listen in api/sitemap.js
 const TOOL_SLUG = {rolldown:'tft-rolldown-rechner', drops:'tft-item-drop-chance', tierlist:'tft-tierlist-maker', simulator:'tft-kampf-simulator', dps:'tft-dps-rechner', augments:'tft-augment-chancen', streak:'tft-streak-rechner'};
 const CS_SLUG = {shop:'tft-shop-odds', power:'tft-hierarchy-of-power', augments:'tft-augment-stufen', orbs:'tft-loot-orbs', loot:'tft-loot-verteilung', damage:'tft-spielerschaden', emblems:'tft-embleme', solo:'tft-stage-1-solo', 'patch-schedule':'tft-patch-plan', carousel:'tft-karussell',
-  'item-builds-1':'tft-1-cost-bis', 'item-builds-2':'tft-2-cost-bis', 'item-builds-3':'tft-3-cost-bis', 'item-builds-4':'tft-4-cost-bis', 'item-builds-5':'tft-5-cost-bis'};   // sonst „tft-“ + Schlüssel
+  'item-builds-1':'tft-1-cost-bis', 'item-builds-2':'tft-2-cost-bis', 'item-builds-3':'tft-3-cost-bis', 'item-builds-4':'tft-4-cost-bis', 'item-builds-5':'tft-5-cost-bis',
+  crowns:'tft-kronen-und-reife', 'prismatic-quests':'tft-prismatische-quests'};   // sonst „tft-“ + Schlüssel
 const GUIDE_SLUG = {encounters:'tft-encounters', anfaenger:'tft-anfaenger-guide', ...Object.fromEntries((window.TFT_GUIDES || []).map(g=>[g.key, g.slug]))};   // dazu die Guides aus data/guides.js
 const ER_SLUG = Object.fromEntries((window.TFT_ARTICLES || []).map(a=>[a.key, a.slug]));   // TFT erklärt: Artikel-Adressen (data/articles.js), englisch gleich
 const GUIDE_SLUG_EN = {...GUIDE_SLUG, ...Object.fromEntries((window.TFT_GUIDE_PLAN || []).filter(p=>p.se).map(p=>[p.key, p.se]))};   // englische Adresse (se im Plan), sonst wie deutsch
@@ -21,7 +22,8 @@ const GUIDE_SLUG_EN = {...GUIDE_SLUG, ...Object.fromEntries((window.TFT_GUIDE_PL
 // toEn() macht aus einem internen (deutschen) Pfad den englischen, fromEn() umgekehrt
 const TOOL_SLUG_EN = {rolldown:'tft-rolldown-calculator', drops:'tft-item-drop-odds', tierlist:'tft-tier-list-maker', simulator:'tft-battle-simulator', dps:'tft-dps-calculator', augments:'tft-augment-odds', streak:'tft-streak-calculator'};
 const CS_SLUG_EN = {shop:'tft-shop-odds', power:'tft-hierarchy-of-power', augments:'tft-augment-tiers', orbs:'tft-loot-orbs', loot:'tft-loot-distribution', damage:'tft-player-damage', emblems:'tft-emblems', solo:'tft-solo-stage-1', 'patch-schedule':'tft-patch-schedule', carousel:'tft-carousel',
-  'item-builds-1':'tft-1-cost-bis', 'item-builds-2':'tft-2-cost-bis', 'item-builds-3':'tft-3-cost-bis', 'item-builds-4':'tft-4-cost-bis', 'item-builds-5':'tft-5-cost-bis'};
+  'item-builds-1':'tft-1-cost-bis', 'item-builds-2':'tft-2-cost-bis', 'item-builds-3':'tft-3-cost-bis', 'item-builds-4':'tft-4-cost-bis', 'item-builds-5':'tft-5-cost-bis',
+  crowns:'tft-crowns-and-circlets', 'prismatic-quests':'tft-prismatic-quests'};
 const PAGE_EN = {'tft-erklaert':'tft-explained', tierlist:'tier-list', bibliothek:'library', impressum:'legal-notice', datenschutz:'privacy-policy', bedingungen:'terms', 'tft-patch-countdown':'tft-next-patch-countdown'};
 function langPath(p, en){   // en = true: deutsch → englisch, false: englisch → deutsch
   const i = p.search(/[?#]/), rest = i < 0 ? '' : p.slice(i), s = (i < 0 ? p : p.slice(0, i)).split('/');
@@ -6203,7 +6205,7 @@ function csSections(){
     const blocks = CS.solo.rounds.map(([r, list])=>`<div class="css-b"><div class="css-h">${L('Runde', 'Round')} ${r}</div><div class="css-u">${list.map(n=>`<a href="${champHref(n)}" class="css-c"><img class="c${(champBy[n] || {}).c || 1}" src="${champImg(n) || champFallback(n)}" alt="" width="64" height="64" loading="lazy"><b>${esc(n)}</b><small>${L('Position egal', 'any position')}</small></a>`).join('')}</div></div>`).join('');
     out.push(['solo', L('Stage 1 solo schaffen', 'Solo Stage 1'), `<p class="cs-note">${L('1-Kosten-Champions, die die PvE-Runde allein gewinnen.', '1-cost champions that win the PvE round on their own.')}</p><div class="css">${blocks}</div>` + csSrc(CS.solo.src)]);
   }
-  out.push(...csAugSections(), ...csTraitSections(), ...csPatchSection());
+  out.push(...csSetSections(), ...csAugSections(), ...csTraitSections(), ...csPatchSection());
   // Item-Builds (data/custom-<Set>.js itemBuilds): ein Cheatsheet je Kostenstufe (5 und 7 zusammen), je Champion die Items in Prioritäts-Reihenfolge – Carrys oben, Tanks darunter
   const IB = TFT_CUSTOM_SET.itemBuilds;
   if(IB){
@@ -6325,7 +6327,7 @@ function csAugBody(t){
   // Lage wie im Spiel; Radien des Kreises in CSS (--rx/--ry), hier nur die Richtung jeder Kugel
   if(t.type==='circle'){ const us = t.units.filter(n=>champBy[n]), N = us.length;
     return `<div class="cax-circle">${us.map((n, i)=>{ const an = -Math.PI / 2 + i / N * 2 * Math.PI; return `<div class="cax-cu" style="--c:${Math.cos(an).toFixed(3)};--s:${Math.sin(an).toFixed(3)}">${csAv(n, 64)}<b>${esc(n)}</b></div>`; }).join('')}</div>
-      <p class="cs-note cs-after">${L('Lage der Kugeln: im Uhrzeigersinn, Akali oben.', 'Orb layout: clockwise, Akali at the top.')}</p>`; }
+      <p class="cs-note cs-after">${L(`Lage der Kugeln: im Uhrzeigersinn, ${esc(us[0])} oben.`, `Orb layout: clockwise, ${esc(us[0])} at the top.`)}</p>`; }
   if(t.type==='stats') return `<div class="cax-stats">${t.stats.map(([k, v, de, en])=>`<div class="cax-stat"><img src="${TI('stat-' + k)}" alt="" width="36" height="36"><div><b>${esc(v)}</b><span>${esc(L(de, en))}</span></div></div>`).join('')}</div>`;
   return '';
 }
@@ -6338,6 +6340,25 @@ function csAugSections(){
     const info = `<div class="cax-info"><img src="${a.img}" alt="" width="52" height="52" loading="lazy"><div><b>${esc(a.de)} <span class="cax-st">Stage ${esc(t.st)}</span></b>${desc ? `<p>${desc}</p>` : ''}</div></div>`;
     return [t.id, a.de, info + csAugBody(t) + csSrc(T.src)];
   }).filter(Boolean);
+}
+// Set-Tabellen (data/custom-<Set>.js cheats.setTables): Kronen & Reife (Emblem + Item + Champion je Trait) und Hero-Augmente (je Champion)
+function csSetSections(){
+  const S = CS.setTables; if(!S) return [];
+  const out = [], augBy = id => AUGS.find(x=>x.id===id);
+  if(S.crowns && S.crowns.rows.length){
+    const cell = x => { if(!x) return '<td class="na">–</td>'; const [, itId, ch, st] = x, it = itemById[itId]; if(!it || !champBy[ch]) return '<td class="na">–</td>';
+      return `<td><span class="csk-c"><img src="${it.img}" alt="" width="40" height="40" loading="lazy">${csAv(ch, 40)}<span><b>${esc(EN ? it.en : it.de)}</b><small>${st ? '★'.repeat(st) + ' ' : ''}${esc(ch)}</small></span></span></td>`; };
+    const rows = S.crowns.rows.filter(([t])=>traitBy[t]).map(([t, c, k])=>`<tr><td>${csTrChip(t)}</td>${cell(c)}${cell(k)}</tr>`).join('');
+    out.push([S.crowns.id, L(S.crowns.title[0], S.crowns.title[1]), `<p class="cs-note">${L('Jedes Reif- und Kronen-Augment gibt dir das Emblem seines Traits – dazu ein Item und einen Champion. So siehst du auf einen Blick, welcher Carry und welches Item zu deiner Comp passen.', 'Every circlet and crown augment gives you its trait emblem – plus an item and a champion. See at a glance which carry and item fit your comp.')}</p>
+      <div class="cs-wrap"><table class="cs-table csk"><thead><tr><th>Trait</th><th>${L('Reif', 'Circlet')}</th><th>${L('Krone', 'Crown')}</th></tr></thead><tbody>${rows}</tbody></table></div>`]);
+  }
+  if(S.heroes && S.heroes.augs.length){
+    const cards = S.heroes.augs.filter(([id, ch])=>champBy[ch] && augBy(id)).map(([id, ch])=>{ const a = augBy(id);
+      const desc = fmtDesc(String(a.desc || '').replace(/<rules>[\s\S]*?<\/rules>/gi, ''), a.fx);
+      return `<div class="csx-card csh-card"><div class="csh-top">${csAv(ch, 60)}<img src="${augImg(a)}" alt="" width="44" height="44" loading="lazy"><div><b>${esc(a.de)}</b><small>${esc(ch)} · ${champBy[ch].c} Gold</small></div></div><p>${desc}</p></div>`; }).join('');
+    out.push([S.heroes.id, L(S.heroes.title[0], S.heroes.title[1]), `<p class="cs-note">${L('Hero-Augments verändern die Fähigkeit eines bestimmten Champions. Mit ihnen spielst du eine eigene Comp rund um genau diesen Champion.', 'Hero augments change the ability of one specific champion. With them you play a comp built around exactly that champion.')}</p><div class="csh-grid">${cards}</div>`]);
+  }
+  return out;
 }
 // Attribut- und Patch-Tabellen (Little Buddy Bot): Kopf mit Attribut-Symbol, darunter je Typ eine eigene Darstellung. Symbole nur aus den offiziellen Daten (Attribute, Embleme, Items, Champions)
 const CS_STAT = {ad:['Angriffsschaden', 'Attack Damage'], ap:['Fähigkeitsstärke', 'Ability Power'], as:['Angriffstempo', 'Attack Speed'], crit:['Krit-Chance', 'Crit Chance'], da:['Schadensverstärkung', 'Damage Amp'],
@@ -6446,6 +6467,12 @@ Object.entries(CS_RIOT_IC).forEach(([id, k])=>{ if(CS_META[id]) Object.assign(CS
 if(CS_META.emblems && itemById.DA_Component_Spatula) Object.assign(CS_META.emblems, {img:itemById.DA_Component_Spatula.img, rio:1});
 // Augment-Tabellen: Name und Icon aus den Riot-Daten
 (CS.augTables ? CS.augTables.list : []).forEach(t=>{ const a = csAugFind(t.aug); if(a) CS_META[t.id] = {s:[a.de, a.en], h:['Augment-Tabelle · Stage ' + t.st, 'Augment table · Stage ' + t.st], d:['Alle Belohnungen und Chancen', 'every reward and its odds'], img:a.img, st:t.st}; });
+// Set-Tabellen (Kronen & Reife, Hero-Augments): Symbol = erstes Augment der Liste
+if(CS.setTables){ const S = CS.setTables, aimg = id => { const a = AUGS.find(x=>x.id===id); return a ? augImg(a) : ''; };
+  if(S.crowns) CS_META.crowns = {s:['Kronen & Reife', 'Crowns & Circlets'], h1:['TFT Kronen & Reife: Emblem, Item und Champion', 'TFT Crowns & Circlets: Emblem, Item and Champion'], h:['Was jede Krone und jeder Reif dir gibt.', 'What every crown and circlet gives you.'],
+    d:['Emblem, Item und Champion je Krone und Reif', 'emblem, item and champion per crown and circlet'], img:aimg((S.crowns.rows.find(r=>r[2]) || [])[2]?.[0])};
+  if(S.heroes) CS_META['hero-augments'] = {s:['Hero-Augments', 'Hero augments'], h1:['TFT Hero-Augments: alle Champions und Effekte', 'TFT Hero Augments: Every Champion and Effect'], h:['Welcher Champion welches Hero-Augment hat.', 'Which champion has which hero augment.'],
+    d:['Alle Hero-Augments mit Champion und Effekt', 'every hero augment with champion and effect'], img:aimg((S.heroes.augs[0] || [])[0])}; }
 (CS.traitTables ? CS.traitTables.list : []).forEach(t=>{ CS_META[t.id] = {s:t.title, h:['Attribut-Tabelle · ' + t.trait, 'Trait table · ' + t.trait], d:['Werte und Belohnungen des Attributs', 'the trait\'s values and rewards'], trait:t.trait}; });
 // Avatar (Lux): Lux-Porträt als Symbol statt Trait-Icon
 if(CS_META['avatar-lux'] && champBy.Lux){ const im = champImg('Lux') || champFallback('Lux'); if(im){ delete CS_META['avatar-lux'].trait; CS_META['avatar-lux'].img = im; } }
@@ -6453,7 +6480,7 @@ CS_META['patch-schedule'] = {s:['Patch-Plan', 'Patch schedule'], h:['Wann welche
 // Gruppen: [Kurzname DE/EN (Seitenleiste), Überschrift DE/EN und Unterzeile DE/EN (Übersicht)], Tabellen – Reihenfolge wie bei Little Buddy Bot
 const CS_GROUPS = [
   [['System', 'System', 'System-Tabellen', 'System tables', 'Shop-Chancen, Loot, Schaden – die festen Zahlen des Sets.', 'Shop odds, loot, damage – the fixed numbers of the set.'], ['encounters', 'shop', 'power', 'augments', 'orbs', 'loot', 'damage', 'gold-subscription', 'reroll-subscription']],
-  [['Augments', 'Augments', 'Augment-Tabellen', 'Augment tables', 'Was einzelne Augments wirklich geben – mit allen Chancen.', 'What single augments really give – with every chance.'], CS.augTables ? CS.augTables.list.map(t=>t.id) : []],
+  [['Augments', 'Augments', 'Augment-Tabellen', 'Augment tables', 'Was einzelne Augments wirklich geben – mit allen Chancen.', 'What single augments really give – with every chance.'], [...(CS.setTables ? ['crowns', 'hero-augments'] : []), ...(CS.augTables ? CS.augTables.list.map(t=>t.id) : [])]],
   [['Attribute', 'Traits', 'Attribut-Tabellen', 'Trait tables', 'Was Attribute wirklich geben – Beute, Shop-Chancen und Boni.', 'What traits really give – loot, shop odds and bonuses.'], CS.traitTables ? CS.traitTables.list.map(t=>t.id) : []],
   [['Sonstiges', 'Other', 'Sonstiges', 'Other', 'Patch-Plan, Embleme bauen und Stage 1 allein schaffen.', 'Patch schedule, building emblems and winning Stage 1 solo.'], ['patch-schedule', 'emblems', 'solo']],
   [['Items', 'Items', 'Item-Tabellen', 'Item tables', 'Welche Items deine Carrys und Tanks bekommen.', 'Which items your carries and tanks get.'], ['item-builds-1', 'item-builds-2', 'item-builds-3', 'item-builds-4', 'item-builds-5', ...(/vorschau/.test(location.search) ? ['item-holder'] : [])]],

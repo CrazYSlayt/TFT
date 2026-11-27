@@ -3516,6 +3516,28 @@ a.gd-pl:hover{border-color:var(--cy,#2ee6d6);transform:translateY(-2px);box-shad
 .gd-mx-p.y{color:#5eead4;border-color:transparent;font-size:1rem}
 .gd-mx-p.n{color:var(--faint);border-color:transparent}
 .gd-mx td.gd-mx-c:has(.gd-mx-p){white-space:nowrap}
+/* Cheatsheet Kronen & Reife (app.js csSetSections): Item + Champion je Zelle */
+.csk td{vertical-align:middle;white-space:normal}
+.csk td:first-child{width:1%}
+.csk .cax-tr{min-width:0;width:auto;padding:0;background:none;border:0;box-shadow:none;gap:8px}
+.csk .cax-tr img,.csk .cax-tr .cs-emb{width:36px!important;height:36px!important}
+.csk .cax-tr b{font-size:.92rem;white-space:nowrap}
+.csk-c{display:flex;align-items:center;gap:8px;min-width:0}
+.csk td+td{min-width:140px}
+.csk-c>span{min-width:0}
+.csk-c>img{border-radius:8px;flex:none}
+.csk-c b{display:block;font-size:.86rem;line-height:1.25;white-space:normal}
+.csk-c small{display:block;color:var(--muted);font-size:.78rem}
+/* Cheatsheet Hero-Augments: eine Karte je Champion */
+.csh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.csh-card{padding:16px}
+.csh-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.csh-top>img{border-radius:10px;flex:none}
+.csh-top .cax-av{flex:none;width:60px;height:60px;display:block}
+.csh-top .cax-av img,.csh-top .cax-av>*{width:60px!important;height:60px!important;max-width:60px}
+.csh-top b{display:block;line-height:1.2}
+.csh-top small{display:block;color:var(--muted);font-size:.8rem}
+.csh-card p{margin:0;font-size:.9rem;line-height:1.5}
 .gd-shots{margin:18px 0;clear:both}
 .gd-art .gd-fig.side + p + :is(h2,h3,h4){clear:both}
 .gd-psh{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.7fr);gap:20px;align-items:center;margin:18px 0;clear:both}

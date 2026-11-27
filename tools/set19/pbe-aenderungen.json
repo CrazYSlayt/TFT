@@ -1,44 +1,288 @@
 {
- "_info": "PBE-Balance-Änderungen, die bauen.js auf die Set-19-Daten anwendet, solange Client und Blitz noch den alten Stand haben. Werte: Fähigkeitswert (Schlüssel aus ab.v) → neue Werte für 1/2/3 Sterne. Texte: [alt, neu] auf Deutsch und Englisch. Quelle je Update in data/patches-pbe.js. Wird harmlos, sobald die Quellen selbst aktualisiert sind (Werte/Texte werden nur ersetzt, wenn sie noch den alten Stand haben).",
+ "_info": "PBE-Balance-Änderungen, die bauen.js auf die Set-19-Daten anwendet (Werte, Texte, Unlocks, Grundwerte, Trait-Texte, Item-Werte, Augments). Quelle je Update in data/patches-pbe.js. Ersetzt nur, solange noch der alte Stand drin ist.",
  "updates": [
   {
    "tag": "2026-11-19",
    "quelle": "https://x.com/TheTruexy/status/2123119511285227920",
    "werte": {
-    "Ziggs": {"v_180_270_405": [155, 235, 355], "v_80_120_180": [70, 105, 160]},
-    "Lux": {"v_330_500_800": [300, 450, 675], "v_170_255_425": [160, 240, 360]},
-    "Seraphine": {"v_600_900_1350": [570, 855, 1280]},
-    "_hinweis": "Kai'Sa und Viego: Blitz zeigt die Werte schon mit AD verrechnet (42/63/100 statt Riots 36/54/85) – darum die Änderung prozentual übertragen (36→33 = −8 % usw.)",
-    "Kai'Sa": {"v_42_63_100": [39, 58, 94]},
-    "Malzahar": {"v_380_570_960": [355, 530, 850]},
-    "Viego": {"v_39_59_93": [37, 56, 89]},
-    "Teemo": {"v_110_165_1337": [90, 135, 1337]},
-    "Sona": {"v_1400_2200_9999999": [1500, 2400, 9999999]}
+    "Ziggs": {
+     "v_180_270_405": [
+      155,
+      235,
+      355
+     ],
+     "v_80_120_180": [
+      70,
+      105,
+      160
+     ]
+    },
+    "Lux": {
+     "v_330_500_800": [
+      300,
+      450,
+      675
+     ],
+     "v_170_255_425": [
+      160,
+      240,
+      360
+     ]
+    },
+    "Seraphine": {
+     "v_600_900_1350": [
+      570,
+      855,
+      1280
+     ]
+    },
+    "Kai'Sa": {
+     "v_42_63_100": [
+      39,
+      58,
+      94
+     ]
+    },
+    "Malzahar": {
+     "v_380_570_960": [
+      355,
+      530,
+      850
+     ]
+    },
+    "Viego": {
+     "v_39_59_93": [
+      37,
+      56,
+      89
+     ]
+    },
+    "Teemo": {
+     "v_110_165_1337": [
+      90,
+      135,
+      1337
+     ]
+    },
+    "Sona": {
+     "v_1400_2200_9999999": [
+      1500,
+      2400,
+      9999999
+     ]
+    }
    },
    "texte": {
-    "Smeech": {"de": [["Nach 15 Beats", "Nach 30 Beats"], ["(Entfesselte Beats: 0/15)", "(Entfesselte Beats: 0/30)"]], "en": [["After unleashing 15 Beats", "After unleashing 30 Beats"], ["(Unleashed Beats: 0/15)", "(Unleashed Beats: 0/30)"]]},
-    "Kobuko": {"de": [["100% deines Hyperpop-Hypes", "85% deines Hyperpop-Hypes"]], "en": [["100% of", "85% of"]]},
-    "Renata Glasc": {"de": [["Die Dauer erhöht sich auf 6 Sekunden, wenn ihre Sternenwertung niedriger oder gleich der von Renata ist.", "Die Dauer erhöht sich auf 9 Sekunden, wenn ihre Sternenwertung niedriger als die von Renata ist."]], "en": [["6 seconds", "9 seconds"], ["less than or equal to", "less than"]]}
+    "Smeech": {
+     "de": [
+      [
+       "Nach 15 Beats",
+       "Nach 30 Beats"
+      ],
+      [
+       "(Entfesselte Beats: 0/15)",
+       "(Entfesselte Beats: 0/30)"
+      ]
+     ],
+     "en": [
+      [
+       "After unleashing 15 Beats",
+       "After unleashing 30 Beats"
+      ],
+      [
+       "(Unleashed Beats: 0/15)",
+       "(Unleashed Beats: 0/30)"
+      ]
+     ]
+    },
+    "Kobuko": {
+     "de": [
+      [
+       "100% deines Hyperpop-Hypes",
+       "85% deines Hyperpop-Hypes"
+      ]
+     ],
+     "en": [
+      [
+       "100% of",
+       "85% of"
+      ]
+     ]
+    },
+    "Renata Glasc": {
+     "de": [
+      [
+       "Die Dauer erhöht sich auf 6 Sekunden, wenn ihre Sternenwertung niedriger oder gleich der von Renata ist.",
+       "Die Dauer erhöht sich auf 9 Sekunden, wenn ihre Sternenwertung niedriger als die von Renata ist."
+      ]
+     ]
+    }
    },
-   "unlocks": {
-    "Sona": {"de": "Ab Stufe 10: Kollab-Champions werden in Spielerkämpfen 15-mal inspiriert", "en": "Req. Lvl 10 - Collab Champions are inspired 15 times during player combat"}
-   },
+   "unlocks": {},
    "augments": {
-    "DA_Augment19_Manager_ManagementTrack": {"de": [["60 % Chance", "40 % Chance"], ["20 Gold durch", "30 Gold durch"]], "en": [["60%", "40%"], ["20 gold", "30 gold"]]},
-    "DA_TrueDamage19_PainIntoPassion": {"de": [["gesammelten 20 Glitzer", "gesammelten 30 Glitzer"]], "en": [["every 20", "every 30"]]}
+    "DA_Augment19_Manager_ManagementTrack": {
+     "de": [
+      [
+       "60 % Chance",
+       "40 % Chance"
+      ],
+      [
+       "20 Gold durch",
+       "30 Gold durch"
+      ]
+     ],
+     "en": [
+      [
+       "60%",
+       "40%"
+      ],
+      [
+       "20 gold",
+       "30 gold"
+      ]
+     ]
+    },
+    "DA_TrueDamage19_PainIntoPassion": {
+     "de": [
+      [
+       "gesammelten 20 Glitzer",
+       "gesammelten 30 Glitzer"
+      ]
+     ],
+     "en": [
+      [
+       "every 20",
+       "every 30"
+      ]
+     ]
+    }
    }
   },
   {
    "tag": "2026-11-19 (Day 2) + 2026-11-20 (Wochenend-Patch)",
    "quelle": "https://x.com/TheTruexy/status/2123482553810113002 · https://x.com/TheTruexy/status/2123837242229801164",
-   "_hinweis": "Fähigkeitswerte, Trait- und Augment-Texte hat Blitz schon (blitz.js am 23.11. neu gelesen); hier nur, was Blitz nicht liefert: Grundwerte aus dem Client und deutsche Texte, die Blitz noch auf altem Stand hat",
-   "stats": {"Rell": {"hp": 1400}, "Yuumi": {"as": 0.8}, "Viego": {"ad": 55}},
+   "stats": {
+    "Rell": {
+     "hp": 1400
+    },
+    "Yuumi": {
+     "as": 0.8
+    },
+    "Viego": {
+     "ad": 55
+    }
+   },
    "texte": {
-    "Shyvana": {"de": [["erhält sie 300 max. Leben", "erhält sie 250 max. Leben"]]},
-    "Vayne": {"de": [[" + 2 % des max. Lebens des Ziels als normalen Schaden", " normalen Schaden + 1,5 % des max. Lebens des Ziels als absoluten Schaden"]]},
-    "Bard": {"de": [["um 30% verringert.", "um 30 % verringert (mindestens 30 %)."]]},
-    "Thresh": {"de": [["Passiv: Wenn Gegner Thresh Schaden zufügen, werden sie 12 Sekunden lang gefesselt, falls ihr aktuelles Leben niedriger ist als seines.", "Passiv: Fesselt alle 6 Sekunden den am weitesten entfernten Gegner, der noch nicht gefesselt ist, 12 Sekunden lang."], ["max. Leben.\\nKlassische Einheiten fesseln Gegner und wenden Bonuseffekte auf sie an.", "max. Leben. Währenddessen erhält er 15 % Haltbarkeit.\\nGefesselte Gegner gewähren Klassik-Champions Boni."]]}
+    "Shyvana": {
+     "de": [
+      [
+       "erhält sie 300 max. Leben",
+       "erhält sie 250 max. Leben"
+      ]
+     ]
+    },
+    "Vayne": {
+     "de": [
+      [
+       " + 2 % des max. Lebens des Ziels als normalen Schaden",
+       " normalen Schaden + 1,5 % des max. Lebens des Ziels als absoluten Schaden"
+      ]
+     ]
+    },
+    "Bard": {
+     "de": [
+      [
+       "um 30% verringert.",
+       "um 30 % verringert (mindestens 30 %)."
+      ]
+     ]
+    },
+    "Thresh": {
+     "de": [
+      [
+       "Passiv: Wenn Gegner Thresh Schaden zufügen, werden sie 12 Sekunden lang gefesselt, falls ihr aktuelles Leben niedriger ist als seines.",
+       "Passiv: Fesselt alle 6 Sekunden den am weitesten entfernten Gegner, der noch nicht gefesselt ist, 12 Sekunden lang."
+      ],
+      [
+       "max. Leben.\\nKlassische Einheiten fesseln Gegner und wenden Bonuseffekte auf sie an.",
+       "max. Leben. Währenddessen erhält er 15 % Haltbarkeit.\\nGefesselte Gegner gewähren Klassik-Champions Boni."
+      ]
+     ]
+    }
    }
+  },
+  {
+   "tag": "2026-11-23 (Wochenend-Patch) + 2026-11-24 + 2026-11-25 (Holiday-Patch)",
+   "quelle": "https://x.com/TheTruexy/status/2124948130936541578 · https://x.com/TheTruexy/status/2125291417765572776 · https://x.com/TheTruexy/status/2125635969575702556",
+   "stats": {
+    "Xayah": {
+     "as": 0.8
+    },
+    "Mel": {
+     "as": 0.8
+    },
+    "Pyke": {
+     "as": 0.85
+    }
+   },
+   "unlocks": {
+    "Vayne": {
+     "de": "Ab Stufe 7: 5 einzigartige Sternestufen von Rock oder Trickshot",
+     "en": "Req. Lvl 7 - 5 unique star levels of Rock or Trickshot"
+    },
+    "Thresh": {
+     "de": "Gegner sind insgesamt 250 Sekunden lang von Klassik gefesselt",
+     "en": "Enemies spend 250 seconds Captivated by Classical"
+    },
+    "Smeech": {
+     "de": "Ab Stufe 9: 9 oder mehr nicht-einzigartige Traits aktiv",
+     "en": "Req. Lvl 9 - Activate 9 or more non-unique traits"
+    },
+    "Akali (True Damage)": {
+     "de": "Verdiene 320 True-Damage-Bling, ohne dass K/DA-Akali freigeschaltet ist",
+     "en": "Earn 320 True Damage Bling without K/DA Akali unlocked"
+    },
+    "Sona": {
+     "de": "Ab Stufe 10: Kollab-Champions werden in Spielerkämpfen 20-mal inspiriert",
+     "en": "Req. Lvl 10 - Collab Champions are inspired 20 times during player combat"
+    }
+   },
+   "traits": {
+    "Ionic Spark": {
+     "de": [
+      [
+       "%i:scaleAS% 7% gewähren",
+       "%i:scaleAS% 8% gewähren"
+      ]
+     ],
+     "en": [
+      [
+       "grant %i:scaleAS% 7%",
+       "grant %i:scaleAS% 8%"
+      ]
+     ]
+    }
+   },
+   "items": {
+    "DA_SpearOfShojin": {
+     "AD": 0.18,
+     "AP": 18
+    },
+    "DA_SpearOfShojinRadiant": {
+     "AD": 0.35,
+     "AP": 35
+    },
+    "DA_WarmogsArmor": {
+     "Health": 550
+    },
+    "DA_WarmogsArmorRadiant": {
+     "Health": 1300
+    },
+    "DA_Crownguard": {
+     "Health": 150
+    }
+   },
+   "_hinweis_items": "Kronwacht „Bonus Healing/Shielding 25 → 20 %“ passt zu keinem Wert der Set-18-Kronwacht (Schild 25 % max. Leben) – nur auf der Patch-Seite, nicht in den Werten"
   }
  ]
 }

@@ -1,0 +1,3 @@
+# Build- und Pflege-Werkzeuge gehören nicht auf die Website. Nur der Ordner im Hauptverzeichnis (führender /),
+# NICHT assets/img/guides/tools/ – die Seite lädt nichts aus /tools/, die Adressen /tools/… sind Seiten der App.
+/tools/

@@ -697,6 +697,7 @@ body.nd-mini .nds-link{padding:9px 0}body.nd-mini .nds-gap{height:12px}
 
 /* ---------- Sidebar: Vi unten links, bündig auf der Unterkante ---------- */
 .nd-side{display:flex;flex-direction:column}
+.nds-push{flex:1 0 12px}   /* Coaching, Meet the Team und Einklappen sitzen unten in der Seitenleiste */
 .nds-link,.nds-gap,.nds-cap{flex:none}
 
 /* ---------- Sprechblase im Comic-Stil: Oval mit geschwungenem Zipfel unten links ---------- */
